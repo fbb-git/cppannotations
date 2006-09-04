@@ -1,4 +1,4 @@
-void reqzip(string dest, string src)
+void reqzip(int compress, string dest, string src)
 {
     list files;
     int idx;
@@ -8,11 +8,17 @@ void reqzip(string dest, string src)
     for (idx = sizeof(files); idx--; )
     {
         file = element(idx, files);
-        run("gzip -9 < " + file + " > " + dest + file + ".gz");
+        if (compress)
+            run("gzip -9 < " + file + " > " + dest + file + ".gz");
+        else
+            run("cp " + file + " " + dest + file);
     }
 }
     
-void install(string root)
+
+#define COMPRESS 1
+
+void install(int compress, string root)
 {
     if (root != "")
     {
@@ -25,25 +31,37 @@ void install(string root)
     md(root + DOC);
 
     md(root + MAN + "/man7");
-    run("gzip -9 < tmp/man/cpp-annotations.7 > " +
-                    root + MAN + "/man7/cpp-annotations.7.gz");
 
+    reqzip(COMPRESS, root + DOC + "/", 
+            "README README.papersize COPYING README.legalese changelog");
+    chdir("tmp/man");
+    reqzip(COMPRESS, root + MAN + "/man7/", "cpp-annotations.7");
+    chdir("../../tmp/docs/txt");
+    reqzip(compress, root + DOC + "/", "cplusplus.txt");
 
-    reqzip(root + DOC + "/", 
-            "README README.papersize README.legalese changelog");
+    chdir(g_cwd);
 
-    chdir("tmp/docs/txt");
-    reqzip(root + DOC + "/", "cplusplus.txt");
-
-    chdir("..");
-
-    run("zip -r " + root + DOC + "/cplusplus.html.zip  html");
-
-    run("zip " + root + DOC + "/cplusplus.ps.zip    latex/cplusplus*.ps");
-    run("zip " + root + DOC + "/cplusplus.pdf.zip   latex/cplusplus*.pdf");
-
-    run("zip -r " + root + DOC + "/cplusplus.latex.zip latex/*"
+    if (compress)
+    {
+        chdir("tmp/docs");
+        run("zip -r " + root + DOC + "/cplusplus.html.zip  html");
+        run("zip " + root + DOC + "/cplusplus.ps.zip    latex/cplusplus*.ps");
+        run("zip " + root + DOC + "/cplusplus.pdf.zip   latex/cplusplus*.pdf");
+        run("zip -r " + root + DOC + "/cplusplus.latex.zip latex/*"
                                     " -x cplusplus\*.pdf -x cplusplus\*ps");
+    }
+    else
+    {
+        chdir(g_cwd);
+        run("cp -r tmp/docs/html " + root + DOC);
+        run("cp -r tmp/docs/latex " + root + DOC);
+
+        chdir(root + DOC);
+        md("ps pdf");
+
+        run("mv latex/*.ps ps");
+        run("mv latex/*.pdf pdf");
+    }
 
     chdir(g_cwd);
 
@@ -51,9 +69,10 @@ void install(string root)
 
     run("cp contributions/*.zip " + root + DOC + "/contrib");
     chdir("contributions");
-    reqzip(root + DOC + "/contrib/", 
-            "chist.html chist.pdf chist.ps java_cpp_keywords.html "
-                                                        "GGD.algorithm");
+    reqzip(COMPRESS, root + DOC + "/contrib/", "GGD.algorithm");
+    
+    reqzip(compress, root + DOC + "/contrib/", 
+            "chist.html chist.pdf chist.ps java_cpp_keywords.html");
     
     printf("\n  Installation completed\n");
 
