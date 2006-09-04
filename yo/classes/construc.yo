@@ -1,0 +1,88 @@
+A class in bf(C++) may contain two special categories of member functions
+which are involved in the internal workings of the class. These member
+function categories are, on the one hand, the constructors and, on the other
+hand, the i(destructor). The em(destructor)'s primary task is to return memory
+allocated by an object to the common pool when an object goes `out of scope'.
+Allocation of memory is discussed in chapter ref(MEMORY), and
+destructors will therefore be discussed in depth in that chapter.
+
+In this chapter the emphasis will be on the basic form of the tt(class) and
+on its hi(constructor) constructors.
+
+The constructor has by definition the same name as its class. The constructor
+does not specify a return value, not even tt(void).  E.g., for the class
+tt(Person) the constructor is tt(Person::Person()). The bf(C++) run-time
+system ensures that the constructor of a class, if defined, is called when a
+variable of the class, called an i(object), is defined (`created'). It is of
+course possible to define a class with no constructor at all. In that case the
+program will call a default constructor when a corresponding object is
+created. What actually happens in that case depends on the way the class has
+been defined. The actions of the default constructors are covered in section
+ref(MemberInitializers).
+
+Objects may be defined locally or globally. However, in bf(C++) most objects
+are defined locally. Globally defined objects are hardly ever required.
+
+When an hi(local object) object is defined locally (in a function), the
+constructor is called every time the function is called. The object's
+constructor is then activated at the point where the object is defined (a
+subtlety here is that a variable may be defined implicitly as, e.g., a
+temporary variable in an expression).
+
+When an object is defined as a static object hi(static object) (i.e., it is
+static variable) in a function, the constructor is called when the function in
+which the static variable is defined is called for the first time.
+
+When an object is defined as a i(global object) the constructor is called when
+the program starts. Note that in this case the constructor is called even
+before the function tt(main()) is started.  This feature is illustrated in the
+following program:
+    verbinclude(classes/examples/emptymain.cc)
+        The above listing shows how a class tt(Demo) is defined which consists
+of just one function: the constructor. The constructor performs but one
+action: a message is printed. The program contains one global object of the
+class tt(Demo), and tt(main()) has an empty body. Nonetheless, the program
+produces some output.
+
+Some important characteristics of constructors are:
+    itemization(
+    it() The constructor has the same name as its class.
+    it() The hi(constructor: primary function) primary function of a
+constructor is to make sure that all its data members have sensible or at
+least defined values once the object has been constructed. We'll get back to
+this important task shortly.
+    it() The constructor does not have a return value. This holds
+true for the declaration of the constructor in the class definition, as
+in:
+    verb(
+        class Demo
+        {
+            public:
+                Demo();         // no return value here
+        };
+    )
+    and it holds true for the definition of the constructor function, as
+in:
+    verb(
+        Demo::Demo()            // no return value here
+        {
+            // statements ...
+        }
+    )
+    it() The constructor function in the example above has no arguments. It is
+called the emi(default constructor).  That a constructor has no arguments is,
+however, no requirement em(per se). We shall shortly see that it is possible
+to define constructors em(with) arguments as well as em(without)
+arguments.
+
+    it() bf(NOTE:) em(Once a constructor is defined having arguments, the
+default constructor doesn't exist anymore, unless the default constructor is
+defined explicitly too.)
+
+This has important consequences, as the default constructor is required in
+cases where it must be able to construct an object either em(with) or
+em(without) explicit initialization values. By merely defining a constructor
+having at least one argument, the implicitly available default constructor
+disappears from view. As noted, to make it available again in this situation,
+it must be defined explicitly too.
+    )

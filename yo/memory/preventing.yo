@@ -1,0 +1,32 @@
+As we've seen in the previous section, situations may be encountered in which
+a member function can't do its job in a completely satisfactory way. In
+particular: an i(overloaded assignment) operator cannot do its job completely
+if its class contains i(reference data members). In this and comparable
+situations the programmer might want to em(prevent) the (accidental) use of
+    hi(member functions: preventing their use)
+    hi(preventing member function usage) certain member functions. This can be
+realized in the following ways:
+    itemization(
+    it() Move all member functions that should not be callable to the
+tt(private) section of the class interface. This will effectively prevent the
+user from the class to use these members. By moving the assignment operator to
+the private section, objects of the class cannot be assigned to each other
+anymore. Here the em(compiler) will detect the use of a private member outside
+of its class and will flag a compilation error.
+    it() The above solution still allows the em(constructor) of the class to
+use the unwanted member functions within the class members itself. If that is
+deemed undesirable as well, such functions should stil be moved to the private
+section of the class interface, hi(member functions: not implemented) but they
+hi(unimplemented member functions) should not be implemented. The em(compiler)
+won't be able to prevent the (accidental) use of these forbidden members, but
+the em(linker) won't be able to solve the associated external reference.
+    it() It is em(not) always a good idea to emi(omit member functions)
+        hi(member functions: omitting) that should not be called from the
+class interface. In particular, the overloaded assignment operator has a
+em(default) implementation that will be used if no overloaded version is
+mentioned in the class interface. So, in particular with the overloaded
+assignment operator, the previously mentioned approach should be
+followed. Moving certain hi(constructor: private) hi(private constructors)
+constructors to the private section of the class interface is also a good
+technique to prevent their use by `the general public'.
+    )

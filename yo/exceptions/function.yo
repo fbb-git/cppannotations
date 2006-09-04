@@ -1,0 +1,116 @@
+    Exceptions might be generated while a constructor is initializing its
+members. How can exceptions generated in such situations be caught by the
+constructor itself, rather than outside of the constructor? The intuitive
+solution, nesting the object construction in a nested tt(try) block does not
+solve the problem (as the exception by then has left the constructor) and is
+not a very elegant approach by itself, because of the resulting additional
+(and somewhat artificial) nesting level.
+
+    Using a nested tt(try) block is illustrated by the next example, where
+tt(main()) defines an object of class tt(DataBase). Assuming that
+tt(DataBase)'s constructor may throw an exception, there is no way we can
+catch the exception in an `outer block' (i.e., in the code calling
+tt(main())), as we don't have an outer block in this situation. Consequently,
+we must resort to less elegant solutions like the following:
+        verb(
+    int main(int argc, char **argv)
+    {
+        try
+        {
+            DataBase db(argc, argv);    // may throw exceptions
+            ...                         // main()'s other code
+        }
+        catch(...)                      // and/or other handlers
+        {
+            ...
+        }
+    }
+        )
+    This approach may potentially produce very complex code. If multiple
+objects are defined, or if multiple sources of exceptions are identifiable
+within the tt(try) block, we either get a complex series of exception
+handlers, or we have to use multiple nested tt(try) blocks, each using its own
+set of tt(catch)-handlers.
+
+    None of these approaches, however, solves the basic problem: how can
+exceptions generated in a emi(local context) be caught before the local
+context has disappeared?
+
+    A function's local context remains accessible when its body is defined as
+a emi(function try block). A function try block consists of a tt(try) block
+and its associated handlers, defining the function's body. When a function try
+block is used, the function itself may catch any exception its code may
+generate, even if these exceptions are generated in member initializer lists
+of constructors.
+
+    The following example shows how a function try block might have been
+deployed in  the above tt(main()) function. Note how the tt(try) block and its
+handler now replace the plain function body:
+        verb(
+    int main(int argc, char **argv)
+    try
+    {
+        DataBase db(argc, argv);    // may throw exceptions
+        ...                         // main()'s other code
+    }
+    catch(...)                      // and/or other handlers
+    {
+        ...
+    }
+        )
+    Of course, this still does not enable us have exceptions thrown by
+tt(DataBase)'s constructor itself caught locally by tt(DataBase)'s
+constructor. Function try blocks, however, may also be used when implementing
+constructors. In that case, exceptions thrown by base class initializers
+(cf. chapter ref(INHERITANCE)) or member initializers may also be caught by
+the constructor's exception handlers. So let's try to implement this approach.
+
+    The following example shows a function try block being used by a
+constructor.  Note that the grammar requires us to put the tt(try) keyword
+even before the i(member initializer list)'s colon:
+        verbinclude(exceptions/examples/function.cc)
+    In this example, the exception thrown by the tt(Throw) object is first
+caught by the object itself. Then it is rethrown. As the tt(Composer)'s
+constructor uses a function try block, tt(Throw)'s rethrown exception is also
+caught by tt(Composer)'s exception handler, even though the exception was
+generated inside its member initializer list.
+
+    However, when running this example, we're in for a nasty surprise: the
+program runs and then breaks with an emi(abort exception). Here is the output
+it produces, the last two lines being added by the system's final catch-all
+handler, catching all exceptions that otherwise remain uncaught:
+        verb(
+    Throw's exception handled locally by Throw()
+    Composer() caught exception as well
+    terminate called after throwing an instance of 'int'
+    Abort
+        )
+    The reason for this is actually stated in the bf(C++) standard: at the end
+of a catch-handler implemented as part of a destructor's or constructor's
+function try block, the original exception is automatically rethrown. The
+exception is not rethrown if the handler itself throws another exception, and
+it is not retrown by catch-handlers that are part of try blocks of other
+functions. Only constructors and destructors are affected. Consequently, to
+repair the above program another, outer, exception handler is still
+required. A simple repair (applicable to all programs except those having
+global objects whose constructors or destructors use function try blocks) is
+to provide tt(main) with a function try block. In the above example this would
+boil down to:
+        verb(
+    int main()
+    try
+    {
+        Composer c;
+    }
+    catch (...)
+    {}
+        )
+    Now the program runs as planned, producing the following output:
+        verb(
+    Throw's exception handled locally by Throw()
+    Composer() caught exception as well
+        )
+
+    A final note: if a constructor or function using a function try block also
+declares the exception types it may throw, then the function try block must
+follow the function's i(exception specification list).

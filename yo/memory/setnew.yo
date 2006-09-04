@@ -1,0 +1,35 @@
+The bf(C++) run-time system makes sure that when memory allocation fails, an
+error function is activated. By default this function throws a em((bad_alloc)
+exception) (hi(exception: bad_alloc)) (see section ref(STDEXC)), terminating
+the program. Consequently, in the default case it is never necessary to check
+the return value of the operator tt(new). This default behavior may be
+modified in various ways. One way to modify this default behavior is to
+redefine the function handling failing memory allocation. However, any
+user-defined function must comply with the following prerequisites:
+    itemization(
+    it() it has no arguments, and
+    it() it returns no value
+    )
+
+    The redefined error function might, e.g., print a message and terminate
+the program. The user-written error function becomes part of the allocation
+system through the function ti(set_new_handler()).
+
+    The implementation of an error function is illustrated below+footnote(
+This implementation applies to the i(Gnu) bf(C/C++) requirements. The actual
+try-out of the program given in the example is not encouraged, as it will slow
+down the computer enormously due to the resulting use of the operating
+system's emi(swap area).):
+        verbinclude(memory/examples/newhandler.cc)
+    After installing the error function it is automatically invoked when
+memory allocation fails, and the program exits. Note that memory
+allocation may fail in indirectly called code as well, e.g., when constructing
+or using streams or when strings are duplicated by low-level functions.
+
+Note that it may em(not) be assumed that the standard bf(C) functions which
+allocate memory, such as ti(strdup()), ti(malloc()), ti(realloc()) etc. will
+trigger the tt(new) handler when memory allocation fails. This means that once
+a tt(new) handler is installed, such functions should not automatically be
+used in an unprotected way in a bf(C++) program. An example using
+tt(new) to  duplicate a string, was given in a rewrite of the function
+tt(strdup()) (see section ref(STRDUPNEW)).

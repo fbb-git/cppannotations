@@ -1,0 +1,37 @@
+Inline functions may be implemented em(in the class interface itself). For the
+class tt(Person) this results in the following implementation of
+tt(name()):
+        verb(
+    class Person
+    {
+        public:
+            std::string const &name() const
+            {
+                return d_name;
+            }
+    };
+        )
+    Note that the i(inline code) of the function tt(name()) now literally
+occurs inline in the interface of the class tt(Person). The keyword tt(const)
+occurs after the function declaration, and before the code block.
+
+Thus, tt(inline) functions appearing in the class interface are fully defined
+within the class interface.
+
+This has the following effect: Whenever tt(name()) is called in a
+program statement, the compiler may em(generate the code in the function's
+body) at the location of the function call. The function itself may never
+actually be called. Consequently, the function call is prevented, but the
+function's body appears as often in the final program as the inline function
+is actually called.
+
+This construction, where the function code itself is inserted rather than a
+call to the function, is called an i(inline function).  Note that using inline
+functions may result in multiple occurrences of those function's code: one
+copy for each invocation of the inline function. This is probably ok if the
+function is a small one, and needs to be executed fast. It's not so desirable
+if the code of the function is extensive. The compiler knows this too, and
+considers the
+    i(use of inline functions) a em(request) rather than a em(command): if the
+compiler considers the function too long, it will not grant the request, but
+will, instead, treat the function as a normal function.

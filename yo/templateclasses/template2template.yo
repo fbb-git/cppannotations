@@ -1,0 +1,89 @@
+    Although it's perfectly acceptable to derive a concrete class from a
+template class, the resulting class of course has limited generality compared
+to its template base class. If generality is important, it's probably a better
+idea to derive a template class from a template class. This allows us the
+extend an existing template class with some additional functionality, like
+allowing hierarchical sorting of its elements.
+
+    The following class tt(SortVector) is a template class derived from the
+existing template class tt(Vector). However, it allows us to perform a
+emi(hierarchical sort) of its elements, using any order of any members its
+data elements may contain. To accomplish this there is but one requirement:
+the tt(SortVector)'s data type must have dedicated member functions comparing
+its members. For example, if tt(SortVector)'s data type is an object of class
+tt(MultiData), then tt(MultiData) should implement member functions having the
+following prototypes for each of its data members which can be compared:
+        centt(bool (MultiData::*)(MultiData const &rhv))
+    So, if tt(MultiData) has two data members, tt(int d_value) and
+tt(std::string d_text), and both may be required for a hierarchical sort, then
+tt(MultiData) should offer members like:
+        verb(
+    bool intCmp(MultiData const &rhv);  // returns d_value < rhv.d_value
+    bool textCmp(MultiData const &rhv); // returns d_text  < rhv.d_text
+        )
+    Furthermore, as a convenience it is also assumed that oplshift() and
+oprshift() have been defined for tt(MultiData) objects, but that assumption as
+such is irrelevant to the current discussion.
+
+    The template class tt(SortVector) is derived directly from the template
+class tt(std::vector). Our implementation inherits all members from that base
+class, as well as two simple constructors:
+        verbinsert(HEAD)(templateclasses/examples/template2template.cc)
+    However, its member tt(hierarchicalSort()) is the actual reason why the
+class exists. This class defines the i(hierarchical sort criteria). It expects
+        hi(sort criteria: hierarchical sorting)
+    an array of pointers to member functions of the class indicated by
+tt(sortVector)'s template tt(Type) parameter as well as an tt(unsigned)
+indicating the size of the array. The array's first element indicates the
+class's most significant or first sort criterion, the array's last element
+indicates the class's least significant or last sort criterion. Since the
+ti(stable_sort()) generic algorithm was designed explicitly to support
+hierarchical sorting, the member uses this generic algorithm to sort
+tt(SortVector)'s elements. With hierarchical sorting, the least significant
+criterion should be sorted first. tt(hierarchicalSort())'s implementation
+therefore, is easy, assuming the existence of a support class tt(SortWith)
+whose objects are initialized by the addresses of the member functions passed
+to the tt(hierarchicalSort()) member:
+        verbinsert(SORT)(templateclasses/examples/template2template.cc)
+
+    The class tt(SortWith) is a simple emi(wrapper class) around a pointer to
+a predicate function. Since it's dependent on tt(SortVector)'s actual data
+type tt(SortWith) itself is also a template class:
+        verbinsert(SORTWITH)(templateclasses/examples/template2template.cc)
+It's constructor receives such a pointer and initializes the class's tt(d_ptr)
+data member:
+        verbinsert(SORTCONS)(templateclasses/examples/template2template.cc)
+    Its binary predicate member tt(operator()()) should return tt(true) if its
+first argument should be sorted before its second argument:
+        verbinsert(OPERATOR)(templateclasses/examples/template2template.cc)
+
+    Finally, an illustration is provided by the following tt(main()) function.
+    itemization(
+    it() First, A tt(SortVector) object is created for tt(MultiData) objects,
+using the ti(copy()) generic algorithm to fill the tt(SortVector) object from
+information appearing at the program's standard input stream. Having
+initialized the object its elements are displayed to the standard output
+stream:
+        verbinsert(MAIN1)(templateclasses/examples/template2template.cc)
+    it() An array of pointers to members is initialized with the addresses of
+two member functions. The text comparison is considered the most significant
+sort criterion:
+        verbinsert(ARRAY)(templateclasses/examples/template2template.cc)
+    it() Next, the array's elements are sorted and displayed to the standard
+output stream:
+        verbinsert(SORT1)(templateclasses/examples/template2template.cc)
+    it() Then the two elements of the array of pointers to tt(MultiData)'s
+member functions are swapped, and the previous step is repeated:
+        verbinsert(SORT2)(templateclasses/examples/template2template.cc)
+    )
+    After compilation the program the following command can be given:
+        centt(echo a 1 b 2 a 2 b 1 | a.out)
+    This results in the following output:
+        verb(
+    a 1 b 2 a 2 b 1
+    ====
+    a 1 a 2 b 1 b 2
+    ====
+    a 1 b 1 a 2 b 2
+    ====
+        )

@@ -1,0 +1,126 @@
+The functionality of all members of a i(base class) (which
+    hi(member functions: redefining) hi(redefining member functions) are
+therefore also available in derived classes) can be redefined. This feature is
+illustrated in this section.
+
+Let's assume that the vehicle classification system should be able to
+represent trucks, consisting of two parts: the front engine, pulling the
+second part, a trailer. Both the front engine and the trailer have their own
+weights, and the tt(weight()) function should return the combined weight.
+
+The definition of a tt(Truck) therefore starts with the class definition,
+derived from tt(Auto) but it is then expanded to hold one more tt(unsigned) field
+representing the additional weight information. Here we choose to represent
+the weight of the front part of the truck in the tt(Auto) class and to store
+the weight of the trailer in an additional field:
+        verb(
+    class Truck: public Auto
+    {
+        unsigned d_trailer_weight;
+
+        public:
+            Truck();
+            Truck(unsigned engine_wt, unsigned speed, char const *name,
+                  unsigned trailer_wt);
+
+            void setWeight(unsigned engine_wt, unsigned trailer_wt);
+            unsigned weight() const;
+    };
+
+    Truck::Truck(unsigned engine_wt, unsigned speed, char const *name,
+                 unsigned trailer_wt)
+    :
+        Auto(engine_wt, speed, name)
+    {
+        d_trailer_weight = trailer_wt;
+    }
+        )
+    Note that the class tt(Truck) now contains two functions already
+present in the base class tt(Auto): tt(setWeight()) and tt(weight()).
+    itemization(
+    it() The redefinition of tt(setWeight()) poses no problems: this
+function is simply redefined to perform actions which are specific to a
+tt(Truck) object.
+    it() The redefinition of tt(setWeight()), however, will
+    hi(hiding member functions) hi(member functions: hidden) em(hide)
+tt(Auto::setWeight()): for a tt(Truck) only the tt(setWeight()) function
+having two tt(unsigned) arguments can be used.
+    it() The tt(Vehicle)'s tt(setWeight()) function remains available for a
+tt(Truck), but it em(must) now be hi(member function: called explicitly)
+called em(explicitly), as tt(Auto::setWeight())
+is now hidden from view.
+This latter function is hidden,
+even though tt(Auto::setWeight()) has only one tt(unsigned) argument. To
+implement tt(Truck::setWeight()) we could write:
+         verb(
+    void Truck::setWeight(unsigned engine_wt, unsigned trailer_wt)
+    {
+        d_trailer_weight = trailer_wt;
+        Auto::setWeight(engine_wt);     // note: Auto:: is required
+    }
+        )
+    it() Outside of the class the tt(Auto)-version of tt(setWeight()) is
+accessed using the i(scope resolution operator). So, if a tt(Truck t) needs
+to set its tt(Auto) weight, it must use
+        verb(
+    t.Auto::setWeight(x);
+        )
+    it() An alternative to using the scope resolution operator is to include
+explicitly a member having the same
+    i(function prototype) as the base class member. This derived class member
+may then be implemented inline to call the base class member. This might be an
+elegant solution for the occasional situation. E.g., we add the following to
+the interface of the tt(class Truck):
+        verb(
+    void setWeight(unsigned engine_wt)
+    {
+        Auto::setWeight(engine_wt);
+    }
+        )
+    Now the single argument tt(setWeight()) member function can be used by
+tt(Truck) objects without having to use the scope resolution operator. As the
+function is defined inline, no overhead of an additional function call is
+involved.
+    it() The function tt(weight()) is also already defined in tt(Auto), as
+it was inherited from tt(Vehicle). In this case, the class tt(Truck) should
+em(redefine) this member function to allow for the extra (trailer) weight in
+the tt(Truck):
+         verb(
+    unsigned Truck::weight() const
+    {
+        return
+            (                           // sum of:
+                Auto::weight() +     //   engine part plus
+                d_trailer_weight        //   the trailer
+            );
+    }
+        )
+    )
+    The next example shows the actual use of the member functions of the
+class tt(Truck), displaying several weights:
+        verb(
+    int main()
+    {
+        Land veh(1200, 145);
+        Truck lorry(3000, 120, "Juggernaut", 2500);
+
+        lorry.Vehicle::setWeight(4000);
+
+        cout << endl << "Truck weighs " <<
+                        lorry.Vehicle::weight() << endl <<
+            "Truck + trailer weighs " << lorry.weight() << endl <<
+            "Speed is " << lorry.speed() << endl <<
+            "Name is " << lorry.name() << endl;
+    }
+        )
+    Note the explicit call of tt(Vehicle::setWeight(4000)): assuming
+tt(setWeight(unsigned engine_wt)) is not part of the interface of the class
+tt(Truck), it em(must) be called explicitly, using the tt(Vehicle::) scope
+resolution, as the single argument function tt(setWeight()) is hidden from
+direct view in the class tt(Truck).
+
+    With tt(Vehicle::weight()) and tt(Truck::weight()) the situation is
+somewhat different: here the function tt(Truck::weight()) is a
+em(redefinition) of tt(Vehicle::)tt(weight()), so in order to reach linebreak()
+tt(Vehicle::weight()) a scope resolution operation (tt(Vehicle::)) is
+required.

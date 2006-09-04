@@ -1,0 +1,110 @@
+    Conversions are performed not only by conversion operators, but also by
+i(constructors having one parameter) (or multiple parameters, having
+    i(default argument values) beyond the first parameter).
+
+    Consider the class tt(Person) introduced in chapter ref(MEMORY). This
+class has a constructor
+        centt(Person(char const *name, char const *address, char const *phone))
+    This constructor could be given default argument values:
+        verb(
+    Person(char const *name, char const *address = "<unknown>",
+                             char const *phone = "<unknown>");
+        )
+    In several situations this constructor might be used intentionally,
+possibly providing the default tt(<unknown>) texts for the address and phone
+numbers. For example:
+        verb(
+    Person frank("Frank", "Room 113", "050 363 9281");
+        )
+    Also, functions might use tt(Person) objects as parameters, e.g., the
+following member in a fictitious class tt(PersonData) could be available:
+        verb(
+    PersonData &PersonData::operator+=(Person const &person);
+        )
+    Now, combining the above two pieces of code, we might, do something like
+        verb(
+    PersonData dbase;
+
+    dbase += frank;     // add frank to the database
+        )
+    So far, so good. However, since the tt(Person) constructor can also be
+used as a conversion operator, it is em(also) possible to do:
+        verb(
+    dbase += "karel";
+        )
+    Here, the tt(char const *) text `tt(karel)' is converted to an (anonymous)
+tt(Person) object using the abovementioned tt(Person) constructor: the second
+and third parameters use their i(default value)s. Here, an
+    emi(implicit conversion) is performed from a tt(char const *) to a
+tt(Person) object, which might not be what the programmer had in mind when the
+class tt(Person) was constructed.
+
+    As another example, consider the situation where a class representing a
+container is constructed. Let's assume that the initial construction of
+objects of this class is rather complex and time-consuming, but em(expanding)
+an object so that it can accomodate more elements is even more
+time-consuming. Such a situation might arise when a hash-table is initially
+constructed to contain tt(n) elements: that's ok as long as the table is not
+full, but when the table must be expanded, all its elements normally must be
+rehashed to allow for the new table size.
+
+    Such a class could (partially) be defined as follows:
+        verb(
+    class HashTable
+    {
+        unsigned d_maxsize;
+
+        public:
+            HashTable(unsigned n);  // n: initial table size
+            unsigned size();        // returns current # of elements
+
+                                    // add new key and value
+            void add(std::string const &key, std::string const &value);
+    };
+        )
+    Now consider the following implementation of tt(add()):
+        verb(
+    void HashTable::add(string const &key, string const &value)
+    {
+        if (size() > d_maxsize * 0.75)  // table gets rather full
+            *this = size() * 2;         // Oops: not what we want!
+
+        // etc.
+    }
+        )
+    In the first line of the body of tt(add()) the programmer first determines
+how full the hashtable currently is: if it's more than three quarter full,
+then the intention is to double the size of the hashtable. Although this
+succeeds, the hashtable will completely fail to fulfill its purpose:
+accidentally the programmer assigns an unsigned value, intending to tell the
+hashtable what its new size should be. This results in the following unwelcome
+surprise:
+    itemization(
+    it() The compiler notices that no tt(operator=(unsigned newsize)) is
+available for tt(HashTable).
+    it() There is, however, a constructor accepting an unsigned, em(and) the
+default overloaded assignment operator is still available, expecting a
+tt(HashTable) as its right-hand operand.
+    it() Thus, the rvalue of the assignment (a tt(HashTable)) is obtained by
+(implicitly) constructing an (empty) tt(HashTable) that can accomodate
+tt(size() * 2) elements.
+    it() The just constructed empty tt(HashTable) is thereupon assigned to the
+current tt(HashTable), thus em(removing all hitherto stored elements from the
+current tt(HashTable)).
+    )
+    If an hi(constructor: implicit use) implicit use of a constructor is not
+appropriate (or dangerous), it can be prevented using the ti(explicit)
+modifier with the constructor. Constructors using the tt(explicit) modifier
+can only be used for the i(explicit construction) of objects, and cannot be
+used as implicit type convertors anymore. For example, to prevent the implicit
+conversion from tt(unsigned) to tt(HashTable) the class interface of the
+class tt(HashTable) should declare the constructor
+        verb(
+    explicit HashTable(unsigned n);
+        )
+    Now the compiler will catch the error in the compilation of
+tt(HashTable::add()), producing an error message like
+        verb(
+    error: no match for 'operator=' in
+                '*this = (this->HashTable::size()() * 2)'
+        )

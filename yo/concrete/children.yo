@@ -1,0 +1,24 @@
+    The next step up the ladder is the construction of a child-process
+monitor. Here, the parent process is responsible for all its child processes,
+but it also must read their standard output. The user may enter information at
+the parent process' standard input, for which a simple emi(command language)
+is defined:
+    itemization(
+    itt(start) will start a new child process. The parent will return the ID
+(a number) to the user. The ID may thereupon be used to send a message to that
+particular child process
+    itt(<nr> text) will send ``tt(text)'' to the child process having ID
+tt(<nr>);
+    itt(stop <nr>) will terminate the child process having ID tt(<nr>);
+    itt(exit) will terminate the parent as well as all of its children.
+    )
+    Furthermore, the child process that hasn't received text for some time
+will complain, by sending a message to the parent-process. The parent process
+will then simply transmit the received message to the user, by copying it to
+the standard output stream.
+
+    A problem with programs like our monitor is that these programs allow
+        emi(asynchronous input) from multiple sources: input may appear at the
+standard input as well as at the input-sides of pipes. Also, multiple output
+channels are used. To handle situations like these, the ti(select()) system
+call was developed.

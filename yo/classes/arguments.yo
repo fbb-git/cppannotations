@@ -1,0 +1,131 @@
+In the above declaration of the class tt(Person) the constructor has no
+arguments. bf(C++) allows constructors to be defined with or without argument
+lists. The arguments are supplied when an object is created.
+
+For the class tt(Person) a constructor expecting three strings and an unsigned
+may be handy: these arguments then represent, respectively, the person's name,
+address, phone number and weight. Such a constructor is:
+        verb(
+    Person::Person(string const &name, string const &address,
+                    string const &phone, unsigned weight)
+    {
+        d_name = name;
+        d_address = address;
+        d_phone = phone;
+        d_weight = weight;
+    }
+        )
+    The constructor must also be declared in the class interface:
+        verb(
+    class Person
+    {
+        public:
+            Person(std::string const &name, std::string const &address,
+                   std::string const &phone, unsigned weight);
+
+            // rest of the class interface
+    };
+        )
+    However, now that this constructor has been declared, the default
+constructor must be declared explicitly too, if we still want to be able to
+construct a plain tt(Person) object without any specific initial
+values for its data members.
+
+    Since bf(C++) allows function overloading, such a declaration of a
+constructor can co-exist with a constructor without arguments. The class
+tt(Person) would thus have two constructors, and the relevant part of the
+class interface becomes:
+        verb(
+    class Person
+    {
+        public:
+            Person();
+            Person(std::string const &name, std::string const &address,
+                   std::string const &phone, unsigned weight);
+
+            // rest of the class interface
+    };
+        )
+    In this case, the tt(Person()) constructor doesn't have to do much, as it
+doesn't have to initialize the tt(string) data members of the tt(Person)
+object: as these data members themselves are objects, they are already
+initialized to empty strings by hi(default initialization) default.  However,
+there is also an tt(unsigned) data member. That member is a variable of a
+basic type and basic type variabes are not initialized automatically.  So,
+unless the value of the tt(d_weight) data member is explicitly initialized, it
+will be
+    itemization(
+    it() A em(random) value for local tt(Person) objects,
+    it() 0 for global and static tt(Person) objects
+    )
+    The 0-value might not be too bad, but normally we don't want a em(random)
+value for our data members. So, the default constructor has a job to do:
+initializing the data members which are not initialized to sensible values
+automatically. Here is an implementation of the default constructor:
+        verb(
+    Person::Person()
+    {
+        d_weight = 0;
+    }
+        )
+    The use of a constructor with and without arguments (i.e., the default
+constructor) is illustrated in the following code fragment. The object tt(a)
+is initialized at its definition using the constructor with arguments, with
+the tt(b) object the default constructor is used:
+        verb(
+    int main()
+    {
+        Person a("Karel", "Rietveldlaan 37", "542 6044", 70);
+        Person b;
+
+        return 0;
+    }
+        )
+    In this example, the tt(Person) objects tt(a) and tt(b) are created when
+tt(main()) is started: they are em(local) objects, living for as long as the
+tt(main()) function is active.
+
+    If tt(Person) objects must be contructed using other arguments, other
+constructors are required as well. It is also possible to define default
+parameter values. These i(default parameter values) must be given in the class
+interface, e.g.,
+        verb(
+    class Person
+    {
+        public:
+            Person();
+            Person(std::string const &name,
+                   std::string const &address = "--unknown--",
+                   std::string const &phone   = "--unknown--",
+                   unsigned weight = 0);
+
+            // rest of the class interface
+    };
+        )
+
+    Often, the constructors are implemented highly similar. This results from
+the fact that often the constructor's parameters are defined for convenience:
+a constructor not requiring a tt(phone) number but requiring a tt(weight)
+cannot be defined using default arguments, since only the last but one
+parameter in the constructor defining all four parameters is not
+required. This cannot be solved using default argument values, but only by
+defining another constructor, not requiring tt(phone) to be specified.
+
+    Although some languages (e.g., bf(Java)) allow constructors to call
+constructors, this is conceptually weird. It's weird because it makes a kludge
+out of the constructor concept. A constructor is meant to construct an object,
+not to construct itself while it hasn't been constructed yet.
+
+    In bf(C++) the way to proceed is as follows: All constructors em(must)
+initialize their reference data members, or the compiler will (rightfully)
+complain. This is one of the fundamental reasons why you can't call a
+constructor during a construction. Next, we have two options:
+    itemization(
+    it() If the body of your construction process is extensive, but
+(parameterizable) identical to another constructor's body, factorize! Make a
+private member tt(init(maybe having params)) called by the constructors. Each
+constructor furthermore initializes any reference data members its class may
+have.
+    it() If the constructors act fundamentally differently, then there's
+nothing left but to construct completely different constructors.
+    )

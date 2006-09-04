@@ -1,0 +1,71 @@
+In this chapter classes are formally introduced. Two special member
+functions, the constructor and the destructor, are presented.
+
+In steps we will construct a class tt(Person), which could be used in a
+database application to store a person's name, address and phone number.
+
+label(PERSON) Let's start by creating the declaration of a tt(class
+Person) right away. The class declaration is normally contained in the
+em(header file) of the class, e.g., tt(person.h). A class declaration is
+generally not called a em(declaration), though. Rather, the common name for
+class declarations is emi(class interface), to be distinguished from the
+definitions of the function members, called the
+    emi(class implementation). Thus, the interface of the tt(class Person)
+is given next:
+    verbinclude(classes/examples/person.h)
+    It should be noted that this terminology is frequently loosely applied.
+Sometimes, em(class definition) is used to indicate the class interface. While
+the class em(definition) (so, the em(interface)) contains the em(declarations)
+of its members, the actual em(implementation) of these members is also
+referred to as the em(definition) of these members. As long as the concept of
+the class em(interface) and the class em(implementation) is well
+distinguished, it should be clear from the context what is meant by a
+`definition'.
+
+    The data fields in this class are tt(d_name, d_address, d_phone) and
+tt(d_weight). All fields except tt(d_weight) are tt(string) objects. As the
+data fields are not given a specific emi(access modifier), they are
+ti(private), which means that they can only be accessed by the functions
+of the class tt(Person). Alternatively, the label `tt(private:)' might have
+been used at the beginning of a private section of the class definition.
+
+The data are manipulated by interface functions which take care of all
+communication with code outside of the class. Either to set the data fields
+to a given value (e.g., tt(setName())) or to inspect the data (e.g.,
+tt(name())). Functions merely returning values stored inside the object, not
+allowing the caller to modify these internally stored values, are called
+emi(accessor functions).
+
+Note once again how similar the tt(class) is to the ti(struct). The
+fundamental difference being that by default classes have em(private) members,
+whereas structs have emi(public) members. Since the convention calls for the
+public members of a class to appear first, the keyword tt(private) is needed
+to switch back from public members to the (default) private situation.
+
+A few remarks concerning em(style). Following em(Lakos) (Lakos, J., 2001)
+    hi(Lakos, J.) bf(Large-Scale C++ Software Design) (Addison-Wesley). I
+suggest the following setup of class interfaces:
+    itemization(
+    it() All data members should have em(private access rights), and should be
+placed at the head of the interface.
+    it() All data members start with tt(d_), followed by a name suggesting the
+meaning of the variable (In chapter ref(StaticDataFun) we'll also
+encounter data members starting with tt(s_)).
+    it() Non-private data members em(do) exist, but one should be hesitant to
+use non-private access rights for data members (see also chapter
+ref(INHERITANCE)).
+    it() Two broad classes of member functions are emi(manipulators) and
+emi(accessor functions). em(Manipulators) allow the users of objects to
+actually modify the internal data of the objects. By convention, manipulators
+start with tt(set). E.g., tt(setName()).
+    it() With em(accessors), often a tt(get)-prefix is encountered, e.g.,
+tt(getName()). However, following the conventions used in the
+bi(Qt) emi(Graphical User Interface Toolkit) (see
+ti(http://www.trolltech.com)), the tt(get)-prefix is em(dropped). So, rather
+than defining the member tt(getAddress()), the function will simply be defined
+as tt(address()).
+    )
+    Style conventions usually take a long time to develop. There is nothing
+obligatory about them, however. I suggest that readers who have compelling
+reasons em(not) to follow the above style conventions use their own. All
+others should adopt the above style conventions.

@@ -1,0 +1,53 @@
+As illustrated at the beginning of this chapter, the class tt(Person) contains
+three tt(private) tt(string) data members and an tt(unsigned d_weight) data
+member. These data members can be manipulated by the
+    i(interface functions).
+
+    Classes (should) operate as follows:
+    itemization(
+    it() When the object is constructed, its data members are given `sensible'
+values. Thus, objects never suffer from uninitialized values.
+    it() The assignment to a data member (using a
+tt(set...()) function) consists of the assignment of the new value to the
+corresponding data member. This assignment is fully controlled by the
+class-designer. Consequently, the object itself is `responsible' for its own
+data-integrity.
+    it() Inspecting data members using the accessor functions simply returns
+the value of the requested data member. Again, this will not result in
+uncontrolled modifications of the object's data.
+    )
+    The tt(set...()) functions could be constructed as follows:
+    verbinclude(classes/examples/setmembers.cc)
+
+    Next the i(accessor functions) are defined.  Note the occurence of the
+keyword tt(const) following the parameter lists of these functions: these
+member functions are called emi(const member functions), indicating that
+they will not modify their em(object)'s data when they're called. Furthermore,
+notice that the return types of the member functions returning the values of
+the tt(string) data members are tt(string const &) types: the tt(const) here
+indicates that the em(caller) of the member function em(cannot) alter the
+returned value itself. The caller of the accessor member function em(could)
+copy the returned value to a variable of its own, though, and em(that)
+variable's value may then of course be modified em(ad lib).  Const member
+functions are discussed in greater detail in section ref(ConstFunctions). The
+return value of the tt(weight()) member function, however, is a plain
+tt(unsigned), as this can be a simple copy of the value that's stored in the
+tt(Person)'s tt(weight) member:
+    verbinclude(classes/examples/getmembers.cc)
+
+    The class definition of the tt(Person) class given earlier can still be
+used. The tt(set...()) and accessor functions merely implement the member
+functions declared in that class definition.
+
+The following example shows the use of the class tt(Person). An object is
+initialized and passed to a function tt(printperson()), which prints the
+person's data. Note also the usage of the i(reference operator) tt(&) in the
+argument list of the function tt(printperson()). This way only a reference to
+an existing tt(Person) object is passed, rather than a whole object.  The fact
+that tt(printperson()) does not modify its argument is evident from the fact
+that the parameter is declared tt(const).
+
+    Alternatively, the function tt(printperson()) might have been defined
+as a tt(public) member function of the class tt(Person), rather than a plain,
+objectless function.
+    verbinclude(classes/examples/persondemo.cc)

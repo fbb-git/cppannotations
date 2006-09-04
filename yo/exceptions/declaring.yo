@@ -1,0 +1,42 @@
+Functions defined elsewhere may be linked to code using these
+functions. Such functions are normally declared in header files, either as
+i(stand alone functions) or as i(member functions) of a class.
+
+These external functions may of course throw exceptions. Declarations of
+such functions may contain a emi(function throw list) or
+    emi(exception specification list), in which the types of the exceptions
+that can be thrown by the function are specified. For example, a function that
+could throw `tt(char *)' and `tt(int)' exceptions can be declared as
+        verb(
+    void exceptionThrower() throw(char *, int);
+        )
+    If specified, a function throw list appears immediately beyond the
+function header (and also beyond a possible tt(const) specifier), and,
+noting that throw lists may be empty, it has the following generic form:
+        ti(throw([type1 [, type2, type3, ...]]))
+
+    If a function em(doesn't) throw exceptions an i(empty function throw list)
+may be used. E.g.,
+        verb(
+    void noExceptions() throw ();
+        )
+    In all cases, the function header used in the function definition must
+exactly match the function header that is used in the declaration, e.g.,
+including a possible empty function throw list.
+
+    A function for which a function throw list is specified may not throw
+other types of exceptions. A emi(run-time error) occurs if it tries to throw
+other types of exceptions than those mentioned in the function throw list.
+
+    For example, consider the declarations and definitions in the following
+program:
+        verbinclude(exceptions/examples/throwlist.cc)
+    In the function tt(charPintThrower()) the tt(throw) statement clearly
+throws a tt(char const *). However, since tt(intThrower()) may throw an
+tt(int) exception, the function throw list of tt(charPintThrower()) must
+em(also) contain tt(int).
+
+If the function throw list is not used, the function may either throw
+exceptions (of any kind) or not throw exceptions at all. Without a function
+throw list the responsibility of providing the correct handlers is in the
+hands of the program's designer.

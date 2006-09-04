@@ -1,0 +1,44 @@
+    When devices support em(seek operations), classes derived from
+ti(streambuf) should override the members ti(streambuf::seekoff()) and
+ti(streambuf::seekpos()). The class ti(ifdseek), developed in this section,
+can be used to read information from devices supporting such seek
+operations. The class tt(ifdseek) was derived from tt(ifdstreambuf), so it
+uses a character buffer of just one character. The facilities to perform seek
+operations, which are added to our new class tt(ifdseek), will make sure that
+the input buffer is reset when a seek operation is requested. The class could
+also be derived from the class tt(ifdnstreambuf); in which case, the arguments
+to reset the input buffer must be adapted in such a way that its second and
+third parameters point beyond the available input buffer. Let's have a look at
+the characteristics of tt(ifdseek):
+    itemization(
+    it() As mentioned, tt(ifdseek) is derived from tt(ifdstreambuf). Like the
+latter class, tt(ifdseek)'s member functions use facilities declared in
+tt(unistd.h). So, the compiler must have seen tt(unistd.h) before it can
+compile  the class's members functions. The class interface itself starts with:
+        verbinsert(CLASS)(concrete/examples/fdinseek.h)
+    it() To reduce the amount of typing when specifying types and constants
+from tt(std::streambuf) and tt(std::ios), several ti(typedef)s are defined at
+the class's very top:
+            verbinsert(TYPEDEF)(concrete/examples/fdinseek.h)
+        These typedefs refer to types that are defined in the header file
+ti(ios), which must therefore be included as well before the compiler reads
+tt(ifdseek)'s class definition.
+    it() The class is given a rather basic implementation. The only required
+constructor expects the device's i(file descriptor). It has no special tasks
+to perform and only needs to call its i(base class) constructor:
+        verbinsert(CONS)(concrete/examples/fdinseek.h)
+    it() The member tt(seek_off()) is responsible for performing the actual
+seek operations. It calls ti(lseek()) to seek a new position in a device whose
+file descriptor is known. If seeking succeeds, tt(setg()) is called to define
+an already empty buffer, so that the base class's tt(underflow()) member
+will refill the buffer at the next input request.
+        verbinsert(SEEKOFF)(concrete/examples/fdinseek.h)
+    it() Finally,  the companion function tt(seekpos) is overridden as well:
+it is actually defined as a call to tt(seekoff()):
+        verbinsert(SEEKPOS)(concrete/examples/fdinseek.h)
+    )
+    An example of a program using the class tt(ifdseek) is the following. If
+this program is given its own source file using input i(redirection) then
+seeking is supported, and with the exception of the first line, every other
+line is shown twice:
+        verbinclude(concrete/examples/fdinseek.cc)

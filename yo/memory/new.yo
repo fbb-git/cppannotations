@@ -1,0 +1,48 @@
+bf(C++) defines two operators to allocate and deallocate memory. These
+operators are ti(new) and ti(delete).
+
+The most basic example of the use of these operators is given below. An
+tt(int) pointer variable is used to point to memory which is allocated by the
+operator tt(new). This memory is later released by the operator tt(delete).
+        verb(
+    int *ip;
+
+    ip = new int;
+    delete ip;
+        )
+    Note that tt(new) and tt(delete) are em(operators) and therefore do not
+require parentheses, as required for em(functions) like tt(malloc()) and
+tt(free()). The operator tt(delete) returns tt(void), the operator tt(new)
+returns a pointer to the kind of memory that's asked for by its argument
+(e.g., a pointer to an tt(int) in the above example). Note that the operator
+tt(new) uses a em(type) as its operand, which has the benefit that the correct
+amount of memory, given the type of the object to be allocated, becomes
+automatically available. Furthermore, this is a i(type safe) procedure as
+tt(new) returns a pointer to the type that was given as its operand, which
+pointer must match the type of the variable receiving the pointervalue.
+
+    The operator tt(new) can be used to i(allocate primitive types) and to
+    i(allocate objects). When a non-class type is allocated (a primitive type
+or a tt(struct) type without a constructor), the allocated memory is em(not)
+guaranteed to be initialized to 0. Alternatively, an i(initialization)
+expression may be provided:
+        verb(
+    int *v1 = new int;          // not guaranteed to be initialized to 0
+    int *v1 = new int();        // initialized to 0
+    int *v2 = new int(3);       // initialized to 3
+    int *v3 = new int(3 * *v2); // initialized to 9
+        )
+    When class-type objects are allocated, the constructor must be mentioned,
+and the allocated memory will be initialized according to the constructor that
+is used. For example, to allocate a tt(string) object the following statement
+can be used:
+    centt(string *s = new string();)
+    Here, the default constructor was used, and tt(s) will point to the newly
+allocated, but empty, tt(string). If overloaded forms of the constructor are
+available, these can be used as well. E.g.,
+    centt(string *s = new string("hello world");)
+    which results in tt(s) pointing to a tt(string) containing the text
+tt(hello world).
+
+    Memory allocation may fail. What happens then is unveiled in section
+ref(NEWHANDLER).

@@ -1,0 +1,179 @@
+Up to now, a class was always derived from em(a single) i(base class). bf(C++)
+also supports emi(multiple derivation), in which a class is derived
+from several base classes and hence inherits functionality of
+        i(multiple parent classes) at the same time.
+    In cases where i(multiple inheritance) is considered, it should be
+defensible to consider the newly derived class an instantiation of both base
+classes. Otherwise, i(composition) might be more appropriate. In general,
+i(linear derivation), in which there is only one base class, is used much more
+frequently than multiple derivation. Most objects have a primary purpose, and
+that's it. But then, consider em(the) prototype of an object for which
+multiple inheritance was used to its extreme: the
+    emi(Swiss army knife)! This object em(is) a knife, it em(is) a pair of
+scissors, it em(is) a can-operner, it em(is) a corkscrew, it em(is) ....
+
+    How can we construct a `Swiss army knife' in bf(C++)? First we need (at
+least) two base classes. For example, let's assume we are designing a toolkit
+allowing us to construct an instrument panel of an aircraft's cockpit. We
+design all kinds of instruments, like an artifical horizon and an
+altimeter. One of the components that is often seen in aircraft is a
+emi(nav-com set): a combination of a navigational beacon receiver (the `nav'
+part) and a radio communication unit (the `com'-part). To define the nav-com
+set, we first design the tt(NavSet) class. For the time being, its data
+members are omitted:
+        verb(
+    class NavSet
+    {
+        public:
+            NavSet(Intercom &intercom, VHF_Dial &dial);
+
+            unsigned activeFrequency() const;
+            unsigned standByFrequency() const;
+
+            void setStandByFrequency(unsigned freq);
+            unsigned toggleActiveStandby();
+            void setVolume(unsigned level);
+            void identEmphasis(bool on_off);
+    };
+        )
+    In the class'ss contructor we assume the availability of the classes
+tt(Intercom), which is used by the pilot to listen to the information
+transmitted by the navigational beacon, and a class tt(VHF_Dial) which is used
+to represent visually what the tt(NavSet) receives.
+
+    Next we construct the tt(ComSet) class. Again, omitting the data members:
+        verb(
+    class ComSet
+    {
+        public:
+            ComSet(Intercom &intercom);
+
+            unsigned frequency() const;
+            unsigned passiveFrequency() const;
+
+            void setPassiveFrequency(unsigned freq);
+            unsigned toggleFrequencies();
+
+            void setAudioLevel(unsigned level);
+            void powerOn(bool on_off);
+            void testState(bool on_off);
+            void transmit(Message &message);
+    };
+        )
+    Using objects of this class we can receive messages, transmitted
+though the tt(Intercom), but we can also em(transmit) messages, using a
+tt(Message) object that's passed to the tt(ComSet) object using its
+tt(transmit()) member function.
+
+    Now we're ready to construct the tt(NavCom) set:
+        verb(
+    class NavComSet: public ComSet, public NavSet
+    {
+        public:
+            NavComSet(Intercom &intercom, VHF_Dial &dial);
+    };
+        )
+    Done. Now we have defined a tt(NavComSet) which is em(both) a tt(NavSet)
+em(and) a tt(ComSet): the possibilities of either i(base class) are now
+available in the i(derived class), using i(multiple derivation).
+
+    With multiple derivation, please note the following:
+    itemization(
+    it() The keyword ti(public) is present before both base class names
+(tt(NavSet) and tt(ComSet)). This is so because the default derivation
+in bf(C++) is ti(private): the keyword tt(public) must be repeated before each
+base class specification. The base classes do not have to have the same kind
+of derivation: one base class could have tt(public) derivation, another base
+class could use ti(protected) derivation, yet another base class could use
+tt(private) derivation.
+    it() The multiply derived class tt(NavComSet) introduces no
+    i(additional functionality) of its own, but merely combines two existing
+classes into a new i(aggregate class). Thus, bf(C++) offers the possibility to
+simply sweep multiple simple classes into one more complex class.
+
+    This feature of bf(C++) is often used. Usually it pays to develop
+`simple' classes each having a simple, well-defined functionality.  More
+complex classes can always be constructed from these simpler
+        i(building blocks).
+    it() Here is the implementation of The tt(NavComSet) i(constructor):
+        verb(
+    NavComSet::NavComSet(Intercom &intercom, VHF_Dial &dial)
+    :
+        ComSet(intercom),
+        NavSet(intercom, VHF_Dial)
+    {}
+        )
+    The constructor requires no extra code: Its only purpose is to activate
+the constructors of its base classes. The order in which the base class
+initializers hi(base class initializers: calling order)
+    hi(calling order of base class initializers) are called is em(not)
+dictated by their calling order in the constructor's code, but by the ordering
+of the base classes in the class interface.
+    it() the tt(NavComSet) class definition needs no extra data members or
+member functions: here (and often) the inherited interfaces provide all the
+required functionality and data for the multiply derived class to operate
+properly.
+    )
+    Of course, while defining the base classes, we made life easy on ourselves
+by strictly using different member function names. So, there is a function
+tt(setVolume()) in the tt(NavSet) class and a function tt(setAudioLevel()) in
+the tt(ComSet) class. A bit i(cheating), since we could expect that both units
+in fact have a composed object tt(Amplifier), handling the volume setting. A
+revised class might then either use a tt(Amplifier &amplifier() const) member
+function, and leave it to the application to set up its own interface to the
+amplifier, or access functions for, e.g., the volume are made available
+through the tt(NavSet) and tt(ComSet) classes as, normally, member functions
+having the same names (e.g., tt(setVolume())). In situations where two base
+classes use the same member function hi(identically named member functions)
+    hi(member functions: identically named) names, special provisions need to
+be made to prevent i(ambiguity):
+    itemization(
+    it() The intended base class can explicitly be specified, using the base
+class name and i(scope resolution operator) in combination with the doubly
+occurring member function name:
+        verb(
+    NavComSet navcom(intercom, dial);
+
+    navcom.NavSet::setVolume(5);    // sets the NavSet volume level
+    navcom.ComSet::setVolume(5);    // sets the ComSet volume level
+        )
+    it() The class interface is extended by member functions which do the
+explicitation for the user of the class. These extra functions will normally
+be defined as tt(inline):
+        verb(
+    class NavComSet: public ComSet, public NavSet
+    {
+        public:
+            NavComSet(Intercom &intercom, VHF_Dial &dial);
+            void comVolume(unsigned volume)
+            {
+                ComSet::setVolume(volume);
+            }
+            void navVolume(unsigned volume)
+            {
+                NavSet::setVolume(volume);
+            }
+    };
+        )
+    it() If the tt(NavComSet) class is obtained from a third party, and should
+not be altered, a i(wrapper class) could be used, which does the previous
+explicitation for us in our own programs:
+        verb(
+    class MyNavComSet: public NavComSet
+    {
+        public:
+            MyNavComSet(Intercom &intercom, VHF_Dial &dial)
+            :
+                NavComSet(intercom, dial);
+            {}
+            void comVolume(unsigned volume)
+            {
+                ComSet::setVolume(volume);
+            }
+            void navVolume(unsigned volume)
+            {
+                NavSet::setVolume(volume);
+            }
+    };
+        )
+    )

@@ -1,0 +1,70 @@
+    How complex would things get if we would decide to use a buffer of
+substantial size? Not that complex. The following class allows us to specify
+the size of a buffer, but apart from that it is basically the same class as
+tt(ifdstreambuf) developed in the previous section. To make things a bit more
+interesting, in the class ti(ifdnstreambuf) developed here, the member
+ti(streambuf::xsgetn()) is also overridden, to optimize reading of series of
+characters. Furthermore, a default constructor is provided which can be used
+in combination with the tt(open()) member to construct an tt(istream) object
+before the file descriptor becomes available. Then, once the descriptor
+becomes available, the tt(open()) member can be used to initiate the object's
+buffer. Later, in section ref(FORK), we'll encounter such a situation.
+
+    To save some space, the success of various calls was not checked. In `real
+life' implementations, these checks should, of course, not be omitted. The
+class tt(ifdnstreambuf) has the following characteristics:
+    itemization(
+    it() Once again, it is derived from tt(std::)ti(streambuf):
+            verbinsert(CLASS)(concrete/examples/ifdnbuf.h)
+    it() Like the class tt(ifdstreambuf) (section ref(IFDBUF)), its data
+members are protected. Since the buffer's size is configurable, this size is
+kept in a dedicated data member, tt(d_bufsize):
+            verbinsert(DATA)(concrete/examples/ifdnbuf.h)
+    it() The default constructor does not allocate a buffer, and can be used
+to construct an object before the file descriptor becomes known. A second
+constructor simply passes its arguments to tt(open()) which will then
+initialize the object so that it can actually be used:
+            verbinsert(CONS)(concrete/examples/ifdnbuf.h)
+    it() If the object has been initialized by tt(open()), its destructor will
+both delete the object's buffer and use the file descriptor to close the
+device:
+            verbinsert(DESTR)(concrete/examples/ifdnbuf.h)
+    Even though the device is closed in the above implementation this may not
+always be what one wants. In cases where the open file descriptor is already
+available the intention may be to use that descriptor repeatedly, each time
+using a newly constructed tt(ifdnstreambuf) object. It is left as an exercise
+to the reader to change this class in such a way that the device may
+optionally be closed. This approach was followed in, e.g., the
+        url(Bobcat library)(http://bobcat.sourceforge.net).
+        hi(Bobcat library)hi(http://bobcat.sourceforge.net)
+    it() The tt(open()) member simply allocates the object's buffer. It is
+assumed that the calling program has already opened the device. Once the
+buffer has been allocated, the base class member tt(setg()) is used to
+ensure that
+    hi(streambuf::eback()) tt(eback()),
+    hi(streambuf::gptr()) tt(gptr()), and
+    hi(streambuf::egptr()) tt(egptr()) return correct values:
+            verbinsert(OPEN)(concrete/examples/ifdnbuf.h)
+    it() The overridden member tt(underflow()) is implemented almost
+identically to tt(ifdstreambuf)'s (section ref(IFDBUF)) member. The only
+difference is that the current class supports a buffer of larger
+sizes. Therefore, more characters (up to tt(d_bufsize)) may be read from the
+device at once:
+            verbinsert(UFLOW)(concrete/examples/ifdnbuf.h)
+    it() Finally tt(xsgetn()) is overridden. In a loop, tt(n) is reduced until
+0, at which point the function terminates. Alternatively, the member returns
+if tt(underflow()) fails to obtain more characters. This member optimizes the
+reading of series of characters: instead of calling ti(streambuf::sbumpc())
+tt(n) times, a block of tt(avail) characters is copied to the destination,
+using ti(streambuf::gpumb()) to consume tt(avail) characters from the buffer
+using one function call:
+            verbinsert(XSGETN)(concrete/examples/ifdnbuf.h)
+    it() The implementations of the member functions use low-level functions
+to operate the file descriptors. So apart from tt(streambuf) the header file
+ti(unistd.h) must have been read by the compiler before the implementations of
+the member functions can be compiled.
+    )
+    The member function tt(xsgetn()) is called by ti(streambuf::sgetn()),
+which is a tt(streambuf) member. The following example illustrates the use of
+this member function with a tt(ifdnstreambuf) object:
+        verbinclude(concrete/examples/ifdnbuf.cc)

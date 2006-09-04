@@ -1,0 +1,521 @@
+The string member functions are listed in alphabetical order. The member name,
+prefixed by the tt(string)-class is given first. Then the full prototype and a
+description are given. Values of the type ti(string::size_type) represent
+index positions within a tt(string). For all practical purposes, these values
+may be interpreted as tt(unsigned).
+
+The special value ti(string::npos), defined by the string class, represents a
+non-existing index. This value is returned by all members returning indices
+when they could not perform their requested tasks. Note that the string's
+em(length) is not returned as a valid index. E.g., when calling a member
+`tt(find_first_not_of(" "))' (see below) on a tt(string) object holding 10
+blank space characters, tt(npos) is returned, as the string only contains
+blanks.  The final 0-byte that is used in bf(C) to indicate the end of a
+tt(ASCII-Z) string is em(not) considered part of a bf(C++) string, and so the
+member function will return tt(npos), rather than tt(length()).
+
+    In the following overview, `tt(size_type)' should always be read as
+    `ti(string::size_type)'.
+        itemization(
+
+        it() hi(string::at()) tt(char &string::at(size_type opos)):
+            quote(The character (reference) at the indicated position is
+returned (it may be reassigned). The member function performs range-checking,
+aborting the program if an invalid index is passed.)
+
+        it() hi(string::append())
+            tt(string &string::append(InputIterator begin, InputIterator end)):
+            quote( Using this member function the range of characters implied
+by the tt(begin) and tt(end InputIterators) are appended to the tt(string)
+object.)
+
+       itt(string &string::append(string argument, size_type apos, size_type
+an)):
+            quote(
+            itemization(
+            it() If only tt(argument) is provided, it is appended to the
+tt(string) object.
+            it() If tt(apos) is provided as well, tt(argument) is appended
+from index position tt(apos) until the end of tt(argument).
+            it() If tt(an) is provided too, tt(an) characters of tt(argument),
+starting at index position tt(apos) are appended to the tt(string) object.
+            )
+    If tt(argument) is of type tt(char const *), the second parameter tt(apos)
+is not available.  So, with tt(char const *) arguments, either em(all)
+characters or an em(initial subset) of the characters of the provided tt(char
+const *) argument are appended to the tt(string) object. Of course, if
+tt(apos) and tt(an) em(are) specified in this case, tt(append()) can still be
+used: the tt(char const *) argument will then implicitly be converted to a
+tt(string const &).)
+
+        itt(string &string::append(size_type n, char c)):
+        quote(Using this member function, tt(n) characters tt(c) can be
+appended to the tt(string) object.
+            )
+
+        it() hi(string::assign())
+        tt(string &string::assign(string argument, size_type apos,
+size_type an)):
+            quote(
+            itemization(
+            it() If only tt(argument) is provided, it is assigned to the
+tt(string) object.
+            it() If tt(apos) is specified as well, a substring of
+tt(argument) object, starting at offset position tt(apos), is
+assigned to the tt(string) object calling this member.
+            it() If tt(an) is provided too, a substring of tt(argument)
+object, starting at offset position tt(apos), containing at most tt(an)
+characters, is assigned to the tt(string) object calling this member.
+            )
+    If tt(argument) is of type tt(char const *), no parameter tt(apos) is
+available.  So, with tt(char const *) arguments, either em(all) characters or
+an em(initial subset) of the characters of the provided tt(char const *)
+argument are assigned to the tt(string) object. As with the
+tt(string::append()) member, a tt(char const *) argument em(may) be used, but
+it will be converted to a tt(string) object first.)
+
+        itt(string &string::assign(size_type n, char c)):
+        quote(
+            Using this member function, tt(n) characters tt(c) can be assigned
+to the tt(string) object.)
+
+        it() hi(string::capacity())
+            tt(size_type string::capacity()):
+            quote(returns the number of characters that can currently be
+stored inside the tt(string) object.)
+
+        it() hi(string::compare())
+        tt(int string::compare(string argument)):
+            quote(This member function can be used to compare (according to
+the ASCII-character set) the text stored in the tt(string) object and in
+tt(argument). The tt(argument) may also be a (non-0) tt(char const *). 0 is
+returned if the characters in the tt(string) object and in tt(argument) are
+the same; a negative value is returned if the text in tt(string) is
+    hi(lexicographic comparison) lexicographically em(before) the text in
+tt(argument); a positive value is returned if the text in tt(string) is
+lexicographically em(beyond) the text in tt(argument).)
+
+        itt(int string::compare(size_type opos, size_type on, string
+argument)):
+    quote(This member function can be used to compare a substring of the text
+stored in the tt(string) object with the text stored in tt(argument). At most
+tt(on) characters, starting at offset tt(opos), are compared with the text in
+tt(argument). The tt(argument) may also be a (non-0) tt(char const *).)
+
+        itt(int string::compare+OPENPARsize_type opos, size_type on, string
+argument,) linebreak() tt(size_type apos, size_type an+CLOSEPAR):
+    quote(This member function can be used to compare a substring of the text
+stored in the tt(string) object with a substring of the text stored in
+tt(argument). At most tt(on) characters of the tt(string) object, starting at
+offset tt(opos), are compared with at most tt(an) characters of tt(argument),
+starting at offset tt(apos).  Note that tt(argument) em(must) also be a
+tt(string) object.)
+
+        itt(int string::compare+OPENPARsize_type opos, size_type on,
+char const *argument,) linebreak() tt(size_type an+CLOSEPAR):
+    quote(This member function can be used to compare a substring of the text
+stored in the tt(string) object with a substring of the text stored in
+tt(argument). At most tt(on) characters of the tt(string) object, starting at
+offset tt(opos), are compared with at most tt(an) characters of
+tt(argument). tt(Argument) must have at least tt(an) characters. However, the
+characters may have arbitrary values: the ASCII-Z value has no special
+meaning.)
+
+        it() hi(string::copy())
+   tt(size_type string::copy(char *argument, size_type on, size_type opos)):
+            quote(The contents of the tt(string) object is (partially) copied
+to tt(argument).
+    itemization(
+    it() If  tt(on) is provided, it refers to the maximum
+number of characters that will be copied. If omitted, all the tt(string)'s
+characters, starting at offset tt(opos), will be copied to tt(argument). Also,
+tt(string::npos) may be specified to indicate that all available characters
+should be copied.
+    it() If both tt(on) and tt(opos) are provided, tt(opos) refers to the
+offset in the tt(string) object where copying should start.
+    )
+    The actual number of characters that were copied is returned.
+    Note: em(following the copying, no ti(ASCII-Z) will be appended to the
+copied string). A final ASCII-Z character can be appended to the copied text
+using the following construction:
+        verb(
+    buffer[s.copy(buffer)] = 0;
+        ))
+
+        it() hi(string::c_str()) tt(char const *string::c_str()):
+            quote(the member function returns the contents of the tt(string)
+object as an tt(ASCII-Z) bf(C)-string.)
+
+        it() hi(string::data()) tt(char const *string::data()):
+            quote(returns the raw text stored in the tt(string) object. Since
+this member does not return an ascii-Z string (as tt(c_str()) does), it can be
+used to store and retrieve any kind of information, including, e.g., series of
+0-bytes:
+        verb(
+        string s;
+        s.resize(2);
+        cout << static_cast<int>(s.data()[1]) << endl;
+        )
+            )
+
+        it() hi(string::empty()) tt(bool string::empty()):
+            quote(returns tt(true) if the tt(string) object contains no data.)
+
+        it() hi(string::erase())
+            tt(string &string::erase(size_type opos; size_type on)):
+            quote(This member function can be used to erase (a sub)string of
+the tt(string) object.
+            itemization(
+            it() If no arguments are provided, the contents of the tt(string)
+object are completely erased.
+            it() If tt(opos) is specified, the contents of the tt(string)
+object are erased, starting from index position tt(opos) until (including)
+the object's final character.
+            it() If tt(on) is provided as well, tt(on) characters of
+the tt(string) object, starting at index position tt(opos) are erased.
+            )
+            )
+
+        itt(iterator string::erase(iterator obegin, iterator oend)):
+            quote(
+        itemization(
+        it() If only tt(obegin) is provided, the tt(string) object's character
+at iterator position tt(obegin) is erased.
+        it() If tt(oend) is provided as well, the range of characters of the
+tt(string) object, implied by the tt(iterators obegin) and tt(oend) are
+erased.
+        )
+        The iterator tt(obegin) is returned, pointing to the character
+immediately following the last erased character.)
+
+        it() hi(string::find())
+            tt(size_type string::find(string argument, size_type opos)):
+            quote(Returns the index in the tt(string) object where
+tt(argument) is found.
+        itemization(
+        it() If tt(opos) is provided, it refers to the
+index in the tt(string) object where the search for tt(argument) should
+start. If tt(opos) is omitted, searching starts at the beginning of the
+tt(string) object.))
+
+        itt(size_type string::find(char const *argument, size_type opos,
+                                    size_type an)):
+            quote(Returns the index in the tt(string) object where
+tt(argument) is found.
+        itemization(
+        it() If tt(opos) is provided, it refers to the index in the
+tt(string) object where the search for tt(argument) should start. If omitted,
+the tt(string) object is scanned completely.
+        it() If tt(an) is provided as well, it indicates the number of
+characters of tt(argument) that should be used in the search: it defines a
+partial string starting at the beginning of tt(argument). If omitted, all
+characters in tt(argument) are used.
+        ))
+
+        itt(size_type string::find(char c, size_type opos)):
+            quote( Returns the index in the tt(string) object where tt(c) is
+found.
+        itemization(
+        it() If tt(opos) is provided it refers to the index in the
+tt(string) object where the search for the character should start. If omitted,
+searching starts at the beginning of the tt(string) object.
+        ))
+
+        it() hi(string::find_first_of())
+            tt(size_type string::find_first_of(string argument,
+                                               size_type opos)):
+            quote(Returns the index in the tt(string) object where any
+character in tt(argument) is found.
+        itemization(
+        it() If tt(opos) is provided, it refers to
+the index in the tt(string) object where the search for tt(argument) should
+start. If omitted, searching starts at the beginning of the tt(string)
+object.))
+
+        itt(size_type string::find_first_of+OPENPARchar const *argument,
+size_type opos,) linebreak() tt(size_type an+CLOSEPAR):
+            quote(Returns the index in the tt(string) object where a character
+of tt(argument) is found, no matter which character.
+        itemization(
+        it() If tt(opos) is provided it refers to the index in the tt(string)
+object where the search for tt(argument) should start. If omitted, the
+tt(string) object is scanned completely.
+        it() If tt(an) is provided it indicates the number of characters of
+the tt(char const *) argument that should be used in the search: it defines a
+partial string starting at the beginning of the tt(char const *) argument. If
+omitted, all of tt(argument)'s characters are used.
+        ))
+
+        itt(size_type string::find_first_of(char c, size_type opos)):
+            quote(Returns the index in the tt(string) object where character
+tt(c) is found.
+        itemization(
+        it() If tt(opos) is provided, it refers to the index in the tt(string)
+object where the search for tt(c) should start. If omitted, searching starts
+at the beginning of the tt(string) object.))
+
+        it() hi(string::find_first_not_of())
+        tt(size_type string::find_first_not_of(string argument,
+                                                size_type opos)):
+            quote(Returns the index in the tt(string) object where a character
+not appearing in tt(argument) is found.
+        itemization(
+        it() If tt(opos) is provided, it refers to the index in the tt(string)
+object where the search for tt(argument) should start.
+        If omitted, searching starts at the beginning of the tt(string)
+object.
+        ))
+
+        itt(size_type string::find_first_not_of(char const *argument,
+size_type opos, size_type an)):
+            quote(Returns the index in the tt(string) object where any
+character em(not) appearing in tt(argument) is found.
+        itemization(
+        it() If tt(opos) is provided it refers to the index in the tt(string)
+object where the search for characters not specified in tt(argument) should
+start. If omitted, the tt(string) object is scanned completely.
+        it() If tt(an) is provided it indicates the number of characters of
+the tt(char const *) argument that should be used in the search: it defines a
+partial string starting at the beginning of the tt(char const *) argument. If
+omitted, all of tt(argument)'s characters are used.
+        ))
+
+        itt(size_type string::find_first_not_of(char c, size_type opos)):
+            quote(Returns the index in the tt(string) object where another
+character than tt(c) is found.
+        itemization(
+        it() If tt(opos) is provided, it refers to the index in the tt(string)
+object where the search for tt(c) should start.  If omitted, searching starts
+at the beginning of the tt(string) object.
+        ))
+
+        it() hi(string::find_last_of())
+          tt(size_type string::find_last_of(string argument, size_type opos)):
+            quote(Returns the em(last) index in the tt(string) object where
+one of tt(argument)'s characters is found.
+        itemization(
+        it() If tt(opos) is provided it refers to the index in the tt(string)
+object where the search for tt(argument) should start, proceeding backwards to
+the tt(string)'s first character. If omitted, searching starts at the the
+tt(string) object's last character.
+        ))
+
+        itt(size_type string::find_last_of+OPENPARchar const* argument,
+size_type opos,) linebreak() tt(size_type an+CLOSEPAR):
+            quote(Returns the last index in the tt(string) object where one of
+tt(argument)'s characters is found.
+        itemization(
+        it() If tt(opos) is provided it refers to the index in the tt(string)
+object where the search for tt(argument) should start, proceeding backwards to
+the tt(string)'s first character. If omitted, searching starts at the the
+tt(string) object's last character.
+        it() If tt(an) is provided it indicates the number of characters of
+tt(argument) that should be used in the search: it defines a
+partial string starting at the beginning of the tt(char const *) argument. If
+omitted, all of tt(argument)'s characters are used.
+        ))
+
+        itt(size_type string::find_last_of(char c, size_type opos)):
+            quote(Returns the last index in the tt(string) object where
+character tt(c) is found.
+        itemization(
+        it() If tt(opos) is provided it refers to the index in the tt(string)
+object where the search for character tt(c) should start, proceeding backwards
+to the tt(string)'s first character. If omitted, searching starts at the the
+tt(string) object's last character.
+        ))
+
+        it() hi(string::find_last_not_of())
+        tt(size_type string::find_last_not_of(string argument,
+size_type opos)):
+            quote(Returns the last index in the tt(string) object where any
+character not appearing in tt(argument) is found.
+        itemization(
+        it() If tt(opos) is provided it refers to the index in the tt(string)
+object where the search for characters not appearing in tt(argument) should
+start, proceeding backwards to the tt(string)'s first character. If omitted,
+searching starts at the the tt(string) object's last character.
+        ))
+
+        itt(size_type string::find_last_not_of+OPENPARchar const *argument,
+            size_type) linebreak() tt(opos, size_type an+CLOSEPAR):
+            quote(Returns the last index in the tt(string) object where any
+character not appearing in tt(argument) is found.
+        itemization(
+        it() If tt(opos) is provided it refers to the index in the tt(string)
+object where the search for characters not appearing in tt(argument) should
+start, proceeding backwards to the tt(string)'s first character. If omitted,
+searching starts at the the tt(string) object's last character.
+        it() If tt(an) is provided it indicates the number of characters of
+tt(argument) that should be used in the search: it defines a
+partial string starting at the beginning of the tt(char const *) argument. If
+omitted, all of tt(argument)'s characters are used.
+        ))
+
+        itt(size_type string::find_last_not_of(char c, size_type opos)):
+            quote(Returns the last index in the tt(string) object where
+another character than tt(c) is found.
+        itemization(
+        it() If tt(opos) is provided it refers to the index in the tt(string)
+object where the search for a character unequal to character tt(c) should
+start, proceeding backwards to the tt(string)'s first character. If omitted,
+searching starts at the the tt(string) object's last character.
+        ))
+
+        it() hi(string::getline())
+            tt(istream &getline(istream &istr, string object, char delimiter)):
+            quote(This function (note that it's not a em(member) function of
+the class tt(string)) can be used to read a line of text from tt(istr). All
+characters until tt(delimiter) (or the end of the stream, whichever comes
+first) are read from tt(istr) and are stored in tt(object). The delimiter,
+when present, is removed from the stream, but is not stored in tt(line).  The
+delimiter's default value is tt('\n').nl()
+    If the delimiter is not found, tt(istr.fail()) returns 1 (see section
+ref(IOSTATES)).  Note that the contents of the last line, whether or not it
+was terminated by a delimiter, will always be assigned to tt(object).nl()
+        )
+
+        it() hi(string::insert())
+            tt(string &string::insert+OPENPARsize_type opos, string argument,
+size_type) linebreak() tt(apos, size_type an+CLOSEPAR):
+            quote(This member function can be used to insert (a sub)string of
+tt(argument) into the tt(string) object, em(at) the tt(string) object's index
+position tt(opos). The arguments tt(apos) and tt(an) must either be specified
+or they must both be omitted. If specified, tt(an) characters of tt(argument),
+starting at index position tt(apos) are inserted into the tt(string)
+object. nl()
+    If tt(argument) is of type tt(char const *), no parameter tt(apos) is
+available.  So, with tt(char const *) arguments, either em(all) characters or
+an em(initial subset) of tt(an) characters of the provided tt(char const *)
+argument are inserted into the tt(string) object. In this case, the prototype
+of the member function is:
+        verb(
+    string &string::insert(size_type opos, char const *argument,
+                           size_type an)
+        )
+        (As before, an implicit conversion from tt(char const *) to tt(string)
+will occur if tt(apos) and tt(an) em(are) provided).
+        )
+
+        itt(string &string::insert(size_type opos, size_type n, char c)):
+        quote(Using this member function, tt(n) characters tt(c) can be
+inserted to the tt(string) object.)
+
+        itt(iterator string::insert(iterator obegin, char c)):
+            quote(The character tt(c) is inserted at the (iterator) position
+tt(obegin) in the tt(string) object. The iterator tt(obegin) is returned.)
+
+        itt(iterator string::insert(iterator obegin, size_type n, char c)):
+            quote(At the (iterator) position tt(obegin) of tt(object) tt(n)
+characters tt(c) are inserted. The iterator tt(obegin) is returned.)
+
+        itt(iterator string::insert+OPENPARiterator obegin,
+InputIterator abegin,) linebreak()tt(InputIterator aend+CLOSEPAR):
+            quote(The range of characters implied by the tt(InputIterators
+abegin) and tt(aend) are inserted at the (iterator) position tt(obegin) in
+tt(object). The iterator tt(obegin) is returned.)
+
+        it() hi(string::length()) tt(size_type string::length()):
+            quote(returns the number of characters stored in the tt(string)
+object.)
+
+        it() hi(string::max_size()) tt(size_type string::max_size()):
+            quote(returns the maximum number of characters that can be stored
+in the tt(string) object.)
+
+        it() hi(string::replace())
+        tt(string &string::replace+OPENPARsize_type opos, size_type on, string
+argument,)linebreak() tt(size_type apos, size_type an+CLOSEPAR):
+            quote(The arguments tt(apos) and tt(an) are optional. If omitted,
+tt(argument) is considered completely.  The substring of tt(on) characters of
+the tt(string) object, starting at position tt(opos) is replaced by
+tt(argument).   If tt(on) is set to 0, the member function
+em(inserts) tt(argument) into tt(object).nl()
+            itemization(
+                it() If tt(apos) and tt(an) are provided, tt(an) characters of
+tt(argument), starting at index position tt(apos) will replace the indicated
+range of characters of tt(object).)
+    If tt(argument) is of type tt(char const *), no parameter tt(apos) is
+available.  So, with tt(char const *) arguments, either em(all) characters or
+an em(initial subset) of the characters of tt(an) characters of the provided
+tt(char const *) argument will replace the indicated range of characters in
+tt(object). In that case, the prototype of the member function is:
+        verb(
+    string &string::replace(size_type opos, size_type on,
+                            char const *argument, size_type an)
+        )
+            )
+
+        itt(string &string::replace+OPENPARsize_type opos, size_type on,
+            size_type n,) linebreak() tt(char c+CLOSEPAR):
+            quote(This member function can be used to replace tt(on)
+characters of the tt(string) object, starting at index position tt(opos), by
+tt(n) characters having values tt(c).)
+
+        itt(string &string::replace (iterator obegin, iterator oend, string
+argument)):
+            quote(Here, the string implied by the iterators tt(obegin) and
+tt(oend) are replaced by tt(argument). If tt(argument) is a tt(char const *),
+an extra argument tt(n) may be used, specifying the number of characters of
+tt(argument) that are used in the replacement.)
+
+        itt(string &string::replace(iterator obegin, iterator oend,
+size_type n, char c)):
+            quote(The range of characters of the tt(string) object, implied by
+the tt(iterators obegin) and tt(oend) are replaced by tt(n) characters having
+values tt(c).)
+
+        itt(string string::replace(iterator obegin, iterator oend,
+InputIterator abegin, InputIterator aend)):
+            quote(Here the range of characters implied by the iterators
+tt(obegin) and tt(oend) is replaced by the range of characters implied by the
+tt(InputIterators abegin) and tt(aend).)
+
+        it() hi(string::resize()) tt(void string::resize(size_type n, char c)):
+            quote(The string stored in the tt(string) object is resized to
+tt(n) characters. The second argument is optional, in which case the value
+tt(c = 0) is used. If provided and the string is enlarged, the extra
+characters are initialized to tt(c).)
+
+        it() hi(string::rfind())
+            tt(size_type string::rfind(string argument, size_type opos)):
+            quote(Returns the index in the tt(string) object where
+tt(argument) is found. Searching proceeds either from the end of the
+tt(string) object or from its offset tt(opos) back to the beginning. If the
+argument tt(opos) is omitted, searching starts at the end of tt(object).)
+
+        itt(size_type string::rfind(char const *argument, size_type opos,
+size_type an)):
+            quote(Returns the index in the tt(string) object where
+tt(argument) is found. Searching proceeds either from the end of the
+tt(string) object or from offset tt(opos) back to the beginning.  The
+parameter tt(an) indicates the number of characters of tt(argument) that
+should be used in the search: it defines a partial string starting at the
+beginning of tt(argument). If omitted, all characters in tt(argument) are
+used.)
+
+        itt(size_type string::rfind(char c, size_type opos)):
+            quote( Returns the index in the tt(string) object where tt(c) is
+found.   Searching proceeds either from the end of the
+tt(string) object or from offset tt(opos) back to the beginning.)
+
+        it() hi(string::size()) tt(size_type string::size()):
+            quote(returns the number of characters stored in the tt(string)
+object. This member is a synonym of tt(string::length()).)
+
+        it() hi(string::substr())
+            tt(string string::substr(size_type opos, size_type on)):
+            quote(Returns (using a em(value) return type) a substring of the
+tt(string) object. The parameter tt(on) may be used to specify the number of
+characters of tt(object) that are returned. The parameter tt(opos) may be used
+to specify the index of the first character of tt(object) that is
+returned. Either tt(on) or both arguments may be omitted. The string
+tt(object) itself is not modified by tt(substr()).)
+
+        it() hi(string::swap())
+            tt(size_type string::swap(string argument)):
+            quote(swaps the contents of the tt(string) object and
+tt(argument). In this case, tt(argument) must be a tt(string) and cannot be a
+tt(char const *). Of course, both strings (tt(object) and tt(argument)) are
+modified by this member function.)
+        )

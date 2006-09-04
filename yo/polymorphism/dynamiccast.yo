@@ -1,0 +1,115 @@
+The ti(dynamic_cast<>()) operator is used to convert a i(base class) pointer
+or hi(base class: converting to derived class) reference to, respectively, a
+i(derived class) pointer or reference.
+
+A dynamic cast is performed i(run-time). A prerequisite for using the
+dynamic cast hi(dynamic cast: prerequisite) operator is the existence of at
+least one virtual member function in the base class.
+
+In the following example a pointer to the class tt(Derived) is obtained from
+the tt(Base) class pointer tt(bp):
+        verb(
+    class Base
+    {
+        public:
+            virtual ~Base();
+    };
+
+    class Derived: public Base
+    {
+        public:
+            char const *toString()
+            {
+                return "Derived object";
+            }
+    };
+
+    int main()
+    {
+        Base *bp;
+        Derived *dp,
+        Derived d;
+
+        bp = &d;
+
+        dp = dynamic_cast<Derived *>(bp);
+
+        if (dp)
+            cout << dp->toString() << endl;
+        else
+            cout << "dynamic cast conversion failed\n";
+    }
+        )
+    Note the test: in the tt(if) condition the success of the dynamic cast is
+checked. This must be done em(run-time), as the compiler can't do this all by
+itself. If a base class pointer is provided, the dynamic cast operator returns
+0 on failure and a pointer to the requested derived class on
+success. Consequently, if there are multiple derived classes, a series of
+checks could be performed to find the actual derived class to which the
+pointer points (In the next example derived classes are only declared):
+        verb(
+    class Base
+    {
+        public:
+            virtual ~Base();
+    };
+    class Derived1: public Base;
+    class Derived2: public Base;
+
+    int main()
+    {
+        Base *bp;
+        Derived1 *d1,
+        Derived1 d;
+        Derived2 *d2;
+
+        bp = &d;
+
+        if ((d1 = dynamic_cast<Derived1 *>(bp)))
+            cout << *d1 << endl;
+        else if ((d2 = dynamic_cast<Derived2 *>(bp)))
+            cout << *d2 << endl;
+    }
+        )
+    Alternatively, a reference to a base class object may be available. In
+this case the tt(dynamic_cast<>()) operator will throw an i(exception) if it
+fails. For example:
+        verbinclude(polymorphism/examples/badcast.cc)
+    In this example the value ti(std::bad_cast) hi(bad_cast) is
+introduced. The tt(std::bad_cast) exception is thrown if the
+dynamic cast of a reference to a derived class object fails.
+
+Note the form of the tt(catch) clause: tt(bad_cast) is the name of a
+        hi(type name)
+    type. In section ref(EMPTYENUM) the construction of such a type is
+discussed.
+
+The dynamic cast operator is a useful tool when an existing base class cannot
+or should not be modified (e.g., when the sources are not available), and a
+derived class may be modified instead. Code receiving a base class pointer or
+reference may then perform a dynamic cast to the derived class to access the
+derived class's functionality.
+
+Casts from a base class reference or pointer to a derived class reference or
+pointer are called emi(downcasts).
+
+One may wonder what the difference is between a tt(dynamic_cast) and a
+tt(reinterpret_cast). Of course, the tt(dynamic_cast) may be used with
+references and the tt(reinterpret_cast) can only be used for pointers. But
+what's the difference when both arguments are pointers?
+
+When the tt(reinterpret_cast) is used, we tell the compiler that it literally
+should re-interpret a block of memory as something else. A well known example
+is obtaining the individual bytes of an tt(int). An tt(int) consists of
+tt(sizeof(int)) bytes, and these bytes can be accessed by reinterpreting the
+location of the tt(int) value as a tt(char *). When using a
+tt(reinterpret_cast) the compiler offers absolutely no safeguard. The compiler
+will happily tt(reinterpret_cast) an tt(int *) to a tt(double *), but the
+resulting dereference produces at the very least a meaningless value.
+
+The tt(dynamic_cast) will also reinterpret a block of memory as something
+else, but here a run-time safeguard is offered. The dynamic cast fails when
+the requested type doesn't match the actual type of the object we're pointing
+at. The tt(dynamic_cast)'s purpose is also much more restricted than the
+tt(reinterpret_cast)'s purpose, as it should only be used for downcasting to
+derived classes having virtual members.

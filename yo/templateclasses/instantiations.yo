@@ -1,0 +1,61 @@
+Template hi(template class: instantiation) classes are instantiated when an
+object of a template class is defined. When a template class object is
+defined or declared, the template parameters must explicitly be specified.
+
+    Template parameters are em(also) specified when a template class defines
+default template parameter values, albeit that in that case the compiler will
+provide the defaults (cf. section ref(PARTIAL) where tt(double) is used as the
+default type to be used with the template's tt(DataType) parameter).  The
+actual values or types of template parameters are
+    hi(template class: deducing parameters) em(never) deduced, as with
+template functions: to define a tt(Matrix) of elements that are complex
+values, the following construction is used:
+        centt(Matrix<3, 5, std::complex> complexMatrix;)
+    while the following construction defines a matrix of elements that are
+tt(double) values, with the compiler providing the (default) type tt(double):
+        centt(Matrix<3, 5> doubleMatrix;)
+
+    A template class object may be em(declared) using the keyword ti(extern).
+        hi(template class: declaring objects)
+    For example, the following construction is used to em(declare) the matrix
+tt(complexMatrix):
+        centt(extern Matrix<3, 5, std::complex> complexMatrix;)
+
+        hi(template class: declaration)
+        hi(reference: to template class)
+        hi(pointer: to template class)
+        hi(template class: reference to)
+        hi(template class: pointer to)
+    A template class declaration is sufficient if the compiler encounters
+function declarations of functions having return values or parameters which
+are template class objects, pointers or references. The following little
+source file may be compiled, although the compiler hasn't seen the definition
+of the tt(Matrix) template class.  Note that generic classes as well as
+(partial) specializations may be declared. Furthermore, note that a function
+expecting or returning a template class object, reference, or parameter itself
+automatically becomes a template function, as this is necessary to specify the
+nature of the various template parameters:
+        verbinclude(templateclasses/examples/matrixdecl.cc)
+
+    When template classes are used they have to be processed by the compiler
+first. So, template member functions must be known to the compiler when the
+template is instantiated.  This does not mean that all members of a template
+class are instantiated when a template class object is defined.
+        hi(template class: member instantiation)
+    The compiler will only instantiate those members that are actually
+used. This is illustrated by the following simple class tt(Demo), having two
+constructors and two members. When we create a tt(main()) function in which
+one constructor is used and one member is called, we can make a note of the
+sizes of the resulting object file and executable program. Next the class
+definition is modified such that the unused constructor and member are
+commented out. Again we compile and link the tt(main()) function and the
+resulting sizes are identical to the sizes obtained earlier (on my computer,
+using tt(g++ version 3.3.3) these sizes are 2380 and 13504,
+respectively). There are other ways to illustrate the point that only members
+that are used are instantiated, like using the ti(nm) program, showing the
+symbolic contents of object files. Using programs like tt(nm), however, will
+yield the same conclusion: em(only template member functions that are actually
+used are initialized). Here is an example of the template class tt(Demo) used
+for this little experiment. In tt(main()) the first constructor and the first
+member function are called.
+        verbinclude(templateclasses/examples/instantiations.cc)

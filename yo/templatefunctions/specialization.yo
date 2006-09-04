@@ -1,0 +1,140 @@
+    The initial tt(add()) template, defining two identically typed parameters
+works fine for all types sensibly supporting tt(operator+()) and a copy
+constructor. However, these assumptions are not always met. For example, when
+tt(char *)s are used, neither the tt(operator+()) nor the copy constructor is
+(sensibly) available. The compiler does not know this, and will try to
+instantiate the simple template function
+        verb(
+    template <typename Type>
+    Type add(Type const &t1, Type const &t2);
+        )
+    But it can't do so, since tt(operator+()) is not defined for pointers. In
+situations like these it is clear that a match between the template's type
+parameter(s) and the actually used type(s) is possible, but the standard
+implementation is senseless or produces errors.
+
+    To solve this problem a emi(template explicit specialization) may be
+defined.  A template explicit specialization defines the template function for
+which a generic definition already exists, using specific actual template type
+parameters.
+
+    In the abovementioned case an explicit specialization is required for a
+tt(char const *), but probably also for a tt(char *) type. Probably, as the
+compiler still uses the standard type-deducing process mentioned earlier. So,
+when our tt(add()) template function is specialized for tt(char *) arguments,
+then its return type em(must) also be a tt(char *), whereas it em(must) be a
+tt(char const *) if the arguments are tt(char const *) values. In these cases
+the template type parameter tt(Type) will be deduced properly. With tt(Type ==
+char *), for example, the head of the instantiated function becomes:
+        centt(char *add(char *const &t1, char *const &t2))
+    If this is considered undesirable, an em(overloaded) version could be
+designed expecting pointers. The following template function definition
+expects two (tt(const)) pointers, and returns a non-const pointer:
+        verb(
+    template <typename T>
+    T *add(T const *t1, T const *t2)
+    {
+        std::cout << "Pointers\n";
+        return new T;
+    }
+        )
+    But we might still not be where we want to be, as em(this) overloaded
+version will now only accept pointers to constant tt(T) elements. Pointers to
+non-const tt(T) elements will not be accepted. At first sight it may come as a
+surprise that the compiler will not apply a qualification transformation. But
+there's no need for the compiler to do so: when non-const pointers are used
+the compiler will simply use the initial definition of the tt(add()) template
+function expecting any two arguments of equal types.
+
+    So do we have to define yet another overloaded version, expecting
+non-const pointers? It is possible, but at some point it should become clear
+that we're overshooting our goal. Like concrete functions and classes,
+templates should have well-described purposes. Trying to add overloaded
+template definitions to overloaded template definitions quickly turns the
+template into a kludge. Don't follow this approach. A better approach is
+probably to construct the template so that it fits its original purpose, make
+allowances for the occasional specific case, and to describe its purpose
+clearly in the template's documentation.
+
+    Nevertheless, there may be situations where a template explicit
+specialization may be worth considering. Two specializations for tt(const) and
+non-tt(const) pointers to characters might be considered for our tt(add())
+template function. Template explicit specializations are constructed as
+follows:
+    itemization(
+    it() They start with the keyword tt(template).
+    it() Next, an empty set of angle brackets is written. This indicates to
+the compiler that there must be an em(existing) template whose prototype
+matches the one we're about to define. If we err and there is no such template
+        hi(template-id does not match template declaration)
+then the compiler reports an error like:
+        verb(
+    error: template-id `add<char*>' for `char* add(char* const&, char*
+           const&)' does not match any template declaration
+        )
+    it() Next the head of the function is defined, which must follow the same
+syntax as a template explicit instantiation declaration (see
+section ref(TEMPFUNEXDEC)): it must specify the correct returntype, function
+name, template type parameter explicitations, as well as the function's
+parameter list.
+    it() The body of the function, definining the special implementation that
+is required for the special actual template parameter types.
+    )
+    Here are two  explicit specializations for the template function
+tt(add()), expecting tt(char *) and tt(char const *) arguments (note that the
+tt(const) still appearing in the first template specialization is unrelated to
+the specialized type (tt(char *)), but refers to the tt(const &) mentioned in
+the original template's definition. So, in this case it's a reference to a
+constant pointer to a tt(char), implying that the tt(char)s may be modified):
+        verb(
+    template <> char *add<char *>(char * const &p1,
+                                        char * const &p2)
+    {
+        std::string str(p1);
+        str += p2;
+        return strcpy(new char[str.length() + 1], str.c_str());
+    }
+
+    template <> char const *add<char const *>(char const *const &p1,
+                                        char const *const &p2)
+    {
+        static std::string str;
+        str = p1;
+        str += p2;
+        return str.c_str();
+    }
+        )
+    Template explicit specializations are normally included in the file
+containing the other template function's implementations.
+
+    A template explicit specialization can be declared in the usual way. I.e.,
+by replacing its body with a semicolon.
+
+    Note in particular how important the pair of i(angle brackets) are that
+follow the tt(template) keyword when declaring a template explicit
+specialization. If the angle brackets were omitted, we would have constructed
+a
+        i(template instantiation declaration).
+    The compiler would silently process it, at the expense of a somewhat
+longer compilation time.
+
+    When declaring a template explicit specialization (or when using an
+instantiation declaration) the
+        hi(template explicit type specification: omitting)
+    explicit specification of the template type parameters can be omitted if
+the compiler is able to deduce these types from the function's arguments.  As
+this is the case with the tt(char (const) *) specializations, they could also
+be declared as follows:
+        verb(
+    template <> char const *add(char const *const &p1,
+                                        char const *const &p2);
+    template <> char const *add(char const *const &p1,
+                                        char const *const &p2);
+        )
+    In addition, tt(template <>) could be omitted. However, this would remove
+the template character from the declaration, as the resulting declaration is
+now nothing but a plain function declaration. This is not an error: template
+functions and non-template functions may overload each other. Ordinary
+functions are not as restrictive as template functions with respect to allowed
+type conversions. This could be a reason to overload a template with an
+ordinary function every once in a while.

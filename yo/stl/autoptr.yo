@@ -1,0 +1,57 @@
+One of the problems using pointers is that strict i(bookkeeping) is required
+about their memory use and lifetime. When a pointer variable goes
+    i(out of scope), the memory pointed to by the pointer is suddenly
+inaccessible, and the program suffers from a i(memory leak). For example, in
+the following function tt(fun()), a memory leak is created by calling
+tt(fun()): the allocated tt(int) value remains inaccessibly allocated:
+        verb(
+    void fun()
+    {
+        new int;
+    }
+        )
+    To prevent memory leaks strict bookkeeping is required: the programmer has
+to make sure that the memory pointed to by a pointer is deleted just before
+the pointer variable goes i(out of scope). In the above example the repair
+would be:
+        verb(
+    void fun()
+    {
+        delete new int;
+    }
+        )
+    Now tt(fun()) only wastes a bit of time.
+
+    When a pointer variable points to em(a single value or object), the
+bookkeeping requirements may be relaxed when the pointer variable is defined
+as a tt(std::auto_ptr) hi(auto_ptr) object. Auto_ptrs are em(objects),
+masquerading as pointers. Since they're objects, their destructors are called
+when they go out of scope, and because of that, their destructors will take
+the responsibility of deleting the dynamically allocated memory.
+
+Before tt(auto_ptrs) can be used the following preprocessor directive must
+have been specified: hi(#include <memory>)
+        verb(
+    #include <memory>
+        )
+    Normally, an tt(auto_ptr) object is initialized using a dynamically
+created value or object.
+
+    The following em(restrictions) hi(auto_ptr: restrictions) apply to
+tt(auto_ptrs):
+    itemization(
+    it() the tt(auto_ptr) object cannot be used to point to
+        i(arrays of objects).
+    it() an tt(auto_ptr) object should only point to memory that was made
+available dynamically, as only i(dynamically allocated memory) can be deleted.
+    it() multiple tt(auto_ptr) objects should not be allowed to point to the
+same block of dynamically allocated memory. The tt(auto_ptr)'s interface was
+designed to prevent this from happening. Once an tt(auto_ptr) object goes out
+of scope, it deletes the memory it points to, immediately changing any other
+object also pointing to the allocated memory into a hi(wild pointer) wild
+pointer.
+    )
+    The tt(class auto_ptr) defines several member functions
+to access the pointer itself or to have the tt(auto_ptr) point to another
+block of memory. These member functions and ways to construct tt(auto_ptr)
+objects are discussed in the next sections.

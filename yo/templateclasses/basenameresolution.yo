@@ -1,0 +1,39 @@
+Consider the following example of a template base and a derived class:
+        verbinclude(templateclasses/examples/basename1.cc)
+    This example won't compile, and the compiler tells us something like:
+        hi(no arguments that depend on a template parameter)
+        verb(
+    error: there are no arguments to 'member' that depend on a template
+           parameter, so a declaration of 'member' must be available
+        )
+
+    At first glance, this error may cause some confusion, since with
+non-template classes public and protected base class members are immediately
+available. This holds also true for template classes, but only if the compiler
+can figure out what we mean. In the above situation, the compiler can't, since
+it doesn't know for what type tt(T) the member function tt(member) must be
+initialized.
+
+    To appreciate why this is true, consider the situation where we have
+defined a specialization:
+        verb(
+    template <>
+    Base<int>::member()
+    {
+        std::cout << "This is the int-specialization\n";
+    }
+        )
+    Since the compiler, when processing the class tt(Derived), can't be sure
+that no specialization will be in effect once an instantiation of tt(Derived)
+is called for, it can't decide yet for what type to instantiate tt(member),
+since tt(member())'s call in tt(Derived::Derived()) doesn't require a
+template type parameter. In cases like these, where no template type parameter
+is available to determine which type to use, the compiler must be told
+that it should postpone its decision about the template type parameter to use
+    hi(template members: without template type parameters) for tt(member())
+until instantiation time. This can be realized in two ways: either by using
+tt(this), or by explicitly mentioning the base class, instantiated for the
+derived class's template type(s). In the following tt(main()) function both
+forms are used. Note that with the tt(int) template type the tt(int)
+specialization is used.
+        verbinclude(templateclasses/examples/basename2.cc)

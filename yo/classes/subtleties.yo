@@ -1,0 +1,108 @@
+As discussed, anonymous objects can be used to initialize function parameters
+that are tt(const) references to objects. These objects are created just
+before such a function is called, and are destroyed once the function has
+terminated. This use of anonymous objects to initialize function parameters is
+often seen, but bf(C++)'s grammar allows us to use anonymous objects in other
+situations as well. Consider the following snippet of code:
+        verb(
+    int main()
+    {
+        // initial statements
+        Print("hello", "world");
+        // later statements
+    }
+        )
+    In this example the anonymous tt(Print) object is constructed, and is
+immediately destroyed after its construction. So, following the `initial
+statements' our tt(Print) object is constructed, then it is destroyed again,
+followed by the execution of the `later statements'. This is remarkable as it
+shows that the standard lifetime rules do not apply to anonymous
+objects. hi(lifetime: anonymous objects)hi(anonymous object: lifetime) Their
+lifetime is limited to the em(statement), rather than to the em(end of the
+block) in which they are defined.
+
+    Of course one might wonder why a plain anonymous object could ever be
+considered useful. One might think of at least one situation, though. Assume
+we want to put em(markers) in our code producing some output when the
+program's execution reaches a certain point. An object's constructor could be
+implemented so as to provide that marker-functionality, thus allowing us to
+put markers in our code by defining anonymous, rather than named objects.
+
+    However, bf(C++)'s grammar contains another remarkable
+characteristic. Consider the next example:
+        verb(
+    int main(int argc, char *argv[])
+    {
+        Print p("", "");                    // 1
+        printText(Print(p), argc, argv);    // 2
+    }
+        )
+    In this example a non-anonymous object tt(p) is constrcted in statement 1,
+which object is then used in statement 2 to em(initialize) an anonymous object
+which, in turn, is then used to initialize tt(printText)'s tt(const) reference
+parameter. This use of an existing object to initialize another object is
+common practice, and is based on the existence of a so-called
+    emi(copy constructor). A copy constructor creates an object (as it is a
+constructor), using an existing object's characteristics to initialize the new
+object's data. Copy constructors are discussed in depth in chapter
+ref(MEMORY), but presently merely the concept of a copy constructor is used.
+
+    In the last example a copy constructor was used to initialize an anonymous
+object, which was then used to initialize a parameter of a function. However,
+when we try to apply the same trick (i.e., using an existing object to
+initialize an anonymous object) to a plain statement, the compiler generates
+an error: the object tt(p) can't be redefined (in statement 3, below):
+        verb(
+    int main(int argc, char *argv[])
+    {
+        Print p("", "");                    // 1
+        printText(Print(p), argc, argv);    // 2
+        Print(p);                           // 3 error!
+    }
+        )
+    So, using an existing object to initialize an anonymous object
+that is used as function argument is ok, but an existing object can't be used
+to initialize an anonymous object in a plain statement?
+
+    The answer to this apparent contradiction is actually found in the
+compiler's error message itself. At statement 3 the compiler states something
+like:
+        verb(
+    error: redeclaration of 'Print p'
+        )
+    which solves the problem, by realizing that within a compound statement
+objects and variables may be defined as well. Inside a compound statement,
+a em(type name) followed by a tt(variable name) is the grammatical form of a
+variable definition. em(Parentheses) can be used to break priorities, but if
+there are no priorities to break, they have no effect, and are simply ignored
+by the compiler. In statement 3 the parentheses allowed us to get rid of the
+blank that's required between a type name and the variable name, but to the
+compiler we wrote
+        verb(
+        Print (p);
+        )
+    which is, since the parentheses are superfluous, equal to
+        verb(
+        Print p;
+        )
+    thus producing tt(p)'s redeclaration.
+
+    As a further example: when we define a variable using a basic type (e.g.,
+tt(double)) using superfluous parentheses the compiler will quietly remove
+these parentheses for us:
+        verb(
+    double ((((a))));       // weird, but ok.
+        )
+
+    To summarize our findings about anonymous variables:
+    itemization(
+    it() Anonymous objects are great for initializing tt(const) reference
+parameters.
+    it() The same syntaxis, however, can also be used in stand-alone
+statements, in which they are interpreted as variable definitions if our
+intention actually was to initialize an anonymous object using an existing
+object.
+    it() Since this may cause confusion, it's probably best to restrict the
+use of anonymous objects to the first (and main) form: initializing function
+parameters.
+    )

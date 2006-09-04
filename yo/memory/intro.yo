@@ -1,0 +1,54 @@
+In contrast to the set of functions which handle i(memory allocation) in bf(C)
+(i.e., ti(malloc()) etc.), the operators ti(new) and ti(delete) are
+specifically meant to be used with the features that bf(C++) offers.
+Important differences between tt(malloc()) and tt(new) are:
+    itemization(
+    it() The function tt(malloc()) doesn't `know' what the allocated memory
+will be used for. E.g., when memory for tt(int)s is allocated, the programmer
+must supply the correct expression using a multiplication by
+tt(sizeof(int)). In contrast, tt(new) requires the use of a type; the
+ti(sizeof) expression is implicitly handled by the compiler.
+    it() The only way to i(initialize memory) which is allocated by
+tt(malloc()) is to use ti(calloc()), which allocates memory and resets it to a
+given value. In contrast, tt(new) can call the i(constructor) of an allocated
+object where initial actions are defined. This constructor may be supplied
+with arguments.
+    it() All bf(C)-allocation functions must be inspected for
+ti(NULL)-returns. In contrast, the tt(new)-operator provides a facility called
+a emi(new_handler) (cf. section ref(NEWHANDLER)) which can be used instead
+of explicitly checking for 0 return values.
+    )
+    A comparable relationship exists between ti(free()) and tt(delete):
+tt(delete) makes sure that when an object is deallocated, a corresponding
+destructor is called.
+
+The automatic calling of constructors and destructors when objects are created
+and destroyed, has a number of consequences which we shall discuss in this
+chapter. Many problems encountered during bf(C) program development are caused
+by incorrect memory allocation or i(memory leaks): memory is not allocated,
+not freed, not initialized, boundaries are overwritten, etc..  bf(C++) does
+not `magically' solve these problems, but it em(does) provide a number of
+handy tools.
+
+Unfortunately, the very frequently used ti(str...()) functions, like
+ti(strdup()) are all tt(malloc()) based, and should therefore preferably
+not be used anymore in bf(C++) programs. Instead, a new set of corresponding
+functions, based on the operator tt(new), are preferred. Also, since the class
+tt(string) is available, there is less need for these functions in bf(C++)
+than in bf(C). In cases where operations on tt(char *) are preferred or
+necessary, comparable functions based on tt(new) could be developed. E.g.,
+    label(STRDUPNEW) for the function tt(strdup()) a comparable function
+hi(chardupnew()) tt(char *strdupnew(char const *str)) could be developed as
+follows:
+        verb(
+    char *strdupnew(char const *str)
+    {
+        return str ? strcpy(new char [strlen(str) + 1], str) : 0;
+    }
+        )
+    In this chapter the following topics will be covered:
+    itemization(
+    it() the assignment operator (and operator overloading in general),
+    it() the tt(this) pointer,
+    it() the copy constructor.
+    )

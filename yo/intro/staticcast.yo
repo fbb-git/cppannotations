@@ -1,0 +1,23 @@
+    The ti(static_cast<type>(expression)) operator is used to convert one type
+to an acceptable other type. E.g., tt(double) to tt(int). An example of such a
+cast is, assuming tt(d) is of type tt(double) and tt(a) and tt(b) are
+tt(int)-type variables. In that situation, computing the floating point
+quotient of tt(a) and tt(b) requires a cast:
+        centt(d = static_cast<double>(a) / b;)
+    If the cast is omitted, the division operator will cut-off the remainder,
+as its operands are tt(int) expressions. Note that the division should be
+placed outside of the cast. If not, the (integer) division will be performed
+before the cast has a chance to convert the type of the operand to tt(double).
+Another nice example of code in which it is a good idea to use the
+tt(static_cast<>())-operator is in situations where the arithmetic assignment
+operators are used in mixed-type situations. E.g., consider the following
+expression (assume tt(doubleVar) is a variable of type tt(double)):
+        centt(intVar += doubleVar;)
+This statement actually evaluates to:
+     centt(intVar = static_cast<int>(static_cast<double>(intVar) + doubleVar);)
+    tt(IntVar) is first promoted to a tt(double), and is then added as
+tt(double) to tt(doubleVar). Next, the sum is cast back to an tt(int).  These
+two conversions are a bit overdone. The same result is obtained by explicitly
+casting the tt(doubleVar) to an tt(int), thus obtaining an tt(int)-value for
+the right-hand side of the expression:
+        centt(intVar += static_cast<int>(doubleVar);)

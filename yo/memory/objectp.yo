@@ -1,0 +1,81 @@
+    The operators tt(new) and tt(delete) are used when an object of a given
+class is allocated. As we have seen, one of the advantages of
+the operators tt(new) and tt(delete) over functions like ti(malloc()) and
+ti(free()) is that tt(new) and tt(delete) call the corresponding
+constructors and destructors. This is illustrated in the next example:
+        verb(
+    Person *pp = new Person();  // ptr to Person object
+
+    delete pp;                  // now destroyed
+        )
+    The i(allocation) of a new tt(Person) object pointed to by tt(pp) is a
+two-step process. First, the memory for the object itself is
+allocated. Second, the constructor is called, initializing the object. In
+the above example the constructor is the argument-free version; it is however
+also possible to use a constructor having arguments:
+        verb(
+    frank = new Person("Frank", "Oostumerweg", "050 403 2223");
+    delete frank;
+        )
+    Note that, analogously to the em(construction) of an object, the
+em(destruction) is also a two-step process: first, the destructor of the class
+is called to delete the memory allocated and used by the object; then the
+memory which is used by the object itself is freed.
+
+    Dynamically allocated arrays of objects can also be manipulated by
+tt(new) and tt(delete). In this case the size of the array is given between
+the tt([]) when the array is created:
+        verb(
+    Person *personarray = new Person [10];
+        )
+    The compiler will generate code to call the default constructor for each
+object which is created. As we have seen in section ref(DELETEARRAY), the
+ti(delete[]) operator must be used here  to destroy such an array in the
+proper way:
+        verb(
+    delete[] personarray;
+        )
+    The presence of the tt([]) ensures that the destructor is called for each
+object in the array.
+
+    What happens if tt(delete) rather than tt(delete[]) is used? Consider the
+following situation, in which the destructor tt(~Person()) is modified so that
+it will tell us that it's called.  In a tt(main()) function an array of two
+tt(Person) objects is allocated by tt(new), to be deleted by tt(delete
+[]). Next, the same actions are repeated, albeit that the tt(delete) operator
+is called without tt([]):
+        verbinclude(memory/examples/persondelete.cc)
+    Looking at the generated output, we see that the destructors of the
+individual tt(Person) objects are called if the tt(delete[]) syntax is
+followed, while only the first object's destructor is called if the tt([]) is
+omitted.
+
+    If no destructor is defined, it is not called. This may seem to be a
+trivial statement, but it has severe implications: objects which allocate
+memory will result in a i(memory leak) when i(no destructor) is defined.
+Consider the following program:
+        verbinclude(memory/examples/personnodelete.cc)
+    This program produces no output at all. Why is this? The variable tt(a) is
+defined as a emi(pointer to a pointer). For this situation, however, there
+is no defined destructor. Consequently, hi(delete[]: ignored) the tt([]) is
+ignored.
+
+    Now, as the tt([]) is ignored, only the array tt(a) itself
+is deleted, because here `tt(delete[] a)' deletes the memory pointed to
+by tt(a). That's all there is to it.
+
+    Of course, we don't want this, but require the tt(Person) objects pointed
+to by the elements of tt(a) to be deleted too. In this case we have two
+options:
+    itemization(
+    it() Explicitly walk all the elements of the tt(a) array, deleting them in
+turn. This will call the destructor for a pointer to tt(Person) objects, which
+will destroy all elements if the tt([]) operator is used, as in:
+        verbinclude(memory/examples/persondoubleptr.cc)
+    it() Define a i(wrapper) class containing a pointer to tt(Person) objects,
+and allocate a pointer to this class, rather than a pointer to a pointer to
+tt(Person) objects. The topic of containing classes in classes,
+em(composition), was discussed in section ref(Composition).  Here is an
+example showing the deletion of pointers to memory using such a wrapper class:
+        verbinclude(memory/examples/wrapper.cc)
+    )

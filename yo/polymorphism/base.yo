@@ -1,0 +1,148 @@
+    As illustrated in fig(InternalOrganization), an tt(AirAuto) represents
+em(two) tt(Vehicle)s. The result is not only an
+i(ambiguity) in the functions which access the tt(weight) data, but also the
+presence of two tt(weight) fields. This is somewhat redundant, since we can
+assume that an tt(AirAuto) has just one weight.
+
+    We can achieve the situation that an tt(AirAuto) is only one tt(Vehicle),
+yet used multiple derivation.  This is realized by defining the i(base class)
+that is multiply mentioned in a i(derived class)' inheritance tree as a
+    emi(virtual base class).
+For the class tt(AirAuto) this means that the derivation of tt(Land) and
+tt(Air) is changed:
+        verb(
+    class Land: virtual public Vehicle
+    {
+        // etc
+    };
+
+    class Auto: public Land
+    {
+        // etc
+    };
+
+
+    class Air: virtual public Vehicle
+    {
+        // etc
+    };
+
+    class AirAuto: public Auto, public Air
+    {
+    };
+        )
+    The i(virtual derivation) ensures that via the tt(Land) route, a
+tt(Vehicle) is only added to a class when a virtual base class was not yet
+present. The same holds true for the tt(Air) route. This means that we can no
+longer say via which route a tt(Vehicle) becomes a part of an tt(AirAuto); we
+can only say that there is an embedded tt(Vehicle) object.  The internal
+organization of an tt(AirAuto) after virtual derivation is shown in
+fig(VirtualBaseClass).
+    figure(polymorphism/virtbase)
+        (Internal organization of an tt(AirAuto) object when the base
+            classes are virtual.)
+        (VirtualBaseClass)
+    Note the following:
+    itemization(
+    it() When base classes of a class using multiple derivation are themselves
+virtually derived from a base class (as shown above), the
+    i(base class constructor) normally called when the derived class
+constructor is called, is no longer used: its
+    hi(base class initializer: ignored) base class initializer is
+em(ignored). Instead, the base class constructor will be called independently
+from the derived class constructors. Assume we have two classes, tt(Derived1)
+and tt(Derived2), both (possibly virtually) derived from tt(Base). We will
+address the hi(multiple inheritance: which constructors) question which
+constructors will be called when a class tt(Final: public Derived1, public
+Derived2) is defined. To distinguish the several constructors that are
+involved, we will use tt(Base1()) to indicate the tt(Base) class constructor
+that is called as base class initializer for tt(Derived1) (and analogously:
+tt(Base2()) belonging to tt(Derived2)), while tt(Base()) indicates the default
+constructor of the class tt(Base). Apart from the tt(Base) class constructor,
+we use tt(Derived1()) and tt(Derived2()) to indicate the base class
+initializers for the class tt(Final). We now distinguish the following
+cases when constructing the class tt(Final: public Derived1, public
+Derived2):
+        itemization(
+        it() classes:
+                verb(
+                    Derived1: public Base
+                    Derived2: public Base
+                )
+            quote(This is the normal, non virtual multiple derivation. There
+                are two tt(Base) classes in the tt(Final) object, and the
+                following constructors will be called (in the mentioned
+                order):
+                verb(
+                    Base1(),
+                    Derived1(),
+                    Base2(),
+                    Derived2()
+                )
+            )
+        it() classes:
+                verb(
+                    Derived1: public Base
+                    Derived2: virtual public Base
+                )
+            quote(Only tt(Derived2) uses virtual derivation. For the
+                tt(Derived2) part the base class initializer will be omitted,
+                and the default tt(Base) class constructor will be
+                called. Furthermore, this `detached' base class constructor
+                will be called em(first):
+                verb(
+                    Base(),
+                    Base1(),
+                    Derived1(),
+                    Derived2()
+                )
+                Note that tt(Base()) is called first, em(not)
+                tt(Base1()). Also note that, as only one derived class uses
+                virtual derivation, there are still em(two) tt(Base) class
+                objects in the eventual tt(Final) class. Merging of
+                hi(base classes: merged) base classes only occurs with
+                i(multiple virtual base classes).
+            )
+        it() classes:
+                verb(
+                    Derived1: virtual public Base
+                    Derived2: public Base
+                )
+            quote(Only tt(Derived1) uses virtual derivation. For the
+                tt(Derived1) part the base class initializer will now be
+                omitted, and the default tt(Base) class constructor will be
+                called instead. Note the difference with the first case:
+                tt(Base1()) is replaced by tt(Base()). Should tt(Derived1)
+                happen to use the default tt(Base) constructor, no difference
+                would be noted here with the first case:
+                verb(
+                    Base(),
+                    Derived1(),
+                    Base2(),
+                    Derived2()
+                )
+            )
+        it() classes:
+                verb(
+                    Derived1: virtual public Base
+                    Derived2: virtual public Base
+                )
+            quote(Here both derived classes use virtual derivation, and so
+                only em(one) tt(Base) class object will be present in the
+                tt(Final) class. Note that now only one tt(Base) class
+                constructor is called: for the detached (merged) tt(Base)
+                class object:
+                verb(
+                    Base(),
+                    Derived1(),
+                    Derived2()
+                )
+            )
+        )
+    it() Virtual derivation is, in contrast to virtual functions, a pure
+i(compile-time) issue: whether a derivation is virtual or not defines
+how the compiler builds a class definition from other classes.
+    )
+    Summarizing, using virtual derivation avoids ambiguity when member
+functions of a base class are called. Furthermore,
+    i(duplication of data members) is avoided.

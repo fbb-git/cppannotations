@@ -1,0 +1,48 @@
+When a function is called, the context in which it is called is made known to
+the function by providing the function with a parameter list. When the
+function is called, these parameters are initialized by the function's
+arguments. For example, a function tt(show()) may expect two arguments: an
+tt(ostream &) into which the information is inserted and an object which will
+be inserted into the stream. For example:
+        verb(
+    void State::show(ostream &out, Item const &item)
+    {
+        out << "Here is item " << item.nr() << ":\n" <<
+                item << endl;
+    }
+        )
+    Functions clearly differ in their parameter lists: both the numbers and
+types of their parameters vary.
+
+    A emi(local context struct) is used to standardize the parameter lists of
+functions, for the benefit of template construction. In the above example, the
+function tt(State::show()) uses a local context consisting of an tt(ostream &)
+and an tt(Item const &). This context never changes, and may very well be
+offered through a tt(struct) defined as follows:
+        verb(
+    struct ShowContext
+    {
+        ostream &out;
+        Item const &item;
+    };
+        )
+    Note that this tt(struct) mimics tt(State::show())'s parameter list. Since
+it is directly connected to the function tt(State::show()) it is best defined
+in the class tt(State), offering the function tt(State::show()). Once we have
+defined this tt(struct), tt(State::show())'s implementation is modified so
+that it now expects a tt(ShowContext &):
+        verb(
+    void State::show(ShowContext &context)
+    {
+        context.out << "Here is item " << context.item.nr() << ":\n" <<
+                context.item << endl;
+    }
+        )
+    (Alternatively, an overloaded tt(State::show(ShowContext &context))
+could be defined, calling the original tt(show()) member).
+
+    Using a local context tt(struct) any parameter list (except those of
+        i(variadic functions)) can be standardized to a parameter list
+consisting of a single element. Now that we have a single parameter to specify
+any local context we're ready for the `templatization' of
+    i(function object wrapper classes).

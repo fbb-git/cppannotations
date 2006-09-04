@@ -1,0 +1,68 @@
+        Template classes can be used in i(class derivation) as well. When a
+template class is used in class derivation, the following situations should be
+distinguished:
+    itemization(
+    it() An existing template class is used as base class when deriving
+a concrete class. In this case, the resulting class is still partially a
+template class, but this is somewhat hidden from view when an object of the
+derived class is constructed.
+    it() An existing template class is used as the base class when deriving
+another template class. Here the template-class characteristics remain clearly
+visible.
+    it() A concrete class is used as the base class when deriving a template
+class. This interesting hybrid allows us to construct template classes that
+        hi(template class: partially precompiled)
+are em(partially precompiled).
+    )
+    These three variants of i(template class derivation) will now be
+elaborated.
+
+
+Consider the
+following base class:
+        verb(
+    template<typename T>
+    class Base
+    {
+        T const &t;
+
+        public:
+            Base(T const &t)
+            :
+                t(t)
+            {}
+    };
+        )
+    The above class is a template class, which can be used as a i(base class)
+for the following i(derived template class) tt(Derived):
+        verb(
+    template<typename T>
+    class Derived: public Base<T>
+    {
+        public:
+            Derived(T const &t)
+            :
+                Base(t)
+            {}
+    };
+        )
+    Other combinations are possible as well: by specifying concrete template
+type parameters of the base class, the base class is instantiated and the
+derived class becomes an ordinary (non-template) class:
+        verb(
+    class Ordinary: public Base<int>
+    {
+        public:
+            Ordinary(int x)
+            :
+                Base(x)
+            {}
+    };
+
+    // With the following object definition:
+    Ordinary
+        o(5);
+        )
+    This construction allows us in a specific situation to
+    i(add functionality to a template class), without the need for
+constructing a derived template class.

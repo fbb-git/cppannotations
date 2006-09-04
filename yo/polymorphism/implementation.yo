@@ -1,0 +1,57 @@
+This section briefly describes how i(polymorphism) is implemented in bf(C++).
+It is not necessary to understand how polymorphism is implemented if using
+this feature is the only intention. However, we think it's nice to know how
+polymorphism is at all possible. Besides, the following discussion does
+explain why there is a cost of polymorphism in terms of memory usage.
+
+The fundamental idea behind polymorphism is that the compiler does not know
+which function to call i(compile-time); the appropriate function will be
+selected i(run-time). That means that the hi(function: address) address of the
+function must be stored somewhere, to be looked up prior to the actual
+call. This `somewhere' place must be accessible from the object in
+question. E.g., when a tt(Vehicle *vp) points to a tt(Truck) object, then
+tt(vp->weight()) calls a member function of tt(Truck); the address of this
+function is determined from the actual object which tt(vp) points to.
+
+A common implementation is the following: An object containing virtual member
+functions holds as its i(first data member) a hi(hidden data member) hidden
+field, pointing to an array of pointers containing the addresses of the
+virtual member functions. The hidden data member is usually called the
+emi(vpointer), the array of virtual member function addresses the emi(vtable).
+Note that the discussed implementation is compiler-dependent, and is by no
+means dictated by the bf(C++) i(ANSI/ISO) standard.
+
+The table of addresses of virtual functions is shared by all objects of
+the class. Multiple classes may even share  the same table. The
+overhead in terms of i(memory consumption) is therefore:
+    itemization(
+    it() One extra pointer field per object, which points to:
+    it() One table of pointers per (derived) class storing the addresses of
+the class's virtual functions.
+    )
+    Consequently, a statement like tt(vp->weight()) first inspects the
+hidden data member of the object pointed to by tt(vp). In the case of the
+vehicle classification system, this data member points to a table of two
+addresses: one pointer for the function tt(weight()) and one pointer for
+the function tt(setWeight()). The actual function which is called is
+determined from this table.
+
+The internal organization of the objects having virtual functions is further
+illustrated in figures fig(ImplementationFigure) and fig(CaumonFigure)
+(provided by url(Guillaume
+Caumon)(mailto:Guillaume.Caumon@ensg.inpl-nancy.fr)).
+
+        figure(polymorphism/implementation)
+        (Internal organization objects when virtual functions are defined.)
+        (ImplementationFigure)
+
+        figure(polymorphism/caumon)
+        (Complementary figure, provided by Guillaume Caumon)
+        (CaumonFigure)
+
+    As can be seen from figures fig(ImplementationFigure) and
+fig(CaumonFigure), all objects which use virtual functions must have one
+(hidden) data member to address a table of function pointers. The objects of
+the classes tt(Vehicle) and tt(Auto) both address the same table. The class
+tt(Truck), however, introduces its own version of tt(weight()): therefore,
+this class needs its own table of function pointers.

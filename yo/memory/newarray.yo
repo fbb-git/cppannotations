@@ -1,0 +1,55 @@
+Operator ti(new[]) is used to i(allocate arrays). The generic i(notation)
+tt(new[]) is an abbreviation used in the Annotations. Actually, the number of
+elements to be allocated is specified as an expression between the square
+brackets, which are em(prefixed) by the type of the values or class of the
+objects that must be allocated:
+        centt(int *intarr = new int[20];   // allocates 20 ints)
+    Note well that ti(operator new) is a different operator than tt(operator
+new[]).  In section ref(NEWDELETEARRAY) redefining tt(operator new[]) is
+covered.
+
+    Arrays allocated by tt(operator new[]) are called emi(dynamic arrays).
+They are constructed during the execution of a program, and their lifetime may
+exceed the lifetime of the function in which they were created. Dynamically
+allocated arrays may last for as long as the program runs.
+
+    When tt(new[]) is used to allocate an array of primitive values or an
+        hi(new[]: memory initialization) array of objects, tt(new[]) must be
+specified with a type and an (unsigned) expression between square
+brackets. The type and expression together are used by the compiler to
+determine the required size of the block of memory to make available. With the
+array allocation, all elements are stored consecutively in memory. The
+    i(array index notation) can be used to access the individual elements:
+tt(intarr[0]) will be the very first tt(int) value, immediately followed by
+tt(intarr[1]), and so on until the last element: tt(intarr[19]). With
+non-class types (primitive types, tt(struct) types without constructors,
+pointer types) the returned allocated block of memory is em(not) guaranteed to
+be initialized to 0.
+
+    To i(allocate arrays of objects), the tt(new[])-bracket notation is used
+as well. For example, to allocate an array of 20 tt(string) objects the
+following construction is used:
+        centt(string *strarr = new string[20];   // allocates 20 strings)
+    Note here that, since em(objects) are allocated, constructors are
+automatically used. So, whereas tt(new int[20]) results in a block of 20
+em(uninitialized) tt(int) values, tt(new string[20]) results in a block of 20
+em(initialized) tt(string) objects. With arrays of objects the
+    emi(default constructor) is used for the initialization. Unfortunately it
+is not possible to use a constructor having arguments when arrays of objects
+are allocated.  However, it is possible to em(overload) ti(operator new[]) and
+provide it with arguments which may be used for a non-default initialization
+of arrays of objects. Overloading tt(operator new[]) is discussed in section
+ref(NEWDELETEARRAY).
+
+    Similar to bf(C), and without resorting to the operator tt(new[]), arrays
+of variable size can also be constructed as emi(local arrays) within
+functions. Such arrays are not dynamic arrays, but emi(local arrays), and
+their lifetime is restricted to the lifetime of the block in which they were
+defined.
+    quote(
+    Once allocated, all arrays are hi(arrays of fixed size)
+    i(fixed size arrays). There is no simple way to enlarge or
+    i(shrink arrays): there is no ti(renew operator). In section
+    ref(ENLARGEARRAY) an example is given showing how to
+    i(enlarge an array).
+    )

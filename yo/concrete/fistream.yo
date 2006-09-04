@@ -1,0 +1,127 @@
+Usually when extracting information from tt(istream) objects oprshift(), the
+standard extraction operator, is perfectly suited for the task as in most
+cases the extracted fields are white-space or otherwise clearly separated from
+each other. But this does not hold true in all situations. For example, when a
+web-form is posted to some processing script or program, the receiving program
+may receive the form field's values as emi(url-encode)em(d) characters: letters
+and digits are sent unaltered, blanks are sent as tt(+) characters, and all
+other characters start with tt(%) followed by the character's
+    i(ascii-value) represented by its two digit hexadecimal value.
+
+    When decoding url-encoded information, a simple hexadecimal extraction
+won't work, since that will extract as many hexadecimal characters as
+available, instead of just two. Since the letters tt(a-f) and tt(0-9) are
+legal hexadecimal characters, a text like tt(My name is `Ed'), url-encoded as
+        centt(My+name+is+%60Ed%27)
+    will result in the extraction of the hexadecimal values tt(60ed) and
+tt(27), instead of tt(60) and tt(27). The name tt(Ed) will disappear from
+view, which is clearly not what we want.
+
+    In this case, having seen the tt(%), we could extract 2 characters, put
+them in an ti(istringstream) object, and extract the hexadecimal value from
+the tt(istringstream) object. A bit cumbersome, but doable. Other approaches,
+however, are possible as well.
+
+    The following class ti(fistream) for em(fixed-sized field istream) defines
+an tt(istream) class supporting both fixed-sized field extractions and
+blank-delimited extractions (as well as unformatted tt(read()) calls). The
+class may be initialized as a emi(wrapper) around an existing tt(istream), or
+it can be initialized using the name of an existing file. The class is derived
+from tt(istream), allowing all extractions and operations supported by
+tt(istream)s in general. The class will need the following data members:
+    itemization(
+    itt(d_filebuf): a filebuffer used when tt(fistream) reads its information
+        from a named (existing) file. Since the filebuffer is only needed in
+        that case, and since it must be allocated dynamically, it is defined
+        as an tt(auto_ptr<filebuf>) object.
+    itt(d_streambuf): a pointer to tt(fistream)'s tt(streambuf). It will point
+        to tt(filebuf) when tt(fistream) opens a file by name. When an
+        existing tt(istream) is used to construct an tt(fistream), it will
+        point to the existing tt(istream)'s tt(streambuf).
+    itt(d_iss): an tt(istringstream) object which is used for the fixed field
+        extractions.
+    itt(d_width): an tt(unsigned) indicating the width of the field to
+        extract. If 0 no fixed field extractions will be used, but
+        information will be extracted from the tt(istream) base class object
+        using standard extractions.
+    )
+    Here is the initial section of tt(fistream)'s class interface:
+        verbinsert(INITIAL)(concrete/examples/fistream/fistream.h)
+    As mentioned, tt(fistream) objects can be constructed from either a
+filename or an existing tt(istream) object. Thus, the class interface shows
+two constructors:
+        verbinsert(CONS)(concrete/examples/fistream/fistream.h)
+    When an tt(fistream) object is constructed using an existing tt(istream)
+object, the tt(fistream)'s tt(istream) part will simply use the tt(stream)'s
+tt(streambuf) object:
+        verbinsert(CONS1)(concrete/examples/fistream/fistream.cc)
+    When an tt(fstream) object is constructed using a filename, the
+tt(istream) base initializer is given a new tt(filebuf) object to be used as
+its tt(streambuf). Since the class's data members are not initialized before
+the class's base class has been constructed, tt(d_filebuf) can only be
+initialized thereafter. By then, the tt(filebuf) is only available as
+tt(rdbuf()), which returns a tt(streambuf). However, as it is actually a
+tt(filebuf), a tt(reinterpret_cast) is used to cast the tt(streambuf) pointer
+returned by tt(rdbuf()) to tt(a filebuf *), so tt(d_filebuf) can be
+initialized:
+        verbinsert(CONS2)(concrete/examples/fistream/fistream.cc)
+
+    There is only one additional public member: tt(setField(field const
+&)). This member is used to define the size of the next field to extract. Its
+parameter is a reference to a tt(field) class, a emi(manipulator class)
+defining the width of the next field.
+
+    Since a tt(field &) is mentioned in tt(fistream)'s interface, tt(field)
+must be declared before tt(fistream)'s interface starts. The class tt(field)
+itself is simple: it declares tt(fistream) as its friend, and it has two data
+members: tt(d_width) specifies the width of the next field, tt(d_newWidth) is
+set to tt(true) if tt(d_width)'s value should actually be used. If
+tt(d_newWidth) is false, tt(fistream) will return to its standard extraction
+mode. The class tt(field) furthermore has two constructors: a default
+constructor, setting tt(d_newWidth) to tt(false) and a second constructor
+expecting the width of the next field to extract as its value. Here is the
+class tt(field):
+        verbinsert(FIELD)(concrete/examples/fistream/fistream.h)
+    Since tt(field) declares tt(fistream) as its friend, tt(setField) may
+inspect tt(field)'s members directly.
+
+    Time to return to tt(setField()). This function expects a reference to a
+tt(field) object, initialized in either of three different ways:
+    itemization(
+    itt(field()): When tt(setField())'s argument is a tt(field) object
+        constructed by its default constructor the next extraction will use
+        the same fieldwidth as the previous extraction.
+    itt(field(0)): When this tt(field) object is used as tt(setField())'s
+        argument, fixed-sized field extraction stops, and the tt(fistream)
+        will act like any standard tt(istream) object.
+    itt(field(x)): When the tt(field) object itself is initialized by a
+        non-zero unsigned value tt(x), then the next field width will be tt(x)
+        characters wide. The preparation of such a field is left to
+        tt(setBuffer()), tt(fistream)'s only private member.
+    )
+    Here is tt(setField())'s implementation:
+        verbinsert(SETFIELD)(concrete/examples/fistream/fistream.cc)
+
+    The private member tt(setBuffer()) defines a buffer of tt(d_width + 1)
+characters, and uses tt(read()) to fill the buffer with tt(d_width)
+characters. The buffer is terminated by an tt(ASCII-Z) character. This buffer
+is then used to initialize the tt(d_str) member. Finally, tt(fistream)'s
+tt(rdbuf()) member is used to extract the tt(d_str)'s data via the
+tt(fistream) object itself:
+        verbinsert(SETBUFFER)(concrete/examples/fistream/fistream.cc)
+
+    Although tt(setField()) could be used to configure tt(fistream) to use or
+not to use fixed-sized field extraction, using i(manipulator)s is probably
+preferable. To allow tt(field) objects to be used as manipulators, an
+overloaded extraction operator was defined, accepting an tt(istream &) and a
+tt(field const &) object. Using this extraction operator, statements like
+        verb(fis >> field(2) >> x >> field(0);)
+    are possible (assuming tt(fis) is a tt(fistream) object). Here is the
+overloaded oprshift(), as well as its declaration:
+        verbinsert(OPEX)(concrete/examples/fistream/fistream.cc)
+    Declaration:
+        verbinsert(OPEX)(concrete/examples/fistream/fistream.h)
+
+    Finally, an example. The following program uses a tt(fistream) object to
+url-decode url-encoded information appearing at its standard input:
+        verbinsert(MAIN)(concrete/examples/fistream/main.cc)

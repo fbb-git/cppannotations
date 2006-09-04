@@ -1,0 +1,145 @@
+    Many generic algorithms (cf. chapter ref(STL)) use function objects to
+operate on the data to which their iterators refer, or they require predicate
+function objects using some criterion to make a decision about these data. The
+standard approach followed by the generic algorithms is to pass the
+information to which the iterators refer to overloaded function call operators
+(i.e., ti(operator()())) of function objects that are passed as arguments to
+the generic algorithms.
+
+    Usually this approach requires the construction of a dedicated class
+implementing the required function object. However, in many cases the em(class
+context) in which the iterators exist already offers the required
+functionality. Alternatively, the functionality might exist as member function
+of the objects to which the iterators refer. For example, finding the first
+empty tt(string) object in a vector of tt(string) objects could profitably use
+the tt(string::empty()) member.
+
+    Another frequently encountered situation is related to a
+    emi(local context). Once again, consider the situation where the elements
+of a tt(string) vector are all visited: each object must be inserted in a
+stream whose reference is only known to the function in which the tt(string)
+elements are visited, but some additional information must be passed to the
+insertion function as well, making the use of the tt(ostream_inserter) less
+appropriate.
+
+    The frustrating part of using generic algorithms is that these dedicated
+function objects often very much look like each other, but the standard
+solution (using  predefined function objects, using specialized iterators)
+seldomly do the required job: their fixed function interfaces (e.g.,
+tt(equal_to) calling the object's tt(operator==())) often are too rigid to be
+useful and, furthermore, they are unable to use any additional local
+context that is active when they are used.
+
+    Nevertheless, one may wonder whether template classes might be constructed
+which can be used again and again to create dedicated function objects. Such
+template class instantiations should offer facilities to call configurable
+(member) functions, using a configurable local context.
+
+    In the upcoming sections, several emi(wrapper templates)
+        hi(template class: wrapper) supporting these requirements are
+developed. To support a em(local context), a dedicated em(local context struct)
+is introduced. Furthermore, the wrapper templates will allow us to specify the
+member function that should be called in its constructor. Thus the rigidness
+of the fixed member function as used in the predefined function objects is
+avoided.
+
+
+
+    As an example of a generic algorithm usually requiring a simple function
+object, consider tt(for_each()). The tt(operator()()) of the function object
+passed to this algorithm receives as its argument a reference to the object to
+which the iterators refer. Generally, the tt(operator()()) will do one of two
+things:
+    itemization(
+    it() It may call a member function of the object defined in its parameter
+list (e.g., tt(operator()(string &str)) may call tt(str.length()));
+    it() It may call a function, passing it its parameter as argument (e.g.,
+calling tt(somefunction(str))).
+    )
+    Of course, the latter example is a bit overkill, since
+tt(somefunction())'s address could actually directly have been passed to the
+generic algorithm, so why use this complex procedure? The answer is
+em(context): if tt(somefunction()) would actually require other arguments,
+representing the local context in which tt(somefunction()) was called, then
+the function object's constructor could have received the local context as its
+arguments, passing that local context on to tt(somefunction()), together with
+the object received by the function object's tt(operator()()) function. There
+is no way to pass any local context to the generic algorithm's simple variant,
+in which a function's address is passed to the generic function.
+
+    At first sight, however, the fact that a local context differs from one
+situation to another makes it hard to standardize the local context: a local
+context might consist of values, pointers, references, which differ in number
+and types from one situation to another. Defining templates for all possible
+situations is clearly impractical, and using bf(C)-style i(variadic functions)
+is also not very attractive, since the arguments passed to a variadic function
+object constructor cannot simply be passed on to the function object's
+tt(operator()()).
+
+    The concept of a emi(local context struct) is introduced to standardize
+the local context. It is based on the following considerations:
+    itemization(
+    it() Usually, a function requiring a local context is a member
+function of some class.
+    it() Instead of using the intuitive implementation where the member
+function is given the required parameters representing a local context, it
+receives a single argument: a tt(const &) to a local context tt(struct).
+    it() The local context tt(struct) is defined in the function's class
+interface.
+    it() Before the function is called, a local context tt(struct) is
+initialized, which is then passed as argument to the function.
+    )
+    Of course, the organization of local context tt(struct)s will differ from
+one situation to the next situation, but there is always just em(one) local
+context required. The fact that the inner organization of the local context
+differs from one situation to the next causes no difficulty at all to
+bf(C++)'s template mechanism. Actually, having available a generic type
+(em(Context)) together with several concrete instantiations of that
+generic type is a mere text-book argument for using templates.
+
+COMMENT(
+    One additional design consideration is required:
+
+    void operator()(Data d)         // d kan geen pointer zijn,
+    {                               // d moet een class object zijn
+        (d.*function)(context)
+    }
+
+    void operator()(Data d)         // d moet een pointer zijn,
+    {                               // d moet een class object zijn
+        (d->*function)(context)     // aanroep is direct
+    }
+
+
+
+    void operator()(Data d)         // d kan van alles zijn,
+    {                               // function kan een static member van de
+        (*function)(d, context)     // huidige of van d's class zijn.
+    }                               // maar d's member (indien van toepassing)
+                                    // wordt indirect aangeroepen
+
+    bool operator()(Data d)         // Idem, unair predicaat
+    {
+        return (*function)(d, context)
+    }
+
+    bool operator()(Data1 d1, Data2 d2)      // Idem, binair predicaat
+    {
+        return (*function)(d1, d2, context)
+    }
+    // Geen lokale context: gebruik static functie
+
+
+        itemization(
+        it() A em(unary predicate function wrapper) allows us to use an
+existing em(unary function) as a function object;
+        it() A em(unary object wrapper) allows us to use any object type
+supporting any unary predicate member function as a function object;
+        it() A em(binary predicate function wrapper) allows us to use an
+existing em(binary function) as a function object;
+        it() A em(binary object wrapper) allows us to use any object type
+supporting any binary predicate member function as a function object;
+        it() A em(ForEach()) template function allows us to use any member
+function of any class with the tt(for_each()) generic algorithm.
+        )
+END COMMENT)

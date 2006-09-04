@@ -1,0 +1,95 @@
+As mentioned before (see section ref(Pretensions)), bf(C++)
+contains special syntactical possibilities to implement i(data hiding). Data
+hiding is the ability of a part of a program to hide its data from other parts;
+thus avoiding improper addressing or name collisions.
+
+bf(C++) has three special keywords which are related to data hiding:
+ti(private), ti(protected) and ti(public). These keywords can be used in the
+definition of a tt(struct). The keyword tt(public) defines all subsequent
+fields of a structure as accessible by all code; the keyword tt(private)
+defines all subsequent fields as only accessible by the code which is part of
+the tt(struct) (i.e., only accessible to its member functions). The keyword
+tt(protected) is discussed in chapter ref(INHERITANCE), and is beyond the
+scope of the current discussion.
+
+In a tt(struct) all fields are tt(public), unless explicitly stated otherwise.
+Using this knowledge we can expand the tt(struct) tt(Person):
+        verb(
+    struct Person
+    {
+        private:
+            char d_name[80];
+            char d_address[80];
+        public:
+            void setName(char const *n);
+            void setAddress(char const *a);
+            void print();
+            char const *name();
+            char const *address();
+    };
+        )
+    The data fields tt(d_name) and tt(d_address) are only accessible to the
+member functions which are defined in the tt(struct): these are the functions
+tt(setName()), tt(setAddress()) etc.. This results from the fact
+that the fields tt(d_name) and tt(d_address) are preceded by the
+keyword tt(private). As an illustration consider the following code fragment:
+        verb(
+    Person x;
+
+    x.setName("Frank");         // ok, setName() is public
+    strcpy(x.d_name, "Knarf");  // error, name is private
+        )
+    Data hiding is realized as follows: the
+actual data of a tt(struct) tt(Person) are mentioned in the structure
+definition. The data are accessed by the outside world using special functions,
+which are also part of the definition. These member functions control all
+traffic between the data fields and other parts of the program and are
+therefore also called `interface' functions.  The data hiding which is thus
+realized is illustrated in fig(datahiding).
+        figure(first/datahiding)
+      (Private data and public interface functions of the class Person.)
+      (datahiding)
+    Also note that the functions tt(setName()) and tt(setAddress()) are
+declared as having a tt(char const *) argument. This means that the functions
+will not alter the strings which are supplied as their arguments.  In the same
+vein, the functions tt(name()) and tt(address()) return a tt(char const *):
+the caller may not modify the strings to which the return values point.
+
+Two examples of member functions of the tt(struct) tt(Person) are shown
+below:
+        verb(
+    void Person::setName(char const *n)
+    {
+        strncpy(d_name, n, 79);
+        d_name[79] = 0;
+    }
+
+    char const *Person::name()
+    {
+        return d_name;
+    }
+        )
+    In general, the power of the member functions and of the concept of data
+hiding lies in the fact that the interface functions can perform special
+tasks, e.g., checking the validity of the data. In the above example
+tt(setName()) copies only up to 79 characters from its argument to the data
+member tt(name), thereby avoiding i(array buffer overflow).
+
+Another example of the concept of data hiding is the following. As an
+alternative to member functions which keep their data in memory (as do the
+above code examples), a runtime library could be developed with interface
+functions which store their data on file. The conversion of a program which
+stores tt(Person) structures in memory to one that stores the data on disk
+would not require any modification of the program using tt(Person)
+structures. After recompilation and linking the new object module to a new
+library, the program will use the new tt(Person) structure.
+
+Though data hiding can be realized with tt(structs), more often (almost
+always) classes are used instead. A tt(class) refers to the same concept as a
+struct, except that a tt(class) uses private access by default, whereas
+structs use public access by default. The definition of a tt(class) tt(Person)
+would therefore look exactly as shown above, except for the fact that instead
+of the keyword tt(struct), tt(class) would be used, and the initial
+tt(private:) clause can be omitted.  Our typographic suggestion for class
+names is to use a capital character as its first character, followed by the
+remainder of the name in lower case (e.g., tt(Person)).

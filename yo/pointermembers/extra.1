@@ -1,0 +1,202 @@
+COMMENT(
+
+class 
+Let's assume that a database is created in which information about  persons 
+is stored. Name, street names, city names, house numbers, birthdays, etc. are 
+collected in objects of the class tt(Person), which are, in turn, stored 
+in a class tt(PersonDbase). Partial interfaces of these classes could be 
+designed as follows:
+verb(
+    class Date;
+
+    class Person()
+    {
+        public:
+            ...
+            char const *get_name() const;   
+            Date const &birthdate() const;
+        private:
+            ...
+    };
+
+    class Person_dbase
+    {
+        public:  
+            enum Listtype
+            {
+                list_by_name,
+                list_by_birthday,
+            };
+            void list(Listtype type);
+        private:
+            Person
+                *pp;    // pointer to the info
+            unsigned
+                n;      // number of persons stored.
+    };
+)
+The organization of tt(Person) and tt(Person_dbase) is pictured in 
+fig(PersonFig): Within a tt(Person_dbase) object the tt(Person) objects
+are stored. They can be reached via the pointer variable tt(Person *pp).
+    figure(ptrmembers/fig/personfig)
+        (Person_dbase objects: Persons reached via Person *pp)
+        (PersonFig)
+        
+We would like to develop the function tt(Person_dbase::list()) in such a 
+way that it lists the contents of the database sorted according to a selected
+field of a tt(Person) object. 
+
+So, when tt(list()) is called to list the 
+database sorted by em(names), the database of tt(Person) objects is first 
+sorted by names, and is then listed.
+
+Alternatively, when tt(list()) is called to list the 
+database sorted by em(birthdates), the database of tt(Person) objects 
+is first sorted by birthdates, and is then listed.
+
+In this situation, the function tt(qsort()) is most likely called to do 
+the actual sorting of the tt(Person) objects+footnote(
+In the current implementation tt(pp) points to an array of tt(Person)
+objects. In this implementation, the function tt(qsort()) will have to 
+copy the actual tt(Person) objects again and again, which may be rather
+inefficient when the tt(Person) objects become large. Under an alternative
+implementation, in which the tt(Person) objects are reached through 
+pointers, the efficiency of the tt(qsort()) function will be improved. In that 
+case, the datamember tt(pp) will have to be declared as 
+tt(Person **pp).).
+This function requires a pointer to a compare function, comparing
+two elements of the array to be sorted. The prototype of this compare function 
+is 
+    center(tt(int (*)(void const *, void const *)))
+However, when used with 
+tt(Person) objects, the prototype of the tt(compare()) function should be
+    center(tt(int (*)(Person const *, Person const *)))
+Somewhere a typecast
+will be required: either when calling tt(qsort()), or within the tt(
+compare()) functions themselves. We will use the typecast when calling
+tt(qsort()), using the following typedef to reduce the verbosity of the 
+typecasts
+(a em(pointer to an integer function requiring two void pointers)):
+    center(tt(typedef int (*pif2vp)(void const *, void const *)))
+
+Next, the function tt(list()) could be developed according to the following 
+setup: 
+verb(
+    void Person_dbase::list(Listtype type)
+    {
+        switch (type)
+        {
+            case list_by_name:
+                qsort(pp, n, sizeof(Person), (pif2vp)cmpname);
+            break;
+
+            case list_by_birthday:
+                qsort(pp, n, sizeof(Person), (pif2vp)cmpdate);
+            break;
+        }
+        // list the sorted Person-database
+    }
+)
+There are several reasons why this setup is not particularly desirable:
+
+startit()  
+    it() Although the example only shows two list-alternatives (sort by name 
+        and sort by birthday), a real-life implementation will have many more
+        ways to list the information. This will soon result in a very long
+        function tt(list()) which will be hard to maintain and will
+        look inaccessible due to its length. 
+    it() Every time a new way to list the data in the database, the function
+        tt(list()) will have to be expanded, by offering an extra 
+        tt(case) label for every new way to list the data.
+    it() Much of the code in the function tt(list()) will be repeated 
+        within the function, showing only some small differences.
+endit()
+
+Much of the complexity of tt(list()) function could be reduced by 
+defining em(pointers) to the compare-functions, storing these pointers in an 
+array. Since this array will be common to all tt(Person_dbase) objects, 
+it should be defined as a static array, containing the pointers to the 
+compare-functions.
+
+Before actually constructing this array, note that this approach requires the
+definition of as many compare functions as there are elements in the 
+tt(Listtype) enum. So, to list the information sorted by name a function
+tt(cmpname()) is used, comparing the names stored in two 
+tt(Person) objects, while a function tt(cmpcity()), is used to compare
+cities. Somehow this seems to be redundant as well: we would like to use
+one function to compare strings, whatever their meanings. Comparable 
+considerations hold true for other fields of information.
+
+The compare functions, however, receive pointers to tt(Person)
+objects. Therefore, the data-members of the tt(Person) objects to which
+these pointers point can be accessed using the access-member functions
+of the tt(Person) class. So, the compare functions can access these
+data-members as well, using the pointers to the tt(Person) objects.
+
+Now note that the access member functions that are used within a particular
+compare function can be em(hard-coded), by plainly mentioning the accessors
+to be used, and they can be selected indirectly, by using em(pointers)
+to the accessors to be used. 
+
+This latter solution allows us to em(merge) compare functions that 
+use the same implementations, but use different accessors: By setting a pointer
+to the appropriate accessor function just before the compare function is
+called, one single compare function can be used to compare many different
+kinds of data stored inside tt(Person) objects.
+
+The compare functions themselves are used within the context of the 
+tt(Person_dbase) class, where they are passed to the tt(qsort()) function. The 
+tt(qsort()) function, however, is a global function. Consequently, the compare 
+functions can't be ordinary member functions of the class tt(Person_dbase), 
+but they must be static members of that class, so they  can be passed to the 
+tt(qsort()) function.
+
+Summarizing what we've got so far, we see that the problem has been
+broken down as follows:
+startit()  
+    it() The tt(switch) construction in the tt(list()) function
+        should be replaced by a call to a function using a pointer to 
+        a function. 
+    it() The actual function to be used is determined by the 
+        value of the selector, which is given to tt(list()) when it's
+        called.
+    it() The tt(compare()) functions may be further 
+        abstracted by combining those comparing the same types. 
+    it() When tt(compare()) functions are combined, the access
+        member function of the tt(Person) objects to be used will also
+        be found via an array containing pointers to the access member 
+        functions of tt(Person) objects.
+    it() The tt(compare()) functions are part of the tt(
+        Person_dbase) class, but it must also be possible to 
+        give their addresses as arguments to tt(qsort()). Hence, these
+        functions must be defined as static functions of the class 
+        tt(Person_dbase).
+endit()
+
+From this analysis the essential characteristics of the proposed implementation
+emerge. 
+
+For every type of listing, as produced by the function tt(list()), the 
+following is required:
+
+startit()  
+    it() The access member function of the tt(Person) class to be
+        used.
+    it() The tt(compare()) function to be used. The tt(compare()) functions
+        will be em(static functions) of the class tt(Person_dbase), so that
+        they can be passed over to tt(qsort())
+endit()
+                                             
+This information does not depend on a particular tt(Person_dbase) object, 
+but is common to all of these objects. Hence it will be stored compile-time
+in a tt(static Person_dbase) kind of array. 
+
+How will the tt(compare()) functions know which element of this array to
+use? The requested index is passed to the tt(list()) member function
+as a tt(Listtype) value. The tt(list()) function can then save this
+information in a tt(static Person_dbase::Listtype) variable for the
+tt(compare()) functions to use.
+
+We've analyzed enough. Let's build it this way.
+
+COMMENT ENDS)

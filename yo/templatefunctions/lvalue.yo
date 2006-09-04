@@ -1,0 +1,81 @@
+There are three types of emi(lvalue transformations):
+    itemization(
+    it() bf(lvalue-to-rvalue transformations.)
+        quote(An i(lvalue-to-rvalue transformation) is applied when an tt(rvalue)
+is required, and an tt(lvalue) is used as argument.  This happens when a
+variable is used as argument to a function specifying a
+    emi(value parameter). For example,
+        verb(
+    template<typename Type>
+    Type negate(Type value)
+    {
+        return -value;
+    }
+    int main()
+    {
+        int x = 5;
+        x = negate(x);  // lvalue (x) to rvalue (copies x)
+    }
+        )
+    )
+    it() bf(array-to-pointer transformations.)
+        quote(An i(array-to-pointer transformation)
+is applied when the name of an array is assigned to a pointer variable. This
+is frequently seen with functions defining pointer parameters. When calling
+such functions, arrays are often specified as their arguments. The
+array's address is then assigned to the pointer-parameter, and its type is
+used to deduce the corresponding template parameter's type. For example:
+        verb(
+    template<typename Type>
+    Type sum(Type *tp, unsigned n)
+    {
+        return accumulate(tp, tp + n, Type());
+    }
+    int main()
+    {
+        int x[10];
+        sum(x, 10);
+    }
+        )
+    In this example, the location of the array tt(x) is passed to tt(sum()),
+expecting a pointer to some type. Using the array-to-pointer transformation,
+tt(x)'s address is considered a pointer value which is assigned to tt(tp),
+deducing that tt(Type) is tt(int) in the process.
+    )
+    it() bf(function-to-pointer transformations.)
+        quote(This transformation is most often seen with template functions
+defining a parameter which is a pointer to a function. When calling such a
+function the name of a function may be specified as its argument. The address
+of the function is then assigned to the pointer-parameter, deducing the
+template type parameter in the process. This is called a
+    i(function-to-pointer transformation). For example:
+        verb(
+    #include <cmath>
+
+    template<typename Type>
+    void call(Type (*fp)(Type), Type const &value)
+    {
+        (*fp)(value);
+    }
+    int main()
+    {
+        call(&sqrt, 2.0);
+    }
+        )
+    In this example, the address of the tt(sqrt()) function is passed to
+tt(call()), expecting a pointer to a function returning a tt(Type) and
+expecting a tt(Type) for its argument. Using the function-to-pointer
+transformation, tt(sqrt)'s address is considered a pointer value which is assigned
+to tt(fp), deducing that tt(Type) is tt(double) in the process. Note that the
+argument tt(2.0) could not have been specified as tt(2), as there is no tt(int
+sqrt(int)) prototype. Also note that the function's first parameter specifies
+tt(Type (*fp)(Type)), rather than tt(Type (*fp)(Type const &)) as might have
+been expected from our previous discussion about how to specify the types of
+template function's parameters, preferring references over values.
+However, tt(fp)'s argument tt(Type) is not a template function parameter, but
+a parameter of the function tt(fp) points to. Since tt(sqrt()) has prototype
+tt(double sqrt(double)), rather than tt(double sqrt(double const &)),
+tt(call())'s parameter tt(fp) em(must) be specified as tt(Type
+(*fp)(Type)). It's that strict.
+    )
+    )

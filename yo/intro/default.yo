@@ -1,0 +1,55 @@
+In bf(C++) it is possible to provide `i(default arguments)' when defining a
+function. These arguments are supplied by the compiler when they are not
+specified by the programmer. For example:
+        verb(
+    #include <stdio.h>
+
+    void showstring(char *str = "Hello World!\n");
+
+    int main()
+    {
+        showstring("Here's an explicit argument.\n");
+
+        showstring();           // in fact this says:
+                                // showstring("Hello World!\n");
+    }
+        )
+    The possibility to omit arguments in situations where default arguments
+are defined is just a nice touch: the compiler will supply the missing
+argument unless explicitly specified in the call. The code of the program
+becomes by no means shorter or more efficient.
+
+Functions may be defined with more than one default argument:
+        verb(
+    void two_ints(int a = 1, int b = 4);
+
+    int main()
+    {
+        two_ints();            // arguments:  1, 4
+        two_ints(20);          // arguments: 20, 4
+        two_ints(20, 5);       // arguments: 20, 5
+    }
+        )
+    When the function tt(two_ints()) is called, the compiler supplies one or
+two arguments when necessary. A statement as tt(two_ints(,6)) is however not
+allowed: when arguments are omitted they must be on the right-hand side.
+
+Default arguments must be known at i(compile-time), since at that moment
+arguments are supplied to functions. Therefore,  the
+default arguments must be mentioned in the function's em(declaration),
+rather than in its em(implementation):
+        verb(
+    // sample header file
+    extern void two_ints(int a = 1, int b = 4);
+
+    // code of function in, say, two.cc
+    void two_ints(int a, int b)
+    {
+        ...
+    }
+        )
+    Note that supplying the default arguments in function definitions
+instead of in the header file is not the correct approach: the compiler will
+read the header file and not the function definition when the function is used
+in other sources. Consequently, in those cases the compiler has no way to
+determine the values of default function arguments.

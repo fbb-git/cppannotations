@@ -1,0 +1,49 @@
+    The class ti(ParentSlurp), derived from tt(Fork), starts a child process
+which em(execs) a program (like tt(/bin/ls)). The (standard) output of the
+execed program is then read by the parent process. The parent process will
+(for demonstration purposes) write the lines it receives to its standard
+output stream, while prepending linenumbers to the received lines. It is most
+convenient here to redirect the parents standard input stream, so that the
+parent can read the em(output) from the child process from its tt(std::cin)
+em(input) stream. Therefore, the only pipe that's used is used as an em(input)
+pipe at the parent, and an em(output) pipe at the child.
+
+    The class tt(ParentSlurp) has the following characteristics:
+    itemization(
+    it() It is derived from tt(Fork). Before starting tt(ParentSlurp)'s class
+interface, the compiler must have read both tt(fork.h) and
+tt(pipe.h). Furthermore, the class only uses one data member: a tt(Pipe)
+object tt(d_pipe):
+        verbinsert(HEAD)(concrete/examples/parentslurp.h)
+    it() Since tt(Pipe)'s constructor automatically constructs a pipe, and
+since tt(d_pipe) is automatically constructed by tt(ParentSlurp)'s default
+constructor, there is no need to define tt(ParentSlurp)'s constructor
+explicitly. As no construtor needs to be implemented, all tt(ParentSlurp)'s
+members can be declared as  tt(protected) members.
+    it() The tt(childRedirections()) member configures the pipe as a pipe for
+reading. So, all information written to the child's standard output stream
+will end up in the pipe. The big advantage of this all is that no streams
+around file descriptors are needed to write to a file descriptor:
+        verbinsert(CHILDREDIR)(concrete/examples/parentslurp.h)
+    it() The tt(parentRedirections()) member, configures its end of the pipe
+as a reading pipe. It does so by redirecting the reading end of the pipe to
+its standard input file descriptor (tt(STDIN_FILENO)), thus allowing
+extractions from tt(cin) instead of using streams built around file
+descriptors.
+        verbinsert(PARENTREDIR)(concrete/examples/parentslurp.h)
+    it() The tt(childProcess()) member only has to concentrate on its own
+actions. As it only needs to execute a program (writing information to its
+standard output), the member consists of but one statement:
+        verbinsert(CHILDPROC)(concrete/examples/parentslurp.h)
+    it() The tt(parentProcess()) member simply `slurps' the information
+appearing at its standard input. Doing so, it actually reads the child's
+output. It copies the received lines to its standard output stream after
+having prefixed line numbers to them:
+        verbinsert(PARENT)(concrete/examples/parentslurp.cc)
+    )
+    The following program simply constructs a tt(ParentSlurp) object, and
+calls its tt(fork()) member. Its output consists of a numbered list of files
+in the directory where the program is started.  Note that the program also
+needs the tt(fork.o, pipe.o) and tt(waitforchild.o) object files (see
+earlier sources):
+        verbinsert(MAIN)(concrete/examples/parentslurp.cc)

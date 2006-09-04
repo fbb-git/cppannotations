@@ -1,0 +1,67 @@
+In section ref(DISTINGUISH) the keyword tt(typename) was introduced to allow
+the compiler to distinguish between template class members and types that are
+    hi(template class: distinguishing members and types) defined within
+template classes. The tt(typename) keyword is used as a tool allowing us to
+tell the compiler that we have a type that is nested under a template
+class in mind.
+
+    Consider the following example in which a nested class, that is not
+depending on a template parameter, is defined within a template
+class. Furthermore, the template class member tt(nested()) should return an
+object of the nested class:
+        verb(
+    template <typename T>
+    class Outer
+    {
+        public:
+            class Nested
+            {
+            };
+
+        Nested nested() const
+        {
+            return Nested();
+        }
+    };
+        )
+    The above example compiles flawlessly: within the class tt(Outer) there is
+no ambiguity with respect to the meaning of tt(nested())'s return
+type. However, the situation changes when we try to implement tt(nested())
+outside of its class. The following attempt to do so fails:
+        verb(
+    template <typename T>
+    class Outer
+    {
+        public:
+            class Nested
+            {
+            };
+
+        Nested nested() const;
+    };
+
+    template <typename T>
+    Outer<T>::Nested Outer<T>::nested() const
+    {
+        return Nested();
+    }
+        )
+    This attempt produces an error message like
+
+    em(error:)
+    emi(expected constructor, destructor, or type conversion) em(before
+'Outer').
+
+    In this case a type conversion is required as tt(Outer<T>::Nested)
+refers to a em(type), nested under tt(Outer<T>) rather than to a member of
+tt(Outer<T>). Consequently, a tt(typename) keyword must be used to coerce the
+compiler into interpreting tt(Outer<T>::Nested) as a type name. Writing
+tt(typename) in front of tt(Outer<T>::Nested) removes the compilation
+error. The correct implementation of the function tt(nested()) becomes:
+        verb(
+    template <typename T>
+    typename Outer<T>::Nested Outer<T>::nested() const
+    {
+        return Nested();
+    }
+        )

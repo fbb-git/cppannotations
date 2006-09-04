@@ -1,0 +1,225 @@
+The ti(list) container implements a i(list data structure).  Before tt(list)
+containers can be used the following preprocessor directive must have been
+specified: hi(#include <list>)
+        verb(
+    #include <list>
+        )
+    The organization of a tt(list) is shown  in figure ref(listFig).
+        figure(containers/list)(A list data-structure)(listFig)
+    In figure ref(listFig) it is shown that a list consists of separate
+list-elements, connected to each other by pointers. The list can be
+    hi(list traversal) traversed in two directions: starting at em(Front) the
+list may be traversed from left to right, until the 0-pointer is reached at
+the end of the rightmost list-element. The list can also be traversed from
+right to left: starting at em(Back), the list is traversed from right to left,
+until eventually the 0-pointer emanating from the leftmost list-element is
+reached.
+
+As a subtlety note that the representation given in figure ref(listFig) is not
+necessarily used in actual implementations of the list. For example, consider
+the following little program:
+        verb(
+    int main()
+    {
+        list<int> l;
+        cout << "size: " << l.size() << ", first element: " <<
+                l.front() << endl;
+    }
+        )
+    When this program is run it might actually produce the output:
+        verb(
+    size: 0, first element: 0
+        )
+    Its front element can even be assigned a value. In this case the
+implementor has choosen to insert a hidden element to the list, which is
+actually a circular list, where the hidden element serves as terminating
+element, replacing the 0-pointers in figure ref(listFig). As noted, this is a
+subtlety, which doesn't affect the conceptual notion of a list as a data
+structure ending in 0-pointers. Note also that it is well known that various
+implementations of list-structures are possible (cf.
+    i(Aho, A.V.), i(Hopcroft J.E.) and i(Ullman, J.D.), (1983)
+    emi(Data Structures and Algorithms) (Addison-Wesley)).
+
+Both lists and vectors are often appropriate data structures in situations
+where an hi(storing data) unknown number of data elements must be
+stored. However, there are some hi(rule of thumb) rules of thumb to follow
+when a choice between the two data structures must be made.
+    itemization(
+    it() When the majority of accesses is i(random), a tt(vector) is
+the preferred data structure. E.g., a program counting the frequencies
+of characters in a textfile, a tt(vector<int> frequencies(256)) is the
+datastructure doing the trick, as the values of the received characters can be
+used as indices into the tt(frequencies) vector.
+    it() The previous example illustrates a second rule of thumb, also
+favoring the tt(vector): if the number of elements is known in advance (and
+does not notably change during the lifetime of the program), the vector
+is also preferred over the list.
+    it() In cases where i(insertions) or i(deletions) prevail, the list is
+generally preferred. Actually, in my experience, lists aren't that useful at
+all, and often an implementation will be faster when a tt(vector), maybe
+containing holes, is used.
+    )
+    Other considerations related to the choice between lists and vectors
+should also be given some thought. Although it is true that the vector is able
+to grow dynamically, the i(dynamic growth) does involve a lot data-copying.
+Clearly, copying a million large data structures takes a considerable amount
+of time, even on fast computers. On the other hand, inserting a large number
+of elements in a list doesn't require us to
+    i(copy non-involved data). Inserting a new element in a list merely
+requires us to hi(pointer juggling) juggle some pointers. In figure
+ref(listAdd) this is shown: a new element is inserted between the second and
+third element, creating a new list of four elements.
+        figure(containers/insertlist)(Adding a new element to a list)(listAdd)
+    Removing an element from a list also is a simple matter. Starting again
+from the situation shown in figure ref(listFig), figure ref(listDel) shows
+what happens if element two is removed from our list. Again: only pointers
+need to be juggled. In this case it's even simpler than adding an element:
+only two pointers need to be rerouted.
+        figure(containers/dellist)(Removing an element from a list)(listDel)
+    Summarizing the comparison between lists and vectors, it's probably best
+to conclude that there is no clear-cut answer to the question what data
+structure to prefer. There are rules of thumb, which may be adhered to. But if
+worse comes to worst, a i(profiler) may be required to find out what's best.
+
+    But, no matter what the thoughts on the subject are, the tt(list)
+container is available, so let's see what we can do with it.
+The following constructors, operators, and member functions
+are available:
+    itemization(
+    it() hi(list constructors) Constructors:
+        itemization(
+        it() A tt(list) may be constructed empty:
+        verb(
+    list<string> object;
+        )
+        As with the tt(vector), it is an error to refer to an element of an
+empty list.
+        it() A list may be initialized to a certain number of
+elements. By default, if the initialization value is not explicitly mentioned,
+the default value or default constructor for the actual data type is used. For
+example:
+        verb(
+    list<string> object(5, string("Hello")); // initialize to 5 Hello's
+    list<string> container(10);              // and to 10 empty strings
+        )
+        it() A list may be initialized using a two iterators. To
+initialize a list with elements 5 until 10 (including the last one) of a
+tt(vector<string>) the following construction may be used:
+        verb(
+    extern vector<string> container;
+    list<string> object(&container[5], &container[11]);
+        )
+        it() A list may be initialized using a i(copy constructor):
+        verb(
+    extern list<string> container;
+    list<string> object(container);
+        )
+    )
+    it() There are no special operators available for tt(list)s, apart from
+the standard operators for containers.
+    it() The following i(member functions) are available for lists:
+        itemization(
+        ithtq(list::back())(Type &list::back())(this member returns a
+reference to the last element in the list. It is the
+    i(responsibility of the programmer) to use this member only if the list is
+not empty.)
+        ithtq(list::begin())(list::iterator list::begin())(this member
+returns an i(iterator) pointing to the first element in the list, returning
+tt(list::end()) if the list is empty.)
+        ittq(list::clear())(this member erases all elements in the list.)
+        ithtq(list::empty())(bool list::empty())(this member returns tt(true)
+if the list contains no elements.)
+        ithtq(list::end())(list::iterator list::end())(this member
+returns an iterator pointing beyond the last element in the list.)
+        ithtq(list::erase())(list::iterator list::erase())(this member can be
+used to erase a specific range of elements in the list:)
+            itemization(
+            itt(erase(pos)) erases the element pointed to by tt(pos). The
+iterator tt(++pos) is returned.
+            itt(erase(first, beyond)) erases elements indicated by the iterator
+range rangett(first, beyond). tt(Beyond) is returned.
+            )
+        ithtq(list::front())(Type &list::front())(this member returns a
+reference to the first element in the list. It is the responsibility of the
+programmer to use this member only if the list is not empty.)
+        ithtq(list::insert())(... list::insert())(this member can be used to
+insert elements into the list. The return value depends on the version of
+tt(insert()) that is called:)
+            itemization(
+            itt(list::iterator insert(pos)) inserts a default value of type
+tt(Type) at tt(pos), tt(pos) is returned.
+            itt(list::iterator insert(pos, value)) inserts tt(value) at
+tt(pos), tt(pos) is returned.
+            itt(void insert(pos, first, beyond)) inserts the elements in the
+                i(iterator range) rangeti(first, beyond).
+            itt(void insert(pos, n, value)) inserts tt(n) elements having value
+tt(value) at position tt(pos).
+            )
+        ithtq(list::merge())(void list<Type>::merge(list<Type> other))(this
+member function assumes that the current and other lists are sorted (see
+below, the member tt(sort())), and will, based on that assumption, insert the
+elements of tt(other) into the current list in such a way that the modified
+list remains sorted.  If both list are not sorted, the resulting list will be
+ordered `as much as possible', given the initial ordering of the elements in
+the two lists. tt(list<Type>::merge()) uses tt(Type::operator<()) to sort the
+data in the list, which operator must therefore be available.  The next
+example illustrates the use of the tt(merge()) member: the list `tt(object)'
+is not sorted, so the resulting list is ordered 'as much as possible'.
+            verbinclude(containers/examples/listmerge.cc)
+    A subtlety is that tt(merge()) doesn't alter the list if the list itself
+is used as argument: tt(object.merge(object)) won't change the list
+`tt(object)'.)
+        ithtq(list::pop_back())(void list::pop_back())(this member removes
+the last element from the list. With an i(empty list) nothing happens.)
+        ithtq(list::pop_front())(void list::pop_front())(this member removes
+the first element from the list. With an i(empty list) nothing happens.)
+        ithtq(list::push_back())(void list::push_back(value))(this member
+adds tt(value) to the end of the list.)
+        ithtq(list::push_front())(void list::push_front(value))(this member
+adds tt(value) before the first element of the list.)
+        ithtq(list::resize())(void list::resize())(this member can be used to
+alter the number of elements that are currently stored in the list:)
+            itemization(
+            itt(resize(n, value)) may be used to resize the list to a size of
+tt(n). tt(Value) is optional. If the list is expanded and tt(value) is not
+provided, the extra elements are initialized to the i(default value) of the
+used data type, otherwise tt(value) is used to initialize extra elements.
+            )
+        ithtq(list::rbegin())(list::reverse_iterator list::rbegin())(
+    hi(reverse_iterator) this member returns an iterator pointing to the last
+element in the list.)
+        ithtq(list::remove())(void list::remove(value))(this member removes
+all occurrences of tt(value) from the list. In the following example, the two
+strings `tt(Hello)' are removed from the list tt(object):
+            verbinclude(containers/examples/listremove.cc))
+        ithtq(list::rend())(list::reverse_iterator list::rend())(this
+member returns an iterator pointing before the first element in the list.)
+        ithtq(list::size())(unsigned list::size())(this member returns the
+number of elements in the list.)
+        ithtq(list::reverse())(void list::reverse())(this member reverses the
+order of the elements in the list. The element tt(back()) will become
+tt(front()) and em(vice versa).)
+        ithtq(list::sort())(void list::sort())(this member will sort the
+list. Once the list has been sorted, An example of its use is given at the
+description of the tt(unique()) member function below. tt(list<Type>::sort())
+uses tt(Type::operator<()) to sort the data in the list, which operator must
+therefore be available.)
+        ithtq(list::splice())(void list::splice(pos, object))(this member
+function transfers the contents of tt(object) to the current list, starting
+the insertion at the iterator position tt(pos) of the object using the
+tt(splice()) member. Following tt(splice()), tt(object) is empty. For example:
+         verbinclude(containers/examples/listsplice.cc)
+    Alternatively, tt(argument) may be followed by a iterator of tt(argument),
+indicating the first element of tt(argument) that should be spliced, or by two
+iterators tt(begin) and tt(end) defining the iterator-range rangett(begin,
+end) on tt(argument) that should be spliced into tt(object).)
+        ithtq(list::swap())(void list::swap())(this member can be used to
+swap two lists using identical data types.)
+        ithtq(list::unique())(void list::unique())(operating on a sorted list,
+this member function will remove all consecutively identical elements from the
+list. tt(list<Type>::unique()) uses tt(Type::operator==()) to identify
+identical data elements, which operator must therefore be available.  Here's
+an example removing all multiply occurring words from the list:
+            verbinclude(containers/examples/listunique.cc))
+        )
+    )

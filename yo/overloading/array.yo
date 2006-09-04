@@ -1,0 +1,91 @@
+As our next example of operator overloading, we present a class
+operating on an array of tt(int)s. Indexing the array elements occurs with
+the standard array operator tt([]), but additionally the class checks for
+i(boundary overflow). Furthermore, the i(index operator) (ti(operator[]())) is
+interesting in that it both em(produces) a value and em(accepts) a value, when
+used, respectively, as a emi(right-hand value) (emi(rvalue)) and a
+    emi(left-hand value) (emi(lvalue)) in expressions.
+    Here is an example showing the use of the class:
+        verb(
+    int main()
+    {
+        IntArray x(20);                 // 20 ints
+
+        for (int i = 0; i < 20; i++)
+            x[i] = i * 2;               // assign the elements
+
+        for (int i = 0; i <= 20; i++)   // produces boundary overflow
+            cout << "At index " << i << ": value is " << x[i] << endl;
+    }
+        )
+    First, the constructor is used to create an object containing 20
+tt(int)s. The elements stored in the object can be assigned or retrieved: the
+first tt(for)-loop assigns values to the elements using the index operator,
+the second tt(for)-loop retrieves the values, but will also produce a run-time
+error as the non-existing value tt(x[20]) is addressed. The tt(IntArray) class
+interface is:
+        verbinclude(overloading/examples/intarray.h)
+    This class has the following characteristics:
+    itemization(
+    it() One of its constructors has an tt(unsigned) parameter having a
+default argument value, specifying the number of tt(int) elements in the
+object.
+    it() The class internally uses a pointer to reach allocated memory.
+Hence, the necessary tools are provided: a copy constructor, an overloaded
+assignment operator and a destructor.
+    it() Note that there are two overloaded index operators. Why are there
+    two of them ?
+
+        The first overloaded index operator allows us to reach and modify the
+elements of non-constant tt(IntArray) objects.  This overloaded operator has
+as its prototype a function that returns em(a reference) to an tt(int). This
+allows us to use expressions like tt(x[10]) as em(rvalues) em(or)
+em(lvalues).
+
+    We can therefore use the same function to retrieve and to assign values.
+Furthermore note that the return value of the overloaded array operator is
+em(not) an tt(int const &), but rather an tt(int &). In this situation we
+don't use tt(const), as we must be able to change the element we want to
+access, when the operator is used as an lvalue.
+
+    However, this whole scheme fails if there's nothing to assign. Consider
+the situation where we have an tt(IntArray const stable(5)). Such an object is
+a em(const) object, which cannot be modified. The compiler detects this and
+will refuse to compile this object definition if only the first overloaded
+index operator is available. Hence the second overloaded index operator. Here
+the return-value is an tt(int const &), rather than an tt(int &), and the
+member-function itself is a tt(const) member function. This second form of the
+overloaded index operator is not used with em(non-)tt(const) objects, but it's
+only used with tt(const) objects. It is used for i(value-retrieval), not for
+value-assignment, but that is precisely what we want, using tt(const)
+objects. Here, members are overloaded only by their tt(const) attribute. This
+form of function overloading was introduced earlier in the Annotations
+(sections ref(FunctionOverloading) and ref(ConstFunctions)).
+
+    Also note that, since the values stored in the tt(IntArray) are primitive
+values of type tt(int), it's ok to use i(value return type)s.  However, with
+objects one usually doesn't want the extra copying that's implied with value
+return types. In those cases ti(const &) return values are preferred for
+tt(const) member functions. So, in the tt(IntArray) class an tt(int) return
+value could have been used as well. The second overloaded index operator would
+then use the following prototype:
+        verb(
+    int IntArray::operator[](int index) const;
+        )
+    it() As there is only one pointer data member, the destruction of the
+memory allocated by the object is a simple tt(delete data). Therefore, our
+standard tt(destroy()) function was not used.
+    )
+    Now, the implementation of the members are:
+        verbinclude(overloading/examples/intarray.cc)
+    Especially note the implementation of the tt(operator[]()) functions: as
+non-const members may call const member functions, and as the implementation
+of the tt(const) member function is identical to the non-const member
+function's implementation, we could implement both tt(operator[]) members
+inline using an auxiliary function tt(int &operatorIndex(unsigned index)
+const). It is interesting to note that a tt(const) member function may return
+a non-const reference (or pointer) return value, referring to one of the data
+members of its object. This is a potentially dangerous backdoor breaking data
+hiding. However, as the members in the public interface prevents this breach,
+we feel confident in defining tt(int &operatorIndex() const) as a private
+function, knowing that it won't be used for this unwanted purpose.

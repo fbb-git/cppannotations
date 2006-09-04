@@ -1,0 +1,137 @@
+Overloading the i(increment operator) (ti(operator++())) and
+    i(decrement operator) (iopdecrement()) creates a little problem: there
+are two version of each operator, as they may be used as emi(postfix operator)
+(e.g., tt(x++)) or as emi(prefix operator) (e.g., tt(++x)).
+
+    Used as em(postfix) operator, the value's object is returned as
+emi(rvalue), which is an expression having a fixed value: the
+post-incremented variable itself disappears from view. Used as em(prefix)
+operator, the variable is incremented, and its value is returned as
+emi(lvalue), so it can be altered immediately again. Whereas these
+characteristics are not em(required) when the operator is overloaded, it is
+strongly advised to implement these characteristics in any overloaded
+increment or decrement operator.
+
+    Suppose we define a emi(wrapper class) around the tt(unsigned) value
+type. The class could have the following (partially shown) interface:
+        verb(
+    class Unsigned
+    {
+        unsigned d_value;
+
+        public:
+            Unsigned();
+            Unsigned(unsigned init);
+            Unsigned &operator++();
+    }
+        )
+    This defines the em(prefix) overloaded increment operator. An em(lvalue)
+is returned, as we can deduce from the return type, which is tt(Unsigned &).
+
+    The em(implementation) of the above function could be:
+        verb(
+    Unsigned &Unsigned::operator++()
+    {
+        ++d_value;
+        return *this;
+    }
+        )
+    In order to define the em(postfix) operator, an overloaded version of the
+operator is defined, expecting an tt(int) argument. This might be considered a
+emi(kludge), or an acceptable application of function overloading. Whatever
+your opinion in this matter, the following can be concluded:
+    itemization(
+    it() Overloaded increment and decrement operators em(without parameters)
+are em(prefix) operators, and should return em(references) to the current
+object.
+    it() Overloaded increment and decrement operators em(having an int
+parameter) are em(postfix) operators, and should return the value the object
+has at the point the overloaded operator is called as a constant value.
+    )
+    To add the postfix increment operator to the tt(Unsigned) wrapper class,
+add the following line to the class interface:
+        verb(
+    Unsigned const operator++(int);
+        )
+    The em(implementation) of the postfix increment operator should be like
+this:
+        verb(
+    Unsigned const Unsigned::operator++(int)
+    {
+        return d_value++;
+    }
+        )
+    The simplicity of this implementation is em(deceiving). Note that:
+    itemization(
+        itt(d_value) is used with a postfix increment in the ti(return)
+expression. Therefore, the value of the tt(return) expression is tt(d_value)'s
+value, before it is incremented; which is correct.
+        it() The return value of the function is an tt(Unsigned) value. This
+emi(anonymous object) is implicitly initialized by the value of tt(d_value), so
+there is a i(hidden constructor call) here.
+        it() Anonymous objects are always i(const objects), so, indeed, the
+return value of the postfix increment operator is an em(rvalue).
+        it() The parameter is not used. It is only part of the implementation
+to em(disambiguate) the prefix- and postfix operators in implementations
+and declarations.
+    )
+    When the object has a more complex data organization, using a
+    i(copy constructor) might be preferred. For instance, assume we want to
+implement the postfix increment operator in the class tt(PersonData),
+mentioned in section ref(EXPLICIT). Presumably, the tt(PersonData) class
+contains a complex inner i(data organization). If the tt(PersonData) class
+would maintain a pointer tt(Person *current) to the tt(Person) object that is
+currently selected, then the postfix increment operator for the class
+tt(PersonData) could be implemented as follows:
+        verb(
+    PersonData PersonData::operator++(int)
+    {
+        PersonData tmp(*this);
+
+        incrementCurrent();     // increment `current', somehow.
+        return tmp;
+    }
+        )
+    A matter of concern here could be that this operation actually requires
+em(two) calls to the copy constructor: first to keep the current state, then
+to copy the tt(tmp) object to the (anonymous) return value. In some cases this
+double call of the hi(copy constructor: double call) copy constructor might be
+avoidable, by defining a specialized constructor. E.g.,
+        verb(
+    PersonData PersonData::operator++(int)
+    {
+        return PersonData(*this, incrementCurrent());
+    }
+        )
+    Here, tt(incrementCurrent()) is supposed to return the information which
+allows the constructor to set its tt(current) data member to the pre-increment
+value, at the same time incrementing tt(current) of the actual
+tt(PersonData) object. The above constructor would have to:
+    itemization(
+    it() initialize its data members by copying the values of the data members
+of the tt(this) object.
+    it() reassign tt(current) based on the return value of its second
+parameter, which could be, e.g., an index.
+    )
+    At the same time, tt(incrementCurrent()) would have incremented
+tt(current) of the actual tt(PersonData) object.
+
+    The general rule is that double calls of the copy constructor can be
+avoided if a i(specialized constructor) can be defined initializing an
+object to the pre-increment state of the current object. The current object
+itself has its necessary data members incremented by a function, whose
+return value is passed as argument to the constructor, thereby informing the
+constructor of the pre-incremented state of the involved data members. The
+postfix increment operator will then return the thus constructed (anonymous)
+object, and no copy constructor is ever called.
+
+    Finally it is noted that the call of the increment or decrement operator
+using  hi(overloaded increment: called as operator++()) its overloaded
+function name might require us to provide an (any) tt(int) argument to inform
+the compiler that we want the postfix increment function. E.g.,
+        verb(
+    PersonData p;
+
+    p = other.operator++();     // incrementing `other', then assigning `p'
+    p = other.operator++(0);    // assigning `p', then incrementing `other'
+        )

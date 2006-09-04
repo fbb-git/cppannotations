@@ -1,0 +1,59 @@
+    When the tt(Monitor) object starts a child process, it has to create an
+object of the class tt(Child). The tt(Child) class is derived from the class
+tt(Fork), allowing its construction as a emi(daemon), as discussed in the
+previous section. Since a tt(Child) object is a daemon, we know that its
+parent process should be defined as an empty function.  its tt(childProcess())
+must of course still be defined. Here are the characteristics of the class
+tt(Child):
+    itemization(
+    it() The tt(Child) class defines two tt(Pipe) data members, to allow
+communications between its own child- and parent processes. As these pipes are
+used by the tt(Child)'s child process, their names are aimed at the child
+process: the child process reads from tt(d_in), and writes to tt(d_out). Here
+are tt(Child) class's header and its private data:
+        verbinsert(HEAD)(concrete/examples/monitor/child.h)
+    it() The tt(Child)'s constructor simply stores its argument, a
+child-process order number, in its own tt(d_nr) data member:
+        verbinsert(CONS)(concrete/examples/monitor/child.h)
+    it() The tt(Child)'s child process will simply obtain its information from
+its standard input stream, and it will write its information to its standard
+output stream. Since the communication channels are pipes, redirections must
+be configured. The tt(childRedirections())
+member is implemented as follows:
+        verbinsert(CHILD)(concrete/examples/monitor/child.cc)
+    it() Although the parent process performs no actions, it must configure
+some redirections. Since the names of the pipes indicate their functions in
+the child process, tt(d_in) is used for em(writing) by the parent, and
+tt(d_out) is used for em(reading) by the parent. Here is the implementation of
+tt(parentRedirections()):
+        verbinsert(PARENT)(concrete/examples/monitor/child.cc)
+    it() The tt(Child) object will exist until it is destroyed by the
+tt(Monitor)'s tt(stopChild()) member. By allowing its creator, the tt(Monitor)
+object, to access the parent-side ends of the pipes, the tt(Monitor) object
+can communicate with the tt(Child)'s child process via those pipe-ends. The
+members tt(readFd()) and tt(writeFd()) allow the tt(Monitor) object to access
+these pipe-ends:
+        verbinsert(PIPES)(concrete/examples/monitor/child.h)
+    it() The tt(Child) object's child process basically has two tasks to
+perform:
+        itemization(
+        it() It must reply to information appearing at its standard input
+stream;
+        it() If no information has appeared within a certain time frame (the
+implementations uses an interval of five seconds), then a message should be
+written to its standard output stream anyway.
+        )
+        To implement this behavior, tt(childProcess()) defines a local
+tt(Selector) object, adding tt(STDIN_FILENO) to its set of monitored input
+file descriptors.
+
+    Then, in an eternal loop, tt(childProcess()) waits for tt(selector.wait())
+to return. When the alarm goes off, it sends a message to its standard output.
+(Hence, into the writing pipe). Otherwise, it will echo the messages appearing
+at its standard input to its standard output. Here is the implementation of
+the tt(childProcess()) member:
+        verbinsert(PROCESS)(concrete/examples/monitor/child.cc)
+    it() The next two accessors allow the tt(Monitor) object to access the
+tt(Child)'s process ID and order number, respectively:
+        verbinsert(PIDNR)(concrete/examples/monitor/child.h)
+    )

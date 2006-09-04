@@ -1,0 +1,49 @@
+Member functions of nested classes may be defined as inline functions.  Inline
+hi(inline member functions) member functions can be defined as if they were
+functions defined outside of the class definition: if the function
+tt(Outer::caller()) would have been defined outside of the class tt(Outer),
+the full class definition (including the definition of the class tt(Inner))
+would have been available to the compiler. In that situation the function is
+perfectly compilable. Inline functions can be compiled accordingly: they can
+be defined and they can use any nested class. Even if it appears later in the
+class interface.
+
+Member functions of nested classes can also be defined outside of their
+surrounding class. Consider the constructor of the class tt(FirstWithin) in
+the example of the previous section. The constructor tt(FirstWithin()) is
+defined in the class tt(FirstWithin), which is, in turn, defined within the
+class tt(Surround). Consequently, the class scopes of the two classes must be
+used to define the constructor. E.g.,
+        verb(
+    Surround::FirstWithin::FirstWithin()
+    {
+        variable = 0;
+    }
+        )
+    Static hi(nested classes: having static members) (data) members can be
+defined accordingly. If the class tt(FirstWithin) would have a tt(static
+unsigned) datamember tt(epoch), it could be initialized as follows:
+        verb(
+    unsigned Surround::FirstWithin::epoch = 1970;
+        )
+    Furthermore, multiple hi(scope resolution operator) scope resolution
+operators are needed to refer to public static members in code outside of the
+surrounding class:
+        verb(
+    void showEpoch()
+    {
+        cout << Surround::FirstWithin::epoch = 1970;
+    }
+        )
+    Inside the members of the class tt(Surround) only the tt(FirstWithin::)
+scope must be used; inside the members of the class tt(FirstWithin) there is
+no need to refer explicitly to the scope.
+
+    What about the members of the class tt(SecondWithin)? The classes
+tt(FirstWithin) and tt(SecondWithin) are both nested within tt(Surround), and
+can be considered members of the surrounding class. Since members of a class
+may directly refer to each other, members of the class tt(SecondWithin) can
+refer to (public) members of the class tt(FirstWithin). Consequently, members
+of the class tt(SecondWithin) could refer to the tt(epoch) member of
+tt(FirstWithin) as
+     centt(FirstWithin::epoch)

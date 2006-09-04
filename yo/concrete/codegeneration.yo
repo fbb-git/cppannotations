@@ -1,0 +1,42 @@
+The code hi(code generation) hi(bison++: code generation) is generated in the
+same way as with tt(bison) and tt(flex). In order to have tt(bisonc++)
+generate the files tt(parser.cc) and tt(parser.h), issue the command:
+        verb(
+    bisonc++ -V grammar
+        )
+    The option tt(-V) will generate the file tt(parser.output) showing
+information about the internal structure of the provided grammar, among which
+its states. It is useful for debugging purposes, and can be left out of the
+command if no debugging is required. tt(Bisonc++) may detect conflicts
+    (i(shift-reduce conflicts) and/or i(reduce-reduce conflicts)) in the
+provided grammar. These conflicts may be resolved explicitly, using
+i(disambiguation rules) or they are `resolved' by default. A
+shift-reduce conflict is resolved by shifting, i.e., the next token is
+consumed. A reduce-reduce conflict is resolved by using the first of two
+competing production rules. tt(Bisonc++) uses identical
+    i(conflict resolution) procedures as tt(bison) and tt(bison++).
+
+    Once a parser class and parsing member function has been constructed
+ti(flex) may be used to create a lexical scanner (in, e.g., the file
+tt(yylex.cc)) using the command
+        verb(
+    flex -I lexer
+        )
+
+    On i(Unix) systems, linking and compiling the generated sources and the
+source for the main program (given below) is then realized by a command
+comparable to:
+        verb(
+    g++ -o calc -Wall *.cc -s
+        )
+    Finally, here is a source file in which the tt(main()) function and the
+parser object is defined. The parser features the lexical scanner as one of
+its data members:
+        verbinclude(concrete/bisonc++/parser.cc)
+
+    tt(Bisonc++) can be downloaded from
+    hi(http://bisoncpp.sourceforge.net/)
+    tlurl(http://bisoncpp.sourceforge.net/). It requires the tt(bobcat)
+library, which can be downloaded from
+    hi(http://bobcat.sourceforge.net/)
+    tlurl(http://bobcat.sourceforge.net/).

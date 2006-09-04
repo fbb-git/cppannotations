@@ -1,0 +1,53 @@
+Generic algorithms often require a target container into which the results of
+the algorithm are deposited. For example, the link(tt(copy()))(COPY) algorithm
+has three parameters, the first two defining the range of visited elements,
+and the third parameter defines the first position where the results of the
+copy operation should be stored. With the tt(copy()) algorithm the number of
+elements that are copied are usually available beforehand, since the number is
+usually determined using pointer arithmetic. However, there are situations
+where pointer arithmetic cannot be used. Analogously, the number of resulting
+elements sometimes differs from the number of elements in the initial
+range. The generic algorithm link(tt(unique_copy()))(UNIQUECP) is a case in
+point: the number of elements which are copied to the destination container is
+normally not known beforehand.
+
+    In situations like these, an ti(inserter) adaptor function may be used to
+create elements in the destination container when they are needed.
+There are three types of tt(inserter()) adaptors:
+    itemization(
+    iti(back_inserter()): calls the container's ti(push_back()) member to add
+new elements at the end of the container. E.g., to copy all elements of
+tt(source) in reversed order to the back of tt(destination):
+        verb(
+    copy(source.rbegin(), source.rend(), back_inserter(destination));
+        )
+    iti(front_inserter()) calls the container's ti(push_front()) member to add
+new elements at the beginning of the container. E.g., to copy all elements of
+tt(source) to the front of the destination container (thereby also reversing
+the order of the elements):
+        verb(
+    copy(source.begin(), source.end(), front_inserter(destination));
+        )
+    iti(inserter()) calls the container's ti(insert()) member to add new
+elements starting at a specified starting point. E.g., to copy all elements of
+tt(source) to the destination container, starting at the beginning of
+tt(destination), shifting existing elements beyond the newly inserted
+elements:
+        verb(
+    copy(source.begin(), source.end(), inserter(destination,
+        destination.begin()));
+        )
+    )
+    Concentrating on the tt(back_inserter()), this iterator expects the name
+of a container having a member tt(push_back()). This member is called by the
+inserter's tt(operator()()) member. When a class (other than the abstract
+containers) supports a tt(push_back()) container, its objects can also be
+used as arguments of the tt(back_inserter()) if the class defines a
+        verb(
+    typedef DataType const &const_reference;
+        )
+    in its interface, where tt(DataType const &) is the type of the parameter
+of the class's member function tt(push_back()). For example, the following
+program defines a (compilable) skeleton of a class tt(IntStore), whose objects
+can be used as arguments of the tt(back_inserter) iterator:
+        verbinclude(stl/examples/backinserter.cc)

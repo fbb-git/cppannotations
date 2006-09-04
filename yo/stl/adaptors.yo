@@ -1,0 +1,133 @@
+Function adaptors modify the working of existing function objects. There are
+two kinds of i(function adaptors):
+    itemization(
+    it() em(Binders) hi(binder) are function adaptors converting binary
+function objects to unary function objects. They do so by em(binding) one
+object to a i(constant function object). For example, with the
+tt(minus<int>()) function object, which is a i(binary function object), the
+first argument may be bound to 100, meaning that the resulting value will
+always be tt(100) minus the value of the second argument. Either the first or
+the second argument may be bound to a specific value. To bind the first
+argument to a specific value, the function object ti(bind1st()) is used. To
+bind the second argument of a binary function to a specific value
+ti(bind2nd()) is used. As an example, assume we want to count all elements of
+a vector of tt(Person) objects that exceed (according to some criterion) some
+reference tt(Person) object. For this situation we pass the following binder
+and i(relational function object) to the ti(count_if()) generic algorithm:
+        verb(
+    bind2nd(greater<Person>(), referencePerson)
+        )
+    What would such a binder do? First of all, it's a function object, so it
+needs tt(operator()()). Next, it expects two arguments: a reference to another
+function object and a fixed operand. Although binders are defined as
+templates, it is illustrative to have a look at their implementations,
+assuming they were straight functions. Here is such a pseudo-implementation of
+a binder:
+        verb(
+    class bind2nd
+    {
+        FunctionObject const &d_object;
+        Operand const &d_rvalue;
+        public:
+            bind2nd(FunctionObject const &object, Operand const &operand)
+            :
+                d_object(object),
+                d_operand(operand)
+            {}
+            ReturnType operator()(Operand const &lvalue)
+            {
+                return d_object(lvalue, d_rvalue);
+            }
+    };
+        )
+    When its tt(operator()()) member is called the binder merely passes the
+call to the object's tt(operator()()), providing it with two arguments: the
+tt(lvalue) it itself received and the fixed operand it received via its
+constructor. Note the simplicity of these kind of classes: all its members can
+usually be implemented inline.
+
+    The tt(count_if()) generic algorithm visits all the elements in an
+iterator range, returning the number of times the i(predicate) specified as
+its final argument returns ti(true). Each of the elements of the iterator
+range is given to the predicate, which is therefore a i(unary function). By
+using the binder the binary function object tt(greater()) is adapted to a
+unary function object, comparing each of the elements in the range to the
+reference person.  Here is, to be complete, the call of the tt(count_if())
+function:
+        verb(
+    count_if(pVector.begin(), pVector.end(),
+        bind2nd(greater<Person>(), referencePerson))
+        )
+    it() em(Negators) hi(negators) are function adaptors converting the
+i(truth value) of a i(predicate) function. Since there are unary and binary
+predicate functions, there are two negator function adaptors: ti(not1()) is
+the negator  used with i(unary function objects), ti(not2()) is the
+negator  used with i(binary function objects).
+    )
+    If we want to count the number of persons in a tt(vector<Person>) vector
+em(not) exceeding a certain reference person, we may, among other approaches,
+use either of the following alternatives:
+    itemization(
+    it() Use a binary predicate that directly offers the required comparison:
+        verb(
+    count_if(pVector.begin(), pVector.end(),
+        bind2nd(less_equal<Person>(), referencePerson))
+        )
+    it() Use tt(not2) combined with the tt(greater()) predicate:
+        verb(
+    count_if(pVector.begin(), pVector.end(),
+        bind2nd(not2(greater<Person>()), referencePerson))
+        )
+        Note that tt(not2()) is a negator negating the truth value of a binary
+tt(operator()()) member: it must be used to wrap the binary predicate
+tt(greater<Person>()), negating its truth value.
+    it() Use tt(not1()) combined with the tt(bind2nd()) predicate:
+        verb(
+    count_if(pVector.begin(), pVector.end(),
+        not1(bind2nd(greater<Person>(), referencePerson)))
+        )
+        Note that tt(not1()) is a negator negating the truth value of a unary
+tt(operator()()) member: it is used to wrap the unary predicate tt(bind2nd()),
+negating its truth value.
+
+    The following little example illustrates the use of negator function
+adaptors, completing the section on function objects:
+        verbinclude(stl/examples/adaptors.cc)
+    )
+    One may wonder which of these alternative approaches is fastest. Using the
+first approach, in which a  directly available function object was used, two
+actions must be performed for each iteration by tt(count_if()):
+    itemization(
+    it() The binder's tt(operator()()) is called;
+    it() The operation tt(<=) is performed for tt(int) values.
+    )
+    Using the second approach, in which the tt(not2) negator is used to
+negate the truth value of the complementary logical function adaptor, three
+actions must be performed for each iteration by tt(count_if()):
+    itemization(
+    it() The binder's tt(operator()()) is called;
+    it() The negator's tt(operator()()) is called;
+    it() The operation tt(>) is performed for tt(int) values.
+    )
+    Using the third approach, in which a tt(not1) negator is used to
+negate the truth value of the binder, three
+actions must be performed for each iteration by tt(count_if()):
+    itemization(
+    it() The negator's tt(operator()()) is called;
+    it() The binder's tt(operator()()) is called;
+    it() The operation tt(>) is performed for tt(int) values.
+    )
+    From this, one might deduce that the first approach is fastest. Indeed,
+using Gnu's tt(g++) compiler on an old, 166 MHz pentium, performing 3,000,000
+tt(count_if()) calls for each variant, shows the first approach requiring
+about 70% of the time needed by the other two approaches to complete.
+
+    However, these differences disappear if the compiler is instructed to
+optimize for speed (using the ti(-O6) hi(compiler flag: -O6) compiler
+flag). When interpreting these results one should keep in mind that multiple
+nested function calls are merged into a single function call if the
+implementations of these functions are given inline and if the compiler
+follows the suggestion to implement these functions as true inline functions
+indeed.  If this is happening, the three approaches all merge to a single
+operation: the comparison between two tt(int) values. It is likely that the
+compiler does so when asked to optimize for speed.

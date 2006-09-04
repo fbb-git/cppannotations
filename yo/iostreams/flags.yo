@@ -1,0 +1,133 @@
+Most emi(formatting flags) are related to outputting information. Information
+can be written to output streams in basically two ways: emi(binary output)
+will write information directly to the output stream, without conversion to
+some i(human-readable) format. E.g., an tt(int) value is written as a set of
+four bytes. Alternatively, emi(formatted output) will convert the values that
+are stored in bytes in the computer's memory to i(ASCII)-characters, in order
+to create a human-readable form.
+
+Formatting flags can be used to define the way this conversion takes place, to
+control, e.g., the number of characters that are written to the output
+stream.
+
+The following formatting flags are available (see also sections
+ref(FORMATMEMBERS) and ref(MANIPULATORS)):
+    itemization(
+        iti(ios::adjustfield):
+            quote(emi(mask value) used in combination with a flag setting
+defining the way values are adjusted in wide fields (tt(ios::left),
+tt(ios::right), tt(ios::internal)). Example, setting the value 10 left-aligned
+in a field of 10 character positions:
+                verb(
+    cout.setf(ios::left, ios::adjustfield);
+    cout << "'" << setw(10) << 10 << "'" << endl;
+                )
+            )
+        iti(ios::basefield):
+            quote(emi(mask value) used in combination with a flag setting the
+radix of integral values to output (tt(ios::dec), tt(ios::hex) or
+tt(ios::oct)). Example, printing the value 57005 as a hexadecimal number:
+                verb(
+    cout.setf(ios::hex, ios::basefield);
+    cout << 57005 << endl;
+        // or, using the manipulator:
+    cout << hex << 57005 << endl;
+                )
+        )
+        iti(ios::boolalpha):
+            quote(to display boolean values as text, using the text
+`tt(true)' for the tt(true) logical value, and the string `tt(false)' for
+the tt(false) logical value. By default this flag is not set. Corresponding
+manipulators: tt(boolalpha) and ti(noboolalpha). Example, printing the
+boolean value `true' instead of 1:
+                verb(
+    cout << boolalpha << (1 == 1) << endl;
+                )
+)
+        iti(ios::dec):
+            quote(to read and display integral values as decimal (i.e.,
+i(radix) 10) values. This is the default.
+    With tt(setf()) the mask value ti(ios::basefield) must be provided.
+    Corresponding manipulator: ti(dec).)
+        iti(ios::fixed):
+            quote(to display real values in a fixed notation (e.g.,
+            12.25), as opposed to displaying values in a scientific
+notation. If just a change of notation is requested the  mask value
+ti(ios::floatfield) must be provided when tt(setf()) is used. Example:
+see tt(ios::scientific) below. Corresponding manipulator: tt(fixed).
+
+    Another use of tt(ios::fixed) is to set a fixed number of digits behind
+the decimal point when floating or double values are to be printed. See
+tt(ios::precision) in section ref(FORMATMEMBERS).
+            )
+        iti(ios::floatfield):
+            quote(mask value used in combination with a flag setting the
+way real numbers are displayed (tt(ios::fixed) or
+tt(ios::scientific)). Example:
+                verb(
+    cout.setf(ios::fixed, ios::floatfield);
+                )
+            )
+        iti(ios::hex):
+            quote(to read and display integral values as hexadecimal values
+(i.e., radix 16) values.
+    With tt(setf()) the mask value ti(ios::basefield) must be provided.
+    Corresponding manipulator: ti(hex).)
+        iti(ios::internal):
+            quote(to add i(fill characters) (blanks by default) between the
+minus sign of negative numbers and the value itself.
+    With tt(setf()) the mask value ti(adjustfield) must be provided.
+    Corresponding manipulator: ti(internal).)
+        iti(ios::left):
+            quote( to left-adjust (integral) values in fields that are wider
+than needed to display the values.  By default values are right-adjusted (see
+below).
+    With tt(setf()) the mask value ti(adjustfield) must be provided.
+    Corresponding manipulator: ti(left).)
+        iti(ios::oct):
+            quote( to display integral values as octal values (i.e., radix 8)
+values.
+    With tt(setf()) the mask value ti(ios::basefield) must be provided.
+    Corresponding manipulator: ti(oct).)
+        iti(ios::right):
+            quote( to right-adjust (integral) values in fields that
+are wider than needed to display the values.  This is the default adjustment.
+    With tt(setf()) the mask value ti(adjustfield) must be provided.
+    Corresponding manipulator: ti(right).)
+        iti(ios::scientific):
+            quote( to display real values in emi(scientific notation) (e.g.,
+1.24e+03).
+    With tt(setf()) the mask value ti(ios::floatfield) must be provided.
+    Corresponding manipulator: tt(scientific).)
+        iti(ios::showbase):
+            quote( to display the numeric base of integral
+values. With hexadecimal values the tt(0x) prefix is used, with octal values
+the prefix tt(0). For the (default) decimal value no particular prefix is
+used. Corresponding manipulators: tt(showbase) and ti(noshowbase))
+        iti(ios::showpoint):
+            quote( display a trailing decimal point and trailing
+decimal zeros when real numbers are displayed. When this flag is set, an
+insertion like:
+        centt(cout << 16.0 << ", " << 16.1 << ", " << 16 << endl;)
+    could result in:
+        centt(16.0000, 16.1000, 16)
+    Note that the last tt(16) is an integral rather than a real number, and is
+not given a decimal point: tt(ios::showpoint) has no effect here.
+    If tt(ios::showpoint) is not used, then trailing zeros are discarded. If
+the decimal part is zero, then the decimal point is discarded as well.
+    Corresponding manipulator: ti(showpoint).)
+        iti(ios::showpos):
+            quote(display a tt(+) character with positive
+values. Corresponding manipulator: ti(showpos).)
+        iti(ios::skipws):
+            quote(used for extracting information from
+streams. When this flag is set (which is the default) leading i(white space)
+characters (blanks, tabs, newlines, etc.) are skipped when a value is
+extracted from a stream. If the flag is not set, leading white space
+characters are not skipped.)
+        iti(ios::unitbuf):
+            quote(flush the stream after each output operation.)
+        iti(ios::uppercase):
+            quote(use capital letters in the representation of
+(hexadecimal or scientifically formatted) values.)
+    )

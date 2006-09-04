@@ -1,0 +1,159 @@
+The relationship between the proposed classes representing different kinds of
+vehicles is further illustrated here. The figure shows the object hierarchy:
+an tt(Auto) is a special case of a tt(Land) vehicle, which in turn is a
+special case of a tt(Vehicle).
+
+The class tt(Vehicle) is thus the `i(greatest common denominator)' in the
+classification system. For the sake of the example in this class we implement
+the functionality to store and retrieve the vehicle's weight:
+        verb(
+    class Vehicle
+    {
+        unsigned d_weight;
+
+        public:
+            Vehicle();
+            Vehicle(unsigned weight);
+
+            unsigned weight() const;
+            void setWeight(unsigned weight);
+    };
+        )
+    Using this class, the vehicle's weight can be defined as soon as the
+corresponding object has been created. At a later stage the weight can be
+re-defined or retrieved.
+
+To represent vehicles which travel over land, a new class tt(Land) can be
+defined with the functionality of a tt(Vehicle), while adding its own specific
+information and functionality. Assume that we are interested in the speed of
+land vehicles em(and) in their weights. The relationship between tt(Vehicle)s
+and tt(Land)s could of course be represented using composition, but that would
+be awkward: composition would suggest that a tt(Land) vehicle em(contains) a
+vehicle, while the relationship should be that the tt(Land) vehicle em(is) a
+special case of a vehicle.
+
+A relationship in terms of composition would also needlessly bloat our code.
+E.g., consider the following code fragment which shows a class tt(Land) using
+composition (only the tt(setWeight()) functionality is shown):
+        verb(
+    class Land
+    {
+        Vehicle d_v;        // composed Vehicle
+        public:
+            void setWeight(unsigned weight);
+    };
+
+    void Land::setWeight(unsigned weight)
+    {
+        d_v.setWeight(weight);
+    }
+        )
+    Using composition, the tt(setWeight()) function of the class tt(Land) only
+serves to pass its argument to tt(Vehicle::setWeight()). Thus, as far as
+weight handling is concerned, tt(Land::setWeight()) introduces no extra
+functionality, just extra code. Clearly this code duplication is superfluous:
+a tt(Land) should em(be) a tt(Vehicle); it should not em(contain)
+a tt(Vehicle).
+
+    The intended relationship is achieved better by i(inheritance):
+tt(Land) is em(derived) from tt(Vehicle), in which tt(Vehicle) is the
+    derivation's i(base class):
+        verb(
+    class Land: public Vehicle
+    {
+        unsigned d_speed;
+        public:
+            Land();
+            Land(unsigned weight, unsigned speed);
+
+            void setspeed(unsigned speed);
+            unsigned speed() const;
+    };
+        )
+    By postfixing the class name tt(Land) in its definition by tt(: public
+Vehicle) the i(derivation) is realized: the class tt(Land) now contains all
+the functionality of its base class tt(Vehicle) plus its own specific
+information and functionality. The extra functionality consists of a
+constructor with two arguments and interface functions to access the tt(speed)
+data member. In the above example emi(public derivation) is used.
+bf(C++) also supports
+    emi(private derivation) and emi(protected derivation). In section
+ref(DERIVATIONTYPES) their differences are discussed.  A simple example
+showing the possibilities of of the derived class tt(Land) is:
+        verb(
+    Land veh(1200, 145);
+
+    int main()
+    {
+        cout << "Vehicle weighs " << veh.weight() << endl
+             << "Speed is " << veh.speed() << endl;
+    }
+        )
+    This example shows two features of derivation. First, tt(weight()) is not
+mentioned as a member in tt(Land)'s interface. Nevertheless it is used in
+tt(veh.weight()).  This member function is an implicit part of the class,
+inherited from its `i(parent)' vehicle.
+
+Second, although the derived class tt(Land) now contains the functionality of
+tt(Vehicle), the i(private) fields of tt(Vehicle) remain private: they can
+only be accessed by tt(Vehicle)'s own member functions. This means that
+tt(Land)'s member functions em(must) use interface functions (like
+tt(weight()) and tt(setWeight())) to address the tt(weight) field, just as any
+other code outside the tt(Vehicle) class. This restriction is necessary to
+enforce the principle of i(data hiding). The class tt(Vehicle) could, e.g., be
+recoded and recompiled, after which the program could be relinked. The class
+tt(Land) itself could remain unchanged.
+
+Actually, the previous remark is not quite right: If the
+    i(internal organization) of tt(Vehicle) changes, then the internal
+organization of tt(Land) objects, containing the data of tt(Vehicle), changes
+as well. This means that objects of the tt(Land) class, after changing
+tt(Vehicle), might require more (or less) memory than before the
+modification. However, in such a situation we still don't have to worry about
+member functions of the parent class (tt(Vehicle)) in the class tt(Land). We
+might have to recompile the tt(Land) sources, though, as the relative
+locations of the i(data members) within the tt(Land) objects will have changed
+due to the modification of the tt(Vehicle) class.
+
+As a i(rule of thumb), classes which are derived from other classes must be
+fully recompiled (but don't have to be modified) after changing the em(data
+organization), i.e., the data members, of their base classes.  As adding new
+member em(functions) to the base class doesn't alter the data organization, no
+i(recompilation) is needed after adding new member em(functions). (A subtle
+point to note, however, is that adding a new member function that happens to
+be the em(first) link(em(virtual) member function)(virfunc) of a class results
+in a new data member: a link(hidden pointer)(howpolymorfism) to a table of
+pointers to virtual functions. So, in this case recompilation is also
+necessary, as the class's data members have been silently modified. This topic
+is discussed further in chapter ref(POLYMORPHISM)).
+
+In the following example we assume that the class tt(Auto), representing
+automobiles, should contain the weight, speed and name of a car.
+This class is conveniently derived from tt(Land):
+        verb(
+    class Auto: public Land
+    {
+        char *d_name;
+
+        public:
+            Auto();
+            Auto(unsigned weight, unsigned speed, char const *name);
+            Auto(Auto const &other);
+
+            ~Auto();
+
+            Auto &operator=(Auto const &other);
+
+            char const *name() const;
+            void setName(char const *name);
+    };
+        )
+    In the above class definition, tt(Auto) is derived from tt(Land), which in
+turn is derived from tt(Vehicle). This is called emi(nested derivation):
+tt(Land) is called tt(Auto)'s emi(direct base class), while tt(Vehicle) is
+called the emi(indirect base class).
+
+Note the presence of a i(destructor), a i(copy constructor) and an
+    i(overloaded assignment operator) in the class tt(Auto). Since this class
+uses a pointer to reach i(dynamically allocated memory), these members should
+be part of the i(class interface).

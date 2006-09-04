@@ -1,0 +1,114 @@
+    With emi(bound friend) template classes or functions there is a one-to-one
+mapping between the actual values of the template-friends' template parameters
+and the template class's template parameters declaring them as friends. In this
+case, the friends themselves are templates too. Here are the various
+possibilities:
+    itemization(
+    it() A template function may be declared as a friend of a template
+class. In this case we don't experience the problems we encountered with
+concrete functions declared as friends of template classes. Since the friend
+template function itself is a template, it may be provided with the
+required template parameters allowing it to specify a template class
+parameter. Thus we can pass an object of the class declaring the template
+function as its friend to the template function. The organization of the
+various declarations thus becomes:
+        itemization(
+        it() The template class declaring the friend is itself declared;
+        it() The template function (to be declared as a friend) is declared;
+        it() The template class declaring the bound template friend function
+is defined;
+        it() The (friend) template function is defined, now having access to
+all the template class's (private) members.
+        )
+    Note that the template friend declaration specifies its template
+parameters immediately following the template's function name. Without the
+template parameter list affixed to the function name, it would be an ordinary
+friend function. Here is an example showing the use of a bound friend
+to create a subset of the entries of a dictionary. For real life examples,
+a dedicated function object returning tt(!key1.find(key2)) is probably more
+useful, but for the current example, tt(operator==()) is acceptable:
+        verbinsert(FUNCTION)(templateclasses/examples/boundfriends.cc)
+    it() By declaring a full template class as a template class's friend, all
+members of the friend class may access all private members of the class
+declaring the friend. As the friend class only needs to be declared, the
+organization of the declaration is much easier than when template functions
+are declared as friends. In the following example a class tt(Iterator) is
+declared as a friend of a class tt(Dictionary). Thus, the tt(Iterator) is able
+to access tt(Dictionary)'s private data. There are some interesting points to
+note here:
+        itemization(
+        it() To declare a template class as a friend, that class is
+simply declared as a template class before it is declared as a friend:
+            verbinsert(CLASS1)(templateclasses/examples/boundfriends.cc)
+        it() However, the friend class'ss interface may already be used, even
+before the compiler has seen the friend's interface:
+            verbinsert(CLASS2)(templateclasses/examples/boundfriends.cc)
+        it() Of course, the friend's interface must still be seen by the
+compiler. Since it's a support class for tt(Dictionary), it can safely define
+a tt(std::map) data member, which is initialized by its constructor, accessing
+the tt(Dictionary)'s private data member tt(d_dict):
+            verbinsert(CLASS3)(templateclasses/examples/boundfriends.cc)
+        it() The tt(Iterator) member tt(begin()) simply returns a tt(map)
+iterator. However, since it is not known to the compiler what the
+instantiation of the map will look like, a tt(map<Key, Value>::iterator)
+is a (deprecated) emi(implicit typename). To make it an em(explicit) typename,
+simply prefix tt(typename) to tt(begin())'s return type:
+            hi(template class: implicit typename)
+            verbinsert(CLASS4)(templateclasses/examples/boundfriends.cc)
+        )
+    it() In the previous example we might decide that only a tt(Dictionary)
+should be able to construct an tt(Iterator), as tt(Iterator) is closely tied
+to tt(Dictionary). This can be realized by defining tt(Iterator)'s constructor
+in its private section, and declaring tt(Dictionary Iterator)'s
+friend. Consequently, only tt(Dictionary) can create its own tt(Iterator). By
+declaring tt(Iterator)'s constructor as a em(bound) friend, we ensure that it
+can only create tt(Iterator)s using template parameters identical to its
+own. Here is how it's realized:
+        verbinsert(CLASS3a)(templateclasses/examples/boundfriends.cc)
+    In this example, tt(Dictionary)'s constructor is defined as tt(Iterator)'s
+friend. Here the friend is a template member. Other members can be declared as
+a class's friend as well, in which case their prototypes must be used,
+including the types of their return values. So, assuming that
+        centt(std::vector<Value> sortValues())
+    is a member of tt(Dictionary), returning a sorted vector of its values,
+then the corresponding bound friend declaration would be:
+        verb(
+    friend std::vector<Value> Dictionary<Key, Value>::sortValues();
+        )
+    )
+    Finally, the following basic example can be used as a prototype for
+situations where bound friends are useful:
+        verb(
+    template <typename T>           // a function
+    void fun(T *t)                  // template
+    {
+        t->not_public();
+    };
+
+    template <typename X>           // a template class
+    class A
+    {                               // fun() is used as
+                                    // friend bound to A,
+                                    // instantiated for X,
+                                    // whatever X may be
+        friend void fun<A<X> >(A<X> *);
+
+        public:
+            A()
+            {
+                fun(this);
+            }
+        private:
+            void not_public()
+            {}
+    };
+
+
+    int main()
+    {
+        A<int> a;
+
+        fun(&a);                    // fun instantiated for
+                                    // A<int>.
+    }
+        )

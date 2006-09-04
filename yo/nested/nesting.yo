@@ -1,0 +1,120 @@
+Classes can be defined inside other classes. Classes that are defined inside
+other classes are called hi(nested class) em(nested classes). Nested classes
+are used in situations where the nested class has a close conceptual
+relationship to its surrounding class. For example, with the class tt(string)
+a type ti(string::iterator) is available which will provide all characters
+that are stored in the tt(string). This tt(string::iterator) type could be
+defined as an object ti(iterator), defined as nested class in the class
+tt(string).
+
+A class can be nested in every part of the surrounding class: in the
+tt(public, protected) or tt(private) section. Such a nested class can be
+considered a member hi(member: class as member) of the surrounding class. The
+normal access and  rules in classes apply to nested classes. If a
+class is nested in the tt(public) section of a class, it is
+    hi(visibility: nested classes) visible outside the surrounding class. If
+it is nested in the tt(protected) section it is visible in subclasses, derived
+from the surrounding class (see chapter ref(INHERITANCE)), if it is nested in
+the tt(private) section, it is only visible for the members of the surrounding
+class.
+
+The surrounding class has no special privileges with respect to the nested
+class. So, the nested class still has full control over the accessibility of
+its members by the surrounding class. For example, consider the following
+class definition:
+        verb(
+    class Surround
+    {
+        public:
+            class FirstWithin
+            {
+                int d_variable;
+
+                public:
+                    FirstWithin();
+                    int var() const
+                    {
+                        return d_variable;
+                    }
+            };
+        private:
+            class SecondWithin
+            {
+                int d_variable;
+
+                public:
+                    SecondWithin();
+                    int var() const
+                    {
+                        return d_variable;
+                    }
+            };
+    };
+        )
+    In this definition access to the members is defined as follows:
+        itemization(
+        it() The class tt(FirstWithin) is visible both outside and inside
+tt(Surround). The class tt(FirstWithin) therefore has  global scope.
+        it() The constructor tt(FirstWithin()) and the member function
+tt(var()) of the class tt(FirstWithin) are also globally visible.
+        it() The tt(int d_variable) datamember is only visible to the members
+of the class tt(FirstWithin). Neither the members of tt(Surround) nor the
+members of tt(SecondWithin) can access tt(d_variable) of the class
+tt(FirstWithin) directly.
+        it() The class tt(SecondWithin) is only visible inside
+tt(Surround). The public members of the class tt(SecondWithin) can also be
+used by the members of the class tt(FirstWithin), as nested classes can be
+considered members of their surrounding class.
+        it() The constructor tt(SecondWithin()) and the member function
+tt(var()) of the class tt(SecondWithin) can also only be reached by the
+members of tt(Surround) (and by the members of its nested classes).
+        it() The tt(int d_variable) datamember of the class tt(SecondWithin)
+is only visible to the members of the class tt(SecondWithin). Neither the
+members of tt(Surround) nor the members of tt(FirstWithin) can access
+tt(d_variable) of the class tt(SecondWithin) directly.
+        it() As always, an object of the class type is required before
+its members can be called. This also holds true for nested classes.
+        )
+    If the surrounding class should have access rights to the private members
+of its nested classes or if nested classes should have access rights to the
+private members of the surrounding class, the classes can be defined as
+tt(friend) classes (see section ref(NESTEDFRIENDS)).
+
+    The nested classes can be considered members of the surrounding class, but
+the i(members of nested classes) are em(not) members of the surrounding
+class. So, a member of the class tt(Surround) may not access
+tt(FirstWithin::var()) directly. This is understandable considering the fact
+that a tt(Surround) object is not also a tt(FirstWithin) or tt(SecondWithin)
+object. In fact, nested classes are just typenames. It is not implied that
+objects of such classes automatically exist in the surrounding class. If a
+member of the surrounding class should use a (non-static) member of a nested
+class then the surrounding class must define a nested class object, which can
+thereupon be used by the members of the surrounding class to use members of
+the nested class.
+
+    For example, in the following class definition there is a surrounding
+class tt(Outer) and a nested class tt(Inner). The class tt(Outer) contains a
+member function tt(caller()) which uses the tt(inner) object that is composed
+in tt(Outer) to call the tt(infunction()) member function of tt(Inner):
+        verb(
+    class Outer
+    {
+        public:
+            void caller()
+            {
+                d_inner.infunction();
+            }
+        private:
+            class Inner
+            {
+                public:
+                    void infunction();
+            };
+        Inner d_inner;      // class Inner must be known
+    };
+        )
+    The mentioned function tt(Inner::infunction()) can be called as part
+of the inline definition of tt(Outer::caller()), even though the definition of
+the class tt(Inner) is yet to be seen by the compiler.  On the other hand, the
+compiler must have seen the definition of the class tt(Inner) before a data
+member of that class can be defined.

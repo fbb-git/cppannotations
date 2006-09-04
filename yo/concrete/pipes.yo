@@ -1,0 +1,76 @@
+    Redirection at the system level involves the use of emi(file descriptors),
+created by the ti(pipe()) system call. When two processes want to communicate
+using such file descriptors, the following takes place:
+    itemization(
+    it() The process constructs two em(associated file descriptors) using the
+tt(pipe()) system call. One of the file descriptors is used for writing, the
+other file descriptor is used for reading.
+    it() Forking takes place (i.e., the system tt(fork()) function is called),
+duplicating the file descriptors. Now we have four file descriptors as both
+the child process and the parent process have their own copies of the two
+file descriptors created by tt(pipe()).
+    it() One process (say, the parent process) will use the filedescriptors
+for em(reading). It should close its filedescriptor intended for em(writing).
+    it() The other process (say, the child process) will use the
+filedescriptors for em(writing). It should close its filedescriptor intended
+for em(reading).
+    it() All information written by the child process to the file
+descriptor intended for writing, can now be read by the parent process from
+the corresponding file descriptor intended for reading, thus establishing a
+communication channel between the child- and the parent process.
+    )
+    Though basically simple, errors may easily creep in: purposes of file
+descriptors available to the two processes (child- or parent-) may easily get
+mixed up. To prevent bookkeeping errors, the bookkeeping may be properly set
+up once, to be hidden therafter inside a class like the tt(Pipe) class
+constructed here. Let's have a look at its characteristics (before the
+implementations can be compiled, the compiler must have read the
+class's header file as well as the file  tt(unistd.h)):
+    itemization(
+    it() The tt(pipe()) system call expects a pointer to two tt(int) values,
+which will represent, respectively, the file descriptors to use for accessing
+the em(reading end) and the em(writing end) of the constructed pipe, after
+tt(pipe())'s successful completion. To avoid confusion, an tt(enum) is defined
+associating these ends with symbolic constants. Furthermore, the class stores
+the two file descriptors in a data member tt(d_fd). Here is the class header
+    and its private data:
+        verbinsert(HEAD)(concrete/examples/pipe.h)
+    it() The class only needs a default constructor. This constructor
+calls tt(pipe()) to create  a set of associated file descriptors used for
+accessing both ends of a pipe:
+        verbinsert(CONS)(concrete/examples/pipe.cc)
+    it() The members tt(readOnly()) and tt(readFrom()) are used to configure
+the pipe's reading end. The latter function is used to set up redirection, by
+providing an alternate file descriptor which can be used to read from the
+pipe. Usually this alternate file descriptor is ti(STDIN_FILENO), allowing
+tt(cin) to extract information from the pipe.  The former function is merely
+used to configure the reading end of the pipe: it closes the matching writing
+end, and returns a file descriptor that can be used to read from the pipe:
+        verbinsert(READ)(concrete/examples/pipe.cc)
+    it() tt(writeOnly()) and two tt(writtenBy()) members are available to
+configure the writing end of a pipe. The former function is merely used to configure the writing end of the
+pipe: it closes the matching reading end, and returns a file descriptor that
+can be used to write to the pipe:
+        verbinsert(WRITE)(concrete/examples/pipe.cc)
+    For the latter member two overloaded versions are available:
+        itemization(
+        itt(writtenBy(int fileDescriptor)) is used to configure em(single)
+redirection, so that a specific file descriptor (usually ti(STDOUT_FILENO)
+or ti(STDERR_FILENO)) may be used to write to the pipe;
+        itt((writtenBy(int *fileDescriptor, unsigned n = 2))) may be used
+to configure em(multiple) redirection, providing an array argument containing
+file descriptors. Information written to any of these file descriptors is
+actually written into the pipe.
+        )
+    it() The class has one private data member, tt(redirect()), which is used
+to define a redirection using the ti(dup2()) system call. This function
+expects two file descriptors. The first file descriptor represents a file
+descriptor which can be used to access the device's information, the second
+file descriptor is an alternate file descriptor which may also
+be used to access the device's information once tt(dup2()) has completed
+successfully. Here is tt(redirect())'s implementation:
+        verbinsert(REDIRECT)(concrete/examples/pipe.cc)
+    )
+    Now that redirection can be configured easily using one or more tt(Pipe)
+objects, we'll now use tt(Fork) and tt(Pipe) in several demonstration
+programs.

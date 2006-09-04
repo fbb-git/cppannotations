@@ -1,0 +1,80 @@
+The ti(priority_queue) class implements a i(priority queue data structure).
+Before tt(priority_queue) containers can be used the following preprocessor
+directive must have been specified: hi(#include <queue>)
+        verb(
+    #include <queue>
+        )
+    A priority queue is identical to a tt(queue), but allows the entry of data
+elements according to i(priority rules). An example of a situation where the
+priority queue is encountered in real-life is found at the check-in terminals
+at airports. At a terminal the passengers normally stand in line to wait for
+their turn to check in, but late passengers are usually allowed to jump the
+queue: they receive a higher priority than other passengers.
+
+The priority queue uses tt(operator<()) of the data type stored in the
+priority ueue to decide about the priority of the data elements. The
+em(smaller) the value, the em(lower) the priority. So, the priority queue
+em(could) be used to sort values while they arrive.  A simple example of such
+a priority queue application is the following program: it reads words from
+tt(cin) and writes a sorted list of words to tt(cout):
+        verbinclude(containers/examples/prioritywords1.cc)
+    Unfortunately, the words are listed in reversed order: because of the
+underlying tt(<)-operator the words appearing later in the i(ASCII)-sequence
+appear first in the priority queue. A solution to that problem is to define a
+i(wrapper class) around the tt(string) datatype, in which the tt(operator<())
+has been defined according to our wish, i.e., making sure that the words
+appearing early in the ASCII-sequence will appear first in the queue. Here is
+the modified program:
+        verbinclude(containers/examples/prioritywords2.cc)
+    In the above program the wrapper class defines the tt(operator<()) just the
+other way around than the tt(string) class itself, resulting in the preferred
+ordering. Other possibilities would be to store the contents of the priority
+queue in, e.g., a vector, from which the elements can be read in reversed
+order.
+
+    The following constructors, operators, and member functions are available
+for the tt(priority_queue) container:
+    itemization(
+    it() hi(priority_queue) Constructors:
+        itemization(
+        it() A tt(priority_queue) may be constructed empty:
+        verb(
+    priority_queue<string> object;
+        )
+        As with the tt(vector), it is an error to refer to an element of an
+empty priority queue.
+        it() A priority queue may be initialized using a i(copy constructor):
+        verb(
+    extern priority_queue<string> container;
+    priority_queue<string> object(container);
+        )
+    )
+    it() The tt(priority_queue) only supports the basic operators of
+containers.
+    it() The following i(member functions) are available for priority queues:
+        itemization(
+        ithtq(priority_queue::empty())(bool priority_queue::empty())(this
+member returns tt(true) if the priority queue contains no elements.)
+        ithtq(priority_queue::push())(void priority_queue::push(value))(this
+member inserts tt(value) at the appropriate position in the priority queue.)
+        ithtq(priority_queue::pop())(void priority_queue::pop())(this member
+removes the element at the top of the priority queue. Note that the element
+is em(not) returned by this member. Nothing happens if this member is called
+for and empty priority queue. See section ref(QUEUE) for a discussion about
+the reason why tt(pop()) has return type tt(void).)
+        ithtq(priority_queue::size())(unsigned priority_queue::size())(this
+member returns the number of elements in the priority queue.)
+        ithtq(priority_queue::top())(Type &priority_queue::top())(this member
+returns a reference to the first element of the priority queue. It is the
+    i(responsibility of the programmer) to use the member only if the
+priority queue is not empty.)
+        )
+    )
+    Note that the priority queue does not support iterators or a subscript
+operator. The only element that can be accessed is its top element.  A
+priority queue can be emptied by:
+    itemization(
+    it() repeatedly removing its top element;
+    it() assigning an empty queue using the same data type to it;
+    it() having its destructor called.
+    )

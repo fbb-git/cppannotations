@@ -1,0 +1,141 @@
+The ti(set) class implements a i(sorted collection of values). Before tt(set)
+containers can be used the following preprocessor directive must have been
+specified: hi(#include <set>)
+        verb(
+    #include <set>
+        )
+    A set is filled with values, which may be of any container-acceptable
+type. Each value can be stored only once in a set.
+
+A specific value to be inserted into a tt(set) can be
+explicitly created: Every tt(set) defines a ti(value_type)
+which may be used to i(create values) that can be stored in the tt(set). For
+example, a value for a tt(set<string>) can be constructed as follows:
+        verb(
+    set<string>::value_type setValue("Hello");
+        )
+    The tt(value_type) is associated with the tt(set<string>). Anonymous
+tt(value_type) objects are also often used. E.g.,
+        verb(
+    set<string>::value_type("Hello");
+        )
+    Instead of using the line tt(set<string>::value_type(...)) over
+and over again, a ti(typedef) is often used to i(reduce typing) and to improve
+i(legibility):
+        verb(
+    typedef set<string>::value_type StringSetValue
+        )
+    Using this typedef, values for the tt(set<string>) may be constructed
+as follows:
+        verb(
+    StringSetValue("Hello");
+        )
+    Alternatively, values of the set's type may be used
+immediately. In that case the value of type tt(Type) is implicitly
+converted  to a tt(set<Type>::value_type).
+
+    The following constructors, operators, and member functions are available
+for the tt(set) container:
+    itemization(
+    it() hi(set constructors) Constructors:
+        itemization(
+        it() A tt(set) may be constructed empty:
+        verb(
+    set<int> object;
+        )
+        it() A set may be initialized using two iterators. For example:
+            verb(
+    int intarr[] = {1, 2, 3, 4, 5};
+
+    set<int> object(&intarr[0], &intarr[5]);
+            )
+        )
+    Note that all values in the set must be different: it is not possible to
+store the same value repeatedly when the set is constructed. If the same value
+occurs repeatedly, only the first instance of the value will be entered, the
+other values will be i(silently ignored).
+
+    Like the link(map)(MAP), the tt(set) receives its own copy of the data it
+contains.
+        it() A set may be initialized using a i(copy constructor):
+        verb(
+    extern set<string> container;
+    set<string> object(container);
+        )
+    it() The tt(set) container only supports the standard set of operators
+that are available for containers.
+    it() The tt(set) class has the following hi(set: member functions) member
+functions:
+        itemization(
+        ithtq(set::begin())(set::iterator set::begin())(this member
+returns an i(iterator) pointing to the first element of the set. If the set is
+empty tt(set::end()) is returned.)
+        ittq(set::clear())(this member erases all elements from the set.)
+        ithtq(set::count())(unsigned set::count(key))(this member returns 1 if
+the provided key is available in the tt(set), otherwise 0 is returned.)
+        ithtq(set::empty())(bool set::empty())(this member returns tt(true) if
+the set contains no elements.)
+        ithtq(set::end())(set::iterator set::end())(this member
+returns an iterator pointing beyond the last element of the set.)
+        ithtq(set::equal_range())
+            (pair<set::iterator, set::iterator> set::equal_range(key))(this
+member returns a pair of iterators, being respectively the return values of
+the member functions tt(lower_bound()) and tt(upper_bound()), introduced
+below.)
+        ithtq(set::erase())(... set::erase())(this member can be
+used to erase a specific element or range of elements from the set:)
+            itemization(
+            itt(bool erase(value)) erases the element having the given
+tt(value) from the tt(set). tt(True) is returned if the value was removed,
+tt(false) if the set did not contain an element `tt(value)'.
+            itt(void erase(pos)) erases the element pointed to by the iterator
+tt(pos).
+            itt(void erase(first, beyond)) erases all elements
+indicated by the iterator range rangett(first, beyond).
+            )
+        ithtq(set::find())(set::iterator set::find(value))(this member returns
+an iterator to the element having the given value. If the element isn't
+available, tt(end()) is returned.)
+        ithtq(set::insert())(... set::insert())(this member can be used to
+insert elements into the tt(set). If the element already exists, the existing
+element is left untouched and the element to be inserted is ignored.  The
+return value depends on the version of tt(insert()) that is called:)
+            itemization(
+            itt(pair<set::iterator, bool> insert(keyvalue)) inserts
+a new tt(set::value_type) into the set. The return value is a
+ti(pair<set::iterator, bool>).  If the returned ti(bool) field is tt(true),
+tt(value) was inserted into the set. The value tt(false) indicates that the
+value that was specified was already available in the set, and
+so the provided tt(value) was not inserted into the set.  In both cases the
+tt(set::iterator) field points to the data element in the tt(set) having the
+specified tt(value).
+            itt(set::iterator insert(pos, keyvalue)). This way a
+tt(set::value_type) may also be into the set. tt(pos) is ignored, and an
+iterator to the inserted element is returned.
+            itt(void insert(first, beyond)) inserts the (tt(set::value_type))
+elements pointed to by the i(iterator range) rangeti(first, beyond) into the
+set.
+            )
+        ithtq(set::lower_bound())
+            (set::iterator set::lower_bound(key))
+            (this member returns an iterator pointing to the first
+tt(keyvalue) element of which the tt(key) is at least equal to the specified
+tt(key).  If no such element exists, the function returns
+tt(set::end()).)
+        ithtq(set::rbegin())(set::reverse_iterator set::rbegin())(
+    hi(reverse_iterator) this member returns an iterator pointing to the last
+element of the set.)
+        ithtq(set::rend())(set::reverse_iterator set::rend())(this member
+returns an iterator pointing before the first element of the set.)
+        ithtq(set::size())(unsigned set::size())(this member returns the
+number of elements in the set.)
+        ithtq(set::swap())(void set::swap(argument))(this member can be used
+to swap two sets (tt(argument) being the second set) that use identical data
+types.)
+        ithtq(set::upper_bound())
+            (set::iterator set::upper_bound(key))
+            (this member returns an iterator pointing to the first
+tt(keyvalue) element having a tt(key) exceeding the specified tt(key).  If no
+such element exists, the function returns tt(set::end()).)
+        )
+    )

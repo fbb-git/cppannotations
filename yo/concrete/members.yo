@@ -1,0 +1,29 @@
+    The member function called by function objects is the function
+        ti(operator()()), which may be defined as a function having various
+parameters. In the context of generic algorithms, these parameters are usually
+one or two elements, representing the data to which the algorithm's iterators
+point. Unfortunately from the point of view of the template class constructor,
+it is not known beforehand whether these data elements are objects, primitive
+types, or pointers. Let's assume that we would like to create a function object
+changing all letters in tt(string) objects into capital letters. In that case
+our tt(operator()()) function may receive a tt(string &) (e.g., when iterating
+over the elements of a tt(vector<string>)), but our tt(operator()()) function
+may also receive a tt(string *) (e.g., when iterating over the elements of a
+tt(vector<string *>)). Other parameter types can be conceived of as well.
+
+    So, how can we define a generic function that can be called from
+tt(operator()()) if we don't know (when defining the template) whether we
+should call using tt(.*) or tt(->*)? The issue whether to call a member
+function using a pointer to member in combination with an object or a pointer
+to object does not have to be solved by the template. Instead it can be
+handled by the class itself, if the class provides an appropriate em(static)
+member.
+
+    An additional advantage of using a static function is that the static
+members do not have tt(const) attributes. Consequently, no ambiguity can arise
+when calling a static member function from within a function object's
+tt(operator()()).
+
+    Generic algorithms, however, differ in their using of the function
+object's tt(operator()())'s return value. As will be illustrated in the next
+section, the return type of called functions may also be parameterized.

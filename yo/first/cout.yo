@@ -1,0 +1,107 @@
+Analogous to bf(C), bf(C++) defines standard input- and output streams
+which are opened when a program is executed. The streams are:
+    startit()
+    it() ti(cout), analogous to ti(stdout),
+    it() ti(cin), analogous to ti(stdin),
+    it() ti(cerr), analogous to ti(stderr).
+    endit()
+    Syntactically these streams are not used as functions: instead, data are
+written to streams or read from them using the operators lshift(), called
+the emi(insertion operator) and rshift(), called the
+emi(extraction operator).  This is illustrated in the next example:
+        verb(
+    #include <iostream>
+
+    using namespace std;
+
+    int main()
+    {
+        int     ival;
+        char    sval[30];
+
+        cout << "Enter a number:" << endl;
+        cin >> ival;
+        cout << "And now a string:" << endl;
+        cin >> sval;
+
+        cout << "The number is: " << ival << endl
+             << "And the string is: " << sval << endl;
+    }
+        )
+    This program reads a number and a string from the tt(cin) stream (usually
+the keyboard) and prints these data to tt(cout). With respect to streams,
+please note:
+    itemization(
+    it() The standard streams are declared in the header file ti(iostream). In
+the examples in the Annotations this header file is often not mentioned
+explicitly. Nonetheless, it em(must) be included (either directly or
+indirectly) when these streams are used. Comparable to the use of the tt(using
+namespace std;) clause, the reader is expected to tt(#include <iostream>) with
+all the examples in which the standard streams are used.
+    it() The streams tt(cout), tt(cin) and tt(cerr) are in fact `objects' of a
+given class (more on classes later), processing the input and output of a
+program. Note that the term `object', as used here, means  `variable' of the
+particular class.
+    it() The stream tt(cin) extracts data from a stream and copies the
+extracted information to variables (e.g., tt(ival) in the above example) using
+the extraction operator (two consecutive tt(>) characters: rshift()). We will
+describe later how operators in bf(C++) can perform quite different actions
+than what they are defined to do by the language, as is the case
+here. Function overloading has already been mentioned.  In bf(C++)
+em(operators) can also have multiple definitions, which is called em(operator
+overloading).
+    it() The operators which manipulate tt(cin), tt(cout) and tt(cerr) (i.e.,
+rshift() and lshift()) also manipulate variables of different types. In the
+above example tt(cout) lshift() tt(ival) results in the printing of an integer
+value, whereas tt(cout) lshift() tt("Enter a number") results in the printing
+of a string. The actions of the operators therefore depend on the types of
+supplied variables.
+    it() The emi(extraction operator) (rshift()) performs a so called
+        emi(type safe) assignment to a variable by `extracting' its value from
+a text-stream. Normally, the extraction operator will skip all
+        emi(white space) hi(skipping leading blanks) characters that precede
+the values to be extracted.
+    it() Special i(symbolic constants) are used for special situations. The
+termination of a line written by tt(cout) is usually realized by inserting the
+ti(endl) symbol, rather than the string tt("\n").
+    )
+    The streams tt(cin), tt(cout) and tt(cerr) are not part of the
+bf(C++) grammar, as defined in the compiler which parses source files. The
+streams are part of the definitions in the header file tt(iostream). This is
+comparable to the fact that functions like tt(printf()) are not part of the
+bf(C) grammar, but were originally written by people who considered such
+functions important and collected them in a run-time library.
+
+Whether a program uses the old-style functions like tt(printf()) and
+tt(scanf()) or whether it employs the new-style streams is a matter of taste.
+Both styles can even be mixed. A number of advantages and disadvantages is
+given below:
+    startit()
+    it() Compared to the standard tt(C) functions tt(printf()) and
+tt(scanf()), the usage of the insertion and extraction operators is more
+emi(type-safe).  The format strings which are used with tt(printf()) and
+tt(scanf()) can define wrong format specifiers for their arguments, for which
+the compiler sometimes can't warn. In contrast, argument checking with
+tt(cin), tt(cout) and tt(cerr) is performed by the compiler. Consequently it
+isn't possible to err by providing an tt(int) argument in places where,
+according to the format string, a string argument should appear.
+    it() The functions tt(printf()) and tt(scanf()), and other functions which
+use format strings, in fact implement a mini-language which is interpreted at
+run-time. In contrast, the tt(C++) compiler knows exactly which in- or
+output action to perform given which argument.
+    it() The usage of the left-shift and right-shift operators in the context
+of the streams does illustrate the possibilities of tt(C++).  Again, it
+requires a little getting used to, ascending from bf(C), but after that these
+overloaded operators feel rather comfortably.
+    it() tt(Iostreams) are em(extensible): new functionality can easily be
+added to existing functionality, a phenomenon called
+em(inheritance). Inheritance is discussed in detail in chapter
+ref(INHERITANCE).
+    endit()
+    The em(iostream library) has a lot more to offer than just tt(cin, cout)
+and tt(cerr). In chapter ref(IOStreams) em(iostreams) will be covered in
+greater detail. Even though ti(printf()) and friends can still be used in
+bf(C++) programs, streams are practically replacing the old-style bf(C)
+tt(I/O) functions like tt(printf()). If you em(think) you still need to use
+tt(printf()) and related functions, think again: in that case you've probably
+not yet completely grasped the possibilities of stream objects.

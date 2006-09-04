@@ -1,0 +1,119 @@
+As an introductory example, let's assume we have a class tt(Strings) holding a
+tt(vector<string> d_vs) data member. We would like to change all
+letter-characters in the strings stored in tt(d_vs) into upper case
+characters, and we would like to insert the original and modified strings
+into a configurable tt(ostream) object.  To accomplish this, our class offers
+a member tt(uppercase(ostream &out)).
+
+We would like to use the  tt(for_each()) generic
+algorithm. This algorithm may be given a function's address, or it may be
+given a function object. Clearly, since we have a local context (the
+configurable tt(ostream) object), the function object is required
+here. Therefore, the following support class is constructed:
+        verbinclude(concrete/wrap/support.h)
+An anonymous tt(Support) class object may now be used in the implementation of
+the class tt(Strings). Here is an example of its definition and use:
+        verbinclude(concrete/wrap/strings1.cc)
+
+To `templatize' the tt(Support) class, using the considerations discussed
+previously, we perform the following steps:
+    itemization(
+    it() The local context will be put in a tt(struct), which is then passed
+to the template's constructor, so tt(Context) becomes one of the template type
+parameters.
+    it() The implementation of the template's tt(operator()()) is
+standardized. In the template it will call a function, receiving the
+tt(operator()())'s argument (which also becomes a template parameter) and a
+reference to the context as its arguments. The address of the function to call
+may be stored in a local variable of the template function object. In the
+tt(Support) class, tt(operator()()) uses a tt(void) return type. This type is
+often the required type, but when defining predicates it may be a
+tt(bool). Therefore, the return type of the template's tt(operator()()) (and
+thus the return type of the called function) is made configurable as well,
+offering a default type tt(void) for convenience. Thus, we get the following
+definition of the variable holding the address of the function to call:
+        verb(
+    ReturnType (*d_fun)(Type &argument, Context &context);
+        )
+    and the template's tt(operator()()) implementation (passing it another
+template data member: tt(Context &d_context)) becomes:
+        verb(
+    ReturnType operator()(Type &param) const
+    {
+        return (*d_fun)(param, d_context);
+    }
+        )
+    it() The template's constructor is given two parameters: a function
+address and a reference to the local context tt(struct). Coining the classname
+tt(Wrap1) (for unary (1) function object wrapper), its implementation
+becomes:
+        verb(
+    Wrap1(ReturnType (*fun)(Type &, Context &), Context &context)
+    :
+        d_fun(fun),
+        d_context(context)
+    {}
+        )
+    )
+    Now we're almost ready to construct the full template class tt(Wrap1). Two
+additional situations need further consideration:
+    itemization(
+    it() Arguments passed to the template's tt(operator()()) member may be of
+various kinds: values, modifiable references, immutable (tt(const))
+references, pointers to modifiable entities or pointers to immutable
+entities. The template should offer facilities to use all these different
+argument types.
+    it() Algorithms defined in the standard template library, notably those
+requiring em(predicate) function objects (e.g., tt(find_if())), assume that
+these objects define internal types, named ti(result_type) for its
+tt(operator()()) member, and ti(argument_type) for its data type. With binary
+predicate function objects (see section ref(WRAPTWO)) ti(first_argument_type)
+and ti(second_argument_type) for the respective types of its
+tt(operator()())'s arguments are expected. Moreover, these types must be
+`plain' type names, no pointers nor references.
+    )
+    Various parameter types of the template's tt(operator()()) function may be
+handled by overloaded versions of both the template constructor and its
+tt(operator()()) member, defining four implementations handling tt(Type const)
+references and tt(Type const) pointers. For each of these situations a
+function pointer to a corresponding function, called by the template's
+tt(operator()()) must be defined as well. Since in each instantiation of the
+template only em(one) type of the overloaded functions (constructor and
+associated tt(operator()())) will be used, a tt(union) can be defined
+accomodating the pointers to the various (i.e., four) types of functions that
+may be passed to the template's constructor. This tt(union) may be
+    hi(union: anonymous) em(anonymous), as only its fields will be used. Note
+that em(value) arguments may be handled by tt(Type const &) parameters: no
+additional overloaded version is required to handle value-type arguments.
+
+    The internal types expected by some of the STL functions can simply be
+made available by defining internal tt(typedef)s. Since the various types of
+arguments (tt(const), pointers, references) are handled by the template's
+overloaded constructors and member functions, the typedefs may simply set up
+aliases for the template parameter types.
+
+    Here is the implementation of the configurable, single argument function
+object template:
+        verbinclude(concrete/wrap/wrap1.h)
+
+    To use this template, the original dedicated implementation of
+tt(Support::operator()()) is now defined in a static member function of the
+class tt(String), also defining the required local context struct. Here is
+the new implementation of the class tt(Strings), using the template tt(Wrap1):
+        verbinclude(concrete/wrap/strings2.cc)
+
+    To illustrate the use of the tt(ReturnType) template parameter, let's
+assume that the transformations are only required up to the first empty
+string. In this case, the tt(find_if) generic algorithm comes in handy, since
+it stops once a predicate returns tt(true). The tt(xform()) function should
+return a tt(bool) value, and the tt(uppercase()) implementation specifies an
+explicit type (tt(bool)) for the tt(ReturnType) template parameter:
+        verbinclude(concrete/wrap/strings3.cc)
+    Note that only the class tt(Strings) needed to be modified. The tt(Wrap1)
+template could be used to create both the plain, tt(void) returning function
+object and the unary predicate.
+
+    A final note: sometimes no context is required at all, but the approach
+taken with the tt(Wrap1) template class may be considered useful. In those
+cases, either a dummy context may be defined, or a alternate wrapper class not
+using a context may be defined. Personally, I've done the latter.

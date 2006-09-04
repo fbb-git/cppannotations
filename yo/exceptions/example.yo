@@ -1,0 +1,20 @@
+In the next two sections the same basic program will be used. The program uses
+two classes, tt(Outer) and tt(Inner). An tt(Outer) object is created in
+tt(main()), and its member tt(Outer::fun()) is called.  Then, in
+tt(Outer::fun()) an tt(Inner) object is constructed. Having
+constructing the tt(Inner) object, its member tt(Inner::fun()) is called.
+
+That's about it. The function tt(Outer::fun()) terminates, and the destructor
+of the tt(Inner) object is called. Then the program terminates and the
+destructor of the tt(Outer) object is called. Here is the basic program:
+        verbinclude(exceptions/examples/basic.cc)
+    After compiling and running, the program's output is entirely as expected,
+and it shows exactly what we want: the destructors are called in their correct
+order, reversing the calling sequence of the constructors.
+
+Now let's focus our attention on two variants, in which we simulate a
+non-fatal i(disastrous event) to take place in the tt(Inner::fun()) function,
+which is supposedly handled somewhere at the end of the function tt(main()).
+We'll consider two variants. The first variant will try to handle this
+situation using ti(setjmp()) and ti(longjmp()); the second variant will try to
+handle this situation using bf(C++)'s i(exception) mechanism.

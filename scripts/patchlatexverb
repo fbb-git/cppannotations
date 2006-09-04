@@ -1,0 +1,53 @@
+#!/usr/bin/perl
+
+$mark_in =  '\\\\begin{verbatim}';
+$mark_out = "\\\\end{verbatim}";
+
+sub process_marked
+{
+    if ($line =~ /(.*)$mark_in\s*/)
+    {
+        marked_section();
+    }
+    else
+    {
+        print $line;
+    }
+}
+
+sub marked_section
+{
+    @marked = ($line);
+
+    while ($line = <>)
+    {
+        push @marked, "$line";
+        last if  $line =~ /$mark_out/;
+    }
+    
+    print $marked[0];
+    for ($from = 1; $marked[$from] =~ /^\s*$/; $from++)     # $from: at 1st to
+    {}                                                      # print
+
+    for ($to = $#marked - 1; $marked[$to] =~ /^\s*$/; $to--)# $to: last to pnt
+    {}
+
+    for ( ; $from <= $to; $from++)
+    {
+        print $marked[$from];
+    }
+    
+    print $marked[$#marked];
+
+    while ($line = <>)
+    {
+        last if  $line !~ /^\s*$/;
+    }
+
+    process_marked();
+}
+
+while ($line = <>)
+{
+    process_marked();
+}

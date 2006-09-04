@@ -1,0 +1,75 @@
+The ti(queue) class implements a i(queue data structure).  Before tt(queue)
+containers can be used the following preprocessor directive must have been
+specified: hi(#include <queue>)
+        verb(
+    #include <queue>
+        )
+    A queue is depicted in figure ref(queueFig).
+        figure(containers/queue)(A queue data-structure)(queueFig)
+    In figure ref(queueFig) it is shown that a queue has one point (the
+em(back)) where items can be added to the queue, and one point (the em(front))
+where items can be removed (read) from the queue. A tt(queue) is therefore
+also called a emi(FIFO) data structure, for emi(first in, first out). It is
+most often used in situations where events should be handled in the same order
+as they are generated.
+
+    The following constructors, operators, and member functions are available
+for the tt(queue) container:
+    itemization(
+    it() hi(queue) Constructors:
+        itemization(
+        it() A tt(queue) may be constructed empty:
+        verb(
+    queue<string> object;
+        )
+        As with the tt(vector), it is an error to refer to an element of an
+empty queue.
+        it() A queue may be initialized using a i(copy constructor):
+        verb(
+    extern queue<string> container;
+    queue<string> object(container);
+        )
+    )
+    it() The tt(queue) container only supports the basic operators for
+containers.
+    it() The following i(member functions) are available for queues:
+        itemization(
+        ithtq(queue::back())(Type &queue::back())(this member returns a
+reference to the last element in the queue. It is the
+    i(responsibility of the programmer) to use the member only if the queue is
+not empty.)
+        ithtq(queue::empty())(bool queue::empty())(this member returns
+tt(true) if the queue contains no elements.)
+        ithtq(queue::front())(Type &queue::front())(this member returns a
+reference to the first element in the queue. It is the responsibility of the
+programmer to use the member only if the queue is not empty.)
+        COMMENT(verbinclude(containers/queue/front.cc))
+        ithtq(queue::push())(void queue::push(value))(this member
+adds tt(value) to the back of the queue.)
+        ithtq(queue::pop())(void queue::pop())(this member removes the element
+at the front of the queue. Note that the element is em(not) returned by this
+member. Nothing happens if the member is called for an empty queue.  One might
+wonder why tt(pop()) returns tt(void), instead of a value of type tt(Type)
+(cf. tt(front())). Because of this, we must use tt(front()) first, and
+thereafter tt(pop()) to examine and remove the queue's front element. However,
+there is a good reason for this design. If tt(pop()) would return the
+container's front element, it would have to return that element by em(value)
+rather than by em(reference), as a return by reference would create a dangling
+pointer, since tt(pop()) would also remove that front element.  Return by
+em(value), however, is inefficient in this case: it involves at least one copy
+constructor call.  Since it is impossible for tt(pop()) to return a value
+correctly and efficiently, it is more sensible to have tt(pop()) return no
+value at all and to require clients to use tt(front()) to inspect the value at
+the queue's front.)
+        ithtq(queue::size())(unsigned queue::size())(this member returns the
+number of elements in the queue.)
+        )
+    )
+    Note that the queue does not support iterators or a subscript
+operator. The only elements that can be accessed are its front and back
+element.  A queue can be emptied by:
+    itemization(
+    it() repeatedly removing its front element;
+    it() assigning an empty queue using the same data type to it;
+    it() having its destructor called.
+    )

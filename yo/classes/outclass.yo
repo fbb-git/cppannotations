@@ -1,0 +1,26 @@
+The second way to implement inline functions leaves a class interface intact,
+but mentions the keyword hi(inline in the function definition) tt(inline) in
+the function definition. The interface and implementation in this case are as
+follows:
+        verb(
+    class Person
+    {
+        public:
+            std::string const &name() const;
+    };
+
+    inline std::string const &Person::name() const
+    {
+        return d_name;
+    }
+        )
+    Again, the compiler will insert the code of the function tt(name())
+instead of generating a call.
+
+    The tt(inline) function must still appear in the same file as the class
+interface, and cannot be compiled to be stored in, e.g., a i(library).  The
+reason for this is that the em(compiler) rather than the em(linker) must be
+able to insert the code of the function in a source text offered for
+compilation. Code stored in a library is inaccessible to the compiler.
+Consequently, inline functions are always defined together with the class
+interface.

@@ -1,0 +1,72 @@
+Comparable to the constructor, classes may define a emi(destructor).  This
+function is the opposite of the constructor in the sense that it is invoked
+when an object ceases to exist. For objects which are local non-static
+variables, the destructor is called when the block in which the object is
+defined is left: the destructors of objects that are defined in nested blocks
+of functions are therefore usually called before the function itself
+terminates. The destructors of objects that are defined somewhere in the outer
+block of a function are called just before the function returns
+(terminates). For static or global variables the destructor is called before
+the program terminates.
+
+However, when a program is interrupted using an ti(exit()) call, the
+destructors are called em(only) for global objects existing at that time.
+Destructors of objects defined em(locally) within functions are not called
+when a program is forcefully terminated using tt(exit()).
+
+    The definition of a destructor must obey the following  rules:
+    itemization(
+    it() The destructor has the same name as the class but its name is
+prefixed by a tilde.
+    it() The destructor has no arguments and has no return value.
+    )
+    The destructor for the class tt(Person) is thus declared as follows:
+        verb(
+    class Person
+    {
+        public:
+            Person();               // constructor
+            ~Person();              // destructor
+    };
+        )
+    The position of the constructor(s) and destructor in the class definition
+is dictated by convention: first the constructors are declared, then the
+destructor, and only then other members are declared.
+
+    The main task of a destructor is to make sure that memory allocated by the
+object (e.g., by its constructor) is properly deleted when the object goes out
+of scope. Consider the following definition of the class tt(Person):
+        verbinclude(memory/examples/person.h)
+    The task of the constructor is to initialize the data fields of the
+object. E.g, the constructor is defined as follows:
+        verbinclude(memory/examples/person.cc)
+    In this class the destructor is necessary to prevent that memory,
+allocated for the fields tt(d_name), tt(d_address) and tt(d_phone), becomes
+unreachable when an object ceases to exist, thus producing a
+    i(memory leak). The destructor of an object is called automatically
+    itemization(
+    it() When an object goes out of scope;
+    it() When a dynamically allocated object is deleted;
+    it() When a dynamically allocated array of objects is deleted using the
+ti(delete[]) operator (see section ref(DELETEARRAY)).
+    )
+    Since it is the task of the destructor to delete all memory that was
+dynamically allocated and used by the object, the task of the tt(Person)'s
+destructor would be to delete the memory to which its three data
+members point. The implementation of the destructor would therefore be:
+        verbinclude(memory/examples/persondestr.cc)
+    In the following example a tt(Person) object is created, and its data
+fields are printed. After this the tt(showPerson()) function stops, resulting
+in the deletion of memory.  Note that in this example a second
+object of the class tt(Person) is created and destroyed dynamically by
+respectively, the operators tt(new) and tt(delete).
+        verbinclude(memory/examples/personexample.cc)
+    The memory occupied by the object tt(karel) is deleted automatically when
+tt(showPerson()) terminates: the bf(C++) compiler makes sure that the
+destructor is called. Note, however, that the object pointed to by tt(frank)
+is handled differently. The variable tt(frank) is a pointer, and a pointer
+variable is itself no tt(Person). Therefore, before tt(main()) terminates, the
+memory occupied by the object pointed to by tt(frank) should be em(explicitly)
+deleted; hence the statement tt(delete) tt(frank). The operator tt(delete)
+will make sure that the destructor is called, thereby deleting the three
+tt(char *) strings of the object.

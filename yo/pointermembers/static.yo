@@ -1,0 +1,40 @@
+Static hi(static members) members of a class exist without an object of their
+class. They exist em(separately from) any object of their class.  When these
+static members are public, they can be accessed as global entities, albeit
+that their class names are required when they are used.
+
+Assume that a class tt(String) has a public static member function
+tt(int n_strings()), returning the number of string objects created so
+far. Then, without using any tt(String) object the function
+tt(String::n_strings()) may be called:
+        verb(
+    void fun()
+    {
+        cout << String::n_strings() << endl;
+    }
+        )
+    Public static members can usually be accessed like global entities (but
+see section ref(CALLINGCONVENTION)).  Private static members, on the other
+hand, can be accessed only from within the context of their class: they can
+only be accessed from inside the member functions of their class.
+
+    Since static members have no associated objects, but are comparable to
+global functions and data, their addresses can be stored in ordinary pointer
+variables, operating at the i(global) level. Actually, using a
+    i(pointer to member) to address a static member of a class would produce a
+i(compilation error).
+
+For example, the address of a static member function tt(int
+String::n_strings()) can simply be stored in a variable tt(int (*pfi)()), even
+though tt(int (*pfi)()) has em(nothing) in common with the tt(class
+String). This is illustrated in the next example:
+        verb(
+    void fun()
+    {
+        int (*pfi)() = String::n_strings;
+                    // address of the  static member function
+
+        cout << (*pfi)() << endl;
+                    // print the value produced by String::n_strings()
+    }
+        )
