@@ -107,7 +107,7 @@
     --------------------------------------------------------------------------
 
     Feb. 2001 - April 2002
-    Frank B. Brokken (f.b.brokken@rc.rug.nl)
+    Frank B. Brokken (f.b.brokken@rug.nl)
 */
 
 namespace FBB
