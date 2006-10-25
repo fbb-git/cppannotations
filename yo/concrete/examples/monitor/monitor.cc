@@ -3,6 +3,8 @@
 //WAIT
     void Monitor::waitForChild(int signum)
     {
+        cerr << "Won't wait for child\n";
+
         int status;
         wait(&status);
 
@@ -23,3 +25,10 @@
         exit(0);
     }
 //=
+
+
+
+
+
+
+

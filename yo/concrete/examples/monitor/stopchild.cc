@@ -12,10 +12,10 @@
         {
             d_selector.rmReadFd(it->second->readFd());
 
-            killChild(*it);
-
             delete it->second;
             d_child.erase(it);
+
+//            killChild(*it);
         }
     }
 //=

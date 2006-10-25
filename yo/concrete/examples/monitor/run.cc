@@ -2,7 +2,7 @@
 
     void Monitor::run()
     {
-        signal(SIGCHLD, waitForChild);
+//        signal(SIGCHLD, waitForChild);
         d_selector.addReadFd(STDIN_FILENO);
 
         while (true)

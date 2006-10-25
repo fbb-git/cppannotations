@@ -2,6 +2,12 @@
     #include "../fork.h"
     #include "../selector.h"
 
+       #include <sys/types.h>
+       #include <signal.h>
+       #include <sys/wait.h>
+
+    #include <iostream>
+
 //HEAD
     class Child: public Fork
     {
@@ -18,6 +24,16 @@
             :
                 d_nr(nr)
             {}
+            virtual ~Child()
+            {
+                if (pid())
+                {
+                    std::cout << "Killing process " << pid() << "\n";
+                    kill(pid(), SIGTERM);
+                    int statu;
+                    wait(&statu);
+                }
+            }
 //=
 //PIPES
             int readFd()
