@@ -23,7 +23,7 @@
         oformstream &
         vform(char const *fmt, va_list list)            // 24
         {
-            unsigned size = 128;                        // 26
+            size_t size = 128;                        // 26
 
             while (true)                                // 28
             {

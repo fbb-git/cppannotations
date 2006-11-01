@@ -4,14 +4,14 @@
 
     class SquaresDiff
     {
-        unsigned d_minimum;
+        size_t d_minimum;
 
         public:
-            SquaresDiff(unsigned minimum)
+            SquaresDiff(size_t minimum)
             :
                 d_minimum(minimum)
             {}
-            bool operator()(unsigned first, unsigned second)
+            bool operator()(size_t first, size_t second)
             {
                 return second * second - first * first  >= d_minimum;
             }
@@ -40,9 +40,9 @@
                     "*result"
             ) << endl;
 
-        unsigned iv[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-        unsigned *ilast = iv + sizeof(iv) / sizeof(unsigned);
-        unsigned *ires = adjacent_find(iv, ilast, SquaresDiff(10));
+        size_t iv[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        size_t *ilast = iv + sizeof(iv) / sizeof(size_t);
+        size_t *ires = adjacent_find(iv, ilast, SquaresDiff(10));
 
         cout <<
             "The first numbers for which the squares differ at least 10: "

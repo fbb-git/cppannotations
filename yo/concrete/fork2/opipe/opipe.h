@@ -20,7 +20,7 @@ namespace FBB
     class OPipe: public Pipe, private OFdNStreambuf, public std::ostream
     {
         public:
-            OPipe(unsigned size = 500);
+            OPipe(size_t size = 500);
     };
 }
 

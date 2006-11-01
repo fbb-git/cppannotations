@@ -8,7 +8,7 @@
         std::vector<std::string>    d_command;
 
         public:
-            Command(unsigned n, char const **commands)
+            Command(size_t n, char const **commands)
             {
                 copy(commands, commands + n, back_inserter(d_command));
             }

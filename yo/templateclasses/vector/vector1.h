@@ -10,7 +10,7 @@
             typedef reverse_iter<Type> reverse_iterator;
 
             Vector();
-            Vector(unsigned n);
+            Vector(size_t n);
             Vector(Vector<Type> const &other);
             ~Vector();
             Vector<Type> const &operator=(Vector<Type> const &other);
@@ -21,5 +21,5 @@
             Type *end();
             reverse_iterator rbegin();
             reverse_iterator rend();
-            unsigned size();
+            size_t size();
     };

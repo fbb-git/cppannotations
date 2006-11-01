@@ -20,9 +20,12 @@
                     else
                         processChild(fd);
                 }
+                cout << "NEXT ...\n";
+
             }
             catch (...)
             {
+perror("monitor");
                 cerr << "select failed, exiting\n";
                 exiting();
             }

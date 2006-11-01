@@ -12,7 +12,7 @@ using namespace FBB;
         fis >> hex;
         while (true)
         {
-            unsigned x;
+            size_t x;
             switch (x = fis.get())
             {
                 case '\n':

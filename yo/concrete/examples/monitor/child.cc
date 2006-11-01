@@ -21,7 +21,7 @@
     void Child::childProcess()
     {
         Selector    selector;
-        unsigned    message = 0;
+        size_t    message = 0;
 
         selector.addReadFd(STDIN_FILENO);
         selector.setAlarm(5);

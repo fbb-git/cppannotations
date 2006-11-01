@@ -7,7 +7,7 @@
         va_list list;
         va_start(list, fmt);
 
-        unsigned n = vsnprintf(0, 0, fmt, list);            // 2
+        size_t n = vsnprintf(0, 0, fmt, list);            // 2
         std::auto_ptr<char> buf(new char[n + 1]);           // 3
         vsprintf(buf.get(), fmt, list);                     // 4
 

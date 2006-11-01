@@ -9,14 +9,14 @@
     class Storage
     {
         friend void basic();
-        static unsigned s_time;
+        static size_t s_time;
         std::vector<Type> d_data;
         public:
             Storage()
             {}
     };
     template <typename Type>
-    unsigned Storage<Type>::s_time = 0;
+    size_t Storage<Type>::s_time = 0;
 
     void basic()
     {

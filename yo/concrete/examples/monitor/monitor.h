@@ -1,6 +1,8 @@
     #include <string>
     #include <map>
-    #include "../selector.h"
+//    #include "../selector.h"
+    #include <bobcat/selector>
+
     #include "child.h"
 //CLASS
     class Monitor
@@ -16,7 +18,7 @@
 
         static void (Monitor::*s_handler[])(int, std::string const &);
 
-        Selector                d_selector;
+        FBB::Selector                d_selector;
         int                     d_nr;
         std::map<int, Child *>  d_child;
 //=

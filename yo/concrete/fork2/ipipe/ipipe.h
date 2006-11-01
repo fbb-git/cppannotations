@@ -19,13 +19,13 @@ namespace FBB
             std::istream d_istr;
 
         public:
-            IPipe(unsigned size = 500)
+            IPipe(size_t size = 500)
             :
                 Pipe(socket),
                 d_ibuf(d_fd[READ], size == 0 ? 1 : size),
                 d_istr(&d_ibuf)
             {}
-            IPipe(int socket, unsigned size)
+            IPipe(int socket, size_t size)
             :
                 Pipe(socket),
                 d_ibuf(d_fd[READ], size == 0 ? 1 : size),

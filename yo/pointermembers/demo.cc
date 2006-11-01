@@ -5,8 +5,8 @@
     class Person
     {
         public:
-            unsigned length() const;
-            unsigned weight() const;
+            size_t length() const;
+            size_t weight() const;
             char const *name() const;
             char const *city() const;
             Date const &birthdate() const;
@@ -44,7 +44,7 @@
                     cmp;
 
                 #define u2c(a) static_cast<char const *(Person::*)() const>\
-                        (unsigned int (Person::*##a)() const)
+                        (size_t (Person::*##a)() const)
 
                 union Person_accessor
                 {
@@ -74,7 +74,7 @@
 
             Person
                 *pp;    // pointer to the info
-            unsigned
+            size_t
                 n;      // number of persons stored.
     };
 

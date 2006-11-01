@@ -18,7 +18,7 @@
     int main()
     {
         string words[] = {"alpha", "alpha", "Alpha", "papa", "quebec" };
-        unsigned const size = sizeof(words) / sizeof(string);
+        size_t const size = sizeof(words) / sizeof(string);
 
         string *removed = unique(words, words + size);
         copy(words, removed, ostream_iterator<string>(cout, " "));

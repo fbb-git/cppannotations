@@ -29,13 +29,13 @@ namespace FBB
             //              is done via the filedescriptor(s)
             void readVia(int filedescriptor);
             // not tested:
-            void readVia(int const *filedescriptor, unsigned n);
+            void readVia(int const *filedescriptor, size_t n);
 
             // writeVia():  set up redirection from d_fd[WRITE] to the given
             //              filedescriptor(s): writing to d_fd[WRITE]
             //              is done via the filedescriptor(s)
             void writeVia(int filedescriptor);
-            void writeVia(int const *filedescriptor, unsigned n = 2);
+            void writeVia(int const *filedescriptor, size_t n = 2);
 
             int readFd()
             {

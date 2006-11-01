@@ -17,13 +17,13 @@
                             time.d_seconds << " seconds.";
         }
 
-        unsigned d_days;
-        unsigned d_hours;
-        unsigned d_minutes;
-        unsigned d_seconds;
+        size_t d_days;
+        size_t d_hours;
+        size_t d_minutes;
+        size_t d_seconds;
 
         public:
-            Time(unsigned hours, unsigned minutes, unsigned seconds)
+            Time(size_t hours, size_t minutes, size_t seconds)
             :
                 d_days(0),
                 d_hours(hours),

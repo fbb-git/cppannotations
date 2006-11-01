@@ -65,7 +65,7 @@
             {
                 init(0);
             };
-            Vector(unsigned n)
+            Vector(size_t n)
             {
                 init(n);
             }
@@ -86,7 +86,7 @@
                 }
                 return (*this);
             }
-            Type &operator[](unsigned index) throw(char const *)
+            Type &operator[](size_t index) throw(char const *)
             {
                 if (index > (finish - start))
                     throw "Vector array index out of bounds";
@@ -130,12 +130,12 @@
             {
                 return (reverse_iterator(start));
             }
-            unsigned size()
+            size_t size()
             {
                 return (finish - start);
             }
         private:
-            void init(unsigned n)
+            void init(size_t n)
             {
                 if (n)
                 {

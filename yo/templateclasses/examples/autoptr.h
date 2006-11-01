@@ -23,11 +23,11 @@
                     destroy();
                 }
                 auto_ptr<Data> &operator=(auto_ptr<Data> &rvalue);
-                Data &operator[](unsigned index)
+                Data &operator[](size_t index)
                 {
                     return d_data[index];
                 }
-                Data const &operator[](unsigned index) const
+                Data const &operator[](size_t index) const
                 {
                     return d_data[index];
                 }
@@ -50,7 +50,7 @@
                 {
                     d_data = other.release();
                 }
-                Data &element(unsigned idx) const;
+                Data &element(size_t idx) const;
         };
 
         template <typename Data>

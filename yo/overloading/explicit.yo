@@ -52,11 +52,11 @@ rehashed to allow for the new table size.
         verb(
     class HashTable
     {
-        unsigned d_maxsize;
+        size_t d_maxsize;
 
         public:
-            HashTable(unsigned n);  // n: initial table size
-            unsigned size();        // returns current # of elements
+            HashTable(size_t n);  // n: initial table size
+            size_t size();        // returns current # of elements
 
                                     // add new key and value
             void add(std::string const &key, std::string const &value);
@@ -76,13 +76,13 @@ rehashed to allow for the new table size.
 how full the hashtable currently is: if it's more than three quarter full,
 then the intention is to double the size of the hashtable. Although this
 succeeds, the hashtable will completely fail to fulfill its purpose:
-accidentally the programmer assigns an unsigned value, intending to tell the
+accidentally the programmer assigns an size_t value, intending to tell the
 hashtable what its new size should be. This results in the following unwelcome
 surprise:
     itemization(
-    it() The compiler notices that no tt(operator=(unsigned newsize)) is
+    it() The compiler notices that no tt(operator=(size_t newsize)) is
 available for tt(HashTable).
-    it() There is, however, a constructor accepting an unsigned, em(and) the
+    it() There is, however, a constructor accepting an size_t, em(and) the
 default overloaded assignment operator is still available, expecting a
 tt(HashTable) as its right-hand operand.
     it() Thus, the rvalue of the assignment (a tt(HashTable)) is obtained by
@@ -97,10 +97,10 @@ appropriate (or dangerous), it can be prevented using the ti(explicit)
 modifier with the constructor. Constructors using the tt(explicit) modifier
 can only be used for the i(explicit construction) of objects, and cannot be
 used as implicit type convertors anymore. For example, to prevent the implicit
-conversion from tt(unsigned) to tt(HashTable) the class interface of the
+conversion from tt(size_t) to tt(HashTable) the class interface of the
 class tt(HashTable) should declare the constructor
         verb(
-    explicit HashTable(unsigned n);
+    explicit HashTable(size_t n);
         )
     Now the compiler will catch the error in the compilation of
 tt(HashTable::add()), producing an error message like

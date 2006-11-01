@@ -11,10 +11,10 @@ namespace FBB
 class TableSupport
 {
     std::ostream *d_streamPtr;
-    unsigned d_rows;
-    std::vector<unsigned> const *d_colWidth;
-    unsigned d_maxWidth;
-    unsigned d_tableWidth;
+    size_t d_rows;
+    std::vector<size_t> const *d_colWidth;
+    size_t d_maxWidth;
+    size_t d_tableWidth;
 
     public:
         TableSupport()
@@ -29,9 +29,9 @@ class TableSupport
         virtual ~TableSupport()
         {}
 
-        void setParam(std::ostream &ostr, unsigned rows,
-                        std::vector<unsigned> const &colWidth,
-                        unsigned maxWidth)
+        void setParam(std::ostream &ostr, size_t rows,
+                        std::vector<size_t> const &colWidth,
+                        size_t maxWidth)
         {
             d_streamPtr = &ostr;
             d_rows = rows;
@@ -44,17 +44,17 @@ class TableSupport
                                                 colWidth.end(), 0);
         }
 
-        void setParam(unsigned maxWidth)
+        void setParam(size_t maxWidth)
         {
             d_maxWidth = maxWidth;  // 0 if colWidth should be used.
         }
 
-        unsigned tableWidth() const
+        size_t tableWidth() const
         {
             return d_tableWidth;
         }
 
-        unsigned nColumns() const
+        size_t nColumns() const
         {
             return d_colWidth->size();
         }
@@ -64,13 +64,13 @@ class TableSupport
             return *d_streamPtr;
         }
 
-        virtual void hline(unsigned row) const
+        virtual void hline(size_t row) const
         {}
 
         virtual void hline() const
         {}
 
-        virtual void vline(unsigned col) const
+        virtual void vline(size_t col) const
         {
             if (col)
                 *d_streamPtr << ' ';

@@ -3,11 +3,11 @@
 
     namespace FBB
     {
-        template <typename Data, unsigned Size>
+        template <typename Data, size_t Size>
         class auto_ptr
         {
             Data *d_data;
-            unsigned d_n;
+            size_t d_n;
 
             public:
                 auto_ptr()
@@ -41,11 +41,11 @@
 //                    destroy();
                 }
                 auto_ptr<Data, Size> &operator=(auto_ptr<Data, Size> &rvalue);
-                Data &operator[](unsigned index)
+                Data &operator[](size_t index)
                 {
                     return d_data[index];
                 }
-                Data const &operator[](unsigned index) const
+                Data const &operator[](size_t index) const
                 {
                     return d_data[index];
                 }
@@ -68,6 +68,6 @@
                 {
                     d_data = other.release();
                 }
-                Data &element(unsigned idx) const;
+                Data &element(size_t idx) const;
         };
     }

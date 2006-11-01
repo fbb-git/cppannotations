@@ -6,7 +6,7 @@ tt(operator new[]):
     {
         public:
             void *operator new[](size_t size);
-            void *operator new[](size_t index, unsigned extra);
+            void *operator new[](size_t index, size_t extra);
     };
         )
     The first form shows the basic form of tt(operator new[]). It
@@ -37,15 +37,15 @@ automatically in statements like:
         )
     Operator tt(new[]) may be overloaded using additional parameters. The
 second form of the overloaded operator tt(new[]) shows such an additional
-tt(unsigned) parameter. The definition of such a function is standard, and
+tt(size_t) parameter. The definition of such a function is standard, and
 could be:
         verb(
-    void *Object::operator new[](size_t size, unsigned extra)
+    void *Object::operator new[](size_t size, size_t extra)
     {
-        unsigned n = size / sizeof(Object);
+        size_t n = size / sizeof(Object);
         Object *op = ::new Object[n];
 
-        for (unsigned idx = 0; idx < n; idx++)
+        for (size_t idx = 0; idx < n; idx++)
             op[idx].value = extra;          // assume a member `value'
 
         return op;

@@ -7,7 +7,7 @@
     void ParentSlurp::parentProcess()
     {
         std::string     line;
-        unsigned int    nr = 1;
+        size_t    nr = 1;
 
         while (getline(std::cin, line))
             std::cout << nr++ << ": " << line << std::endl;

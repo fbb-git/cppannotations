@@ -27,15 +27,15 @@ class TableType
 //DATA
         TableSupport           *d_tableSupportPtr;
         TableSupport           &d_tableSupport;
-        unsigned                d_maxWidth;
-        unsigned                d_nRows;
-        unsigned                d_nColumns;
+        size_t                d_maxWidth;
+        size_t                d_nRows;
+        size_t                d_nColumns;
         WidthType               d_widthType;
-        std::vector<unsigned>   d_colWidth;
-        unsigned               (TableType::*d_widthFun)
-                                        (unsigned col) const;
+        std::vector<size_t>   d_colWidth;
+        size_t               (TableType::*d_widthFun)
+                                        (size_t col) const;
         std::string const     &(TableType::*d_indexFun)
-                                        (unsigned row, unsigned col) const;
+                                        (size_t row, size_t col) const;
 //=
     protected:
 //PROT
@@ -46,39 +46,39 @@ class TableType
         void setWidth(WidthType type);
 
     protected:
-        TableType(TableSupport &tableSupport, unsigned nColumns,
+        TableType(TableSupport &tableSupport, size_t nColumns,
                     FillDirection direction);
-        TableType(unsigned nColumns, FillDirection direction);
+        TableType(size_t nColumns, FillDirection direction);
         ~TableType()
         {
             delete d_tableSupportPtr;
         }
         void init();
     private:
-        unsigned width(unsigned col) const  // returns correct column width,
+        size_t width(size_t col) const  // returns correct column width,
         {                                   // given d_widthType
             return (this->*d_widthFun)(col);
         }
 
-        unsigned maxWidth(unsigned) const
+        size_t maxWidth(size_t) const
         {
             return d_maxWidth;
         }
-        unsigned columnWidth(unsigned col) const
+        size_t columnWidth(size_t col) const
         {
             return d_colWidth[col];
         }
                                     // returns string at particular location
-        std::string const &stringAt(unsigned row, unsigned col) const
+        std::string const &stringAt(size_t row, size_t col) const
         {
             return (this->*d_indexFun)(row, col);
         }
 //INDEX
-        std::string const &hIndex(unsigned row, unsigned col) const
+        std::string const &hIndex(size_t row, size_t col) const
         {
             return d_string[row * d_nColumns + col];
         }
-        std::string const &vIndex(unsigned row, unsigned col) const
+        std::string const &vIndex(size_t row, size_t col) const
         {
             return d_string[col * d_nRows + row];
         }
@@ -91,17 +91,17 @@ std::ostream &operator<<(std::ostream &str, FBB::TableType const &tableType);
 
 #endif
 /*
-    unsigned (TableType::*d_tableWidthFun)() const;
+    size_t (TableType::*d_tableWidthFun)() const;
 
-        void updateColumn(unsigned col, unsigned width);
+        void updateColumn(size_t col, size_t width);
 
-        unsigned maxWidth() const
+        size_t maxWidth() const
         {
             return d_maxWidth * d_nColumns;
         }
-        unsigned columnSum() const;
+        size_t columnSum() const;
 
-        unsigned tableWidth() const
+        size_t tableWidth() const
         {
             return (this->*d_tableWidthFun)();
         }

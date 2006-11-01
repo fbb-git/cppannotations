@@ -4,20 +4,16 @@
 
     int main()
     {
-        procbuf
-            pb;
+        procbuf pb;
 
         pb.open("sort -f", ios::out);
 
-        ostream
-            opb(&pb);
-        string
-            line;
+        ostream opb(&pb);
+        string line;
 
         while (getline(cin, line))
         {
-            unsigned
-                pos;
+            size_t pos;
             if
             (
                 line.length() == 0 ||

@@ -1,6 +1,6 @@
     #include "scanner.ih"
 
-    void Scanner::pushSource(yy_buffer_state *current, unsigned size)
+    void Scanner::pushSource(yy_buffer_state *current, size_t size)
     {
         if (d_state.size() == s_maxDepth)
             throw nestingTooDeep;

@@ -17,7 +17,7 @@ class Scanner: public yyFlexLexer
     std::vector<std::string>        d_fileName;
     std::string                     d_nextSource;
 
-    static unsigned const           s_maxDepth = 10;
+    static size_t const           s_maxDepth = 10;
 
     public:
         enum Error
@@ -46,7 +46,7 @@ class Scanner: public yyFlexLexer
 
         bool popSource(yy_buffer_state *current);       // true: source popped
         void pushSource(yy_buffer_state *current,       // switch to next
-                            unsigned bufferSize);
+                            size_t bufferSize);
         void throwOnCircularInclusion();
 };
 

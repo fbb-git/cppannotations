@@ -9,8 +9,8 @@
         string words[] =
             { "kilo", "lima", "mike", "november", "oscar", "papa",
               "echo", "foxtrot", "golf", "hotel", "india", "juliet" };
-        unsigned const size = sizeof(words) / sizeof(string);
-        unsigned const midsize = 6;
+        size_t const size = sizeof(words) / sizeof(string);
+        size_t const midsize = 6;
 
         rotate(words, words + midsize, words + size);
 

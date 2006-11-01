@@ -10,7 +10,7 @@
         string words[] =
             { "kilo", "alpha", "lima", "mike", "alpha", "november", "alpha",
                 "oscar", "alpha", "alpha", "papa", "quebec" };
-        unsigned const size = sizeof(words) / sizeof(string);
+        size_t const size = sizeof(words) / sizeof(string);
         string remaining[
                             size -
                             count_if

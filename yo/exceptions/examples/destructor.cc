@@ -4,9 +4,9 @@ using namespace std;
 //DRAWER
     class Drawer
     {
-        unsigned d_nr;
+        size_t d_nr;
         public:
-            Drawer(unsigned nr)
+            Drawer(size_t nr)
             :
                 d_nr(nr)
             {}

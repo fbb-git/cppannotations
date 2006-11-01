@@ -9,8 +9,8 @@
         string words[] =
             { "kilo", "lima", "mike", "november", "oscar", "papa",
               "echo", "foxtrot", "golf", "hotel", "india", "juliet" };
-        unsigned const size = sizeof(words) / sizeof(string);
-        unsigned midsize = 6;
+        size_t const size = sizeof(words) / sizeof(string);
+        size_t midsize = 6;
         string out[size];
 
         copy(out,

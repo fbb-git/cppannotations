@@ -10,7 +10,7 @@
 //DATA
         protected:
             int         d_fd;
-            unsigned    d_bufsize;
+            size_t    d_bufsize;
             char*       d_buffer;
 //=
         public:
@@ -20,7 +20,7 @@
                 d_bufsize(0),
                 d_buffer(0)
             {}
-            ifdnstreambuf(int fd, unsigned bufsize = 1)
+            ifdnstreambuf(int fd, size_t bufsize = 1)
             {
                 open(fd, bufsize);
             }
@@ -36,7 +36,7 @@
             }
 //=
 //OPEN
-            void open(int fd, unsigned bufsize = 1)
+            void open(int fd, size_t bufsize = 1)
             {
                 d_fd = fd;
                 d_bufsize = bufsize;

@@ -7,7 +7,7 @@
     int main()
     {
         int                 range[] = {1, 3, 5, 7, 7, 9, 9, 9};
-        unsigned const      size = sizeof(range) / sizeof(int);
+        size_t const      size = sizeof(range) / sizeof(int);
 
         pair<int *, int *>  pi;
 

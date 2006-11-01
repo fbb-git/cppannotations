@@ -37,7 +37,7 @@
     {
         string words[] =
                     { "kilo", "lima", "mike", "november", "oscar", "papa"};
-        unsigned const size = sizeof(words) / sizeof(string);
+        size_t const size = sizeof(words) / sizeof(string);
 
         cout << "Using Default Shuffle:\n";
         random_shuffle(words, words + size);

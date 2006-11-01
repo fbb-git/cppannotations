@@ -29,7 +29,7 @@ namespace FBB
         std::auto_ptr<std::filebuf> d_filebuf;
         std::streambuf *d_streambuf;
         std::istringstream d_iss;
-        unsigned d_width;
+        size_t d_width;
 //=
         public:
 //CONS
@@ -46,11 +46,11 @@ namespace FBB
     class field
     {
         friend class fistream;
-        unsigned d_width;
+        size_t d_width;
         bool     d_newWidth;
 
         public:
-            field(unsigned width)
+            field(size_t width)
             :
                 d_width(width),
                 d_newWidth(true)

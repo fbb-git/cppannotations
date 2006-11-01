@@ -5,7 +5,7 @@
 
     int main(int argc, char **argv)
     {
-        plus<unsigned> uAdd;       // function object to add unsigneds
+        plus<size_t> uAdd;       // function object to add size_ts
 
         cout << "3 + 5 = " << uAdd(3, 5) << endl;
 

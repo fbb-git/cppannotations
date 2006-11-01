@@ -5,13 +5,13 @@
 
     class NaturalSquares
     {
-        unsigned d_newsqr;
-        unsigned d_last;
+        size_t d_newsqr;
+        size_t d_last;
 
         public:
             NaturalSquares(): d_newsqr(0), d_last(0)
             {}
-            unsigned operator()()
+            size_t operator()()
             {                           // using: (a + 1)^2 == a^2 + 2*a + 1
                 return d_newsqr += (d_last++ << 1) + 1;
             }
@@ -21,7 +21,7 @@
 
     int main()
     {
-        vector<unsigned>    uv(10);
+        vector<size_t>    uv(10);
 
         generate_n(uv.begin(), 5, NaturalSquares());
 

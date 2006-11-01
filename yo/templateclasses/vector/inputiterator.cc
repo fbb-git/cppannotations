@@ -10,7 +10,7 @@
             :
                 Vector<Type>()
             {};
-            Vector2(unsigned n)
+            Vector2(size_t n)
             :
                 Vector<Type>(n)
             {}

@@ -3,7 +3,7 @@
     #include "pointerunion.h"
 
     template<typename T>
-    T sumVector(T *tp, unsigned n);
+    T sumVector(T *tp, size_t n);
 
     void fun()
     {

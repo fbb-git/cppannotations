@@ -1,13 +1,13 @@
     #include <iostream>
     #include "add.h"
 
-    unsigned fun(unsigned (*f)(unsigned *p, unsigned n));
-    double fun(double (*f)(double *p, unsigned n));
+    size_t fun(size_t (*f)(size_t *p, size_t n));
+    double fun(double (*f)(double *p, size_t n));
 
     int main()
     {
         std::cout
-            << fun(static_cast<double (*)(double *, unsigned)>(add))
+            << fun(static_cast<double (*)(double *, size_t)>(add))
             << std::endl;
 
         return 0;

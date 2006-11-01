@@ -14,7 +14,7 @@
             << sumVector(y, 2) << endl;     // second instantiation
 
         unsigned long                       // third instantiation
-            (*pf)(unsigned long *, unsigned) = sumVector;
+            (*pf)(unsigned long *, size_t) = sumVector;
     }
     /*
         Generated output:

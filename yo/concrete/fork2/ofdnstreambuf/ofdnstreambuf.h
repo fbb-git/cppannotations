@@ -11,7 +11,7 @@ namespace FBB
     class OFdNStreambuf: public std::streambuf
     {
         private:
-            unsigned    d_n;
+            size_t    d_n;
             int         d_fd;
             char       *d_buffer;
 
@@ -22,14 +22,14 @@ namespace FBB
                 d_buffer(0)
             {}
 
-            OFdNStreambuf(int fd, unsigned n = 1)
+            OFdNStreambuf(int fd, size_t n = 1)
             {
                 open(fd, n);
             }
 
             ~OFdNStreambuf();
 
-            void open(int fd, unsigned n = 1);
+            void open(int fd, size_t n = 1);
             int sync();
             int overflow(int c);
 

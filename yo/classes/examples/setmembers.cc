@@ -16,7 +16,7 @@
         d_phone = phone;
     }
 
-    void Person::setWeight(unsigned weight)
+    void Person::setWeight(size_t weight)
     {
         d_weight = weight;
     }

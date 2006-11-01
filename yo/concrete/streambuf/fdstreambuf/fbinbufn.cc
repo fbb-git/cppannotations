@@ -16,7 +16,7 @@ int main(int argc)
 
     cout <<  "START\n";
 
-    for (unsigned line = 0; getline(is, s); line++)
+    for (size_t line = 0; getline(is, s); line++)
     {
         cout << s << endl;
         if ((line & 3) == 0)

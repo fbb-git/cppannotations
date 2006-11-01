@@ -6,7 +6,7 @@
     class Twice
     {
         public:
-            bool operator()(unsigned first, unsigned second) const
+            bool operator()(size_t first, size_t second) const
             {
                 return first == (second << 1);
             }
@@ -38,13 +38,13 @@
         );
         cout << endl;
 
-        unsigned range[] = {2, 4, 6, 8, 10, 4, 6, 8, 10};
-        unsigned nrs[]   = {2, 3, 4};
+        size_t range[] = {2, 4, 6, 8, 10, 4, 6, 8, 10};
+        size_t nrs[]   = {2, 3, 4};
 
         copy            // sequence of values starting at first sequence
         (               // of range[] that are twice the values in nrs[]
             find_first_of(range, range + 9, nrs, nrs + 3, Twice()),
-            range + 9, ostream_iterator<unsigned>(cout, " ")
+            range + 9, ostream_iterator<size_t>(cout, " ")
         );
         cout << endl;
 

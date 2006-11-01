@@ -12,7 +12,7 @@
 
         Matrix<3, 1> rowMargins(matrix);
         cout << "Row marginals:\n";
-        for (unsigned idx = 0; idx < 3; idx++)
+        for (size_t idx = 0; idx < 3; idx++)
             cout << rowMargins[idx] << endl;
 
         cout << "Sum total: " << Matrix<1, 1>(matrix) << endl;

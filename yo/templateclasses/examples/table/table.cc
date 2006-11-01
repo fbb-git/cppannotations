@@ -16,7 +16,7 @@
 
     int main(int argc, char **argv)
     {
-        unsigned nCols = 5;
+        size_t nCols = 5;
         if (argc > 1)
         {
             istringstream iss(argv[1]);

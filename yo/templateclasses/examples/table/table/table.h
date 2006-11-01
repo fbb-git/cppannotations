@@ -15,10 +15,10 @@ class Table: public TableType
     public:
 //CONS
         Table(Iterator const &begin, Iterator const &end,
-                unsigned nColumns, FillDirection direction);
+                size_t nColumns, FillDirection direction);
         Table(Iterator const &begin, Iterator const &end,
                 TableSupport &tableSupport,
-                unsigned nColumns, FillDirection direction);
+                size_t nColumns, FillDirection direction);
 //=
     private:
         void fill(Iterator begin, Iterator const &end);
@@ -42,7 +42,7 @@ void Table<Iterator>::fill(Iterator it, Iterator const &end)
 template <typename Iterator>
 Table<Iterator>::Table(Iterator const &begin, Iterator const &end,
                 TableSupport &tableSupport,
-                unsigned nColumns, FillDirection direction)
+                size_t nColumns, FillDirection direction)
 :
     TableType(tableSupport, nColumns, direction)
 {
@@ -51,7 +51,7 @@ Table<Iterator>::Table(Iterator const &begin, Iterator const &end,
 
 template <typename Iterator>
 Table<Iterator>::Table(Iterator const &begin, Iterator const &end,
-                unsigned nColumns, FillDirection direction)
+                size_t nColumns, FillDirection direction)
 :
     TableType(nColumns, direction)
 {

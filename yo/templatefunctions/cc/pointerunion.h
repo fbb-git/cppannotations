@@ -1,5 +1,5 @@
     union PointerUnion
     {
-        int (*fp)(int *, unsigned);
+        int (*fp)(int *, size_t);
         void *vp;
     };

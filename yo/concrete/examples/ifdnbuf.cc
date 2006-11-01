@@ -13,7 +13,7 @@
                                     // chars
         while (true)
         {
-            unsigned n = fds.sgetn(buf, 80);
+            size_t n = fds.sgetn(buf, 80);
             if (n == 0)
                 break;
             cout.write(buf, n);

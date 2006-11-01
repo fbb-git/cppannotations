@@ -8,7 +8,7 @@ using namespace std;
 class fdstreambuf: public std::streambuf
 {
     public:
-        fdstreambuf(int fd, unsigned bufsize, unsigned minimum,
+        fdstreambuf(int fd, size_t bufsize, size_t minimum,
                     std::ios::openmode mode = std::ios::in | std::ios::out)
         :
             fd(fd),
@@ -48,8 +48,8 @@ class fdstreambuf: public std::streambuf
     filling starts are buffer + minimum
 */
 
-            unsigned
-                n2move = min(minimum, (unsigned)(gptr() - eback()));
+            size_t
+                n2move = min(minimum, (size_t)(gptr() - eback()));
 
             memcpy(buffer, egptr() - n2move, n2move);
 
@@ -71,7 +71,7 @@ class fdstreambuf: public std::streambuf
 
     private:
         int         fd;
-        unsigned    bufsize;
-        unsigned    minimum;
+        size_t    bufsize;
+        size_t    minimum;
         char*       buffer;
 };

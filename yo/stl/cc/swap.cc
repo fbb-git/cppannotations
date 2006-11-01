@@ -8,7 +8,7 @@
     {
         string first[] = {"alpha", "bravo", "charley"};
         string second[] = {"echo", "foxtrot", "golf"};
-        unsigned const n = sizeof(first) / sizeof(string);
+        size_t const n = sizeof(first) / sizeof(string);
 
         cout << "Before:\n";
         copy(first, first + n, ostream_iterator<string>(cout, " "));
@@ -16,7 +16,7 @@
         copy(second, second + n, ostream_iterator<string>(cout, " "));
         cout << endl;
 
-        for (unsigned idx = 0; idx < n; ++idx)
+        for (size_t idx = 0; idx < n; ++idx)
             swap(first[idx], second[idx]);
 
         cout << "After:\n";

@@ -7,7 +7,7 @@
     int main()
     {
         int         ia[] = {10, 15, 15, 20, 30};
-        unsigned    n = sizeof(ia) / sizeof(int);
+        size_t    n = sizeof(ia) / sizeof(int);
 
         cout << "Sequence: ";
         copy(ia, ia + n, ostream_iterator<int>(cout, " "));

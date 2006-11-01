@@ -9,7 +9,7 @@
 
         while (getline(cin, line))
         {
-            unsigned    size = line.size();
+            size_t    size = line.size();
             char        copy[size + 1];
 
             cout << "line: " << line << endl <<

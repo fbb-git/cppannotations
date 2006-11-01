@@ -19,7 +19,7 @@ namespace FBB
     class IPipe: public Pipe, private IFdStreambuf, public std::istream
     {
         public:
-            IPipe(unsigned size = 500);
+            IPipe(size_t size = 500);
             void closeWriteFd();
     };
 }

@@ -8,7 +8,7 @@
     {
         string first[] = {"alpha", "bravo", "charley"};
         string second[] = {"echo", "foxtrot", "golf"};
-        unsigned const n = sizeof(first) / sizeof(string);
+        size_t const n = sizeof(first) / sizeof(string);
 
         cout << "Before:\n";
         copy(first, first + n, ostream_iterator<string>(cout, " "));

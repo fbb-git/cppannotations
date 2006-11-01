@@ -5,7 +5,7 @@
 class fdstreambuf: public std::streambuf
 {
     public:
-        fdstreambuf(int fd, unsigned bufsize, std::ios::openmode mode =
+        fdstreambuf(int fd, size_t bufsize, std::ios::openmode mode =
                                 std::ios::in | std::ios::out)
         :
             fd(fd),
@@ -38,6 +38,6 @@ class fdstreambuf: public std::streambuf
 
     private:
         int         fd;
-        unsigned    bufsize;
+        size_t    bufsize;
         char*       buffer;
 };

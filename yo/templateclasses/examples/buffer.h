@@ -1,4 +1,4 @@
-    template <typename Type, unsigned size>
+    template <typename Type, size_t size>
     class Buffer
     {
         public:

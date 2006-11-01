@@ -2,8 +2,8 @@
     <
         class T1,
         class T2,
-        unsigned size1,
-        unsigned size2
+        size_t size1,
+        size_t size2
     >
         T1
         (

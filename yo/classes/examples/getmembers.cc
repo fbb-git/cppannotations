@@ -16,7 +16,7 @@
        return d_phone;
     }
 
-    unsigned Person::weight() const
+    size_t Person::weight() const
     {
        return d_weight;
     }

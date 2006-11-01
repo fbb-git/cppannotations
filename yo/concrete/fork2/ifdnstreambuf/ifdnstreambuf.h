@@ -12,7 +12,7 @@ namespace FBB
     {
         private:
             int         d_fd;
-            unsigned    d_n;
+            size_t    d_n;
             char*       d_buffer;
 
         public:
@@ -22,14 +22,14 @@ namespace FBB
                 d_buffer(0)
             {}
 
-            IFdNStreambuf(int fd, unsigned n = 1)
+            IFdNStreambuf(int fd, size_t n = 1)
             {
                 open(fd, n);
             }
 
             ~IFdNStreambuf();
 
-            void open(int xfd, unsigned n = 1);
+            void open(int xfd, size_t n = 1);
             int underflow();
             std::streamsize xsgetn(char *dest, std::streamsize n);
 

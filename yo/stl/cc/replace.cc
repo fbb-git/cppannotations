@@ -9,7 +9,7 @@
         string words[] =
             { "kilo", "alpha", "lima", "mike", "alpha", "november", "alpha",
                 "oscar", "alpha", "alpha", "papa", "quebec" };
-        unsigned const size = sizeof(words) / sizeof(string);
+        size_t const size = sizeof(words) / sizeof(string);
 
         replace(words, words + size, string("alpha"), string("ALPHA"));
         copy(words, words + size, ostream_iterator<string>(cout, " "));

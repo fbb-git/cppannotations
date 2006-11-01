@@ -20,7 +20,7 @@
     {
         string words[] = {"oscar", "Alpha", "alpha", "alpha",
                                                         "papa", "quebec" };
-        unsigned const size = sizeof(words) / sizeof(string);
+        size_t const size = sizeof(words) / sizeof(string);
         vector<string> remaining;
 
         unique_copy(words, words + size, back_inserter(remaining));

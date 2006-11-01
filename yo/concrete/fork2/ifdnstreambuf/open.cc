@@ -1,6 +1,6 @@
 #include "ifdnstreambuf.ih"
 
-void IFdNStreambuf::open(int fd, unsigned n)
+void IFdNStreambuf::open(int fd, size_t n)
 {
     d_fd = fd;
     d_n = (n == 0) ? 1 : n;

@@ -8,7 +8,7 @@
         class auto_ptr<char *>
         {
             char **d_data;
-            unsigned d_n;
+            size_t d_n;
 
             public:
                 auto_ptr<char *>()
@@ -24,15 +24,15 @@
                 {
                     full_copy(argv);
                 }
-                // template <unsigned Size>             NI
+                // template <size_t Size>             NI
                 // auto_ptr(char *const (&arr)[Size])
                 ~auto_ptr()
                 {
                     destroy();
                 }
                 auto_ptr<char *> &operator=(auto_ptr<char *> &rvalue);
-                char *&operator[](unsigned index);
-                char *const &operator[](unsigned index) const;
+                char *&operator[](size_t index);
+                char *const &operator[](size_t index) const;
                 char **get();
                 char *const *get() const;
                 char **release();
@@ -53,7 +53,7 @@
                         d_n++;
                     d_data = new char *[d_n];
 
-                    for (unsigned idx = 0; idx < d_n; idx++)
+                    for (size_t idx = 0; idx < d_n; idx++)
                     {
                         std::string str(argv[idx]);
                         d_data[idx] =

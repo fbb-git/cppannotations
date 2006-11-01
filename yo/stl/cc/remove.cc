@@ -10,7 +10,7 @@
             { "kilo", "alpha", "lima", "mike", "alpha", "november", "alpha",
                 "alpha", "alpha", "papa", "quebec" };
         string *removed;
-        unsigned const size = sizeof(words) / sizeof(string);
+        size_t const size = sizeof(words) / sizeof(string);
 
         cout << "Removing all \"alpha\"s:\n";
         removed = remove(words, words + size, "alpha");

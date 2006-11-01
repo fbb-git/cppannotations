@@ -6,7 +6,7 @@ an object is instantiated.
 
     However, their values are not deduced by the compiler using arguments
 passed to constructors. Assume we modify the template class tt(FBB::auto_ptr)
-so that it has an additional non-type parameter tt(unsigned Size). Next we use
+so that it has an additional non-type parameter tt(size_t Size). Next we use
 this tt(Size) parameter in a new constructor defining an array of tt(Size)
 elements of type tt(Data) as its parameter. The new tt(FBB::auto_ptr) template
 class becomes (showing only the relevant constructors; note the two template
@@ -15,11 +15,11 @@ copy constructor's parameter):
         verb(
     namespace FBB
     {
-        template <typename Data, unsigned Size>
+        template <typename Data, size_t Size>
         class auto_ptr
         {
             Data *d_data;
-            unsigned d_n;
+            size_t d_n;
 
             public:
                 auto_ptr(auto_ptr<Data, Size> &other)
@@ -58,14 +58,14 @@ mismatch between the required and actual number of template parameters:
 
         In function `int main()':
             error: wrong number of template arguments (1, should be 2)
-            error: provided for `template<class Data, unsigned int Size>
+            error: provided for `template<class Data, size_t Size>
                    class FBB::auto_ptr'
     */
         )
     Making tt(Size) into a non-type parameter having a default value doesn't
 work either. The compiler will use the default, unless explicitly specified
 otherwise. So, reasoning that tt(Size) can be 0 unless we need another value,
-we might specify tt(unsigned Size = 0) in the templates parameter type list.
+we might specify tt(size_t Size = 0) in the templates parameter type list.
 However, this causes a mismatch between the default value 0 and the actual
 size of the array tt(arr) as defined in the above tt(main()) function. The
 compiler, using the default value, reports:
@@ -106,7 +106,7 @@ data type may be used for the specification of a non-type parameter of a
 `wider' type (e.g., a tt(short) can be used when an tt(int) is called for, a
 tt(long) when a tt(double) is called for).
     it() Integral hi(integral conversions) conversions are allowed: if an
-tt(unsigned) parameter is specified, an tt(int) may be used too.
+tt(size_t) parameter is specified, an tt(int) may be used too.
     it() Variables cannot be used to specify template non-type parameters, as
 their values are not constant expressions. Variables defined using the
 tt(const) modifier, however, may be used, as their values never change.

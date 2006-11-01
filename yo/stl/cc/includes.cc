@@ -30,7 +30,7 @@
             {
                 "charley", "foxtrot", "hotel"
             };
-        unsigned n = sizeof(first1) / sizeof(string);
+        size_t n = sizeof(first1) / sizeof(string);
 
         cout << "The elements of `second' are " <<
             (includes(first1, first1 + n, second, second + 3) ? "" : "not")

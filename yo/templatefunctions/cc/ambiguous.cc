@@ -1,8 +1,8 @@
     #include <iostream>
     #include "add.h"
 
-    unsigned fun(int (*f)(int *p, unsigned n));
-    double fun(double (*f)(double *p, unsigned n));
+    size_t fun(int (*f)(int *p, size_t n));
+    double fun(double (*f)(double *p, size_t n));
 
     int main()
     {

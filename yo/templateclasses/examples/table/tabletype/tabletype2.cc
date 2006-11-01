@@ -1,6 +1,6 @@
 #include "tabletype.ih"
 
-TableType::TableType(unsigned nColumns,
+TableType::TableType(size_t nColumns,
                         FillDirection direction)
 :
     d_tableSupportPtr(new TableSupport()),

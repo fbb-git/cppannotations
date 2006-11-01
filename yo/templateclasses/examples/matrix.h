@@ -2,7 +2,7 @@
     #include <algorithm>
     #include <numeric>
 
-    template <unsigned Rows, unsigned Columns, typename DataType = double>
+    template <size_t Rows, size_t Columns, typename DataType = double>
     class Matrix
     {
 //HEAD
@@ -17,8 +17,8 @@
 //CONSTRUCTORS
             Matrix(std::istream &str)
             {
-                for (unsigned row = 0; row < Rows; row++)
-                    for (unsigned col = 0; col < Columns; col++)
+                for (size_t row = 0; row < Rows; row++)
+                    for (size_t col = 0; col < Columns; col++)
                         str >> d_matrix[row][col];
             }
             Matrix()
@@ -27,12 +27,12 @@
             }
 //=
 //OPERATOR=
-            MatrixRow &operator[](unsigned idx)
+            MatrixRow &operator[](size_t idx)
             {
                 return d_matrix[idx];
             }
 //=
-            MatrixRow const &operator[](unsigned idx) const
+            MatrixRow const &operator[](size_t idx) const
             {
                 return d_matrix[idx];
             }
@@ -53,7 +53,7 @@
     };
 
 //MATRIXROW
-    template <unsigned Columns, typename DataType>  // no default specified
+    template <size_t Columns, typename DataType>  // no default specified
     class Matrix<1, Columns, DataType>
 //=
     {
@@ -68,30 +68,30 @@
             }
 //=
 //ROWCONS2
-            template <unsigned Rows>
+            template <size_t Rows>
             Matrix(Matrix<Rows, Columns, DataType> const &matrix)
             {
                 std::fill(d_column, d_column + Columns, DataType());
 
-                for (unsigned col = 0; col < Columns; col++)
-                    for (unsigned row = 0; row < Rows; row++)
+                for (size_t col = 0; col < Columns; col++)
+                    for (size_t row = 0; row < Rows; row++)
                         d_column[col] += matrix[row][col];
             }
 //=
 //ROWOPERATOR=
-            DataType &operator[](unsigned idx)
+            DataType &operator[](size_t idx)
             {
                 return d_column[idx];
             }
 //=
-            DataType const &operator[](unsigned idx) const
+            DataType const &operator[](size_t idx) const
             {
                 return d_column[idx];
             }
     };
 
 //MATRIXCOLUMN
-    template <unsigned Rows, typename DataType>
+    template <size_t Rows, typename DataType>
     class Matrix<Rows, 1, DataType>
 //=
     {
@@ -101,21 +101,21 @@
             {
                 std::fill(d_row, d_row + Rows, DataType());
             }
-            template <unsigned Columns>
+            template <size_t Columns>
             Matrix(Matrix<Rows, Columns, DataType> const &matrix)
             {
-                for (unsigned row = 0; row < Rows; row++)
+                for (size_t row = 0; row < Rows; row++)
                     d_row[row] =
                         std::accumulate
                         (
                             &matrix[row][0], &matrix[row][Columns], DataType()
                         );
             }
-            DataType &operator[](unsigned idx)
+            DataType &operator[](size_t idx)
             {
                 return d_row[idx];
             }
-            DataType const &operator[](unsigned idx) const
+            DataType const &operator[](size_t idx) const
             {
                 return d_row[idx];
             }
@@ -139,12 +139,12 @@
                 d_cell(DataType())
             {}
 //1X1CONS
-            template <unsigned Rows, unsigned Columns>
+            template <size_t Rows, size_t Columns>
             Matrix(Matrix<Rows, Columns, DataType> const &matrix)
             :
                 d_cell(matrix.rowMarginals().sum())
             {}
-            template <unsigned Rows>
+            template <size_t Rows>
             Matrix(Matrix<Rows, 1, DataType> const &matrix)
             :
                 d_cell(matrix.sum())

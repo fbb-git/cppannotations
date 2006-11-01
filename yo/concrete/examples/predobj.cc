@@ -9,7 +9,7 @@
     class Contains
     {
         string d_target;
-        unsigned d_count;
+        size_t d_count;
         public:
             Contains(char const *target)
             :
@@ -26,7 +26,7 @@
                 d_count++;
                 return s1.find_first_of(s2) != string::npos;
             }
-            unsigned count() const
+            size_t count() const
             {
                 return d_count;
             }

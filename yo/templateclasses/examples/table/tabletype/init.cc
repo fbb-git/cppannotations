@@ -10,12 +10,12 @@ void TableType::init()
 
                                             // determine max width per column,
                                             // and max column width
-    for (unsigned col = 0; col < d_nColumns; col++)
+    for (size_t col = 0; col < d_nColumns; col++)
     {
-        unsigned width = 0;
-        for (unsigned row = 0; row < d_nRows; row++)
+        size_t width = 0;
+        for (size_t row = 0; row < d_nRows; row++)
         {
-            unsigned len = stringAt(row, col).length();
+            size_t len = stringAt(row, col).length();
             if (width < len)
                 width = len;
         }

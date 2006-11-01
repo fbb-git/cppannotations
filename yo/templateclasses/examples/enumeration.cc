@@ -27,7 +27,7 @@
                 private:
                     vector<Type>
                         const *vp;
-                    unsigned
+                    size_t
                         idx;
             };
 

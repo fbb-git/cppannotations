@@ -7,19 +7,19 @@
     class fdunget: public std::streambuf
     {
         int         d_fd;
-        unsigned    d_bufsize;
-        unsigned    d_reserved;
+        size_t    d_bufsize;
+        size_t    d_reserved;
         char*       d_buffer;
         char*       d_base;
 //=
         public:
 //CONS
-            fdunget(int fd, unsigned bufsz, unsigned unget)
+            fdunget(int fd, size_t bufsz, size_t unget)
             :
                 d_fd(fd),
                 d_reserved(unget)
             {
-                unsigned allocate =
+                size_t allocate =
                         bufsz > d_reserved ?
                             bufsz
                         :
@@ -45,8 +45,8 @@
                 if (gptr() < egptr())
                     return *gptr();
 
-                unsigned ungetsize = gptr() - eback();
-                unsigned move = std::min(ungetsize, d_reserved);
+                size_t ungetsize = gptr() - eback();
+                size_t move = std::min(ungetsize, d_reserved);
 
                 memcpy(d_base - move, egptr() - move, move);
 

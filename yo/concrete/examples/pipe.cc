@@ -39,7 +39,7 @@
     {
         writtenBy(&fd, 1);
     }
-    void Pipe::writtenBy(int const *fd, unsigned n)
+    void Pipe::writtenBy(int const *fd, size_t n)
     {
         writeOnly();
 

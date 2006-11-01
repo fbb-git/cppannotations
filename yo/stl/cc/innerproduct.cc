@@ -23,19 +23,19 @@
 
     int main()
     {
-        unsigned ia1[] = {1, 2, 3, 4, 5, 6, 7};
-        unsigned ia2[] = {7, 6, 5, 4, 3, 2, 1};
-        unsigned init = 0;
+        size_t ia1[] = {1, 2, 3, 4, 5, 6, 7};
+        size_t ia2[] = {7, 6, 5, 4, 3, 2, 1};
+        size_t init = 0;
 
         cout << "The sum of all squares in ";
-        copy(ia1, ia1 + 7, ostream_iterator<unsigned>(cout, " "));
+        copy(ia1, ia1 + 7, ostream_iterator<size_t>(cout, " "));
         cout << "is " <<
             inner_product(ia1, ia1 + 7, ia1, init) << endl;
 
         cout << "The sum of all cross-products in ";
-        copy(ia1, ia1 + 7, ostream_iterator<unsigned>(cout, " "));
+        copy(ia1, ia1 + 7, ostream_iterator<size_t>(cout, " "));
         cout << " and ";
-        copy(ia2, ia2 + 7, ostream_iterator<unsigned>(cout, " "));
+        copy(ia2, ia2 + 7, ostream_iterator<size_t>(cout, " "));
         cout << "is " <<
             inner_product(ia1, ia1 + 7, ia2, init) << endl;
 

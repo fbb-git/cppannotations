@@ -379,7 +379,7 @@ YY_Parser_CONSTRUCTOR_CODE;
 #define YYFLAG          -32768
 #define YYNTBASE        13
 
-#define YYTRANSLATE(x) ((unsigned)(x) <= 261 ? yytranslate[x] : 17)
+#define YYTRANSLATE(x) ((size_t)(x) <= 261 ? yytranslate[x] : 17)
 
 static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     9,

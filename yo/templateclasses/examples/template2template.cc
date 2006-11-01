@@ -40,7 +40,7 @@
             void hierarchicalSort
             (
                 bool (Type::**arr)(Type const &rhv) const,
-                unsigned n
+                size_t n
             );
     };
 
@@ -48,7 +48,7 @@
     template <typename Type>
     void SortVector<Type>::hierarchicalSort(
                 bool (Type::**arr)(Type const &rhv) const,
-                unsigned n)
+                size_t n)
     {
         while (n--)
             stable_sort(begin(), end(), SortWith<Type>(arr[n]));
