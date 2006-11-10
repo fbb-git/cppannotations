@@ -15,23 +15,71 @@ tt(name()):
 occurs inline in the interface of the class tt(Person). The keyword tt(const)
 occurs after the function declaration, and before the code block.
 
-Thus, tt(inline) functions appearing in the class interface are fully defined
-within the class interface.
+    Although members can be defined inside the class interface itself, it
+should be considered bad practice because of the following considerations:
+    itemization(
+    it() Defining functions inside the interface confuses the interface with
+the implementation. The interface should merely document what functionality
+the class offers. Mixing member declarations with implementation detail
+complicates understanding the interface. Readers will have to skip over 
+implementation details which takes time and makes it hard to grab the `broad
+picture', and thus to understand at a glance what functionality 
+the class's objects are offering.
+    it() Although members that are eligible for inline-coding should remain
+inline, situations do exist where members migrate from an inline to a
+non-inline definition. The in-class inline definition still needs editiing
+(sometimes considerable editing) before a non-inline definition is ready to be
+compiled. This additional editing is undesirable.
+    )
+    Because of the above considerations inline members should not be defined
+within the class interface. Rather, they should be defined em(below) the class
+interface. The  tt(name()) member of the tt(Person)
+class is therefore preferably defined as follows:
+        verb(
+    class Person
+    {
+        public:
+            std::string const &name() const;
+    };
 
-This has the following effect: Whenever tt(name()) is called in a
-program statement, the compiler may em(generate the code in the function's
-body) at the location of the function call. The function itself may never
-actually be called. Consequently, the function call is prevented, but the
-function's body appears as often in the final program as the inline function
-is actually called.
+    inline std::string const &Person::name() const
+    {
+        return d_name;
+    }
+        )
+    This version of the tt(Person) class clearly shows that:
+    itemization(
+    it() the class interface itself only contains a declaration
+    it() the inline implementation can easily be redefined as  a non-inline
+implementation by removing the tt(inline) keyword and including the
+appropriate class-header file. E.g.,
+        verb(
+    #include "person.h"
+
+    std::string const &Person::name() const
+    {
+        return d_name;
+    }
+        )
+
+Defining members inline has the following effect: Whenever an inline function
+is called in a program statement, the compiler may em(insert the function's
+body) at the location of the function call. The function itself
+may never actually be called. Consequently, the function call is prevented,
+but the function's body appears as often in the final program as the inline
+function is actually called.
 
 This construction, where the function code itself is inserted rather than a
 call to the function, is called an i(inline function).  Note that using inline
-functions may result in multiple occurrences of those function's code: one
-copy for each invocation of the inline function. This is probably ok if the
-function is a small one, and needs to be executed fast. It's not so desirable
-if the code of the function is extensive. The compiler knows this too, and
-considers the
+functions may result in multiple occurrences of the code of those functions in
+a program: one copy for each invocation of the inline function. This is
+probably ok if the function is a small one, and needs to be executed
+fast. It's not so desirable if the code of the function is extensive. The
+compiler knows this too, and considers the
     i(use of inline functions) a em(request) rather than a em(command): if the
 compiler considers the function too long, it will not grant the request, but
-will, instead, treat the function as a normal function.
+will, instead, treat the function as a normal function. As a emi(rule of
+thumb): members should only be defined inline if they are small
+(containing a single, small statement) and if it is highly unlikely that their
+definition will ever change.
+
