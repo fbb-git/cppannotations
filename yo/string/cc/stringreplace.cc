@@ -1,20 +1,27 @@
     #include <iostream>
     #include <string>
-    #include <cassert>
 
     using namespace std;
 
     int main(int argc, char **argv)
     {
-        assert(argc == 3 &&
-            "Usage: <searchstring> <replacestring> to process stdin");
+        if (argc == 3)
+        {
+            cerr << "Usage: <searchstring> <replacestring> to process "
+                                                                  "stdin\n";
+            return 1;
+        }
 
-        string line;
         string search(argv[1]);
         string replace(argv[2]);
 
-        assert(search != replace);
+        if (search == replace)
+        {
+            cerr << "The replace and search texts should be different\n";
+            return 1;
+        }
 
+        string line;
         while (getline(cin, line))
         {
             string::size_type idx = 0;
