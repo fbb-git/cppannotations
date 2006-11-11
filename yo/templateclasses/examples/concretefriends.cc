@@ -3,7 +3,9 @@
     #include <ctime>
     #include <vector>
     #include <algorithm>
-/*
+
+#if 1
+
 //FUNCTION
     template <typename Type>
     class Storage
@@ -12,11 +14,15 @@
         static size_t s_time;
         std::vector<Type> d_data;
         public:
-            Storage()
-            {}
+            Storage();
     };
+
     template <typename Type>
     size_t Storage<Type>::s_time = 0;
+
+    template <typename Type>
+    Storage<Type>::Storage()
+    {}
 
     void basic()
     {
@@ -25,6 +31,7 @@
         std::random_shuffle(storage.d_data.begin(), storage.d_data.end());
     }
 //=
+
 //CLASS
     class Friend;
 
@@ -41,14 +48,19 @@
     {
         Composer<int> d_ints;
         public:
-            Friend(std::istream &input)
-            {
-                std::copy(std::istream_iterator<int>(input),
-                          std::istream_iterator<int>(),
-                          back_inserter(d_ints.d_data));
-            }
+            Friend(std::istream &input);
     };
+
+    inline::Friend::Friend(std::istream &input)
+    {
+        std::copy(std::istream_iterator<int>(input),
+                  std::istream_iterator<int>(),
+                  back_inserter(d_ints.d_data));
+    }
 //=
+
+#else
+
 //MEMBER
     template <typename Type>
     class Composer;
@@ -75,13 +87,15 @@
             }
     };
 
-    Friend::Friend(std::istream &input)
+    inline Friend::Friend(std::istream &input)
     :
         d_ints(new Composer<int>(input))
     {}
 
-    void Friend::randomizer()
+    inline void Friend::randomizer()
     {
         std::random_shuffle(d_ints->d_data.begin(), d_ints->d_data.end());
     }
 //=
+
+#endif

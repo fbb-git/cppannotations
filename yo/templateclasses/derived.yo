@@ -18,8 +18,7 @@ are em(partially precompiled).
 elaborated.
 
 
-Consider the
-following base class:
+Consider the following base class:
         verb(
     template<typename T>
     class Base
@@ -27,10 +26,7 @@ following base class:
         T const &t;
 
         public:
-            Base(T const &t)
-            :
-                t(t)
-            {}
+            Base(T const &t);
     };
         )
     The above class is a template class, which can be used as a i(base class)
@@ -40,11 +36,14 @@ for the following i(derived template class) tt(Derived):
     class Derived: public Base<T>
     {
         public:
-            Derived(T const &t)
-            :
-                Base(t)
-            {}
+            Derived(T const &t);
     };
+
+    template<typename T>
+    Derived<T>::Derived(T const &t)
+    :
+        Base(t)
+    {}
         )
     Other combinations are possible as well: by specifying concrete template
 type parameters of the base class, the base class is instantiated and the
@@ -53,11 +52,13 @@ derived class becomes an ordinary (non-template) class:
     class Ordinary: public Base<int>
     {
         public:
-            Ordinary(int x)
-            :
-                Base(x)
-            {}
+            Ordinary(int x);
     };
+
+    inline Ordinary::Ordinary(int x)
+    :
+        Base(x)
+    {}
 
     // With the following object definition:
     Ordinary
@@ -66,3 +67,14 @@ derived class becomes an ordinary (non-template) class:
     This construction allows us in a specific situation to
     i(add functionality to a template class), without the need for
 constructing a derived template class.
+
+    Template class derivation pretty much follows the same rules as ordinary
+class derivation, not involving template classes. However, some subtleties
+associated with template class derivation may easily cause confusion. In the
+following sections class derivation involving template classes will be
+discussed. Some of the examples shown in these sections may contain unexpected
+statements and expressions, like the use of tt(this) when members of a
+template base class are called from a derived class. The `chicken and egg'
+problem I encountered here was solved by first discussing the principles of
+template class derivation; following that discussion the subtleties that are
+part of template class derivation are discussed in section ref(SUBTLETIES).

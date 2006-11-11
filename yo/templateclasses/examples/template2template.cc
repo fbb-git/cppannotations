@@ -12,19 +12,26 @@
        bool (Type::*d_ptr)(Type const &rhv) const;
 //=
         public:
-//SORTCONS
-            SortWith(bool (Type::*ptr)(Type const &rhv) const)
-            :
-                d_ptr(ptr)
-            {}
-//=
-//OPERATOR
-            bool operator()(Type const &lhv, Type const &rhv) const
-            {
-                return (lhv.*d_ptr)(rhv);
-            }
-//=
+            SortWith(bool (Type::*ptr)(Type const &rhv) const);
+            bool operator()(Type const &lhv, Type const &rhv) const;
     };
+
+//SORTCONS
+    template <typename Type>
+    SortWith<Type>::SortWith(bool (Type::*ptr)(Type const &rhv) const)
+    :
+        d_ptr(ptr)
+    {}
+//=
+
+//OPERATOR
+    template <typename Type>
+    bool SortWith<Type>::operator()(Type const &lhv, Type const &rhv) const
+    {
+        return (lhv.*d_ptr)(rhv);
+    }
+//=
+
 //HEAD
     template <typename Type>
     class SortVector: public std::vector<Type>
@@ -51,7 +58,7 @@
                 size_t n)
     {
         while (n--)
-            stable_sort(begin(), end(), SortWith<Type>(arr[n]));
+            stable_sort(this->begin(), this->end(), SortWith<Type>(arr[n]));
     }
 //=
     class MultiData;

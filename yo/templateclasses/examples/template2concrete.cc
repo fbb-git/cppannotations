@@ -13,18 +13,21 @@
         static value_type *const s_cmds_end;
 //=
         public:
-//CONS
-            Handler()
-            :
-                std::map<std::string,
-                            void (Handler::*)(std::string const &cmd)>
-                (s_cmds, s_cmds_end)
-            {}
-//=
+            Handler();
             void process(std::string const &line);
+
         private:
             void list(std::string const &line);
     };
+
+//CONS
+    inline Handler::Handler()
+    :
+        std::map<std::string,
+                    void (Handler::*)(std::string const &cmd)>
+        (s_cmds, s_cmds_end)
+    {}
+//=
 
     using namespace std;
 

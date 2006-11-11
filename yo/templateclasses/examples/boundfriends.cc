@@ -2,6 +2,7 @@
     #include <algorithm>
     #include <functional>
     #include <iterator>
+
 /*
 //FUNCTION
     template <typename Key, typename Value>
@@ -47,17 +48,31 @@
 
         public:
             Dictionary();
+
+                                    // uses the friend's constructor
+        template <typename Key2, typename Value2>
+        Iterator<Key2, Value2> begin();
+
+                                   
+        template <typename Key2, typename Value2>
+        Iterator<Key2, Value2>        // uses a member function
+                    subset(Key const &key);
+    };
+
 //CLASS2
-    Iterator<Key, Value> begin()
-    {                                       // uses the friend's
-        return Iterator<Key, Value>(*this); // constructor
+    template <typename Key, typename Value>
+    template <typename Key2, typename Value2>
+    Iterator<Key2, Value2> Dictionary<Key, Value>::begin()
+    {
+        return Iterator<Key, Value>(*this);
     }
-    Iterator<Key, Value> subset(Key const &key)
-    {                                       // uses a member function
+    template <typename Key, typename Value>
+    template <typename Key2, typename Value2>
+    Iterator<Key2, Value2> Dictionary<Key, Value>::subset(Key const &key)
+    {
         return Iterator<Key, Value>(*this).subset(key);
     }
 //=
-    };
 
 /*
 //CLASS3
@@ -81,22 +96,31 @@
 
         std::map<Key, Value> &d_dict;
 
-        Iterator(Dictionary<Key, Value> &dict)
-        :
-            d_dict(dict.d_dict)
-        {}
+        Iterator(Dictionary<Key, Value> &dict);
 
         public:
 //=
+        typename std::map<Key, Value>::iterator begin();
+        typename std::map<Key, Value>::iterator subset(Key const &key);
+    };
+
 //CLASS4
-    typename std::map<Key, Value>::iterator begin()
+    template <typename Key, typename Value>
+    typename std::map<Key, Value>::iterator Iterator<Key, Value>::begin()
     {
         return d_dict.begin();
     }
 //=
-            typename std::map<Key, Value>::iterator subset(Key const &key)
-            {
-                return d_dict.begin();
-            }
 
-    };
+    template <typename Key, typename Value>
+    Iterator<Key, Value>::Iterator(Dictionary<Key, Value> &dict)
+    :
+        d_dict(dict.d_dict)
+    {}
+
+    template <typename Key, typename Value>
+    typename std::map<Key, Value>::iterator 
+    Iterator<Key, Value>::subset(Key const &key)
+    {
+        return d_dict.begin();
+    }

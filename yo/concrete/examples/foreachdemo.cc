@@ -7,26 +7,39 @@
     template <typename Type>
     class Vector2: public std::vector<std::vector<Type> >
     {
+        typedef typename Vector2<Type>::iterator iterator;
+
         template <typename Iterator, typename Class, typename Data>
         friend Class &ForEach(Iterator begin, Iterator end, Class &object,
                     void (Class::*member)(Data &));
         public:
-            void process()
-            {
-                ForEach(begin(), end(), *this, &Vector2<Type>::rows);
-            }
+            void process();
+
         private:
-            void rows(std::vector<Type> &row)
-            {
-                ForEach(row.begin(), row.end(), *this,
-                                                &Vector2<Type>::columns);
-                std::cout << std::endl;
-            }
-            void columns(Type &str)
-            {
-                std::cout << str << " ";
-            }
+            void rows(std::vector<Type> &row);
+            void columns(Type &str);
     };
+
+    template <typename Type>
+    void Vector2<Type>::process()
+    {
+        ForEach<iterator, Vector2<Type>, std::vector<Type> >
+                (this->begin(), this->end(), *this, &Vector2<Type>::rows);
+    }
+
+    template <typename Type>
+    void Vector2<Type>::rows(std::vector<Type> &row)
+    {
+        ForEach(row.begin(), row.end(), *this,
+                                        &Vector2<Type>::columns);
+        std::cout << std::endl;
+    }
+
+    template <typename Type>
+    void Vector2<Type>::columns(Type &str)
+    {
+        std::cout << str << " ";
+    }
 
     using namespace std;
 
