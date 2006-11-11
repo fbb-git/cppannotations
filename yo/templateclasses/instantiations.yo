@@ -33,8 +33,9 @@ source file may be compiled, although the compiler hasn't seen the definition
 of the tt(Matrix) template class.  Note that generic classes as well as
 (partial) specializations may be declared. Furthermore, note that a function
 expecting or returning a template class object, reference, or parameter itself
-automatically becomes a template function, as this is necessary to specify the
-nature of the various template parameters:
+automatically becomes a template function. This is necessary to allow the
+compiler to tailor the function to the types of various actual arguments that
+may be passed to the function:
         verbinclude(templateclasses/examples/matrixdecl.cc)
 
     When template classes are used they have to be processed by the compiler
@@ -50,12 +51,12 @@ sizes of the resulting object file and executable program. Next the class
 definition is modified such that the unused constructor and member are
 commented out. Again we compile and link the tt(main()) function and the
 resulting sizes are identical to the sizes obtained earlier (on my computer,
-using tt(g++ version 3.3.3) these sizes are 2380 and 13504,
-respectively). There are other ways to illustrate the point that only members
+using tt(g++ version 4.1.2) these sizes are 3904 bytes (after
+stripping). There are other ways to illustrate the point that only members
 that are used are instantiated, like using the ti(nm) program, showing the
-symbolic contents of object files. Using programs like tt(nm), however, will
-yield the same conclusion: em(only template member functions that are actually
-used are initialized). Here is an example of the template class tt(Demo) used
-for this little experiment. In tt(main()) the first constructor and the first
-member function are called.
+symbolic contents of object files. Using programs like tt(nm) will yield the
+same conclusion: em(only template member functions that are actually used are
+initialized). Here is an example of the template class tt(Demo) used for this
+little experiment. In tt(main()) only the first constructor and the first
+member function are called and thus only these members were instantiated:
         verbinclude(templateclasses/examples/instantiations.cc)

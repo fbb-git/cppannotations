@@ -22,12 +22,26 @@ templates are called em(member templates).
 including the tt(template <typename ...>) header.
 
     When converting our earlier tt(FBB::auto_ptr(Data const (&array)[Size]))
-constructor into a member template we may use the template class'ss tt(Data)
+constructor into a member template we may use the template class's tt(Data)
 type parameter, but must provide the member template with a non-type parameter
-of its own. The constructor's inline implementation becomes:
+of its own. The class interface is given the following additional member
+declaration:
         verb(
+    template <typename Data>
+    class auto_ptr
+    {
+        ...
+        public:
+            template <size_t Size>
+            auto_ptr(Data const (&arr)[Size]);
+        ...
+    };
+        )
+    and the constructor's implementation becomes:
+        verb(
+    template <typename Data>
     template <size_t Size>
-    auto_ptr(Data const (&arr)[Size])
+    inline auto_ptr<Data>::auto_ptr(Data const (&arr)[Size])
     :
         d_data(new Data[Size]),
         d_n(Size)
@@ -35,6 +49,7 @@ of its own. The constructor's inline implementation becomes:
         std::copy(arr, arr + Size, d_data);
     }
         )
+
     Member templates have the following characteristics:
     itemization(
     it() Normal i(access rules) apply: the constructor
@@ -46,25 +61,12 @@ array tt(int array[30]) we define:
     centt(FBB::auto_ptr<int> object(array);)
     it() Any member can be defined as a member template, not just a
 constructor.
-    it() Template members can be defined i(inline) or outside of their
-containing class. When a member is defined below its class, the template class
+    it() When a template member is defined below its class, the template class
     hi(template members: defined below their class) parameter list must
-precede the template function parameter list of the template member. E.g.,
-        verb(
-    template <typename Data>
-    template <size_t Size>
-    auto_ptr<Data>::auto_ptr(Data const (&arr)[Size])
-    :
-        d_data(new Data[Size]),
-        d_n(Size)
-    {
-        std::cout << "fixed array\n";
-        std::copy(arr, arr + Size, d_data);
-    }
-        )
-    When defining a template member below its class
+precede the template function parameter list of the template
+member. Furthermore: 
         itemization(
-        it() The definition should be given inside its proper namespace
+        it() The member should be defined inside its proper namespace
 environment. The organization within files defining template classes within a
 namespace should therefore be:
         verb(
@@ -91,19 +93,18 @@ proper scope: the member template is defined as a member of the class
 tt(FBB::auto_ptr), instantiated for the formal template parameter type
 tt(Data). Since we're already inside the namespace tt(FBB), the function
 header starts with tt(auto_ptr<Data>::auto_ptr).
-        it() When member templates are defined below their classes, the formal
-template parameter names in the declaration and implementation must be
-identical.
+        it() The formal template parameter names in the declaration and
+implementation must be identical.
         )
     )
-    One little problem remains. When we're constructing an tt(FBB::auto_ptr)
+    One small problem remains. When we're constructing an tt(FBB::auto_ptr)
 object from a fixed-size array the above constructor is not used. Instead, the
 constructor tt(FBB::auto_ptr<Data>::auto_ptr(Data *data)) is activated. As the
 latter constructor is not a member template, it is considered a more
 specialized version of a constructor of the class tt(FBB::auto_ptr) than the
 former constructor. Since both constructors accept an array the compiler will
 call tt(auto_ptr(Data *)) rather than tt(auto_ptr(Data const
-(&array)[Size])). This little problem can be solved by simply changing the
+(&array)[Size])). This problem can be solved by simply changing the
 constructor tt(auto_ptr(Data *data)) into a member template as well, in which
 case its template type parameter should be changed into `tt(Data)'. The only
 remaining subtlety is that template parameters of member templates may not
@@ -115,8 +116,9 @@ takes care of this subtlety. Here is the (inline) definition of the
 tt(auto_ptr(Data *)) constructor, followed by an example in which both
 constructors are actually used:
         verb(
-    template <typename Data2>
-    auto_ptr(Data2 *data)       // must have been dynamically allocated
+    template <typename Data>
+    template <typename Data2>           // data: dynamically allocated
+    inline auto_ptr<Data>::auto_ptr(Data2 *data)
     :
         d_data(data),
         d_n(0)

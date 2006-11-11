@@ -22,24 +22,20 @@ copy constructor's parameter):
             size_t d_n;
 
             public:
-                auto_ptr(auto_ptr<Data, Size> &other)
-                {
-                    copy(other);
-                }
-                auto_ptr(Data2 *data)
-                :
-                    d_data(data),
-                    d_n(0)
-                {}
-                auto_ptr(Data const (&arr)[Size])
-                :
-                    d_data(new Data2[Size]),
-                    d_n(Size)
-                {
-                    std::copy(arr, arr + Size, d_data);
-                }
+                auto_ptr(auto_ptr<Data, Size> &other);
+                auto_ptr(Data2 *data);
+                auto_ptr(Data const (&arr)[Size]);
                 ...
         };
+
+        template <typename Data, size_t Size>
+        inline auto_ptr<Data, Size>::auto_ptr(Data const (&arr)[Size])
+        :
+            d_data(new Data2[Size]),
+            d_n(Size)
+        {
+            std::copy(arr, arr + Size, d_data);
+        }
     }
         )
     Unfortunately, this new setup doesn't satisfy our needs, as the values of
@@ -79,13 +75,13 @@ specified like the type parameters when an object of the class is
 defined. Default values can be specified for those non-type parameters, but
 then the default will be used when the non-type parameter is left unspecified.
 
-    Moving the constructor's definition out of the interface, doesn't work
-either. It's still the same template function, even though it's now placed
-outside of its class interface. In particular note that no default template
-parameter values (neither for type nor for non-type template parameters) may
-be used when template member functions are defined outside their interface.
-Template functions (and thus: template class member functions) may not be
-given default template (non) type parameter values.
+    Note that hi(template parameter: default value)
+    emi(default template parameter value)em(s) (either type or non-type
+template parameters) may em(not) be used when template member functions are
+defined outside the class interface.  Template function definitions (and thus:
+template class member functions) may not be given default template (non) type
+parameter values. If default template parameter values are to be used for
+template class members, they have to be specified in the class interface.
 
     Similar to  non-type parameters of template functions, non-type parameters
 of template classes may only be specified as constants:

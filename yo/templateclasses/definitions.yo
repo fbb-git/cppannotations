@@ -69,7 +69,7 @@ Here is our initial version of the class
         ti(FBB::auto_ptr)
         hi(auto_ptr: storing multiple objects)
     showing all its members:
-        verbinclude(templateclasses/examples/autoptr1.h)
+        verbinclude(templateclasses/examples/autoptr.h)
     The class interface shows the following features:
     itemization(
     it() If it is assumed that the template type tt(Data) is an ordinary type,
@@ -85,23 +85,27 @@ assignment operators aren't references to plain tt(auto_ptr) objects, but
 rather references to tt(auto_ptr<Data>) objects. Template class objects (or
 their references or pointers) em(always) require the template type parameters
 to be specified.
-    it() Different from the copy constructors' and overloaded assignment
-operators' standard design, their parameters are em(non-)tt(const)
+    it() Different from the standard design of copy constructors and
+overloaded assignment operators, their parameters are em(non-)tt(const)
 references. This has nothing to do with the class being a template class, but
 is a consequence of tt(auto_ptr)'s design itself: both the copy constructor
 and the overloaded assignment operator take the other's object's pointer,
 effectively changing the other object into a i(0-pointer).
     it() Like ordinary classes, members can be defined em(inline). Actually,
-em(all) template class members have to be defined inline, as
+em(all) template class members are defined inline (when using precompiled
+templates
         emi(precompiled templates)
         hi(templates: precompiled)
-    are currently not supported. Even so, the definition may be put inside the
+    this doesn't change; it only means that the compiler has reorganized the
+template definition so that it can process the definition faster).
+As noted in section ref(INLINE), the definition may be put inside the
         hi(template members: defined in/outside the interface)
 class interface or outside (i.e., following) the class interface. As a
         i(rule of thumb)
     the same design principles should be followed here as with concrete
-classes, but this time the main reason is emi(interface-readability): long
-implementations in the interface tend to obscure the interface.
+classes: they should be defined below the interface to keep the interface
+clean and readable. Long implementations in the interface tend to obscure the
+interface itself.
     it() When objects of a template class are instantiated, the definitions of
 all the template's member functions that are used (but em(only) those) must
 have been seen by the compiler. Although that characteristic of templates
@@ -118,27 +122,23 @@ information about the size of the array of objects, these members cannot
 support i(array-bound checking).
     )
     Let's have a look at some of the member functions defined beyond the class
-interface:
+interface.     Note in particular:
+    itemization(
+    it() The definition below the interface is the actual template
+definition. Since it is a definition it must start with a ti(template
+phrase). The function's em(declaration) must also start with a ti(template)
+phrase, but that is implied by the interface itself, which already provides
+the required phrase at its very beginning;
+    it() Wherever tt(auto_ptr) is mentioned in the implementation, the
+template's type parameter is mentioned as well. This is obligatory.
+        )
+    Some remarks about specific members:
     itemization(
     it() The advised tt(copy()) and tt(destroy()) members (see section
 ref(CopyDestroy)) are very simple, but were added to the implementation to
 promote standardization of classes containing pointer members.
     it() The overloaded assignment constructor still has to check for
-i(auto-assignment). When defined outside of the interface its implementation
-is:
-        verbinclude(templateclasses/examples/autoptropis.t)
-    Note in particular:
-        itemization(
-        it() This is the actual template definition. Since it's a definition
-it must start with a ti(template phrase). The function's em(declaration) must
-also start with a ti(template) phrase, but that is implied by the interface
-itself, which already provides the required phrase at its very beginning;
-        it() Wherever tt(auto_ptr) is mentioned in the implementation, the
-template's type parameter is mentioned as well. This is obligatory.
-        )
-    it() The implementations of the tt(release()) and tt(reset()) members are
-also fairly simple. Here they are:
-        verbinclude(templateclasses/examples/release.t)
+i(auto-assignment). 
     )
     Now that the class has been defined, it can be used. To use the class, its
 object must be instantiated for a particular data type. The example defines a

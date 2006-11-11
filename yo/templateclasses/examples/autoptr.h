@@ -6,52 +6,82 @@
             Data *d_data;
 
             public:
-                auto_ptr()
-                :
-                    d_data(0)
-                {}
-                auto_ptr(auto_ptr<Data> &other)
-                {
-                    copy(other);
-                }
-                auto_ptr(Data *data)
-                :
-                    d_data(data)
-                {}
-                ~auto_ptr()
-                {
-                    destroy();
-                }
+                auto_ptr();
+                auto_ptr(auto_ptr<Data> &other);
+                auto_ptr(Data *data);
+                ~auto_ptr();
                 auto_ptr<Data> &operator=(auto_ptr<Data> &rvalue);
-                Data &operator[](size_t index)
-                {
-                    return d_data[index];
-                }
-                Data const &operator[](size_t index) const
-                {
-                    return d_data[index];
-                }
-                Data *get()
-                {
-                    return d_data;
-                }
-                Data const *get() const
-                {
-                    return d_data;
-                }
+                Data &operator[](size_t index);
+                Data const &operator[](size_t index) const;
+                Data *get();
+                Data const *get() const;
                 Data *release();
-                void reset(Data *);
+                void reset(Data *p = 0);
             private:
-                void destroy()
-                {
-                    delete[] d_data;
-                }
-                void copy(auto_ptr<Data> &other)
-                {
-                    d_data = other.release();
-                }
+                void destroy();
+                void copy(auto_ptr<Data> &other);
                 Data &element(size_t idx) const;
         };
+
+        template <typename Data>
+        inline auto_ptr<Data>::auto_ptr()
+        :
+            d_data(0)
+        {}
+    
+        template <typename Data>
+        inline auto_ptr<Data>::auto_ptr(auto_ptr<Data> &other)
+        {
+            copy(other);
+        }
+    
+        template <typename Data>
+        inline auto_ptr<Data>::auto_ptr(Data *data)
+        :
+            d_data(data)
+        {}
+    
+        template <typename Data>
+        inline auto_ptr<Data>::~auto_ptr()
+        {
+            destroy();
+        }
+    
+        template <typename Data>
+        inline Data &auto_ptr<Data>::operator[](size_t index)
+        {
+            return d_data[index];
+        }
+    
+        template <typename Data>
+        inline Data const &auto_ptr<Data>::operator[](size_t index) const
+        {
+            return d_data[index];
+        }
+    
+        template <typename Data>
+        inline Data *auto_ptr<Data>::get()
+        {
+            return d_data;
+        }
+    
+        template <typename Data>
+        inline Data const *auto_ptr<Data>::get() const
+        {
+            return d_data;
+        }
+    
+        template <typename Data>
+        inline void auto_ptr<Data>::destroy()
+        {
+            delete[] d_data;
+        }
+    
+        template <typename Data>
+        inline void auto_ptr<Data>::copy(auto_ptr<Data> &other)
+        {
+            d_data = other.release();
+        }
 
         template <typename Data>
         auto_ptr<Data> &auto_ptr<Data>::operator=(auto_ptr<Data> &rvalue)
@@ -78,4 +108,5 @@
             destroy();
             d_data = ptr;
         }
-    }
+
+    } // FBB
