@@ -73,37 +73,24 @@ class TableType
         {
             return (this->*d_indexFun)(row, col);
         }
-//INDEX
-        std::string const &hIndex(size_t row, size_t col) const
-        {
-            return d_string[row * d_nColumns + col];
-        }
-        std::string const &vIndex(size_t row, size_t col) const
-        {
-            return d_string[col * d_nRows + row];
-        }
-//=
+
+        std::string const &hIndex(size_t row, size_t col) const;
+        std::string const &vIndex(size_t row, size_t col) const;
 };
+
+//INDEX
+    inline std::string const &TableType::hIndex(size_t row, size_t col) const
+    {
+        return d_string[row * d_nColumns + col];
+    }
+    inline std::string const &TableType::vIndex(size_t row, size_t col) const
+    {
+        return d_string[col * d_nRows + row];
+    }
+//=
 
 } // FBB
 
 std::ostream &operator<<(std::ostream &str, FBB::TableType const &tableType);
 
 #endif
-/*
-    size_t (TableType::*d_tableWidthFun)() const;
-
-        void updateColumn(size_t col, size_t width);
-
-        size_t maxWidth() const
-        {
-            return d_maxWidth * d_nColumns;
-        }
-        size_t columnSum() const;
-
-        size_t tableWidth() const
-        {
-            return (this->*d_tableWidthFun)();
-        }
-
-*/

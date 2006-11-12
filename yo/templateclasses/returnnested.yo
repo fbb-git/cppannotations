@@ -1,14 +1,14 @@
 In section ref(DISTINGUISH) the keyword tt(typename) was introduced to allow
 the compiler to distinguish between template class members and types that are
     hi(template class: distinguishing members and types) defined within
-template classes. The tt(typename) keyword is used as a tool allowing us to
-tell the compiler that we have a type that is nested under a template
-class in mind.
+template classes. The tt(typename) keyword allows us to tell the compiler that
+we have a type in mind that is nested under a template class.
 
     Consider the following example in which a nested class, that is not
 depending on a template parameter, is defined within a template
 class. Furthermore, the template class member tt(nested()) should return an
-object of the nested class:
+object of the nested class. Note that in this example the (deprecated)
+member implementation inside the class interface is used:
         verb(
     template <typename T>
     class Outer
@@ -26,8 +26,10 @@ object of the nested class:
         )
     The above example compiles flawlessly: within the class tt(Outer) there is
 no ambiguity with respect to the meaning of tt(nested())'s return
-type. However, the situation changes when we try to implement tt(nested())
-outside of its class. The following attempt to do so fails:
+type. Since it is advised to implement inline and template members below their
+class interface (see section ref(DEFINLINE)), we now remove the implementation
+from the interface itself, and put it below the interface. Suddenly the
+compiler refuses to compile our member tt(nested()):
         verb(
     template <typename T>
     class Outer
@@ -46,18 +48,20 @@ outside of its class. The following attempt to do so fails:
         return Nested();
     }
         )
-    This attempt produces an error message like
+    The above implementation of tt(nested()) produces an error message like
 
     em(error:)
     emi(expected constructor, destructor, or type conversion) em(before
 'Outer').
 
-    In this case a type conversion is required as tt(Outer<T>::Nested)
+    In this case a type specification is required as tt(Outer<T>::Nested)
 refers to a em(type), nested under tt(Outer<T>) rather than to a member of
-tt(Outer<T>). Consequently, a tt(typename) keyword must be used to coerce the
-compiler into interpreting tt(Outer<T>::Nested) as a type name. Writing
-tt(typename) in front of tt(Outer<T>::Nested) removes the compilation
-error. The correct implementation of the function tt(nested()) becomes:
+tt(Outer<T>). In situations like these, where a type that is defined as a
+emi(nested type) in a template class is returned, the tt(typename) keyword must
+be used to coerce the compiler into interpreting tt(Outer<T>::Nested) as a
+type name. Writing tt(typename) in front of tt(Outer<T>::Nested) removes the
+compilation error and the correct implementation of the function tt(nested())
+becomes:
         verb(
     template <typename T>
     typename Outer<T>::Nested Outer<T>::nested() const

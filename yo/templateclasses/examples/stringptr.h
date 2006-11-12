@@ -5,130 +5,154 @@
 #include <vector>
 #include <iterator>
 
-//HEAD
+//STRINGPTR
 class StringPtr: public std::vector<std::string *>
 {
-    typedef std::iterator<std::random_access_iterator_tag, std::string>
-            Iterator;
-
     public:
-    class iterator: public Iterator
-//=
+    class iterator: public 
+            std::iterator<std::random_access_iterator_tag, std::string>
     {
-//PRIVATE
         friend class StringPtr;
-
         std::vector<std::string *>::iterator d_current;
 
-        iterator(std::vector<std::string *>::iterator const &current)
-        :
-            d_current(current)
-        {}
-//=
+        iterator(std::vector<std::string *>::iterator const &current);
+
         public:
-//PREDEC
-            iterator &operator--()
-            {
-                --d_current;
-                return *this;
-            }
-//=
-//POSTDEC
-            iterator const operator--(int)
-            {
-                return iterator(d_current--);
-            }
-//=
-//PREINC
-            iterator &operator++()
-            {
-                ++d_current;
-                return *this;
-            }
-//=
-//OPEQ
-            bool operator==(iterator const &other) const
-            {
-                return d_current == other.d_current;
-            }
-//=
-//OPNEQ
-            bool operator!=(iterator const &other) const
-            {
-                return d_current != other.d_current;
-            }
-//
-//OPSUB
-            int operator-(iterator const &rhs) const
-            {
-                return d_current - rhs.d_current;
-            }
-//=
-//OP*
-            std::string &operator*() const
-            {
-                return **d_current;
-            }
-//=
-//CMP
-            bool operator<(iterator const &other) const
-            {
-                return **d_current < **other.d_current;
-            }
-//=
-//OPADD
-            iterator const operator+(int step) const
-            {
-                return iterator(d_current + step);
-            }
-//=
-//OP-
-            iterator const operator-(int step) const
-            {
-                return iterator(d_current - step);
-            }
-//=
-//OPARITH
-            iterator &operator+=(int step)  // increment the iterator
-            {                               // over `n' steps
-                d_current += step;
-                return *this;
-            }
-            iterator &operator-=(int step)  // decrement the iterator
-            {                               // over `n' steps
-                d_current -= step;
-                return *this;
-            }
-//=
-//OPARROW
-            std::string *operator->() const // access the fields of the
-            {                               // struct an iterator points
-                return *d_current;          // to. E.g., it->length()
-            }
-//=
+            iterator &operator--();
+            iterator const operator--(int);
+            iterator &operator++();
+            bool operator==(iterator const &other) const;
+            bool operator!=(iterator const &other) const;
+            int operator-(iterator const &rhs) const;
+            std::string &operator*() const;
+            bool operator<(iterator const &other) const;
+            iterator const operator+(int step) const;
+            iterator const operator-(int step) const;
+            iterator &operator+=(int step); // increment over `n' steps
+            iterator &operator-=(int step); // decrement over `n' steps
+            std::string *operator->() const;// access the fields of the
+                                            // struct an iterator points
+                                            // to. E.g., it->length()
     };
 
     typedef std::reverse_iterator<iterator> reverse_iterator;
+
+    iterator begin();
+    iterator end();
+    reverse_iterator rbegin();
+    reverse_iterator rend();
+};
+//=
+
+//PRIVATEIMP
+inline StringPtr::iterator::iterator(
+    std::vector<std::string *>::iterator const &current)
+:
+    d_current(current)
+{}
+//=
+
+//PREDEC
+inline StringPtr::iterator &StringPtr::iterator::operator--()
+{
+    --d_current;
+    return *this;
+}
+//=
+//POSTDEC
+inline StringPtr::iterator const StringPtr::iterator::operator--(int)
+{
+    return iterator(d_current--);
+}
+//=
+//PREINC
+inline StringPtr::iterator &StringPtr::iterator::operator++()
+{
+    ++d_current;
+    return *this;
+}
+//=
+//OPEQ
+inline bool StringPtr::iterator::operator==(iterator const &other) const
+{
+    return d_current == other.d_current;
+}
+//=
+//OPNEQ
+inline bool StringPtr::iterator::operator!=(iterator const &other) const
+{
+    return d_current != other.d_current;
+}
+//
+//OPSUB
+inline int StringPtr::iterator::operator-(iterator const &rhs) const
+{
+    return d_current - rhs.d_current;
+}
+//=
+//OP*
+inline std::string &StringPtr::iterator::operator*() const
+{
+    return **d_current;
+}
+//=
+//CMP
+inline bool StringPtr::iterator::operator<(iterator const &other) const
+{
+    return **d_current < **other.d_current;
+}
+//=
+//OPADD
+inline StringPtr::iterator const 
+        StringPtr::iterator::operator+(int step) const
+{
+    return iterator(d_current + step);
+}
+//=
+//OP-
+inline StringPtr::iterator const 
+       StringPtr::iterator::operator-(int step) const
+{
+    return iterator(d_current - step);
+}
+//=
+//OPARITH
+inline StringPtr::iterator &StringPtr::iterator::operator+=(int step)
+{
+    d_current += step;
+    return *this;
+}
+inline StringPtr::iterator &StringPtr::iterator::operator-=(int step)
+{
+    d_current -= step;
+    return *this;
+}
+//=
+//OPARROW
+inline std::string *StringPtr::iterator::operator->() const
+{
+    return *d_current;
+}
+//=
 //BEGEND
-    iterator begin()
-    {
-        return iterator(this->std::vector<std::string *>::begin());
-    }
-    iterator end()
-    {
-        return iterator(this->std::vector<std::string *>::end());
-    }
+inline StringPtr::iterator StringPtr::begin()
+{
+    return iterator(this->std::vector<std::string *>::begin());
+}
+inline StringPtr::iterator StringPtr::end()
+{
+    return iterator(this->std::vector<std::string *>::end());
+}
 //=
 //RBEGEND
-    reverse_iterator rbegin()
-    {
-        return reverse_iterator(end());
-    }
-    reverse_iterator rend()
-    {
-        return reverse_iterator(begin());
-    }
+inline StringPtr::reverse_iterator StringPtr::rbegin()
+{
+    return reverse_iterator(end());
+}
+inline StringPtr::reverse_iterator StringPtr::rend()
+{
+    return reverse_iterator(begin());
+}
 //=
-};
 
 #endif

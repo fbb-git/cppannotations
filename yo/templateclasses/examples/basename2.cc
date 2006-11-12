@@ -4,30 +4,34 @@
     class Base
     {
         public:
-            void member()
-            {
-                std::cout << "This is Base<T>::member()\n";
-            }
+            void member();
     };
 
-    template <>
-    void Base<int>::member()
-    {
-        std::cout << "This is the int-specialization\n";
-    }
-
+        template <typename T>
+        void Base<T>::member()
+        {
+            std::cout << "This is Base<T>::member()\n";
+        }
+    
+        template <>
+        void Base<int>::member()
+        {
+            std::cout << "This is the int-specialization\n";
+        }
 
     template <typename T>
     class Derived: public Base<T>
     {
         public:
-            Derived()
-            {
-                this->member();
-                Base<T>::member();
-            }
+            Derived();
     };
 
+        template <typename T>
+        Derived<T>::Derived()
+        {
+            this->member();
+            Base<T>::member();
+        }
 
     int main()
     {

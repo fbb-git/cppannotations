@@ -13,24 +13,35 @@
                 friend class PtrVector<Type>;
                 typename std::vector<Type *>::iterator d_begin;
 
-                iterator(PtrVector<Type> &vector)
-                :
-                    d_begin(vector.std::vector<Type *>::begin())
-                {}
+                iterator(PtrVector<Type> &vector);
+
                 public:
-                    Type &operator*()
-                    {
-                        return **d_begin;
-                    }
+                    Type &operator*();
             };
 //=
-//BEGIN
-            iterator begin()
-            {
-                return iterator(*this);
-            }
-//=
+            iterator begin();
     };
+
+//ITERIMP
+    template <typename Type>
+    PtrVector<Type>::iterator::iterator(PtrVector<Type> &vector)
+    :
+        d_begin(vector.std::vector<Type *>::begin())
+    {}
+
+    template <typename Type>
+    Type &PtrVector<Type>::iterator::operator*()
+    {
+        return **d_begin;
+    }
+//=
+//BEGIN
+    template <typename Type>
+    typename PtrVector<Type>::iterator PtrVector<Type>::begin()
+    {
+        return iterator(*this);
+    }
+//=
 
     using namespace std;
 //MAIN

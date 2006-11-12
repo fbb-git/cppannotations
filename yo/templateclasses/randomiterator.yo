@@ -30,8 +30,8 @@ class:
     StringPtr::iterator end();      // returns iterator beyond the last
                                     // element
         )
-    Since  these two members return the (proper)
-iterators, the elements in a tt(StringPtr) object can easily be sorted:
+    Since these two members return the (proper) iterators, the elements in a
+tt(StringPtr) object can easily be sorted:
         verb(
     in main()
     {
@@ -60,32 +60,38 @@ tt(iterator) starts its interface as:
     class iterator:
         public std::iterator<std::random_access_iterator_tag, std::string>
         )
-    Since its base class specification is quite complex, we associate this
+    Since its base class specification is quite complex, we could consider 
+associating this
 type with a shorter name, using the following tt(typedef):
         verb(
     typedef std::iterator<std::random_access_iterator_tag, std::string>
             Iterator;
         )
-    Now we're ready to redesign tt(StringPtr)'s class interface, up to its
-nested class tt(iterator):
-        verbinsert(HEAD)(templateclasses/examples/stringptr.h)
-    Let's have a look at tt(StringPtr::iterator)'s characteristics:
+    However, if the defined type (tt(Iterator)) is used only once or twice,
+the typedefinition only adds clutter to the interface, and is better not used.
+
+    Now we're ready to redesign tt(StringPtr)'s class interface. It contains
+members returning (reverse) iterators, and a nested tt(iterator) class. The
+members will be discussed in some detail next:
+        verbinsert(STRINGPTR)(templateclasses/examples/stringptr.h)
+    Let's first have a look at tt(StringPtr::iterator)'s characteristics:
     itemization(
     it() tt(iterator) defines tt(StringPtr) as its friend, so tt(iterator)'s
 constructor can remain private: only the tt(StringPtr) class itself is now
 able to construct tt(iterator)s, which seems like a sensible thing to
-do. Furthermore, since an iterator is already provided by tt(StringPtr)'s base
-class, we can use that iterator to access the information stored in the
-tt(StringPtr) object. tt(iterator)'s private section thus becomes:
-        verbinsert(PRIVATE)(templateclasses/examples/stringptr.h)
-    it() tt(StringPtr::begin()) and tt(StringPtr::end()) may now return
-tt(iterator) objects. Defined inline in the class tt(StringPtr), their
-implementations are:
+do. Under the current implementation, em(copy-constructing) remains of course
+possible. Furthermore, since an iterator is already provided by
+tt(StringPtr)'s base class, we can use that iterator to access the information
+stored in the tt(StringPtr) object. 
+    it() tt(StringPtr::begin()) and tt(StringPtr::end()) may simply return
+tt(iterator) objects. Their implementations are:
         verbinsert(BEGEND)(templateclasses/examples/stringptr.h)
     it() All of tt(iterator)'s remaining members are public. It's very easy to
 implement them, mainly manipulating and dereferencing the available iterator
-tt(d_current). At least the following operators must be implemented when
-defining a tt(RandomAccessIterator):
+tt(d_current). When defining a tt(RandomAccessIterator) (which is the most
+complex of iterators) a series of operators must be provided. They usually
+have very simple implementations, making them good candidates for
+inline-members:
         itemization(
         itt(iterator &operator++():) the pre-increment operator:
             verbinsert(PREINC)(templateclasses/examples/stringptr.h)
@@ -144,4 +150,5 @@ only a subset of the interface required by a random access iterator. E.g.,
 the forward iterator is never decremented and never incremented over arbitrary
 step sizes. Consequently, in that case all decrement operators and
 tt(operator+(int step)) can be omitted from the interface. Of course, the tag
-to use would then be tt(std::forward_iterator_tag).
+to use would then be tt(std::forward_iterator_tag). The tags (and the set of
+required operators varies accordingly for the other iterator types.
