@@ -21,17 +21,20 @@ against using a buffer then the member tt(overflow()) can simply be:
     class UnbufferedFD: public std::streambuf
     {
         public:
-            int overflow(int c)
-            {
-                if (c != EOF)
-                {
-                    if (write(d_fd, &c, 1) != 1)
-                        return EOF;
-                }
-                return c;
-            }
+            int overflow(int c);
             ...
+    };
+
+    int UnbufferedFD::overflow(int c)
+    {
+        if (c != EOF)
+        {
+            if (write(d_fd, &c, 1) != 1)
+                return EOF;
+        }
+        return c;
     }
+
         )
     The argument received by tt(overflow()) is either written as a value of
 type tt(char) to the file descriptor, or endOfFile() is returned.
@@ -69,11 +72,10 @@ functions was not checked. In `real life' implementations these checks should
 of course not be omitted.  Our class tt(ofdnstreambuf) has the following
 characteristics:
     itemization(
-    it() The class itself is derived from tt(std::streambuf):
-        verbinsert(HEAD)(concrete/examples/fdout.h)
-    it() It uses three data members, keeping track of the size of the buffer,
-the file descriptor and the buffer itself:
-        verbinsert(DATA)(concrete/examples/fdout.h)
+    it() The class itself is derived from tt(std::streambuf).
+    It defines  three data members, keeping track of the size of the buffer,
+the file descriptor and the buffer itself. Here is the full class interface
+        verbinsert(CLASS)(concrete/examples/fdout.h)
     it() Its default constructor merely initializes the buffer to 0. Slightly
 more interesting is its constructor expecting a filedescriptor and a buffer
 size: it simply passes its arguments on to the class's tt(open()) member (see
