@@ -1,3 +1,5 @@
+#include <cstddef>
+
 //HEAD
     class Pipe
     {

@@ -10,8 +10,8 @@ tt(Child):
 communications between its own child- and parent processes. As these pipes are
 used by the tt(Child)'s child process, their names are aimed at the child
 process: the child process reads from tt(d_in), and writes to tt(d_out). Here
-are tt(Child) class's header and its private data:
-        verbinsert(HEAD)(concrete/examples/monitor/child.h)
+is the interface of the class tt(Child):
+        verbinsert(CLASS)(concrete/examples/monitor/child.h)
     it() The tt(Child)'s constructor simply stores its argument, a
 child-process order number, in its own tt(d_nr) data member:
         verbinsert(CONS)(concrete/examples/monitor/child.h)
@@ -53,7 +53,21 @@ to return. When the alarm goes off, it sends a message to its standard output.
 at its standard input to its standard output. Here is the implementation of
 the tt(childProcess()) member:
         verbinsert(PROCESS)(concrete/examples/monitor/child.cc)
-    it() The next two accessors allow the tt(Monitor) object to access the
+    it() Next, twoaccessors allow the tt(Monitor) object to obtain the
 tt(Child)'s process ID and order number, respectively:
         verbinsert(PIDNR)(concrete/examples/monitor/child.h)
+    it() A tt(Child) process terminates when the user enters a tt(stop)
+command. When an existing child process number was entered, the corresponding
+tt(Child) object is removed from tt(Monitor)'s tt(d_child) map. As a result,
+its destructor is called. In its turn, tt(Child)'s destructor will call
+tt(kill) to terminate its child, and then waits for the child to
+terminate. Once the child has terminated, the destructor has completed its
+work as well and returns, competing the erasure from tt(d_child). The
+implementation offered here will fail if the child process doesn't react to
+the tt(SIGTERM) signal. In this demonstration program this does not happen. In
+`real life' implementations more elaborate killing-procedures may be required
+(e.g., using tt(SIGKILL) in addition to tt(SIGTERM)). As discussed in section
+ref(CONSEXCEPTIONS) it is important to ensure that the destruction
+succeeds. Here is the implementation of the tt(Child)'s destructor:
+        verbinsert(CHILDDES)(concrete/examples/monitor/child.cc)
     )

@@ -1,9 +1,8 @@
     #include <string>
     #include <map>
-//    #include "../selector.h"
-    #include <bobcat/selector>
-
+    #include "../selector.h"
     #include "child.h"
+
 //CLASS
     class Monitor
     {
@@ -13,51 +12,65 @@
             START,
             EXIT,
             STOP,
-            TEXT
+            TEXT,
+            sizeofCommands
         };
+
+        class Find
+        {
+            int     d_nr;
+            public:
+                Find(int nr);
+                bool operator()(std::map<int, Child *>::value_type &vt)
+                                                                  const;
+        };
+
+        Selector                d_selector;
+        int                     d_nr;
+        std::map<int, Child *>  d_child;
 
         static void (Monitor::*s_handler[])(int, std::string const &);
 
-        FBB::Selector                d_selector;
-        int                     d_nr;
-        std::map<int, Child *>  d_child;
-//=
         public:
-//CONS
-            Monitor()
-            :
-                d_nr(0)
-            {}
-//=
+            enum Done
+            {};
+
+            Monitor();
             void run();
 
         private:
-            static void waitForChild(int signum);
             static void killChild(std::map<int, Child *>::value_type it);
+            static void initialize();
 
             Commands    next(int *value, std::string *line);
             void    processInput();
             void    processChild(int fd);
 
             void    createNewChild(int, std::string const &);
-            void    exiting(int = 0, std::string const & = std::string());
+            void    exiting(int = 0, std::string const &msg = std::string());
             void    sendChild(int value, std::string const &line);
             void    stopChild(int value, std::string const &);
             void    unknown(int, std::string const &);
-//FIND
-            class Find
-            {
-                int     d_nr;
-                public:
-                    Find(int nr)
-                    :
-                        d_nr(nr)
-                    {}
-                    bool operator()(std::map<int, Child *>::value_type &vt)
-                                                                        const
-                    {
-                        return d_nr == vt.second->nr();
-                    }
-            };
-//=
     };
+//=
+
+//CONS
+    inline Monitor::Monitor()
+    :
+        d_nr(0)
+    {
+        initialize();
+    }
+//=
+
+//FINDIMP
+    inline Monitor::Find::Find(int nr)
+    :
+        d_nr(nr)
+    {}
+    inline bool Monitor::Find::operator()(
+                            std::map<int, Child *>::value_type &vt) const
+    {
+        return d_nr == vt.second->nr();
+    }
+//=

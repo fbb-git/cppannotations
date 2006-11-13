@@ -43,7 +43,7 @@
     {
         writeOnly();
 
-        for (int idx = 0; idx < n; idx++)
+        for (size_t idx = 0; idx < n; idx++)
             redirect(d_fd[WRITE], fd[idx]);
 
         close(d_fd[WRITE]);

@@ -1,10 +1,15 @@
     #include "monitor.h"
 
     int main()
+    try
     {
         Monitor monitor;
 
         monitor.run();
+    }
+    catch (int exitValue)
+    {
+        return exitValue;
     }
 
     /*

@@ -4,44 +4,56 @@
 #include <sstream>
 #include <string>
 
-//HEAD
+//CLASS
 class A2x: public std::istringstream
-//=
 {
     public:
+        A2x();
+        A2x(char const *txt);
+        A2x(std::string const &str);
+
+        template <typename T>
+        operator T();
+
+        A2x &operator=(char const *txt);
+
+        A2x &operator=(std::string const &str);
+        A2x &operator=(A2x const &other);
+};
+//=
+
 //CONS
-        A2x()
-        {}
-        A2x(std::string const &str)
-        :
-            std::istringstream(str)
-        {}
+inline A2x::A2x()
+{}
+
+inline A2x::A2x(char const *txt)                    // initialize from text
+:
+    std::istringstream(txt)
+{}
+
+inline A2x::A2x(std::string const &str)
+:
+    std::istringstream(str.c_str())
+{}
 //=
 //TYPE
-        template <typename Type>
-        operator Type()
-        {
-            Type t;
+template <typename Type>
+inline A2x::operator Type()
+{
+    Type t;
 
-            return (*this >> t) ? t : Type();
-        }
-//=
-//TO
-        template <typename Type>
-        Type to(Type const&)
-        {
-            return *this;
-        }
-//=
-        A2x &operator=(std::string const &str);
+    return (*this >> t) ? t : Type();
+}
+/=
+inline A2x &A2x::operator=(std::string const &str)
+{
+    return operator=(str.c_str());
+}            
 //OP=
-        A2x &operator=(A2x const &other)
-        {
-            return operator=(other.str());
-        }
+inline A2x &A2x::operator=(A2x const &other)
+{
+    return operator=(other.str());
+}
 //=
-};
-
-
 
 #endif

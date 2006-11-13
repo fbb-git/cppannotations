@@ -8,7 +8,7 @@
 
     #include <iostream>
 
-//HEAD
+//CLASS
     class Child: public Fork
     {
         Pipe                d_in;
@@ -17,47 +17,46 @@
         int         d_parentReadFd;
         int         d_parentWriteFd;
         int         d_nr;
-//=
+
         public:
-//CONS
-            Child(int nr)
-            :
-                d_nr(nr)
-            {}
-            virtual ~Child()
-            {
-                if (pid())
-                {
-                    std::cout << "Killing process " << pid() << "\n";
-                    kill(pid(), SIGTERM);
-                    int statu;
-                    wait(&statu);
-                }
-            }
-//=
-//PIPES
-            int readFd()
-            {
-                return d_parentReadFd;
-            }
-            int writeFd()
-            {
-                return d_parentWriteFd;
-            }
-//=
-//PIDNR
-            int pid()
-            {
-                return Fork::pid();
-            }
-            int nr()
-            {
-                return d_nr;
-            }
-//=
+            Child(int nr);
+            virtual ~Child();
+            int readFd() const;
+            int writeFd() const;
+            int pid() const;
+            int nr() const;
             virtual void childRedirections();
             virtual void parentRedirections();
             virtual void childProcess();
-            virtual void parentProcess()
-            {}
+            virtual void parentProcess();
     };
+//=
+
+//CONS
+    inline Child::Child(int nr)
+    :
+        d_nr(nr)
+    {}
+//=
+//PIPES
+    inline int Child::readFd() const
+    {
+        return d_parentReadFd;
+    }
+    inline int Child::writeFd() const
+    {
+        return d_parentWriteFd;
+    }
+//=
+//PIDNR
+    inline int Child::pid() const
+    {
+        return Fork::pid();
+    }
+    inline int Child::nr() const
+    {
+        return d_nr;
+    }
+//=
+    inline void Child::parentProcess()
+    {}

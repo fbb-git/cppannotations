@@ -13,30 +13,62 @@ tt(s_handler[]), storing pointers to member functions handling user commands.
     A destructor should have been implemented too, but its implementation is
 left as an exercise to the reader. Before the class interface can be processed
 by the compiler, it must have seen tt(select.h) and tt(child.h). Here is the
-class header, including its private data section:
+class header, including the interface of the nested function object 
+class tt(Find):
         verbinsert(CLASS)(concrete/examples/monitor/monitor.h)
 
     Since there's only one non-class type data member, the class's constructor
-is very short and can be implemented inline:
+remains very short and could be implemented inline. However, the array
+tt(s_handler), storing pointers to functions needs to be initialized as
+well. This can be accomplished in several ways:
+    itemization(
+    it() Since the tt(Command) enumeration only contains a fairly limited set
+of commands, compile-time initialization could be considered:
+        verbinsert(HANDLER)(concrete/examples/monitor/data.compiletime)
+    The advantage of this is that it's simple, and not requiring any run-time
+effort. The disadvantage is of course relatively complex maintenance. If for
+some reason tt(Commads) is modified, tt(s_handler) must be modified as
+well. In cases like these, compile-time initialization is a little bit asking
+for trouble. There is a simple alternative though, which admittedly 
+does take some execution time:
+    it() A static member may be called before the first tt(Monitor) object is
+constructed, which initializes the elements of the array explicitly. This has
+the advantage of robustness against reordering of enumeration values, which is
+important: enumerations em(do) receive modifications during the development
+cycle of a class.  Maintenance is still required if new values are added to
+the enumeration, but in that case maintenance is required anyway.
+    it() Using a static member that's explicitly called from tt(main()) may
+become a burden, or may be considered unacceptable, as it puts an additional
+responsibility with the software engineer, rather than with the software. It's
+a matter of taste whether that's a consideration to take seriously or not. If
+the initialization function is not called, the program will clearly fail and
+repairing the error caused by not calling the initialization function is
+easily repaired. If that's considered bad practice, the initialization
+function may be called from the class constructors as well. The following 
+initialization function used in the current implementation of the class
+tt(Monitor):
+        verbinsert(INIT)(concrete/examples/monitor/monitor.cc)
+    )   
+    Since the initialization function immediately returns if the
+initialization has already been performed, tt(Monitor)'s constructor may call
+the initialization and still defensibly be implemented inline:
         verbinsert(CONS)(concrete/examples/monitor/monitor.h)
 
     The core of tt(Monitor)'s activities are performed by tt(run()). It
 performs the following tasks:
     itemization(
-    it() To prevent emi(zombie)em(s), it must be able to catch its children's
-termination signals. Termination signals are caught by the member
-tt(waitForChild()). It is installed by tt(run()), and it will wait for the
-child's completion. Once the child is completed, it will re-install itself so
-that the next termination signal may also be caught. Here is
-tt(waitForChild()):
-        verbinsert(WAIT)(concrete/examples/monitor/monitor.cc)
-    it() Initially, the tt(Monitor) object will listen only to its standard
+    it() Initially, the tt(Monitor) object only listens to its standard
 input: the set of input file descriptors to which tt(d_selector) will listen
 is initialized to tt(STDIN_FILENO).
     it() Then, in a loop  tt(d_selector)'s tt(wait()) function is called.
 If input on tt(cin) is available, it is processed by tt(processInput()).
 Otherwise, the input has arived from a child process. Information sent by
 children is processed by tt(processChild()).
+    it() To prevent emi(zombie)em(s), the child processes must catch em(their)
+children's termination signals. This will be discussed below (In an earlier
+version tt(Monitor) caught the termination signals. As noted by Ben Simons
+(tt(ben at mrxfx dot com)) this is inappropriate: the child process itself has
+that responsibility. Thanks, Ben).
     )
     Here is tt(run())'s implementation:
         verbinclude(concrete/examples/monitor/run.cc)
@@ -44,10 +76,9 @@ children is processed by tt(processChild()).
     The member function tt(processInput()) reads the commands entered by the
 user via the program's standard input stream. The member itself is rather
 simple: it calls tt(next()) to obtain the next command entered by the user,
-and then calls the corresponding function via the corresponding element of the
-tt(s_handler[]) array. This array and the members tt(processInput()) and
+and then calls the corresponding function using the matching element of the
+tt(s_handler[]) array. The members tt(processInput()) and
 tt(next()) were defined as follows:
-        verbinsert(HANDLER)(concrete/examples/monitor/data.cc)
         verbinsert(INPUT)(concrete/examples/monitor/processinput.cc)
         verbinsert(NEXT)(concrete/examples/monitor/processinput.cc)
 

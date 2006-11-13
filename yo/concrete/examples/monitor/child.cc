@@ -49,3 +49,16 @@
         exit(0);
     }
 //=
+
+//CHILDDES
+    Child::~Child()
+    {
+        if (pid())
+        {
+            cout << "Killing process " << pid() << "\n";
+            kill(pid(), SIGTERM);
+            int status;
+            wait(&status);
+        }
+    }
+//=

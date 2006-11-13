@@ -8,7 +8,6 @@
     class StringPtr: public std::vector<std::string *>
     {
         public:
-//RANDOM
             typedef RandomPtrIterator
                     <
                         StringPtr,
@@ -16,24 +15,29 @@
                         std::string
                     >
                         iterator;
-//=
+
             typedef std::reverse_iterator<iterator> reverse_iterator;
 
-            iterator begin()
-            {
-                return iterator(this->std::vector<std::string *>::begin() );
-            }
-            iterator end()
-            {
-                return iterator(this->std::vector<std::string *>::end());
-            }
-            reverse_iterator rbegin()
-            {
-                return reverse_iterator(end());
-            }
-            reverse_iterator rend()
-            {
-                return reverse_iterator(begin());
-            }
+            iterator begin();
+            iterator end();
+            reverse_iterator rbegin();
+            reverse_iterator rend();
     };
+
+    inline StringPtr::iterator StringPtr::begin()
+    {
+        return iterator(this->std::vector<std::string *>::begin() );
+    }
+    inline StringPtr::iterator StringPtr::end()
+    {
+        return iterator(this->std::vector<std::string *>::end());
+    }
+    inline StringPtr::reverse_iterator StringPtr::rbegin()
+    {
+        return reverse_iterator(end());
+    }
+    inline StringPtr::reverse_iterator StringPtr::rend()
+    {
+        return reverse_iterator(begin());
+    }
     #endif

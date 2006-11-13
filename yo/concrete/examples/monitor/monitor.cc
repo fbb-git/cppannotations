@@ -1,16 +1,5 @@
     #include "monitor.ih"
 
-//WAIT
-    void Monitor::waitForChild(int signum)
-    {
-        cerr << "Won't wait for child\n";
-
-        int status;
-        wait(&status);
-
-        signal(SIGCHLD, waitForChild);
-    }
-//=
 //KILL
     void Monitor::killChild(map<int, Child *>::value_type it)
     {
@@ -19,16 +8,26 @@
     }
 //=
 //EXIT
-    void Monitor::exiting(int, string const &)
+    void Monitor::exiting(int value, string const &msg)
     {
         for_each(d_child.begin(), d_child.end(), killChild);
-        exit(0);
+        if (msg.length())
+            cerr << msg << endl;
+        throw value;
     }
 //=
+//INIT
+    void (Monitor::*Monitor::s_handler[sizeofCommands])(int, string const &);
 
+    void Monitor::initialize()
+    {
+        if (s_handler[UNKNOWN] != 0)    // already initialized
+            return;
 
-
-
-
-
-
+        s_handler[UNKNOWN] =    &Monitor::unknown;
+        s_handler[START] =      &Monitor::createNewChild;
+        s_handler[EXIT] =       &Monitor::exiting;
+        s_handler[STOP] =       &Monitor::stopChild;
+        s_handler[TEXT] =       &Monitor::sendChild;
+    }
+//=

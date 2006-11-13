@@ -14,8 +14,6 @@
 
             delete it->second;
             d_child.erase(it);
-
-//            killChild(*it);
         }
     }
 //=

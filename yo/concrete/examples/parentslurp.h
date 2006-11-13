@@ -1,29 +1,34 @@
     #include "fork.h"
     #include "pipe.h"
     #include <unistd.h>
-//HEAD
+//CLASS
     class ParentSlurp: public Fork
     {
         Pipe    d_pipe;
-//=
+
         protected:
-//CHILDREDIR
-            virtual void childRedirections()
-            {
-                d_pipe.writtenBy(STDOUT_FILENO);
-            }
-//=
-//PARENTREDIR
-            virtual void parentRedirections()
-            {
-                d_pipe.readFrom(STDIN_FILENO);
-            }
-//=
-//CHILDPROC
-            virtual void childProcess()
-            {
-                execl("/bin/ls", "/bin/ls", 0);
-            }
-//=
+            virtual void childRedirections();
+            virtual void parentRedirections();
+            virtual void childProcess();
             virtual void parentProcess();
     };
+//=
+
+//CHILDREDIR
+    inline void ParentSlurp::childRedirections()
+    {
+        d_pipe.writtenBy(STDOUT_FILENO);
+    }
+//=
+//PARENTREDIR
+    inline void ParentSlurp::parentRedirections()
+    {
+        d_pipe.readFrom(STDIN_FILENO);
+    }
+//=
+//CHILDPROC
+    inline void ParentSlurp::childProcess()
+    {
+        execl("/bin/ls", "/bin/ls", static_cast<char *>(0));
+    }
+//=

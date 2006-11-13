@@ -2,7 +2,6 @@
 
     void Monitor::run()
     {
-//        signal(SIGCHLD, waitForChild);
         d_selector.addReadFd(STDIN_FILENO);
 
         while (true)
@@ -23,11 +22,11 @@
                 cout << "NEXT ...\n";
 
             }
-            catch (...)
+            catch (char const *msg)
             {
-perror("monitor");
-                cerr << "select failed, exiting\n";
-                exiting();
+                exiting(1, msg);
             }
         }
     }
+
+
