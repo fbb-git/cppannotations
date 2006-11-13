@@ -41,7 +41,6 @@ namespace FBB
         private:
             void setBuffer();
     };
-
 //FIELD
     class field
     {
@@ -50,18 +49,21 @@ namespace FBB
         bool     d_newWidth;
 
         public:
-            field(size_t width)
-            :
-                d_width(width),
-                d_newWidth(true)
-            {}
-            field()
-            :
-                d_newWidth(false)
-            {}
+            field(size_t width);
+            field();
     };
-//=
 
+    inline field::field(size_t width)
+    :
+        d_width(width),
+        d_newWidth(true)
+    {}
+
+    inline field::field()
+    :
+        d_newWidth(false)
+    {}
+//=
 }   // FBB
 
 //OPEX
@@ -72,3 +74,4 @@ namespace std
 //=
 
 #endif
+
