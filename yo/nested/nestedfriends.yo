@@ -43,11 +43,7 @@ the tt(friend) declarations in the two nested classes):
                 public:
                     int value();
             };
-            int value()
-            {
-                FirstWithin::s_variable = SecondWithin::s_variable;
-                return (s_variable);
-            }
+            int value();
         private:
             class SecondWithin
             {
@@ -57,6 +53,11 @@ the tt(friend) declarations in the two nested classes):
                     int value();
             };
     };
+    inline int Surround::FirstWithin::value()
+    {
+        FirstWithin::s_variable = SecondWithin::s_variable;
+        return (s_variable);
+    }
         )
     Now, to allow the nested classes access to the private members of
 their surrounding class, the class tt(Surround) must declare its nested classes
@@ -81,9 +82,10 @@ looks like this:
     Alternatively, the friend declaration may follow the definition of the
 classes. Note that a class can be declared a friend following its definition,
 while the inline code in the definition already uses the fact that it will be
-declared a friend of the outer class. Also note that the inline code of
-the nested class uses members of the surrounding class not yet
-seen by the compiler. Finally note that `tt(s_variable)' which is
+declared a friend of the outer class. When defining members within the class
+interface implementations of nested class members may use members of the
+surrounding class that have not yet been seen by the compiler. Finally note
+that q`tt(s_variable)' which is
     hi(nested class members: access to) defined in the class tt(Surround) is
 accessed in the nested classes as tt(Surround::s_variable):
         verb(
@@ -96,35 +98,42 @@ accessed in the nested classes as tt(Surround::s_variable):
                 friend class Surround;
                 static int s_variable;
                 public:
-                    int value()
-                    {
-                        Surround::s_variable = 4;
-                        Surround::classMember();
-                        return s_variable;
-                    }
+                    int value();
             };
             friend class FirstWithin;
-            int value()
-            {
-                FirstWithin::s_variable = SecondWithin::s_variable;
-                return s_variable;
-            }
+            int value();
+
         private:
             class SecondWithin
             {
                 friend class Surround;
                 static int s_variable;
                 public:
-                    int value()
-                    {
-                        Surround::s_variable = 40;
-                        return s_variable;
-                    }
+                    int value();
             };
             static void classMember();
 
             friend class SecondWithin;
     };
+
+    inline int Surround::value()
+    {
+        FirstWithin::s_variable = SecondWithin::s_variable;
+        return s_variable;
+    }
+
+    inline int Surround::FirstWithin::value()
+    {
+        Surround::s_variable = 4;
+        Surround::classMember();
+        return s_variable;
+    }
+
+    inline int Surround::SecondWithin::value()
+    {
+        Surround::s_variable = 40;
+        return s_variable;
+    }
         )
     Finally, we want to allow the nested classes access to each other's
 private members. Again this requires some tt(friend) declarations. In order to
@@ -161,18 +170,10 @@ access of the private members of all classes by all other classes:
                 friend class SecondWithin;
                 static int s_variable;
                 public:
-                    int value()
-                    {
-                        Surround::s_variable = SecondWithin::s_variable;
-                        return s_variable;
-                    }
+                    int value();
             };
             friend class FirstWithin;
-            int value()
-            {
-                FirstWithin::s_variable = SecondWithin::s_variable;
-                return s_variable;
-            }
+            int value();
         private:
             class SecondWithin
             {
@@ -180,12 +181,25 @@ access of the private members of all classes by all other classes:
                 friend class FirstWithin;
                 static int s_variable;
                 public:
-                    int value()
-                    {
-                        Surround::s_variable = FirstWithin::s_variable;
-                        return s_variable;
-                    }
+                    int value();
             };
             friend class SecondWithin;
     };
-    )
+    inline int Surround::value()
+    {
+        FirstWithin::s_variable = SecondWithin::s_variable;
+        return s_variable;
+    }
+
+    inline int Surround::FirstWithin::value()
+    {
+        Surround::s_variable = SecondWithin::s_variable;
+        return s_variable;
+    }
+
+    inline int Surround::SecondWithin::value()
+    {
+        Surround::s_variable = FirstWithin::s_variable;
+        return s_variable;
+    }
+        )
