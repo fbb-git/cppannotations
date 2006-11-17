@@ -71,9 +71,10 @@ em(man-page) hi(bisonc++: man-page) for a full description.
             bf(Scanner), offering a member tt(int yylex()) producing the next
             token from the input stream to be analyzed by the parser generated
             by tt(bisonc++). When this option is used the parser's member
-            tt(int lex()) will be predefined as
+            tt(int lex()) will be predefined as (assuming the parser class
+            name is tt(Parser)):
                 verb(
-    int lex()
+    inline int Parser::lex()
     {
         return d_scanner.yylex();
     }
@@ -181,18 +182,3 @@ must be included for each individual return type. On the other hand, if the
 union itself would have been used, we would still have had to specify
 somewhere in the returned semantic values what field to use: less rules, but
 more complex and error-prone code.
-
-COMMENT(Also, note hi(scanner: as parser member) that the lexical scanner is
-defined as a data-member of the parser. Actually, a separate tt(Scanner) class
-is a bit overdone in the current example, but by doing so the general approach
-we're advocating here is illustrated fully . In the current situation, the
-declaration of the scanner class is rather simple:
-        verbinclude(concrete/bisonc++/scanner/scanner.h)
-    Usually the scanner can (and should) be defined as a (private) member of
-the parser's class, as it's not used outside of the parser. The parser's
-(virtual) destructor is included as a member to prevent the compiler from
-complaining about the parser having a non-virtual destructor. E.g.,
-        verb(
-    warning: `class Parser' has virtual functions but non-virtual destructor
-        )
-END COMMENT)

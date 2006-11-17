@@ -10,11 +10,13 @@
         std::vector<std::string> d_vs;
 
         public:
-            void uppercase(std::ostream &out)
-            {
-                for_each(d_vs.begin(), d_vs.end(), Support(out));
-            }
+            void uppercase(std::ostream &out);
     };
+
+    void Strings::uppercase(std::ostream &out)
+    {
+        for_each(d_vs.begin(), d_vs.end(), Support(out));
+    }
 
     using namespace std;
 

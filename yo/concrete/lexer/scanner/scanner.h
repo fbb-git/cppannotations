@@ -30,12 +30,8 @@ class Scanner: public yyFlexLexer
 //=
 
         Scanner(std::istream *yyin, std::string const &initialName);
-//LAST
-        std::string const &lastFile()
-        {
-            return d_fileName.back();
-        }
-//=
+
+        std::string const &lastFile();
         void stackTrace();  // dumps filename stack to cerr
 
         int yylex();
@@ -49,5 +45,12 @@ class Scanner: public yyFlexLexer
                             size_t bufferSize);
         void throwOnCircularInclusion();
 };
+
+//LAST
+inline std::string const &Scanner::lastFile()
+{
+    return d_fileName.back();
+}
+//=
 
 #endif

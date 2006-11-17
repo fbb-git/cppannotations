@@ -15,21 +15,25 @@
         };
 
         public:
-            void uppercase(std::ostream &out)
-            {
-                Context context = {out};
-                for_each(d_vs.begin(), d_vs.end(),
-                    Wrap1<std::string, Context>(&xform, context));
-            }
+            void uppercase(std::ostream &out);
 
         private:
-            static void xform(std::string &str, Context &context)
-            {
-                context.out << str << " ";
-                transform(str.begin(), str.end(), str.begin(), toupper);
-                context.out << str << std::endl;
-            }
+            static void xform(std::string &str, Context &context);
     };
+
+    void Strings::uppercase(std::ostream &out)
+    {
+        Context context = {out};
+        for_each(d_vs.begin(), d_vs.end(),
+            Wrap1<std::string, Context>(&xform, context));
+    }
+
+    void Strings::xform(std::string &str, Context &context)
+    {
+        context.out << str << " ";
+        transform(str.begin(), str.end(), str.begin(), toupper);
+        context.out << str << std::endl;
+    }
 
     using namespace std;
 

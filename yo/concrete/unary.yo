@@ -38,7 +38,9 @@ definition of the variable holding the address of the function to call:
     and the template's tt(operator()()) implementation (passing it another
 template data member: tt(Context &d_context)) becomes:
         verb(
-    ReturnType operator()(Type &param) const
+    template<typename Type, typename Context, typename ReturnType>
+    ReturnType Wrap1<Type, Context, ReturnType>::operator()(
+                                                Type &param) const
     {
         return (*d_fun)(param, d_context);
     }
@@ -48,6 +50,8 @@ address and a reference to the local context tt(struct). Coining the classname
 tt(Wrap1) (for unary (1) function object wrapper), its implementation
 becomes:
         verb(
+    template<typename Type, typename Context, typename ReturnType>
+    Wrap1<Type, Context, ReturnType>::
     Wrap1(ReturnType (*fun)(Type &, Context &), Context &context)
     :
         d_fun(fun),
@@ -92,8 +96,8 @@ arguments (tt(const), pointers, references) are handled by the template's
 overloaded constructors and member functions, the typedefs may simply set up
 aliases for the template parameter types.
 
-    Here is the implementation of the configurable, single argument function
-object template:
+    Here is the full implementation of the configurable, single argument
+function object template:
         verbinclude(concrete/wrap/wrap1.h)
 
     To use this template, the original dedicated implementation of
