@@ -33,21 +33,26 @@ tt(insertor()). Consequently:
     itemization(
     it() The tt(insertor()) function may be hidden in the class by making it
 tt(private), as there is not need for it to be called elsewhere
-    it() The oplshift() may be constructed as em(inline) function, as it
-contains but one statement.
+    it() The oplshift() may be constructed as em(inline) member, as it
+contains but one statement. However, this is deprecated since it contaminates
+class interfaces with implementations. The overloaded oplshift() member should
+be implemented below the class interface:
     )
     Thus, the relevant section of the class interface of tt(PersonData)
 becomes:
         verb(
     class PersonData
     {
-        friend ostream &operator<<(ostream &str, PersonData const &pd)
-        {
-            return pd.insertor(str);
-        }
+        friend ostream &operator<<(ostream &str, PersonData const &pd);
+
         private:
             ostream &insertor(ostream &str) const;
     };
+
+    inline std::ostream &operator<<(std::ostream &str, PersonData const &pd)
+    {
+        return pd.insertor(str);
+    }
         )
     The above example illustrates the final step in the development of
 tt(friend) functions. It allows us to formulate the following principle:
@@ -72,3 +77,8 @@ statement, in which an appropriate private member function is called.
     Using this principle, we ascertain that all code that has access to the
 private data of a class remains confined to the class itself. This even holds
 true for tt(friend) functions, as they are defined as simple inline functions.
+
+
+
+
+

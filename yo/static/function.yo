@@ -28,20 +28,20 @@ functions:
             static void setpath(char const *newpath);
             static void preset(Directory &dir, char const *path);
     };
+    inline void Directory::preset(Directory &dir, char const *newpath)
+    {
                                                     // see the text below
-    char Directory::s_path[200] = "/usr/local";     // 1
+        dir.d_currentPath = newpath;                // 1
+    }
+
+    char Directory::s_path[200] = "/usr/local";     // 2
 
     void Directory::setpath(char const *newpath)
     {
         if (strlen(newpath) >= 200)
             throw "newpath too long";
 
-        strcpy(s_path, newpath);                    // 2
-    }
-
-    void Directory::preset(Directory &dir, char const *newpath)
-    {
-        dir.d_currentPath = newpath;                // 3
+        strcpy(s_path, newpath);                    // 3
     }
 
     int main()
@@ -56,15 +56,19 @@ functions:
     }
         )
     itemization(
-    it() at 1 a relatively long array is defined to be able to accomodate
-long paths. Alternatively, a tt(string) or a pointer to dynamic memory could
-have been used.
-    it() at 2 a (possibly longer, but not too long) new pathname is stored in
-the static data member tt(s_path[]). Note that here only static members
-are used.
-    it() at 3 a static member function modifies a i(private) data member
+    it() at 1 a static member function modifies a i(private) data member
 of an object. However, the object whose member must be modified is given to
 the member function as a reference parameter.
+
+    Note that hi(static inline member functions)
+    hi(inline static member functions) static member functions can be defined
+as i(inline) functions.
+    it() at 2 a relatively long array is defined to be able to accomodate
+long paths. Alternatively, a tt(string) or a pointer to dynamic memory could
+have been used.
+    it() at 3 a (possibly longer, but not too long) new pathname is stored in
+the static data member tt(s_path[]). Note that here only static members
+are used.
     it() at 4, tt(setpath()) is called. It is a static member, so no
 object is required. But the compiler must know to which class the function
 belongs, so the class is mentioned, using the i(scope resolution operator).
@@ -87,12 +91,3 @@ member it should modify.
 also allows the definition of private static member functions: these functions
 can only be called by member functions of their class.
 
-    Finally it is noted that hi(static inline member functions)
-    hi(inline static member functions) static member functions cannot be
-defined as i(inline) functions. Since a static function can be used as an
-ordinary function at the global level, it must have an i(address). The code of
-inline functions is normally directly inserted into the code of the program:
-not a true function, but an i(alias) for a few statements. With inline
-functions we have no i(function address). Consequently, inline functions
-lack a basic requirement for static member functions: they have no
-addresses.

@@ -138,23 +138,25 @@ occurring member function name:
     navcom.ComSet::setVolume(5);    // sets the ComSet volume level
         )
     it() The class interface is extended by member functions which do the
-explicitation for the user of the class. These extra functions will normally
-be defined as tt(inline):
+explicitation for the user of the class. These additional members will
+normally be defined as tt(inline):
         verb(
     class NavComSet: public ComSet, public NavSet
     {
         public:
             NavComSet(Intercom &intercom, VHF_Dial &dial);
-            void comVolume(size_t volume)
-            {
-                ComSet::setVolume(volume);
-            }
-            void navVolume(size_t volume)
-            {
-                NavSet::setVolume(volume);
-            }
+            void comVolume(size_t volume);
+            void navVolume(size_t volume);
     };
-        )
+    inline void NavComSet::comVolume(size_t volume)
+    {
+        ComSet::setVolume(volume);
+    }
+    inline void NavComSet::navVolume(size_t volume)
+    {
+        NavSet::setVolume(volume);
+    }
+)
     it() If the tt(NavComSet) class is obtained from a third party, and should
 not be altered, a i(wrapper class) could be used, which does the previous
 explicitation for us in our own programs:
@@ -162,18 +164,21 @@ explicitation for us in our own programs:
     class MyNavComSet: public NavComSet
     {
         public:
-            MyNavComSet(Intercom &intercom, VHF_Dial &dial)
-            :
-                NavComSet(intercom, dial);
-            {}
-            void comVolume(size_t volume)
-            {
-                ComSet::setVolume(volume);
-            }
-            void navVolume(size_t volume)
-            {
-                NavSet::setVolume(volume);
-            }
+            MyNavComSet(Intercom &intercom, VHF_Dial &dial);
+            void comVolume(size_t volume);
+            void navVolume(size_t volume);
     };
+    inline MyNavComSet::MyNavComSet(Intercom &intercom, VHF_Dial &dial)
+    :
+        NavComSet(intercom, dial);
+    {}
+    inline void MyNavComSet::comVolume(size_t volume)
+    {
+        ComSet::setVolume(volume);
+    }
+    inline void MyNavComSet::navVolume(size_t volume)
+    {
+        NavSet::setVolume(volume);
+    }
         )
     )
