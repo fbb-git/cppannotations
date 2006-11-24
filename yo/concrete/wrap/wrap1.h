@@ -40,38 +40,38 @@
             // below
 
             Wrap1(ReturnType (*fun)(Type &, Context &), Context &context);
-            Wrap1(ReturnType (*fun)(Type &, Context const &), 
+            Wrap1(ReturnType (*fun)(Type &, Context const &),
                    Context const &context);
-            Wrap1(ReturnType (*fun)(Type const &, Context &), 
+            Wrap1(ReturnType (*fun)(Type const &, Context &),
                    Context &context);
-            Wrap1(ReturnType (*fun)(Type const &, Context const &), 
+            Wrap1(ReturnType (*fun)(Type const &, Context const &),
                    Context const &context);
-            Wrap1(ReturnType (*fun)(Type *, Context &), 
+            Wrap1(ReturnType (*fun)(Type *, Context &),
                    Context &context);
-            Wrap1(ReturnType (*fun)(Type *, Context const &), 
+            Wrap1(ReturnType (*fun)(Type *, Context const &),
                    Context const &context);
-            Wrap1(ReturnType (*fun)(Type const *, Context &), 
+            Wrap1(ReturnType (*fun)(Type const *, Context &),
                    Context &context);
-            Wrap1(ReturnType (*fun)(Type const *, Context const &), 
+            Wrap1(ReturnType (*fun)(Type const *, Context const &),
                    Context const &context);
 
             // The following additional constructors are identical to the
-            // constructors listed above, but they accept a pointer to a 
+            // constructors listed above, but they accept a pointer to a
             // context in various forms.
 
             Wrap1(ReturnType (*fun)(Type &, Context *), Context *context);
-            Wrap1(ReturnType (*fun)(Type &, Context const *), 
+            Wrap1(ReturnType (*fun)(Type &, Context const *),
                    Context const *context);
-            Wrap1(ReturnType (*fun)(Type const &, Context *), 
+            Wrap1(ReturnType (*fun)(Type const &, Context *),
                    Context *context);
-            Wrap1(ReturnType (*fun)(Type const &, Context const *), 
+            Wrap1(ReturnType (*fun)(Type const &, Context const *),
                    Context const *context);
             Wrap1(ReturnType (*fun)(Type *, Context *), Context *context);
-            Wrap1(ReturnType (*fun)(Type *, Context const *), 
+            Wrap1(ReturnType (*fun)(Type *, Context const *),
                    Context const *context);
-            Wrap1(ReturnType (*fun)(Type const *, Context *), 
+            Wrap1(ReturnType (*fun)(Type const *, Context *),
                    Context *context);
-            Wrap1(ReturnType (*fun)(Type const *, Context const *), 
+            Wrap1(ReturnType (*fun)(Type const *, Context const *),
                    Context const *context);
 
             ReturnType operator()(Type &param) const;
@@ -91,7 +91,7 @@ Wrap1<Type, Context, ReturnType>::Wrap1(
                                     // reference Wrap1::const
 template <typename Type, typename Context, typename ReturnType>
 Wrap1<Type, Context, ReturnType>::Wrap1(
-                ReturnType (*fun)(Type &, Context const &), 
+                ReturnType (*fun)(Type &, Context const &),
                 Context const &context)
 :
     d_contextconst(&context),
@@ -101,7 +101,7 @@ Wrap1<Type, Context, ReturnType>::Wrap1(
                                     // const reference
 template <typename Type, typename Context, typename ReturnType>
 Wrap1<Type, Context, ReturnType>::Wrap1(
-                ReturnType (*fun)(Type const &, Context &), 
+                ReturnType (*fun)(Type const &, Context &),
                 Context &context)
 :
     d_context(&context),
@@ -110,7 +110,7 @@ Wrap1<Type, Context, ReturnType>::Wrap1(
                                     // const reference const
 template <typename Type, typename Context, typename ReturnType>
 Wrap1<Type, Context, ReturnType>::Wrap1(
-                ReturnType (*fun)(Type const &, Context const &), 
+                ReturnType (*fun)(Type const &, Context const &),
                 Context const &context)
 :
     d_contextconst(&context),
@@ -120,7 +120,7 @@ Wrap1<Type, Context, ReturnType>::Wrap1(
                                     // pointer
 template <typename Type, typename Context, typename ReturnType>
 Wrap1<Type, Context, ReturnType>::Wrap1(
-                ReturnType (*fun)(Type *, Context &), 
+                ReturnType (*fun)(Type *, Context &),
        Context &context)
 :
     d_context(&context),
@@ -129,7 +129,7 @@ Wrap1<Type, Context, ReturnType>::Wrap1(
                                     // pointer const
 template <typename Type, typename Context, typename ReturnType>
 Wrap1<Type, Context, ReturnType>::Wrap1(
-                ReturnType (*fun)(Type *, Context const &), 
+                ReturnType (*fun)(Type *, Context const &),
                 Context const &context)
 :
     d_contextconst(&context),
@@ -139,7 +139,7 @@ Wrap1<Type, Context, ReturnType>::Wrap1(
                                     // const pointer
 template <typename Type, typename Context, typename ReturnType>
 Wrap1<Type, Context, ReturnType>::Wrap1(
-                ReturnType (*fun)(Type const *, Context &), 
+                ReturnType (*fun)(Type const *, Context &),
                 Context &context)
 :
     d_context(&context),
@@ -148,7 +148,7 @@ Wrap1<Type, Context, ReturnType>::Wrap1(
                                     // const pointer const
 template <typename Type, typename Context, typename ReturnType>
 Wrap1<Type, Context, ReturnType>::Wrap1(
-                ReturnType (*fun)(Type const *, Context const &), 
+                ReturnType (*fun)(Type const *, Context const &),
                 Context const &context)
 :
     d_contextconst(&context),
@@ -166,7 +166,7 @@ Wrap1<Type, Context, ReturnType>::Wrap1(
                                     // reference const
 template <typename Type, typename Context, typename ReturnType>
 Wrap1<Type, Context, ReturnType>::Wrap1(
-                ReturnType (*fun)(Type &, Context const *), 
+                ReturnType (*fun)(Type &, Context const *),
                 Context const *context)
 :
     d_contextconst(context),
@@ -184,7 +184,7 @@ Wrap1<Type, Context, ReturnType>::Wrap1(
                                     // const reference const
 template <typename Type, typename Context, typename ReturnType>
 Wrap1<Type, Context, ReturnType>::Wrap1(
-                ReturnType (*fun)(Type const &, Context const *), 
+                ReturnType (*fun)(Type const &, Context const *),
                 Context const *context)
 :
     d_contextconst(context),
@@ -202,7 +202,7 @@ Wrap1<Type, Context, ReturnType>::Wrap1(
                                     // pointer const
 template <typename Type, typename Context, typename ReturnType>
 Wrap1<Type, Context, ReturnType>::Wrap1(
-                ReturnType (*fun)(Type *, Context const *), 
+                ReturnType (*fun)(Type *, Context const *),
                 Context const *context)
 :
     d_contextconst(context),
@@ -219,7 +219,7 @@ Wrap1<Type, Context, ReturnType>::Wrap1(
                                     // const pointer const
 template <typename Type, typename Context, typename ReturnType>
 Wrap1<Type, Context, ReturnType>::Wrap1(
-                ReturnType (*fun)(Type const *, Context const *), 
+                ReturnType (*fun)(Type const *, Context const *),
                 Context const *context)
 :
     d_contextconst(context),
@@ -233,7 +233,7 @@ ReturnType Wrap1<Type, Context, ReturnType>::operator()(Type &param) const
 }
 
 template <typename Type, typename Context, typename ReturnType>
-ReturnType 
+ReturnType
         Wrap1<Type, Context, ReturnType>::operator()(Type const &param) const
 {
     return (*d_crefRef)(param, *d_context);

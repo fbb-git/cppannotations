@@ -53,7 +53,7 @@
         return d_current - rhs.d_current;
     }
     template <typename Class, typename BaseIterator, typename Type>
-    RandomPtrIterator<Class, BaseIterator, Type> const 
+    RandomPtrIterator<Class, BaseIterator, Type> const
     RandomPtrIterator<Class, BaseIterator, Type>::operator+(int step) const
     {
         return RandomPtrIterator(d_current + step);
@@ -74,28 +74,28 @@
     }
 //=
     template <typename Class, typename BaseIterator, typename Type>
-    RandomPtrIterator<Class, BaseIterator, Type> 
+    RandomPtrIterator<Class, BaseIterator, Type>
     &RandomPtrIterator<Class, BaseIterator, Type>::operator--()
     {
         --d_current;
         return *this;
     }
     template <typename Class, typename BaseIterator, typename Type>
-    RandomPtrIterator <Class, BaseIterator, Type> const 
+    RandomPtrIterator <Class, BaseIterator, Type> const
     RandomPtrIterator<Class, BaseIterator, Type>::operator--(int)
     {
         return RandomPtrIterator(d_current--);
     }
 //INC
     template <typename Class, typename BaseIterator, typename Type>
-    RandomPtrIterator<Class, BaseIterator, Type> 
+    RandomPtrIterator<Class, BaseIterator, Type>
     &RandomPtrIterator<Class, BaseIterator, Type>::operator++()
     {
         ++d_current;
         return *this;
     }
     template <typename Class, typename BaseIterator, typename Type>
-    RandomPtrIterator<Class, BaseIterator, Type> const 
+    RandomPtrIterator<Class, BaseIterator, Type> const
     RandomPtrIterator<Class, BaseIterator, Type>::operator++(int)
     {
         return RandomPtrIterator(d_current++);
@@ -108,20 +108,20 @@
         return d_current == other.d_current;
     }
     template <typename Class, typename BaseIterator, typename Type>
-    RandomPtrIterator<Class, BaseIterator, Type> const 
+    RandomPtrIterator<Class, BaseIterator, Type> const
     RandomPtrIterator<Class, BaseIterator, Type>::operator-(int step) const
     {
         return RandomPtrIterator(d_current - step);
     }
     template <typename Class, typename BaseIterator, typename Type>
-    RandomPtrIterator<Class, BaseIterator, Type> 
+    RandomPtrIterator<Class, BaseIterator, Type>
     &RandomPtrIterator<Class, BaseIterator, Type>::operator-=(int step)
     {
         d_current -= step;
         return *this;
     }
     template <typename Class, typename BaseIterator, typename Type>
-    RandomPtrIterator<Class, BaseIterator, Type> 
+    RandomPtrIterator<Class, BaseIterator, Type>
     &RandomPtrIterator<Class, BaseIterator, Type>::operator+=(int step)
     {
         d_current += step;

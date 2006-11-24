@@ -127,7 +127,7 @@
 //=
 
     template <size_t Rows, size_t Columns, typename DataType>
-    Matrix<1, Columns, DataType> 
+    Matrix<1, Columns, DataType>
     const &Matrix<Rows, Columns, DataType>::operator[](size_t idx) const
     {
         return d_matrix[idx];
@@ -254,4 +254,3 @@
     {
         return d_cell;
     }
-

@@ -48,7 +48,7 @@ inline A2x::operator Type()
 inline A2x &A2x::operator=(std::string const &str)
 {
     return operator=(str.c_str());
-}            
+}
 //OP=
 inline A2x &A2x::operator=(A2x const &other)
 {

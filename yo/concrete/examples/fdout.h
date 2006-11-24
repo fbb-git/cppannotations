@@ -27,7 +27,7 @@
         d_bufsize(0),
         d_buffer(0)
     {}
-    
+
     inline ofdnstreambuf::ofdnstreambuf(int fd, size_t bufsize)
     {
         open(fd, bufsize);
@@ -48,7 +48,7 @@
     {
         d_fd = fd;
         d_bufsize = bufsize == 0 ? 1 : bufsize;
-    
+
         d_buffer = new char[d_bufsize];
         setp(d_buffer, d_buffer + d_bufsize);
     }

@@ -45,4 +45,3 @@
         Demo<int> demo;
         demo.member1();
     }
-

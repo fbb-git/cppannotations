@@ -67,7 +67,7 @@ struct STYPE
         size_t reduce(PI const &productionInfo);
         void setDebug(bool mode);
         size_t top() const;
-}; 
+};
 
 inline bool ParserBase::debug() const
 {
@@ -85,5 +85,3 @@ inline void ParserBase::setDebug(bool mode)
 
 
 #endif
-
-

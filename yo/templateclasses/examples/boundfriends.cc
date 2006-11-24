@@ -53,7 +53,7 @@
         template <typename Key2, typename Value2>
         Iterator<Key2, Value2> begin();
 
-                                   
+
         template <typename Key2, typename Value2>
         Iterator<Key2, Value2>        // uses a member function
                     subset(Key const &key);
@@ -119,7 +119,7 @@
     {}
 
     template <typename Key, typename Value>
-    typename std::map<Key, Value>::iterator 
+    typename std::map<Key, Value>::iterator
     Iterator<Key, Value>::subset(Key const &key)
     {
         return d_dict.begin();

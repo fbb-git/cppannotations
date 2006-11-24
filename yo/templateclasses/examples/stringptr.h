@@ -9,7 +9,7 @@
 class StringPtr: public std::vector<std::string *>
 {
     public:
-    class iterator: public 
+    class iterator: public
             std::iterator<std::random_access_iterator_tag, std::string>
     {
         friend class StringPtr;
@@ -103,14 +103,14 @@ inline bool StringPtr::iterator::operator<(iterator const &other) const
 }
 //=
 //OPADD
-inline StringPtr::iterator const 
+inline StringPtr::iterator const
         StringPtr::iterator::operator+(int step) const
 {
     return iterator(d_current + step);
 }
 //=
 //OP-
-inline StringPtr::iterator const 
+inline StringPtr::iterator const
        StringPtr::iterator::operator-(int step) const
 {
     return iterator(d_current - step);

@@ -12,7 +12,7 @@
         {
             std::cout << "This is Base<T>::member()\n";
         }
-    
+
         template <>
         void Base<int>::member()
         {

@@ -31,7 +31,7 @@
             private:
                 void full_copy(char **argv);
                 void copy(auto_ptr<char *> &other);
-                void destroy();             
+                void destroy();
         };
 
         inline auto_ptr<char *>::auto_ptr()
@@ -87,4 +87,3 @@
             delete[] d_data;
         }
     }
-

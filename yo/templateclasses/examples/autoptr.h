@@ -28,55 +28,55 @@
         :
             d_data(0)
         {}
-    
+
         template <typename Data>
         inline auto_ptr<Data>::auto_ptr(auto_ptr<Data> &other)
         {
             copy(other);
         }
-    
+
         template <typename Data>
         inline auto_ptr<Data>::auto_ptr(Data *data)
         :
             d_data(data)
         {}
-    
+
         template <typename Data>
         inline auto_ptr<Data>::~auto_ptr()
         {
             destroy();
         }
-    
+
         template <typename Data>
         inline Data &auto_ptr<Data>::operator[](size_t index)
         {
             return d_data[index];
         }
-    
+
         template <typename Data>
         inline Data const &auto_ptr<Data>::operator[](size_t index) const
         {
             return d_data[index];
         }
-    
+
         template <typename Data>
         inline Data *auto_ptr<Data>::get()
         {
             return d_data;
         }
-    
+
         template <typename Data>
         inline Data const *auto_ptr<Data>::get() const
         {
             return d_data;
         }
-    
+
         template <typename Data>
         inline void auto_ptr<Data>::destroy()
         {
             delete[] d_data;
         }
-    
+
         template <typename Data>
         inline void auto_ptr<Data>::copy(auto_ptr<Data> &other)
         {

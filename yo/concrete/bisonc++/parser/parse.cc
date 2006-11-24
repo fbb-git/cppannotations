@@ -26,13 +26,13 @@
 // state, and thus parsing may continue.
 
 // So:
-//      s_x[] = 
+//      s_x[] =
 //      {
 //                  [_field_1_]         [_field_2_]
 //
 // First element:   {state-type,        idx of last element},
 // Other elements:  {required token,    action to perform},
-//                                      ( < 0: reduce, 
+//                                      ( < 0: reduce,
 //                                          0: ACCEPT,
 //                                        > 0: next state)
 // Last element:    {set to d_token,    action to perform}
@@ -53,19 +53,19 @@ namespace // anonymous
         NORMAL,
         HAS_ERROR_ITEM,
         IS_ERROR_STATE,
-    };    
+    };
     struct PI   // Production Info
     {
         size_t d_nonTerm; // identification number of this production's
-                            // non-terminal 
-        size_t d_size;    // number of elements in this production 
+                            // non-terminal
+        size_t d_size;    // number of elements in this production
     };
 
     struct SR   // Shift Reduce info, see its description above
     {
         union
         {
-            int _field_1_;      // initializer, allowing initializations 
+            int _field_1_;      // initializer, allowing initializations
                                 // of the SR s_[] arrays
             StateType   d_type;
             int         d_token;
@@ -75,16 +75,16 @@ namespace // anonymous
             int _field_2_;
 
             int d_lastIdx;          // if negative, the state uses SHIFT
-            int d_action;           // may be negative (reduce), 
+            int d_action;           // may be negative (reduce),
                                     // postive (shift), or 0 (accept)
             size_t d_errorState;  // used with Error states
         };
     };
 
     // $insert staticdata
-    
+
 // Productions Info Records:
-PI s_productionInfo[] = 
+PI s_productionInfo[] =
 {
      {0, 0}, // not used: reduction values are negative
      {262, 2}, // 1: lines ->  lines line
@@ -478,7 +478,7 @@ void ParserBase::clearin()
     d_token = d_nextToken = _UNDETERMINED_;
 }
 
-void ParserBase::ABORT() const throw(Return) 
+void ParserBase::ABORT() const throw(Return)
 {
     throw PARSE_ABORT;
 }
@@ -543,7 +543,7 @@ void Parser::executeAction(int production)
     switch (production)
     {
         // $insert actioncases
-        
+
         case 3:
 #line 33 "grammar"
         {
@@ -702,7 +702,7 @@ int Parser::lookup()
 
 
     lastElementPtr->d_token = d_token;  // set search-token
-    
+
     SR *elementPtr = sr + 1;
     while (elementPtr->d_token != d_token)
         ++elementPtr;
@@ -711,15 +711,15 @@ int Parser::lookup()
     {
         if (elementPtr->d_action < 0)   // default reduction
         {
-            return elementPtr->d_action;                
+            return elementPtr->d_action;
         }
         // No default reduction, so token not found, so error.
         throw UNEXPECTED_TOKEN;
     }
 
-    // not at the last element, if non-negative and if 
+    // not at the last element, if non-negative and if
     // d_token == d_nextToken token has been processed, and nextToken()
-    // can be called. 
+    // can be called.
 
     if (elementPtr->d_action <= 0)       // a reduction or ACCEPT is found
     {
@@ -736,7 +736,7 @@ int Parser::lookup()
 
     // When an error has occurred, pop elements off the stack until the top
     // state has an error-item. If none is found, the default recovery
-    // mode (which is to abort) is activated. 
+    // mode (which is to abort) is activated.
     //
     // If EOF is encountered without being appropriate for the current state,
     // then the error recovery will fall back to the default recovery mode.
@@ -763,9 +763,9 @@ try
 
     while (true)
     {
-            // if on entry here token is already EOF then we've probably been 
+            // if on entry here token is already EOF then we've probably been
             // here before: _error_ accepts EOF, but the state using
-            // error nevertheless doesn't. In that case parsing terminates 
+            // error nevertheless doesn't. In that case parsing terminates
         if (d_token == _EOF_)
         {
             throw DEFAULT_RECOVERY_MODE;
@@ -784,7 +784,7 @@ try
                 executeAction(-action);     // the error's action
 
                                             // next token is the rule's LHS
-                d_token = reduce(s_productionInfo[-action]); 
+                d_token = reduce(s_productionInfo[-action]);
             }
             return;
         }
@@ -799,10 +799,10 @@ catch (ErrorRecovery)       // This means: DEFAULT_RECOVERY_MODE
 }
 
     // The parsing algorithm:
-    // Initially, state 0 is pushed on the stack, and d_token is initialized 
+    // Initially, state 0 is pushed on the stack, and d_token is initialized
     // the first token on the input.
     // The stack's top element is always used to access the current state's
-    // SR_ array. 
+    // SR_ array.
     // Then, in an eternal loop:
     //  1.  d_token is stored in the final element's d_token
     //      field of the state's SR_ array.
@@ -823,10 +823,10 @@ catch (ErrorRecovery)       // This means: DEFAULT_RECOVERY_MODE
     //  7. An error occurs if d_token is not found, and the state has no
     //     default reduction
 int Parser::parse()
-try 
+try
 {
     push(0);                                // initial state
-    d_nextToken = _UNDETERMINED_;           // First token may not yet be 
+    d_nextToken = _UNDETERMINED_;           // First token may not yet be
                                             // required
     while (true)
     {
@@ -843,9 +843,9 @@ try
             {
                 executeAction(-action);
                                             // next token is the rule's LHS
-                d_token = reduce(s_productionInfo[-action]); 
+                d_token = reduce(s_productionInfo[-action]);
             }
-            else 
+            else
                 ACCEPT();
         }
         catch (ErrorRecovery)
@@ -858,4 +858,3 @@ catch (Return retValue)
 {
     return retValue;
 }
-
