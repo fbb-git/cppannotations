@@ -3,12 +3,14 @@
     class PointerDemo
     {
         public:
-            unsigned get() const
-            {
-                return d_value;
-            }
             unsigned d_value;
+            unsigned get() const;
     };
+
+	inline unsigned PointerDemo::get() const
+	{
+	    return d_value;
+	}
 
     using namespace std;
 

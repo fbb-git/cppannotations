@@ -5,12 +5,14 @@
         int d_value;
 
         public:
-            operator int&()
-            {
-                return d_value;
-            }
+            operator int&();
     };
 
+	inline Lvalue::operator int&()
+	{
+	    return d_value;
+	}
+	
     int main()
     {
         Lvalue lvalue;

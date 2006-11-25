@@ -6,13 +6,16 @@
     class FatalException: public Exception
     {
         public:
-            FatalException(char const *reason)
-            :
-                Exception(reason)
-            {}
-            void process() const
-            {
-                exit(1);
-            }
+            FatalException(char const *reason);
+            void process() const;
     };
+	inline FatalException::FatalException(char const *reason)
+	:
+	    Exception(reason)
+	{}
+	inline void FatalException::process() const
+	{
+	    exit(1);
+	}
     #endif
+	

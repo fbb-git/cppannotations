@@ -25,11 +25,15 @@ string stringlist(string path, string subdir, string pattern)
 
 void cleanup(string task, string files)
 {
+    list filelist;
+    int idx;
+
+    filelist = strtok(files, " ");
+    
     if (!exists("tmp/" + task + "-stamp"))
     {
-        echo(OFF);
-        system("tmp/bin/" + task + " -q " + files);
-        echo(ECHO_COMMANDS);
+        for (idx = sizeof(filelist); idx--; )
+            system("tmp/bin/" + task + " -q " + element(idx, filelist));
         run("touch tmp/" + task + "-stamp");
     }
 }

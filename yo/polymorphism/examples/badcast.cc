@@ -3,14 +3,16 @@
     class Base
     {
         public:
-            virtual ~Base()
-            {}
-            virtual char const *toString()
-            {
-                return "Base::toString() called";
-            }
+            virtual ~Base();
+            virtual char const *toString();
     };
-
+    inline Base::~Base()
+    {}
+    inline char const *Base::toString()
+    {
+        return "Base::toString() called";
+    }
+    
     class Derived1: public Base
     {};
 

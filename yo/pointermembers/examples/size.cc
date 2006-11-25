@@ -4,10 +4,13 @@
     class X
     {
         public:
-
-        void fun() { cout << "hello\n"; }
-        string d_str;
+            void fun();
+            string d_str;
     };
+    inline void X::fun() 
+    { 
+        std::cout << "hello\n"; 
+    }
 
     using namespace std;
 

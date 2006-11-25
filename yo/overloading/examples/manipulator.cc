@@ -7,17 +7,21 @@
         std::ios::fmtflags d_alignment;
 
         public:
-            Align(unsigned width, std::ios::fmtflags alignment)
-            :
-                d_width(width),
-                d_alignment(alignment)
-            {}
-            std::ostream &operator()(std::ostream &ostr) const
-            {
-                ostr.setf(d_alignment, std::ios::adjustfield);
-                return ostr << std::setw(d_width);
-            }
+            Align(unsigned width, std::ios::fmtflags alignment);
+            std::ostream &operator()(std::ostream &ostr) const;
     };
+
+	Align::Align(unsigned width, std::ios::fmtflags alignment)
+	:
+	    d_width(width),
+	    d_alignment(alignment)
+	{}
+
+	std::ostream &Align::operator()(std::ostream &ostr) const
+	{
+	    ostr.setf(d_alignment, std::ios::adjustfield);
+	    return ostr << std::setw(d_width);
+	}
 
     std::ostream &operator<<(std::ostream &ostr, Align const &align)
     {

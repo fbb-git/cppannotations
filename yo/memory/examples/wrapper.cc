@@ -4,27 +4,32 @@
     class Informer
     {
         public:
-            ~Informer()
-            {
-                cout << "destructor called\n";
-            }
+            ~Informer();
     };
 
+	inline Informer::~Informer()
+	{
+	    cout << "destructor called\n";
+	}
+	
     class Wrapper
     {
         Informer *d_i;
 
         public:
-            Wrapper()
-            :
-                d_i(new Informer())
-            {}
-            ~Wrapper()
-            {
-                delete d_i;
-            }
+            Wrapper();
+            ~Wrapper();
     };
 
+	inline Wrapper::Wrapper()
+	:
+	    d_i(new Informer())
+	{}
+	inline Wrapper::~Wrapper()
+	{
+	    delete d_i;
+	}
+	
     int main()
     {
         delete[] new Informer *[4];    // memory leak: no destructor called
