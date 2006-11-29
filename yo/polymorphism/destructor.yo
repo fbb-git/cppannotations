@@ -56,3 +56,24 @@ tt(Vehicle::~Vehicle()) may be as simple as:
         )
     Often the destructor will be defined i(inline) below the  
     hi(destructor: inline) i(class interface).  
+
+
+    bf(temporary note): With the gnu compiler 4.1.2 an annoying bug prevents
+        hi(virtual destructor: g++ bug)
+em(virtual destructors) to be defined inline below their class interfaces
+without explicitly declaring the virtual destructor as inline within the
+interface. Until the bug has been repaired, inline virtual destructors should
+be defined as follows (using the class tt(Vehicle) as an example:
+        verb(
+    class Vehicle
+    {
+        ...
+        public:
+            inline virtual ~Vehicle();  // note the `inline'
+            ...
+    };
+
+    inline Vehicle::~Vehicle()          // inline implementation
+    {}                                  // is kept unaltered.
+        )
+
