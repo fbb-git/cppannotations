@@ -40,9 +40,9 @@ int main()
     dp->Base::pure();
 }
 // Output:
-//	Base::pure() called
-//	Derived::pure() called
-//	Base::pure() called
-//	Base::pure() called
-//	Derived::pure() called
-//	Base::pure() called
+//      Base::pure() called
+//      Derived::pure() called
+//      Base::pure() called
+//      Base::pure() called
+//      Derived::pure() called
+//      Base::pure() called

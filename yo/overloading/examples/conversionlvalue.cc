@@ -8,11 +8,11 @@
             operator int&();
     };
 
-	inline Lvalue::operator int&()
-	{
-	    return d_value;
-	}
-	
+        inline Lvalue::operator int&()
+        {
+            return d_value;
+        }
+
     int main()
     {
         Lvalue lvalue;

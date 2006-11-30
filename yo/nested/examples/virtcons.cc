@@ -32,7 +32,7 @@
 
     inline Clonable::Base::~Base()
     {}
-    
+
     inline Clonable::Clonable()
     :
         d_bp(0)
@@ -54,17 +54,17 @@
         }
         return *this;
     }
-    
+
     inline Clonable::Clonable(Base const &bp)
     {
         d_bp = bp.clone();      // allows initialization from
     }                           // Base and derived objects
-    
+
     inline Clonable::Base &Clonable::get() const
     {
         return *d_bp;
     }
-    
+
     inline void Clonable::copy(Clonable const &other)
     {
         if ((d_bp = other.d_bp))
@@ -86,7 +86,7 @@
     {
         return new Derived1(*this);
     }
-    
+
     using namespace std;
 
     int main()

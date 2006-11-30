@@ -15,8 +15,8 @@
             char const *phone() const;
     };
 
-	inline Person::Person()
-	{}
+        inline Person::Person()
+        {}
 
 /*
     person.ih contains:

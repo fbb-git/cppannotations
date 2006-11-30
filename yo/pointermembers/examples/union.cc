@@ -9,11 +9,11 @@
             std::string d_str;
     };
 
-	inline void X::fun()
-	{
-	    std::cout << "hello\n";
-	}
-	
+        inline void X::fun()
+        {
+            std::cout << "hello\n";
+        }
+
     using namespace std;
 
     int main()

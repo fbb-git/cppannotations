@@ -12,7 +12,7 @@
     {
         return "Base::toString() called";
     }
-    
+
     class Derived1: public Base
     {};
 

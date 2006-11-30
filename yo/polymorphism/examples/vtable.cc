@@ -4,9 +4,9 @@
             virtual void member();
     };
 
-	inline void Base::member()
-	{}
-	
+        inline void Base::member()
+        {}
+
     class Derived
     {
         public:

@@ -6,7 +6,7 @@
 
     class Exception
     {
-        friend std::ostream &operator<<(std::ostream &str, 
+        friend std::ostream &operator<<(std::ostream &str,
                                         Exception const &e);
         std::string d_reason;
 
@@ -18,27 +18,19 @@
             Exception(char const *reason);
     };
 
-	inline Exception::~Exception()
-	{}
-	inline Exception::operator std::string() const
-	{
-	    return d_reason;
-	}
-	inline Exception::Exception(char const *reason)
-	:
-	    d_reason(reason)
-	{}
-	inline std::ostream &operator<<(std::ostream &str, Exception const &e)
-	{
-	    return str << e.operator std::string();
-	}
+        inline Exception::~Exception()
+        {}
+        inline Exception::operator std::string() const
+        {
+            return d_reason;
+        }
+        inline Exception::Exception(char const *reason)
+        :
+            d_reason(reason)
+        {}
+        inline std::ostream &operator<<(std::ostream &str, Exception const &e)
+        {
+            return str << e.operator std::string();
+        }
 
     #endif
-
-
-
-
-
-
-
-

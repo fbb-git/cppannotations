@@ -9,13 +9,12 @@
             FatalException(char const *reason);
             void process() const;
     };
-	inline FatalException::FatalException(char const *reason)
-	:
-	    Exception(reason)
-	{}
-	inline void FatalException::process() const
-	{
-	    exit(1);
-	}
+        inline FatalException::FatalException(char const *reason)
+        :
+            Exception(reason)
+        {}
+        inline void FatalException::process() const
+        {
+            exit(1);
+        }
     #endif
-	
