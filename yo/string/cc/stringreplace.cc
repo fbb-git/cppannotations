@@ -5,7 +5,7 @@
 
     int main(int argc, char **argv)
     {
-        if (argc == 3)
+        if (argc != 3)
         {
             cerr << "Usage: <searchstring> <replacestring> to process "
                                                                   "stdin\n";
