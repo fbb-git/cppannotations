@@ -2,27 +2,27 @@
 initialized by the compiler to the number of elements of an array failed
 because the template's parameters are not implicitly deduced when a
 constructor is called, but they are explicitly specified, when an object of
-the template class is defined. As the parameters are specified just before the
+the class template is defined. As the parameters are specified just before the
 template's constructor is called, there's nothing to deduce anymore, and the
 compiler will simply use the explicitly specified template arguments.
 
     On the other hand, when template em(functions) are used, the actual
 template parameters are deduced from the arguments used when calling the
 function. This opens an approach route to the solution of our problem. If the
-constructor itself is made into a member which itself is a template function
+constructor itself is made into a member which itself is a function template
 (containing a i(template announcement) of its own), then the compiler
 will be able to deduce the non-type parameter's value, without us having to
-specify it explicitly as a template class non-type parameter.
+specify it explicitly as a class template non-type parameter.
 
-    Member functions (or classes) of template classes which themselves are
+    Member functions (or classes) of class templates which themselves are
 templates are called em(member templates).
         hi(member template)
-        hi(template class: member template)
+        hi(class template: member template)
     Member templates are defined in the same way as any other template,
 including the tt(template <typename ...>) header.
 
     When converting our earlier tt(FBB::auto_ptr(Data const (&array)[Size]))
-constructor into a member template we may use the template class's tt(Data)
+constructor into a member template we may use the class template's tt(Data)
 type parameter, but must provide the member template with a non-type parameter
 of its own. The class interface is given the following additional member
 declaration:
@@ -55,24 +55,24 @@ declaration:
     it() Normal i(access rules) apply: the constructor
 can be used
 by the general program to construct an tt(FBB::auto_ptr) object of a given
-data type. As usual for template classes, the data type must be specified when
+data type. As usual for class templates, the data type must be specified when
 the object is constructed. To construct an tt(FBB::auto_ptr) object from the
 array tt(int array[30]) we define:
     centt(FBB::auto_ptr<int> object(array);)
     it() Any member can be defined as a member template, not just a
 constructor.
-    it() When a template member is defined below its class, the template class
+    it() When a template member is defined below its class, the class template
     hi(template members: defined below their class) parameter list must
-precede the template function parameter list of the template
+precede the function template parameter list of the template
 member. Furthermore: 
         itemization(
         it() The member should be defined inside its proper namespace
-environment. The organization within files defining template classes within a
+environment. The organization within files defining class templates within a
 namespace should therefore be:
         verb(
     namespace SomeName
     {
-        template <typename Type, ...>   // template class definition
+        template <typename Type, ...>   // class template definition
         class ClassName
         {
             ...
@@ -85,7 +85,7 @@ namespace should therefore be:
         }
     }                                   // namespace closed
         )
-        it() Two template announcements must be used: the template class's
+        it() Two template announcements must be used: the class template's
 template announcement is specified first, followed by the member template's
 template announcement.
         it() The definition itself must specify the member template's
@@ -110,7 +110,7 @@ case its template type parameter should be changed into `tt(Data)'. The only
 remaining subtlety is that template parameters of member templates may not
 shadow
         hi(shadowing template parameters)
-        hi(template class: shadowing template parameters)
+        hi(class template: shadowing template parameters)
     the template parameters of their class. Renaming tt(Data) into tt(Data2)
 takes care of this subtlety. Here is the (inline) definition of the
 tt(auto_ptr(Data *)) constructor, followed by an example in which both

@@ -1,7 +1,7 @@
-    Now that we've covered the construction of template functions, we're ready
-for the next step: constructing template classes. Many useful template classes
-already exist. Instead of illustrating how an existing template class was
-constructed, let's discuss the construction of a useful new template class.
+    Now that we've covered the construction of function templates, we're ready
+for the next step: constructing class templates. Many useful class templates
+already exist. Instead of illustrating how an existing class template was
+constructed, let's discuss the construction of a useful new class template.
 
     In chapter ref(STL) we've encountered the tt(auto_ptr) class (section
 ref(AUTOPTR)). The tt(auto_ptr), also called emi(smart pointer), allows us to
@@ -12,13 +12,13 @@ completely be constructed.
 
     The one disadvantage of hi(auto_ptr: disadvantage) tt(auto_ptr)s is that
 they can only be used for single objects and not for pointers to
-arrays of objects. Here we'll construct the template class tt(FBB::auto_ptr),
+arrays of objects. Here we'll construct the class template tt(FBB::auto_ptr),
 behaving like tt(auto_ptr), but managing a pointer to an array of objects.
 
     Using an existing class as our point of departure also shows an important
 design principle: it's often easier to construct a template (function or
-        hi(construction: template class)
-        hi(template class: construction) class) from an existing template than
+        hi(construction: class template)
+        hi(class template: construction) class) from an existing template than
 to construct the template completely from scratch. In this case the existing
 tt(std::auto_ptr) acts as our model.  Therefore, we want to provide the class
 with the following members:
@@ -37,7 +37,7 @@ object tt(index) would most likely be expected too. These extensions of
 tt(FBB::auto_ptr) are left as exercises to the reader.
     )
     Now that we have decided which members we need, the class interface can be
-constructed. Like template functions, a template class definition begins with
+constructed. Like function templates, a class template definition begins with
 the keyword ti(template), which is also followed by a non-empty list of
 template type
         hi(template type parameters)
@@ -53,13 +53,13 @@ and constants. The class interface is constructed as usual. It starts with the
 keyword tt(class) and ends with a semicolon.
 
     Normal i(design considerations) should be followed when constructing
-template class member functions or template class constructors:
-        hi(template class: member functions)
-    template class type parameters
-        hi(template class: type parameters)
+class template member functions or class template constructors:
+        hi(class template: member functions)
+    class template type parameters
+        hi(class template: type parameters)
     should preferably be defined as tt(Type const &), rather than tt(Type), to
 prevent unnecessary copying of large i(data structures). Template
-        hi(template class: constructors)
+        hi(class template: constructors)
     class constructors should use i(member initializers) rather than member
 assignment within the body of the constructors, again to prevent double
 assignment of composed objects: once by the default constructor of the object,
@@ -76,23 +76,23 @@ Here is our initial version of the class
 the class interface appears to have no special characteristics at all. It
 looks like any old class interface. This is generally true. Often a template
 class can easily be constructed after having constructed the class for one or
-two concrete types, followed by an abstraction phase changing all necessary
-references to concrete data types into generic data types, which then become
+two ordinary types, followed by an abstraction phase changing all necessary
+references to ordinary data types into generic data types, which then become
 the template's type parameters.
     it() At closer inspection, some special characteristics can actually be
 discerned. The parameters of the class's copy constructor and overloaded
 assignment operators aren't references to plain tt(auto_ptr) objects, but
-rather references to tt(auto_ptr<Data>) objects. Template class objects (or
+rather references to tt(auto_ptr<Data>) objects. Class template objects (or
 their references or pointers) em(always) require the template type parameters
 to be specified.
     it() Different from the standard design of copy constructors and
 overloaded assignment operators, their parameters are em(non-)tt(const)
-references. This has nothing to do with the class being a template class, but
+references. This has nothing to do with the class being a class template, but
 is a consequence of tt(auto_ptr)'s design itself: both the copy constructor
 and the overloaded assignment operator take the other's object's pointer,
 effectively changing the other object into a i(0-pointer).
     it() Like ordinary classes, members can be defined em(inline). Actually,
-em(all) template class members are defined inline (when using precompiled
+em(all) class template members are defined inline (when using precompiled
 templates
         emi(precompiled templates)
         hi(templates: precompiled)
@@ -102,20 +102,20 @@ As noted in section ref(INLINE), the definition may be put inside the
         hi(template members: defined in/outside the interface)
 class interface or outside (i.e., following) the class interface. As a
         i(rule of thumb)
-    the same design principles should be followed here as with concrete
+    the same design principles should be followed here as with ordinary
 classes: they should be defined below the interface to keep the interface
 clean and readable. Long implementations in the interface tend to obscure the
 interface itself.
-    it() When objects of a template class are instantiated, the definitions of
+    it() When objects of a class template are instantiated, the definitions of
 all the template's member functions that are used (but em(only) those) must
 have been seen by the compiler. Although that characteristic of templates
 could be refined to the point where each definition is stored in a separate
-template function definition file, including only the definitions of the
-template functions that are actually needed, it is hardly ever done that way
+function template definition file, including only the definitions of the
+function templates that are actually needed, it is hardly ever done that way
 (even though it would speed up the required compilation time). Instead, the
-usual way to define template classes is to define the interface, defining some
-functions inline, and to define the remaining template functions immediately
-below the template class's interface.
+usual way to define class templates is to define the interface, defining some
+functions inline, and to define the remaining function templates immediately
+below the class template's interface.
     it() Beside the dereference operator (tt(operator*())), the well-known
 pair of ti(operator[]()) members are defined. Since the class receives no
 information about the size of the array of objects, these members cannot

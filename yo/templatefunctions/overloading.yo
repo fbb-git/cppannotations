@@ -11,8 +11,8 @@ sum of three entities, we could write:
 situation. However, if we would have to add three entities regularly, an
 em(overloaded) version of the tt(add()) function, expecting three arguments,
 might be a useful thing to have. The solution for this problems is simple:
-template functions may be overloaded.
-        hi(overloading: template functions)
+function templates may be overloaded.
+        hi(overloading: function templates)
 
     To define an overloaded version, merely put multiple definitions of the
 template in its definition header file. So, with the tt(add()) function this
@@ -51,7 +51,7 @@ a tt(std::vector) as its first argument, but no tt(deque) or
 tt(map). Overloaded versions for those types of containers could of course be
 constructed, but where's the end to that? Instead, let's look for common
 characteristics of these containers, and if found, define an overloaded
-template function on these common characteristics. One common characteristic
+function template on these common characteristics. One common characteristic
 of the mentioned containers is that they all support tt(begin()) and tt(end())
 members, returning iterators. Using this, we could define a template type
 parameter representing containers that must support these members. But
@@ -96,18 +96,18 @@ holding two arguments. However, the types of the arguments are different, so
 it cannot use the tt(add()) template's first definition. But it em(can) use
 the last definition, expecting entities having different types. As a
 tt(std::vector) supports tt(begin()) and tt(end()), the compiler is now able
-to instantiate the template function
+to instantiate the function template
         verb(
     add<std::vector<int>, int>(std::vector<int> const &, int const &)
         )
     )
 
     Having defined tt(add()) using two different template type parameters, and
-a template function having a parameter list containing two parameters of these
+a function template having a parameter list containing two parameters of these
 types, we've exhausted the possibilities to define an tt(add()) function
 template having a function parameter list showing two different types. Even
 though the parameter types are different, we're still able to define a
-template function tt(add()) as a template function merely returning the sum of
+function template tt(add()) as a function template merely returning the sum of
 two differently typed entities:
         verb(
     template <typename T1, typename T2>
@@ -166,13 +166,13 @@ int), but it might also select the latter function, deducing that tt(Type1 ==
 int, Type2 == int) and tt(Type3 == int). However, the compiler reports no
 ambiguity. The reason for this is the following: if an overloaded template
 function is defined using em(more specialized) template type parameters (e.g.,
-        hi(template functions: specialized type parameters) all equal types)
+        hi(function templates: specialized type parameters) all equal types)
 than another (overloaded) function, for which more general template type
 parameters (e.g., all different) have been used, then the compiler will select
 the more specialized function over the more general function wherever
 possible.
 
-    As a i(rule of thumb): when overloaded versions of a template function
+    As a i(rule of thumb): when overloaded versions of a function template
 are defined, each overloaded version must use a unique combination of
 template type parameters to avoid ambiguities when the templates are
 instantiated. Note that the em(ordering) of template type parameters in the
@@ -195,7 +195,7 @@ have no concrete meanings whatsoever.
 declarations or instantiation declarations, and explicit template parameter
 types may also be used. For example:
     itemization(
-    it() Declaring a template function tt(add()) accepting containers
+    it() Declaring a function template tt(add()) accepting containers
 of a certain type:
         verb(
     template <typename Container, typename Type>

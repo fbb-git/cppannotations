@@ -3,7 +3,7 @@ works fine for all types sensibly supporting tt(operator+()) and a copy
 constructor. However, these assumptions are not always met. For example, when
 tt(char *)s are used, neither the tt(operator+()) nor the copy constructor is
 (sensibly) available. The compiler does not know this, and will try to
-instantiate the simple template function
+instantiate the simple function template
         verb(
     template <typename Type>
     Type add(Type const &t1, Type const &t2);
@@ -14,21 +14,21 @@ parameter(s) and the actually used type(s) is possible, but the standard
 implementation is senseless or produces errors.
 
     To solve this problem a emi(template explicit specialization) may be
-defined.  A template explicit specialization defines the template function for
+defined.  A template explicit specialization defines the function template for
 which a generic definition already exists, using specific actual template type
 parameters.
 
     In the abovementioned case an explicit specialization is required for a
 tt(char const *), but probably also for a tt(char *) type. Probably, as the
 compiler still uses the standard type-deducing process mentioned earlier. So,
-when our tt(add()) template function is specialized for tt(char *) arguments,
+when our tt(add()) function template is specialized for tt(char *) arguments,
 then its return type em(must) also be a tt(char *), whereas it em(must) be a
 tt(char const *) if the arguments are tt(char const *) values. In these cases
 the template type parameter tt(Type) will be deduced properly. With tt(Type ==
 char *), for example, the head of the instantiated function becomes:
         centt(char *add(char *const &t1, char *const &t2))
     If this is considered undesirable, an em(overloaded) version could be
-designed expecting pointers. The following template function definition
+designed expecting pointers. The following function template definition
 expects two (tt(const)) pointers, and returns a non-const pointer:
         verb(
     template <typename T>
@@ -48,7 +48,7 @@ function expecting any two arguments of equal types.
 
     So do we have to define yet another overloaded version, expecting
 non-const pointers? It is possible, but at some point it should become clear
-that we're overshooting our goal. Like concrete functions and classes,
+that we're overshooting our goal. Like ordinary functions and classes,
 templates should have well-described purposes. Trying to add overloaded
 template definitions to overloaded template definitions quickly turns the
 template into a kludge. Don't follow this approach. A better approach is
@@ -59,7 +59,7 @@ clearly in the template's documentation.
     Nevertheless, there may be situations where a template explicit
 specialization may be worth considering. Two specializations for tt(const) and
 non-tt(const) pointers to characters might be considered for our tt(add())
-template function. Template explicit specializations are constructed as
+function template. Template explicit specializations are constructed as
 follows:
     itemization(
     it() They start with the keyword tt(template).
@@ -80,7 +80,7 @@ parameter list.
     it() The body of the function, definining the special implementation that
 is required for the special actual template parameter types.
     )
-    Here are two  explicit specializations for the template function
+    Here are two  explicit specializations for the function template
 tt(add()), expecting tt(char *) and tt(char const *) arguments (note that the
 tt(const) still appearing in the first template specialization is unrelated to
 the specialized type (tt(char *)), but refers to the tt(const &) mentioned in
@@ -105,7 +105,7 @@ constant pointer to a tt(char), implying that the tt(char)s may be modified):
     }
         )
     Template explicit specializations are normally included in the file
-containing the other template function's implementations.
+containing the other function template's implementations.
 
     A template explicit specialization can be declared in the usual way. I.e.,
 by replacing its body with a semicolon.
@@ -134,7 +134,7 @@ be declared as follows:
     In addition, tt(template <>) could be omitted. However, this would remove
 the template character from the declaration, as the resulting declaration is
 now nothing but a plain function declaration. This is not an error: template
-functions and non-template functions may overload each other. Ordinary
-functions are not as restrictive as template functions with respect to allowed
+functions and non-function templates may overload each other. Ordinary
+functions are not as restrictive as function templates with respect to allowed
 type conversions. This could be a reason to overload a template with an
 ordinary function every once in a while.
