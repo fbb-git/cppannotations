@@ -1,0 +1,73 @@
+Although normally there should be an tt(operator delete) call for every call
+to tt(operator new), there is a noticeable exception to that rule. It is
+called the emi(placement new) hi(new: placement) operator.
+
+In this variant of tt(operator new) the operator accepts a block of memory and
+initializes is by a constructor of choice. The block of memory should of
+course be large enough to contain the object, but apart from that no other
+requirements exist.
+
+The placement tt(new) operator uses the following syntax (using tt(Type) to
+indicate the data type that is used):
+
+        verb(
+    Type *new(void *memory) Type(arguments);
+        )
+    Here, tt(memory) is block of memory of at least tt(sizeof(Type)) bytes
+large (usually tt(memory) will point to an array of characters), and
+tt(Type(arguments)) is any constructor of the clas tt(Type).
+
+    The placement tt(new) operator comes in handy when the memory to contain
+one or more objects is already available or when its size is known
+beforehand. The memory could have been statically or dynamically allocated;
+when allocated dynamically the appropriate destructor must 
+eventually be called to destroy the objects and the block of memory. 
+
+The question of how to call the destructors of objects initialized using
+    hi(delete: and placement new)
+the placement tt(new) operator is an interesting one:
+
+    itemization(
+    it() When one object was initialized in memory not allocated dynamically,
+tt(delete) can of course not be called for the statically allocated memory. 
+    it() However, when tt(delete) is called for the pointer returned by the
+placement tt(new) operator the object's destructor isn't called either. So,
+the tt(string) destructor is em(not) called in the following situation:
+        verb(
+    char *buffer = new char[sizeof(string)];
+    delete new(buffer) string("hello world");
+        )
+    it() Comparable conclusions can be drawn when multiple objects are
+initialized by the placement tt(new) operator: the object's destructors are
+not called.
+    )
+    It should come as em(no surprise) that the object's destructors aren't
+called (assuming a dynamically allocated em(substrate) for the objects). After
+all, the memory on which the objects are defined is known to the run-time
+system as a block of (e.g.) characters, for which no destructors are defined.
+Even calling tt(delete) on the pointer returned by the placement tt(new)
+operator doesn't help: it's still the same memory address as the original
+block of characters. 
+
+    So, how then em(can) the destructors of objects initialized by the
+placement tt(new) operator be called? The answer may be surprising: it
+must be called hi(destructor: called explicitly) explicitly. Here is an
+example:
+        verbinclude(memory/examples/placement.cc)
+
+    It's clearly dangerous to use the placement tt(new) operator: object
+destruction is not guaranteed, and since destruction must be performed
+manually there's no guarantee that object destruction takes place in the
+reverse order of object construction. 
+
+    If in the above example tt(buffer) would have been allocated dynamically,
+a final statement 
+        verb(
+    delete [] buffer;
+        )
+    should be added to tt(main). It would merely return tt(buffer)'s allocated
+memory to the common pool, without calling any object destructor whatsoever.
+
+
+    
+
