@@ -1,0 +1,62 @@
+When private or protected derivation is used, users of derived class objects
+are denied access to the base class members. Private derivation denies access
+of all base class members to users of the derived class, protected derivation
+does the same, but allows classes that are in turn derived from the derived
+class to access the base class's public and protected members.
+
+In some situations this scheme is too 
+    hi(private derivation: too restrictive)
+    hi(protected derivation: too restrictive)
+        restrictive. Consider a class tt(RandStream) derived privately from a
+class tt(RandBuf) which is itself derived from tt(std::streambuf) and publicly
+from tt(istream):
+        verb(
+    class RandBuf: public std::streambuf
+    {
+        // implements a buffer for random numbers
+    };
+    class RandStream: private std::streambuf, public std::istream
+    {
+        // implements a stream to extract random values from
+    };
+        )
+    Such a class could be used to extract, e.g., random numbers using the
+standard tt(istream) interface. 
+
+    Although the tt(RandStream) class is constructed with the 
+functionality of tt(istream) objects in mind, some of the members of the class
+tt(std::streambuf) may be considered useful by themselves. E.g., the function
+tt(streambuf::in_avail()) returns a lower bound on the number of characters
+that can be read immediately. The standard way to make this function available
+is to define a emi(shadow member) calling the base class's member:
+        verb(
+    class RandStream: private std::streambuf, public std::istream
+    {
+        // implements a stream to extract random values from
+        public:
+            std::streamsize in_avail();
+    };
+    inline std::streamsize RandStream::in_avail()
+    {
+        return std::streambuf::in_avail();
+    }
+        )
+    This looks like a lot of work for just making available a member from the
+protected or private base classes. If the intent is to make available the
+    hi(inheritance: access to base class member)
+tt(in_avail) member emi(access promotion) can be used: by declaring the
+protected or private base class in the public interface em(that) specific base
+class member becomes available to the class's users. Here is the above
+example, now using access promotion:
+        verb(
+    class RandStream: private std::streambuf, public std::istream
+    {
+        // implements a stream to extract random values from
+        public:
+            std::streambuf::in_avail;
+    };
+        )
+    It should be noted that access promotion makes available all overloaded
+versions of the declared base class member. So, if tt(streambuf) would offer
+not only tt(in_avail()) but also, e.g., tt(in_avail(size_t *)) em(both)
+members would become part of the public interface. 
