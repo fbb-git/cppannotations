@@ -16,10 +16,17 @@
         };
 
         public:
+            Strings()
+            {
+                d_vs.push_back("hello");
+                d_vs.push_back("world");
+                d_vs.push_back("");
+                d_vs.push_back("not transformed");
+            }
             void uppercase(std::ostream &out, char const *letters);
 
         private:
-            static void xform(std::string &str, Context &context);
+            static bool xform(std::string &str, Context &context);
             static void foundToUpper(char &ch, std::string const &letters);
     };
 
@@ -27,12 +34,15 @@
     {
         Context context = {out, letters};
 
-        for_each(d_vs.begin(), d_vs.end(),
-            FnWrap1c<std::string &, Context &>(xform, context));
+        find_if(d_vs.begin(), d_vs.end(),
+            FnWrap1c<std::string &, Context &, bool>(xform, context));
     }
 
-    void Strings::xform(std::string &str, Context &context)
+    bool Strings::xform(std::string &str, Context &context)
     {
+        if (str.empty())
+            return true;
+
         context.out << str << " ";
 
         for_each(str.begin(), str.end(), 
@@ -40,6 +50,8 @@
                                         foundToUpper, context.letters));
 
         context.out << str << std::endl;
+
+        return false;
     }
 
     void Strings::foundToUpper(char &ch, std::string const &letters)

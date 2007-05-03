@@ -1,29 +1,67 @@
-    The member function called by function objects is the function
-        ti(operator()()), which may be defined as a function having various
-parameters. In the context of generic algorithms, there are usually one or two
-parameters defining the data to be processed by the algorithm. Unfortunately
-from the point of view of the class template constructor, it is not known
-beforehand whether these data elements are objects, primitive types, or
-pointers. Let's assume that we would like to create a function object changing
-all letters in tt(string) objects into capital letters. In that case our
-tt(operator()()) function may receive a tt(string &) (e.g., when iterating
-over the elements of a tt(vector<string>)), but our tt(operator()()) function
-may also receive a tt(string *) (e.g., when iterating over the elements of a
-tt(vector<string *>)). Other parameter types can be conceived of as well.
+    The emi(function operator) member ti(operator()()) is characteristic of
+function objects. It may be defined as a function having various
+parameters. In the context of generic algorithms, they usually have one or
+two parameters referring to the data to be processed by the algorithm.
 
-    So, how can we define a generic function that can be called from
-tt(operator()()) if we don't know (when defining the template) whether we
-should call using tt(.*) or tt(->*)? The issue whether to call a member
-function using a pointer to member in combination with an object or a pointer
-to object does not have to be solved by the template. Instead it can be
-handled by the class itself, if the class provides an appropriate em(static)
-member.
+From the point of view of the class template constructor, it is important to
+realize that it is not known beforehand whether these parameters are objects,
+primitive types, pointers or references. Knowing this, however, em(is)
+important when the function object instantiated from the template class is to
+be used by generic algorithms, since many generic algorithms require that
+various types are defined by the function object. For example, generic
+algorithms
+    hi(generic algorithm: expected types)
+    hi(function object: required subtypes) like tt(for_each), calling unary
+argument function objects, expect that these function objects define the types
+ti(argument_type) and ti(result_type), referring to the hi(plain type)em(plain
+types) of, respectively, the function operator's argument and return
+value. Analogously, generic algorithms like tt(includes) (cf. section
+ref(ACCU)) expect that function objects define the types
+ti(first_argument_type), ti(second_argument_type) and tt(result_type).
 
-    An additional advantage of using a static function is that the static
-members do not have tt(const) attributes. Consequently, no ambiguity can arise
-when calling a static member function from within a function object's
-tt(operator()()).
+To determine the plain type of a template type parameter a emi(trait class)
+can be used. In section section ref(TRAIT)) the trait class ti(TypeTrait) was
+intrioduced, allowing templates to determine what various characteristics are
+of template type parameters. This tt(TypeTrait) class can profitably be used
+here to determine the proper definnitions of types required by generic
+algorithms.
 
-    Generic algorithms, however, differ in their using of the function
-object's tt(operator()())'s return value. As will be illustrated in the next
-section, the return type of called functions may also be parameterized.
+Let's assume that we would like to create a function object changing all
+letters in tt(string) objects into capital letters. Clearly we will have to
+access the string's individual characters. However, the strings themselves may
+be made available through references (e.g., when iterating over the elements
+of a tt(vector<string>)), but also through pointers (e.g., when iterating over
+the elements of a tt(vector<string *>)).
+
+The template class implementing the function object should em(not) be
+responsible for the actions to be performed. Rather, executing the required
+actions should be deferred to a function, which can be specified when the
+template is instantiated. If that function is a member function it should, for
+various reasons, be a em(static) member function:
+    itemization(
+    it() A non-static function needs an object. But will the object be
+available as a pointer or as a reference toan object? The issue could be
+solved using trait classes, but pointers and refeences to objects 
+require different operators (i.e., tt(.*) and tt(->*), respectively), which
+would add to the complexity of the final template class.
+    it() If a non-static member function is used, will it be a const or
+non-const member function? Knowing this is important, since the function's
+address is stored in the function object, and so its prototype must be known.
+    it() A em(static) member function leaves the option of calling a member
+function open, if the context struct contains a pointer or reference to an
+object for which a non-static member must be called. Since a static member
+function is a member of its class, a em(non-static) member function called for
+the object specified in the context struct can very well be a private member
+function. 
+    )
+
+    Generic algorithms also differ in the way they use the function object's
+return value. This turns out to be no problem: templates allow us to
+parameterize the return types of functions.
+
+
+
+
+
+
+
