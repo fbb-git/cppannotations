@@ -1,0 +1,85 @@
+    Since there are no variables 
+        hi(templates: no variables)
+    in template meta programming, there is no way to implement iteration using
+templates. However, iterations can always be rewritten as recursions, and
+since recursions em(are) supported by templates iterations can always be
+rewritten as (tail) recursions.
+        hi(templates: iteration by recursion)
+
+    The principle to follow here is:
+    itemization(
+    it() Define a specialization implementing the end-condition;
+    it() Define all other steps using recursion.
+    it() Store intermediate values as tt(enum) values.
+    )
+    Since the compiler will select a more specialized implementation over a
+more generic one, by the time it reaches the final recursion it will stop the
+recursion since the specialization will not rely on recursion anymore.
+
+    Most readers will be familiar with the recursive implementation of the
+mathematical `em(faculty)' operator, indicated by the exclamation mark
+(tt(!)). The faculty operator of value tt(n) (so: tt(n!)) returns the
+successive products tt(n * (n - 1) * (n - 2) * ... * 1), representing the
+number of ways tt(n) objects can be permuted. Interestingly, the faculty
+operator is usually defined by a em(recursive) definition:
+        verb(
+    n! = (n == 0) ? 
+            1
+        :
+            n * (n - 1)!
+        )
+    To compute tt(n!) from a template, a template tt(Faculty) can be defined
+using a tt(int n) template non-type parameter, and defining a specialization
+for the case tt(n == 0). The generic implementation uses recursion according
+to the faculty definition. Furthermore, the tt(Faculty) template defines an
+tt(enum) value `tt(value)' to contain the its faculty value. Here is the
+generic definition:
+        verb(
+    template <int n>
+    struct Faculty
+    {
+        enum { value = n * Faculty<n - 1>::value };
+    };
+        )
+    Note how the expression assigning a value to `tt(value)' uses constant,
+compiler determinable values: n is provided, and tt(Faculty<n - 1>()) is
+computed by em(template meta programming), also resulting in a compiler
+determinable value. Also note the interpretation of tt(Faculty<n - 1>::value):
+it is the tt(value) defined by the type tt(Faculty<n - 1>); it's em(not),
+e.g., the value returned by an em(object) of that type. There are no objects
+here, simply values defined by types.
+
+    To end the resrsion a specialization is required, which will be preferred
+by the compiler over the generic implementation when its template arguments
+are present. The specialization can be provided  for the value 0:
+        verb(
+    template <>
+    struct Faculty<0>
+    {
+        enum { value = 1 };
+    };
+        )
+    The tt(Faculty) template can be used to determine, compile time, the
+number of permutations of a fixed number of objects. E.g.,
+        verb(
+    int main()
+    {
+        cout << "The number of permutations of 5 objects = " << 
+                Faculty<5>::value << "\n";
+    }
+        )
+    Once again, tt(Faculty<5>::value) is em(not) evaluated run-time, but
+compile-time. The above statement is therefore run-time equivalent to:
+        verb(
+    int main()
+    {
+        cout << "The number of permutations of 5 objects = " << 
+                120 << "\n";
+    }
+        )
+
+
+    
+    
+
+                
