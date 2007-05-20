@@ -1,0 +1,87 @@
+The the previous section the tt(TypeTrait) trait class was developed. Using
+specialized versions of a nested tt(struct Type) modifiers, pointers,
+references and values could be distinguished. 
+
+Knowing whether a type is a class type or not (e.g., the type represents a
+primitive type) could also be a useful bit of knowledge to a template
+developer. E.g, the template class developer might define a
+specialization for a member knowing the template's type parameter is a class
+type (maybe using some member function that should be available) 
+and another specialization for non-class types.
+
+This section addresses the question how a trait class can distinguish class
+        hi(trait class: class vs non-class distinction)
+    types from non-class types. 
+
+In order to distinguish classes from non-class types a distinguishing feature
+that can be used compile-time must be found. It may take some thinking to find
+such a distinguishing characteristic, but a good candidate eventually is found
+in the i(pointer to member) syntactical construct, which is available only for
+classes. Using the pointer to member construct as the distinguishing
+characteristic, we now look for a construction which uses the pointer to
+member if available, and does something else if the pointer to member
+construction is not available.
+
+    Note again the i(rule of thumb that works so well for template
+meta programming: define a generic situation, and then specialize for
+the situations you're interested in. It's not a trivial task to apply this
+rule of thumb here: how can we distinguish a pointer to a member from `a
+generic situation', not being a pointer to a member? Fortunately, 
+such a distinction is possible: a template function can be provided with a
+parameter which is a pointer to a member function (defining the
+`specialization' case, and another template function can be defined so that it
+accepts any argument. The compiler will then em(select) the latter function in
+all situations but those in which the provided type is actually a class type,
+and thus a type which em(may) support a pointer to a member. 
+
+    Realize that the compiler will not  em(call) the functions: we're talking
+compile-time here, and all the compiler does is to em(select) the appropriate
+function, in order to be able to evaluate a constant expression (defining the
+value of, e.g, the enum value 
+        hi(isClass enum value)
+    tt(isClass)). 
+
+    So, one template function will be something like:
+        verb(
+    template <typename ClassType>
+    static (returntype)   fun(void (ClassType::*)());
+        )
+    The question about what the return type should be will be answered
+shortly. Arbitrarily the function's parameter defines a pointer to a member
+returning tt(void). Note that there's em(no) need for such a function to exist
+in a concrete class-type, since all the compiler will do is em(select) this
+function if a class-type was provided to the trait class in which tt(fun())
+will be nested. In line with this: tt(fun()) is only declared, not
+defined. Furthermore note that tt(fun()) is declared as a em(static) member of
+the trait class, so that there's no need for an actual object when tt(fun())
+is called. 
+
+    So far for the class-types. What about the non-class types? For those
+types a (generic) alternative must be found, one the compiler will select when
+the actual type is not a class type. Again, the language offers a `worst case'
+sulution in the 
+        hi(parameter: ellipsis)
+    emi(ellipsis) parameter list. The ellipsis is a final resort the compiler
+may turn to if everything else fails. It's not only used to define (the in
+        hi(arguments: variable number of)
+bf(C++) deprecated) functions with variable number of arguments, but it's also
+used to define the catch-all exception tt(catch) clause. Therefore, the
+`generic case' can be defined as follows:
+        verb(
+    template <typename NonClassType>
+    static (returntype)   fun(...);
+        )
+    Note that it would be an error to define the generic alternative as a
+function expecting an tt(int). The compiler, when confronted with
+alternatives, will select the simplest, most specified alternative over
+a more complex, generic one. So, when providing tt(fun()) with an argument it
+will select tt(int) when possible, given the nature of the used argument.
+
+    The question now becomes: what argument can be used for both a pointer to
+a member and the generic situation? Actually, there is such a `one size fits
+all' argument: 0. The value 0 can be used as argument value to initialize not
+only primitive types, but also to initialize pointers and pointers to members.
+Therefore, tt(fun) will be called as tt(fun<Type>(0)), with tt(Type) being the
+template type parameter of the trait class. 
+
+
