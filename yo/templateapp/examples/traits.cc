@@ -57,7 +57,7 @@ class TypeTrait
 
     public:
         enum { isConst     = Type<T>::isConst };
-        enum { isClass     = sizeof(fun<T>(0)) == sizeof(small) ? 0 : 1};
+        enum { isClass     = sizeof(fun<T>(0)) == sizeof(Big) };
 //        enum { isClass     = fun<T>(0)::value;
 };
 
