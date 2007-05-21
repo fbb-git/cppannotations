@@ -49,12 +49,12 @@ value of, e.g, the enum value
     The question about what the return type should be will be answered
 shortly. Arbitrarily the function's parameter defines a pointer to a member
 returning tt(void). Note that there's em(no) need for such a function to exist
-in a concrete class-type, since all the compiler will do is em(select) this
-function if a class-type was provided to the trait class in which tt(fun())
-will be nested. In line with this: tt(fun()) is only declared, not
-defined. Furthermore note that tt(fun()) is declared as a em(static) member of
-the trait class, so that there's no need for an actual object when tt(fun())
-is called. 
+for the concrete class-type that's specified with the traits class, since all
+the compiler will do is em(select) this function if a class-type was provided
+to the trait class in which tt(fun()) will be nested. In line with this:
+tt(fun()) is only declared, not defined. Furthermore note that tt(fun()) is
+declared as a em(static) member of the trait class, so that there's no need
+for an actual object when tt(fun()) is called.
 
     So far for the class-types. What about the non-class types? For those
 types a (generic) alternative must be found, one the compiler will select when
@@ -73,7 +73,7 @@ used to define the catch-all exception tt(catch) clause. Therefore, the
         )
     Note that it would be an error to define the generic alternative as a
 function expecting an tt(int). The compiler, when confronted with
-alternatives, will select the simplest, most specified alternative over
+alternatives, will favor the simplest, most specified alternative over
 a more complex, generic one. So, when providing tt(fun()) with an argument it
 will select tt(int) when possible, given the nature of the used argument.
 
@@ -82,6 +82,58 @@ a member and the generic situation? Actually, there is such a `one size fits
 all' argument: 0. The value 0 can be used as argument value to initialize not
 only primitive types, but also to initialize pointers and pointers to members.
 Therefore, tt(fun) will be called as tt(fun<Type>(0)), with tt(Type) being the
-template type parameter of the trait class. 
+template type parameter of the trait class. Here, tt(Type) must be specified
+since the compiler will not be able to determine tt(fun)'s template type
+parameter when tt(fun(...)) is selected. 
 
+    Now for the return type: the return type cannot be a simple value (like
+tt(true) or tt(false)). When using a simple value the tt(isClass) enum value
+cannot be defined, since 
+        vern(
+    enum { isClass = fun<Type>(0) } ;
+        )
+    needs to be evaluated to obtain tt(fun)'s return value, which is clearly
+        hi(enum values: compile-time)
+not possible as enum values em(must) be determined compile-time.
+
+    To allow a compile-time definition of tt(isClass)'s value the solution
+must be sought in an expression that discriminates between tt(fun<Type>(...))
+and tt(fun<Type>(void (Type::*)())). In situations like these ti(sizeof) is
+our tool of choice. The tt(sizeof) operator is evaluated compile-time, and so
+by defining return types that differ in their sizes it is possible to
+discriminate compile-time among the two tt(fun()) alternatives. 
+
+    The tt(char) type is by definition a type having size 1. By defining
+another type containing two consecutive tt(char) values a bigger 
+type is obtained. Now tt(char [2]) is not a type, but tt(char[2]) can be
+defined as a data member of a tt(struct) which will thus have a size exceeding
+1. E.g., 
+        verb(
+    struct Char2
+    {
+        char data[2];
+    };
+        )
+    tt(Char2) can be defined as a nested type within our traits class, and the
+two tt(fun) declarations become:
+        verb(
+    template <typename ClassType>
+    static Char2 fun(void (ClassType::*)());
+
+    template <typename NonClassType>
+    static char fun(...);
+        )
+    This, in turn enables us to specify an expression that can be evaluated
+compile time, allowing the compiler to determine tt(isClass)'s value:
+        verb(
+    enum { isClass = sizeof(fun<Type>(0)) == sizoof(Char2) };
+        )
+
+    It's interesting to realize that no tt(fun()) template function em(ever)
+makes it to the initialization stage, but that the compiler nonetheless is
+able to infer what tt(fun)'s return type will be, given a concrete template
+type argument. This inference is then used by the compiler to determine the
+truth of an expression, in turn enabling the compiler to compute the required
+compile-time constant value tt(isClass), allowing us to determine whether a
+certain type is or is not a class type. Marvelous!
 
