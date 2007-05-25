@@ -5,14 +5,17 @@ files, none of them serious, but worth knowing.
     itemization(
     it() Like class interfaces, template definitions are usually included in
 header files. Every time a header file containing a template definition is
-read by the compiler, the compiler must process the definition in full, even
+read by the compiler, the compiler must process the full definition, even
 though it might not actually need the template. This will relatively slow-down
 the compilation. For example, compiling a template header file like
 tt(algorithm) on my old laptop takes about four times the amount of time it
 takes to compile a plain header file like tt(cmath). The header file
 tt(iostream) is even harder to process, requiring almost 15 times the amount
 of time it takes to process tt(cmath). Clearly, processing templates is
-serious business for the compiler.
+serious business for the compiler. On the other hand: don't overweigh this
+drawback: compilers are getting better and better in their template processing
+capacity and computers keep on getting faster and faster. What was a nuisance
+a few years ago is hardly noticeable today.
     it() Every time a function template is instantiated, its code appears in
 the resulting object module. However, if multiple instantiations of a
 template, using the same actual types for its template parameter exist in
@@ -26,19 +29,28 @@ which will slow down the linking process.
 references or pointers to the templates are required. Requiring the compiler
 to process the full template definitions in those cases will unnecessarily
 slow down the compilation process.
+    it() In the context of emi(template meta programming) (see chapter
+ref(TEMPAPP)) it is sometimes not even required to provide a template
+implementation. Instead, only em(specializations) (cf. section
+ref(SPECIALIZING)) are created, all of which are then based on the mere
+em(declaration).
     )
-    Instead of including template definitions again and again in various
-source files, templates may also be declared. When templates are declared, the
-compiler will not have to process the template's definitions again and again,
-and no instantiations will be created on the basis of template declarations
-alone. Any actually required instantiation must, as holding true for
-declarations in general, be available elsewhere. Unlike the situation we
-encounter with ordinary functions, which are usually stored in libraries, it
-is currently not possible to store templates in libraries (although
-precompiled header files may be implemented in various
-compilers). Consequently, using template declarations puts a burden on the
-shoulders of the software engineer, who has to make sure that the required
-instantiations exist. Below a simple way to accomplish that is introduced.
+    So, depending on the context, template definitions may not be
+required. Usually template definitions do exist, but when appropriate the
+software enginieer may opt to em(declare) a template, rather than to include
+its definition time and again in various source files. 
+
+    When templates are declared, the compiler will not have to process the
+template's definitions again and again; and no instantiations will be created
+on the basis of template declarations alone. Any actually required
+instantiation must then be available elsewhere (of course, this holds true for
+declarations in general). Unlike the situation we encounter with ordinary
+functions, which are usually stored in libraries, it is currently not possible
+to store templates in libraries (although the compiler may construct
+emi(precompiled header) em(files)). Consequently, using template declarations
+puts a burden on the shoulders of the software engineer, who has to make sure
+that the required instantiations exist. Below a simple way to accomplish that
+is introduced.
 
     A function template declaration is simply created: the function's body is
 replaced by a semicolon. Note that this is exactly identical to the way
