@@ -11,7 +11,7 @@ instantiate the simple function template
     But it can't do so, since tt(operator+()) is not defined for pointers. In
 situations like these it is clear that a match between the template's type
 parameter(s) and the actually used type(s) is possible, but the standard
-implementation is senseless or produces errors.
+implementation is pointless or produces errors.
 
     To solve this problem a emi(template explicit specialization) may be
 defined.  A template explicit specialization defines the function template for
@@ -48,7 +48,7 @@ function expecting any two arguments of equal types.
 
     So do we have to define yet another overloaded version, expecting
 non-const pointers? It is possible, but at some point it should become clear
-that we're overshooting our goal. Like ordinary functions and classes,
+that our approach doesn't scale. Like ordinary functions and classes,
 templates should have well-described purposes. Trying to add overloaded
 template definitions to overloaded template definitions quickly turns the
 template into a kludge. Don't follow this approach. A better approach is
@@ -138,3 +138,12 @@ functions and non-function templates may overload each other. Ordinary
 functions are not as restrictive as function templates with respect to allowed
 type conversions. This could be a reason to overload a template with an
 ordinary function every once in a while.
+
+    A function template explicit specialization is not just another overloaded
+        hi(template function: specialization vs. overloading) version of the
+the function template. Whereas an overloadeded version may define a completely
+different set of template parameters, a specialiation must use the same set of
+template parameters as its non-specialized variant, but the compiler will use
+the specialization in situations where the actual template arguments match the
+types defined by the specialization. Subject to this restriction, many
+specializations can be defined.

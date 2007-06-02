@@ -45,9 +45,9 @@ vector:
 
     Overloading templates does not have to restrict itself to the function's
 parameter list. The template's type parameter list itself may also be
-    hi(templates: overloading type parameter list)
-overloaded. The last definition of the tt(add()) template allows us to specify
-a tt(std::vector) as its first argument, but no tt(deque) or
+        hi(templates: overloading type parameter list)
+    overloaded. The last definition of the tt(add()) template allows us to
+specify a tt(std::vector) as its first argument, but no tt(deque) or
 tt(map). Overloaded versions for those types of containers could of course be
 constructed, but where's the end to that? Instead, let's look for common
 characteristics of these containers, and if found, define an overloaded
@@ -66,6 +66,30 @@ list. Here is the resulting overloaded version of the tt(add()) template:
         return std::accumulate(cont.begin(), cont.end(), init);
     }
         )
+    One may wonder whether the tt(init) parameter could not be left out of the
+parameter list as tt(init) will often have a default initialization value. The
+answer is a somewhat complex `yes', It em(is) possible to define the tt(add())
+function as follows:
+        verb(
+    template <typename Type, typename Container>
+    Type add(Container const &cont)
+    {
+        Type init = Type();
+        return std::accumulate(cont.begin(), cont.end(), init);
+    }
+        )
+    But note that the template's type parameters were reordered, which is
+necessary because the compiler won't be able to determine tt(Type) in a call
+like:
+        verb(
+    int x = add(vectorOfInts);
+        )
+    However, it is also possible to use a third kind of template parameter, a
+em(template template parameter), which em(does) allow the compiler to
+determine tt(Type) directly from the actual container argument used when
+calling tt(add()). Template template parameters are discussed in section
+ref(TEMPTEMPPAR).
+
     With all these overloaded versions in place, we may now start the compiler
 to compile the following function:
         verb(
@@ -92,7 +116,7 @@ template's type parameter must be tt(int). It instantiates
     add<int>(std::vector<int> const &)
         )
     it() With statement three, the compiler again encounters an argument list
-holding two arguments. However, the types of the arguments are different, so
+having two arguments. However, the types of the arguments are different, so
 it cannot use the tt(add()) template's first definition. But it em(can) use
 the last definition, expecting entities having different types. As a
 tt(std::vector) supports tt(begin()) and tt(end()), the compiler is now able
