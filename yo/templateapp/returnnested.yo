@@ -1,0 +1,72 @@
+    Consider the following example in which a nested class, that is not
+depending on a template parameter, is defined within a template
+class. Furthermore, the class template member tt(nested()) returns an object
+of the nested class. Note that a (deprecated) in-class member implementation
+is used. The reason for this will become clear shortly.
+        verb(
+    template <typename T>
+    class Outer
+    {
+        public:
+            class Nested
+            {
+            };
+
+        Nested nested() const
+        {
+            return Nested();
+        }
+    };
+        )
+    The above example compiles flawlessly: within the class tt(Outer) there is
+no ambiguity with respect to the meaning of tt(nested())'s return
+type. 
+
+    However, since it is advised to implement inline and template members
+below their class interface (see section ref(DEFINLINE)), we now remove the
+implementation from the interface itself, and put it below the
+interface. Suddenly the compiler refuses to compile our member tt(nested()):
+        verb(
+    template <typename T>
+    class Outer
+    {
+        public:
+            class Nested
+            {
+            };
+
+        Nested nested() const;
+    };
+
+    template <typename T>
+    Outer<T>::Nested Outer<T>::nested() const
+    {
+        return Nested();
+    }
+        )
+    The above implementation of tt(nested()) produces an error message like
+
+    em(error:)
+    emi(expected constructor, destructor, or type conversion) em(before
+'Outer').
+
+    In cases like these the return type (tt(Outer<T>::Nested))
+refers to a em(subtype) of tt(Outer<T>) rather than to a member of
+tt(Outer<T>). 
+
+    As a general rule the following holds true: the keyword tt(typename) must
+be used whenever a type is referred to that is a em(subtype) of a type that is
+itself depending on a template type parameter.
+        hi(template: subtypes inside templates)
+        hi(class template: subtype vs. static members)
+    Writing tt(typename) in front of tt(Outer<T>::Nested) removes the
+compilation error and therefore the correct implementation of the function
+tt(nested()) becomes:
+        verb(
+    template <typename T>
+    typename Outer<T>::Nested Outer<T>::nested() const
+    {
+        return Nested();
+    }
+        )
+

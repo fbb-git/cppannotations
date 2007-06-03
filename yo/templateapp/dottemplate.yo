@@ -1,0 +1,35 @@
+In general, the compiler is able to determine the true nature of a name. As
+discussed in the previous sections, this is not always the case and the
+software engineer sometimes has to advise the compiler. The tt(typename)
+keyword can often used to that purpose. 
+
+However, tt(typename) cannot always come to the rescue. While parsing a
+source, the compiler receives a series of em(tokens), representing meaningful
+units of text encountered in the program's source. A token represents, e.g.,
+an identifier or a number. Other tokens represent operators, like tt(=, +) or
+tt(<). It is precisely the last token that may cause problems, as it is used
+in multiple ways, which cannot always be determined from the context in which
+the compiler encounters tt(<). Sometimes, however, the compiler em(will) know
+that tt(<) does not represent the em(less than) operator, as in the situation
+where a template parameter list follows the keyword tt(template), e.g.,
+        verb(
+    template <typename T, int N>
+        )
+    Clearly, in this case tt(<) does not represent a `less than' operator. 
+
+    Now assume the following class setup has been defined:
+        verb(
+    template <typename Type>
+    class Outer
+    {
+        public:
+            template <typename InType>
+            class Inner
+            {
+                public:
+                    virtual void fun();
+            };
+    }
+        )
+
+
