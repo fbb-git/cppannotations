@@ -1,11 +1,59 @@
 This section serves two purposes. On the one hand it illustrates capabilities
 of the various meta-programming capabilities of templates, which can be used
 as a source for inspiration when developing your own templates. On the other
-hand, it culminates in a concrete example, showing the power template
+hand, it culminates in a concrete example, showing some of the power template
 meta-programming has. 
 
 This section itself was inspired by Andrei Alexandrescu's (2001) book
         hi(Alexandrescu, A.)
     bf(Modern C++ design), and much of this section's structure borrows from
-Andrei's coverage of hi(typelist) emi(typelists). 
+Andrei's coverage of hi(typelist) em(typelists). 
+
+    A typelist is a very simple tt(struct): like a tt(std::pair) it consists
+of two elements, although in this case the typelist does not contain data
+members, but type definitions. It is defined as follows:
+        verb(
+    template <typename First,  typename Second>
+    struct TypeList
+    {
+        typedef First Head;
+        typedef Second Tail;
+    };
+        )
+    The typelist allows us to store any number of types, using a recursive
+definition. E.g., the three types tt(char, short, int) may be stored as
+follows: 
+        verb(
+    TypeList<char, Typelist<short, int> >
+        )
+    Although this is a possible representation, usually ti(NullType)
+(cf. section ref(NULLTYPE)) is used as the final type, acting comparably to a
+0-pointer. Using tt(NullType) the above three types are represented as
+follows:
+        verb(
+    TypeList<char,
+        TypeList<short,
+            TypeList<int, NullType> > > 
+        )
+    This way to represent lists of types may be accepted by the compiler, but
+usually not as easily by programmers, who frequently have a hard time putting
+in the right number of parentheses. Alexandrescu suggest to ease the burden by
+defining a series of emi(macros), even though macros are generally deprecated
+in bf(C++). The ti(TYPELIST) macros suggested by Alexandrescu allow us to
+        hi(macro: TYPELIST)
+define typelists for varying numbers of types, and they are easily expanded if
+accommodating larger numbers of types is necessary. Here are the definitions
+of the first four tt(TYPELIST) macros:
+        verb(
+    #define TYPELIST_1(T1)              TypeList<T1, NullType >
+    #define TYPELIST_2(T1, T2)          TypeList<T1, TYPELIST_1(T2) >
+    #define TYPELIST_3(T1, T2, T3)      TypeList<T1, TYPELIST_2(T2, T3) >
+    #define TYPELIST_4(T1, T2, T3, T4)  TypeList<T1, TYPELIST_3(T2, T3, T4) >
+        )
+    Note the recursive nature of these macro definitions: recursion is how
+template meta programs perform iteration and in the upcoming sections
+implementations heavily depend on recursion. With all solutions to the
+problems covered by the coming sections a verbal discussion is provided
+explaining the philosophies that underlie the recursive implementations. 
+
 
