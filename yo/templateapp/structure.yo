@@ -1,0 +1,77 @@
+Policy classes usually define behavior, not structure. I.e., policy classes
+        hi(policy class: to define structure)
+are used to parameterize some aspect of the behavior of classes that are
+derived from them. However, different policies may very well imply the use of
+different data members. Thus a policy class may be used to define both
+behavior and structure.
+
+By providing a well-defined interface a class derived from a policy class may
+define member specializations using the different structures of policy classes
+to their advantage. For example, a plain pointer-based policy class could
+offer its functionality by resorting to bf(C)-style i(pointer juggling),
+whereas a tt(vector)-based policy class could use the vector's members
+directly. 
+
+In this situation a generic class template tt(Size) could be designed
+expecting a container-like policy, using features commonly found in
+containers, defining the data (and hence the structore) of the container
+specified in the policy. E.g.:
+        verb(
+    template <typename Data, template <typename> class Container>
+    struct Size: public Container<Data>
+    {
+        size_t size()
+        {                           // relies on the container's `size()'
+                                    // note: can't use `this->size()'
+            return Container<Data>::size();
+        }
+    };
+        )
+    Next, a specialization can be defined to accomodate the specifics of a
+much simpler storage class using, e.g., plain pointers (the implementation
+capitalizes on tt(first) and tt(second), data members of tt(std::pair).
+Cf. the end of this section):
+        verb(
+    template <typename Data>
+    struct Size<Data, Plain>: public Plain<Data>
+    {
+        size_t size()
+        {                           // relies on pointer data members
+            return this->second - this->first;
+        }
+    };
+        )
+    Depending on the intentions of the template's author other members could
+be implemented as well. 
+
+    To use the above  templates for real, a generic wrapper class can now be
+constructed: depending on the actual storage type that is used (e.g., a
+tt(std::vector) or some plain storage class) it will use the matching tt(Size)
+template to define its structure:
+        verb(
+    template <typename Data, template <typename> class Store>
+    class Wrapper: public Size<Data, Store>
+    {};
+        )
+
+    The above classes could now be used as follows (em(en passant) showing an
+extremely basic tt(Plain) class:
+        verb(
+    #include <iostream>
+    #include <vector>
+
+    template <typename Data>
+    struct Plain: public std::pair<Data *, Data *>
+    {};
+    
+    int main()
+    {
+        Wrapper<int, std::vector> wiv;
+        std::cout << wiv.size() << "\n";
+    
+        Wrapper<int, Plain> wis;
+        std::cout << wis.size() << "\n";
+    }
+        )
+    The tt(wiv) object now defines vector-data, the tt(wis) object merely
+defines a tt(std::pair) object's data members.
