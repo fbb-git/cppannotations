@@ -1,0 +1,76 @@
+To determine whether a type (called the em(searchtype) below) is present in a
+given typelist, an algorithm is used that will either define `index' -1 (if
+the searchtype is not an element of the typelist ) or it will define `index'
+as the index of the first occurrence of the searchtype in the typelist. The
+following algorithm is used:
+        hi(typelist: searching)
+    itemization(
+    it() If the typelist is empty, define `index' as -1;
+    it() If the typelist's head element equals the  searchtype, define `index' 
+        as 0;
+    it() Otherwise define `index' as follows:
+        itemization(
+        it() If searching the searchtype in the typelist's tail results in a 
+            index  -1, then searchtype is not an element of the typelist, and
+            the (current) index will be set to -1 as well;
+        it() Otherwise, searchtype was found in the typelist's tail, and the
+            current index will be set to 1 + the index obtained for searchtype
+            on the typelist's tail.
+        )
+    )
+
+The implementation again sets out with the declaration of a struct:
+tt(ListSearch) expects two template type parameters: searchtype's type and a
+typelist:
+        verb(
+    template <typename SearchType, typename TypeList> 
+    struct ListSearch;
+        )
+
+Next, specializations are defined implementing the above alternatives:
+    itemization(
+    it() If the typelist is empty, define `index' as -1:
+        verb(
+    template <typename SearchType>
+    struct ListSearch<SearchType, NullType>
+    {
+        enum { index = -1 };
+    };
+        )
+    it() If the typelist's head element equals the  searchtype, define `index'
+            hi(template: testing type equality)
+        as 0. Note how the test is performed by specifying tt(SearchType)
+        twice: 
+        verb(
+    template <typename SearchType, typename Tail>
+    struct ListSearch<SearchType, TypeList<SearchType, Tail> >
+    {
+        enum { index = 0 };
+    };
+        )
+
+    it() Otherwise define `index' as either -1 (searchtype wasn't found in the
+        typelist's tail) or as 1 + the index obtained from searching the 
+        typelist's tail. Note that the implementation uses a 
+            hi(template meta program: private enum value)
+        emi(private enum value) tt(tmp) to store the index value obtained 
+        from searching the typelist's tail for searchtype:
+        verb(
+    template <typename SearchType, typename Head, typename Tail>
+    class ListSearch<SearchType, TypeList<Head, Tail> >
+    {
+        enum { tmp = ListSearch<SearchType, Tail>::index } ;
+        public:
+            enum { index = tmp == -1 ? -1 : 1 + tmp };
+    };
+        )
+    )
+
+    Assuming all required headers have been included, the following example
+shows how tt(ListSearch) can be used:
+        verb(
+    int main()
+    {
+        std::cout << ListSearch<char, TYPELIST_2(int, char)>::index << "\n";
+    }
+        )
