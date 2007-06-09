@@ -11,10 +11,10 @@ of the constructor's parameter to the class's tt(d_data) member, but we might
 be interested in copying the complete tt(char **) structure. To realize this,
 class template specializations may be used.
 
-    Class template specializations are used in cases where template member
+    Class template specializations are used in cases where member
         hi(class template: specializations)
-    functions cannot (or should not) be used for a particular actual template
-parameter type. In those cases specialized template members can be
+    function templates cannot (or should not) be used for a particular actual
+template parameter type. In those cases specialized template members can be
 constructed, fitting the special needs of the actual type.
 
     Class template member specializations are specializations of existing
@@ -99,3 +99,22 @@ containing the generic class template. To reduce the size of the example
 members that are only declared may be assumed to have identical
 implementations as used in the generic template.
         verbinclude(templateclasses/examples/autoptr2.h)
+
+    Note that specializations not automatically have empty template
+        hi(template specialization: non-empty template parameter list)
+    parameter lists. Consider the following example of an (grossly incomplete)
+specialization of tt(FBB::auto_ptr):
+        verbinclude(templateclasses/examples/autoptr4.h)
+
+    In this example a specialization is created for the type tt(std::vector>),
+instantiated with any data type tt(T). Since tt(T) is not specified, it must
+be mentioned in the template paramter list as a template type parameter. 
+E.g., if an tt(FBB::auto_ptr<std::vector<int> *>) is constructed, the compiler
+deducts that tt(T) is an tt(int) and will use the tt(vector<T> *)
+specialization, in which tt(T) could be used as a type specification. The
+following basic example shows that the compiler will indeed select the
+tt(vector<T>*) specialization:
+        verbinclude(templateclasses/examples/autoptr4.cc)
+
+
+
