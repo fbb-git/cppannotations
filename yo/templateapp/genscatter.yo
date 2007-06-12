@@ -1,0 +1,78 @@
+The interesting part of the exercise is of course the class template
+tt(GenScatter). In its intended form (which actually turns out to be a
+specialization) tt(GenScatter) takes a typelist, a policy class and a index
+value that is used to ensure uniqueness of the tt(Wrap) types. 
+
+With these ingredients, tt(GenScatter) creates a (fairly complex) class, that
+itself is normally derived from several tt(GenScatter) base classes. Each
+tt(GenScatter) class is eventually derived from a base class which is a
+tt(Wrap) class around the policy class instantiated for each of the types in
+the provided typelist.
+
+This complex arrangement itself causes yet another problem: it would be nice
+if the top-level derived class could be initialized by base class
+        hi(base class: initializing indirect base class)
+initializers. However, with normal class derivation indirect base classes
+cannot be initialized using base class initializers. This is a severe problem:
+if indirect base classes cannot be initialized by a tt(GenScat) class or by a
+class derived from tt(GenScat), the types in the provided typelist cannot be
+        hi(reference: initialization)
+refence types, as references em(must) be initialized at i(construction time).
+
+However, an indirect base class em(can) be initialized by a top level derived
+class 
+        hi(base class: virtual)
+    if it is a  em(virtual) base class (cf. section
+ref(VIRTUALBASE)). The consequence of a virtual base class is that any
+duplicates of a virtual base class, following different paths in a class
+hierarchy will be merged into one class. 
+
+In the tt(GenScat) hierarchy the tt(Wrap) policy wrappers are the final
+(usable) base classes of the hierarchy. By defining these tt(Wrap) base
+classes as em(virtual) base classes they em(can) be initialized by tt(GenScat)
+(or by a class that itself is derived from tt(GenScat)), while em(merging) of
+the tt(Wrap) base classes is prevented due to the fact that all tt(Wrap) base
+classes are unique.
+
+    It's time for some code. The tt(GenScatter) class performs the
+following tasks:
+    itemization(
+    it() It creates a class hierarchy, having unique tt(Wrap) policy
+classes at its final nodes;   
+    it() It creates a typelist containing all tt(Wrap) base class types in the
+order in which they were constructed, to allow clients to obtain the
+tt(Wrap) policy wrapper matching a specific type in the provided typelist.
+    )
+
+    The core definition of tt(GenScatter) expects a typelist, a policy and an
+index: 
+    verbinsert(GENCORE)(templateapp/examples/genscatter.h)
+    itemization(
+    it() Since the typelist's head is a plain type, it can immediately be used
+to define a tt(Policy) class, which itself is wrapped in a tt(Wrap) policy
+wrapper, using the unique index value that was passed to tt(GenScatter).
+    it() The tt(Wrap) policy wrapper is then defined as a em(virtual) base
+class. 
+    it() A second hierarchical line starts at the typelist's tail, at the same
+time incrementing the index, thus ensuring that the next tt(Wrap) class will
+receive the next index value. 
+    it() At the end of the class definition the tt(WrapList) type is defined
+as the typelist consisting of the current tt(Wrap) wrapper as its head, and
+the base tt(GenScatter) class's tt(WrapList) as its tail.
+    )
+
+    tt(GenScatter)'s  main template definition expects a simple type as its
+first template parameter. Since this is a plain type, the class can
+immediately define a virtual tt(Wrap) policy wrapper as its base class, and it
+can immediately define the tt(WrapList) type as a typelist containing the
+class's base class:
+    verbinsert(GENMAIN)(templateapp/examples/genscatter.h)
+
+    Finally, a specialization to handle the ending tt(NullType) is required:
+it merely defines an empty tt(WrapList):
+    verbinsert(GENNULL)(templateapp/examples/genscatter.h)
+
+Both the tt(Wrap) policy wrapper and the tt(GenScatter) class can normally be
+defined in the anonymous namespace, as they are only used at file-scope, by
+themselves, by tt(GenScatter) and by the occasional additional support
+functions and classes.

@@ -3,80 +3,78 @@
 
 namespace 
 {
-template <int idx, typename Base>
-struct Unit: public Base
-{
-    Unit(Base const &base)
-    :
-        Base(base)
-    {}
-    Unit()
-    {}
-};
+//WRAPPER
+    template <typename Base, int idx>
+    struct Wrap: public Base
+    {
+        Wrap(Base const &base)
+        :
+            Base(base)
+        {}
+        Wrap()
+        {}
+    };
+//=
 
-template <typename Atomic, template <typename> class UnitTTP, int idx>
-class GenScatter
-: 
-    virtual public Unit<idx, UnitTTP<Atomic> >
-{
-    public:
-        typedef Unit<idx, UnitTTP<Atomic> >   LeftBase;
+//GENMAIN
+    template <typename Type, template <typename> class Policy, int idx>
+    class GenScatter
+    : 
+        virtual public Wrap<Policy<Type>, idx>
+    {
+        typedef Wrap<Policy<Type>, idx> Base;
+    
+        public:
+            typedef TYPELIST_1(Base)    WrapList;
+    };
+//=
 
-        typedef LeftBase        Base;       // new
+//GENCORE
+    template <
+        typename Head, typename Tail, template <typename> class Policy, 
+        int idx
+    >
+    class GenScatter<TypeList<Head, Tail>, Policy, idx>
+    : 
+        virtual public Wrap<Policy<Head>, idx>,
+        public GenScatter<Tail, Policy, idx + 1>
+    {
+        typedef typename GenScatter<Tail, Policy, idx + 1>::WrapList  
+                BaseWrapList;
+        public:
+            typedef TypeList<Wrap<Policy<Head>, idx>, BaseWrapList> WrapList;
+    };
+//=
 
-        typedef TYPELIST_1(Atomic)  TList;
-
-        typedef TYPELIST_1(LeftBase)    BaseList;
-
-};
-
-
-
-template <
-          typename Head, typename Tail, template <typename> class UnitTTP,
-          int idx>
-class GenScatter<TypeList<Head, Tail>, UnitTTP, idx>
-: 
-    public GenScatter<Head, UnitTTP, idx>,
-    public GenScatter<Tail, UnitTTP, idx + 1>
-{
-    public:
-        typedef GenScatter<Head, UnitTTP, idx > LeftBase;
-        typedef GenScatter<Tail, UnitTTP, idx + 1> RightBase;
-        typedef TypeList<Head, Tail>    TList;
-
-        typedef Unit<idx, UnitTTP<Head> >  Base;   // new
-
-        typedef TypeList<Base, typename RightBase::BaseList> BaseList;
-};
-
-
-template <template <typename> class UnitTTP, int idx>
-class GenScatter<NullType, UnitTTP, idx>
-{
-    public:
-        typedef NullType    TList;
-        typedef NullType BaseList;
-};
+//GENNULL
+    template <template <typename> class Policy, int idx>
+    class GenScatter<NullType, Policy, idx>
+    {
+        public:
+            typedef NullType WrapList;
+    };
+//=
 
 } // namespace
 
-template <typename Atomic, template <typename> class UnitTTP>
-class GenScat: public GenScatter<Atomic, UnitTTP, 0>
-{};
+//GENSCAT
+    template <typename Type, template <typename> class Policy>
+    class GenScat: public GenScatter<Type, Policy, 0>
+    {};
+//=
 
+
+//BASECLASS
+template <int idx, typename Derived>
+struct BaseClass
+{
+    typedef typename AtIndex<typename Derived::WrapList, idx>::Result Type;
+};
+//=
 
 template <int idx, typename GenScatterType>
-    typename AtIndex<typename GenScatterType::BaseList, idx>::Result
- &base(GenScatterType &obj)
+typename BaseClass<idx, GenScatterType>::Type &base(GenScatterType &obj)
 {
     return obj;
 }
-
-template <int indx, typename Derived>
-struct BaseClass
-{
-    typedef typename AtIndex<typename Derived::BaseList, indx>::Result Init;
-};
-
 

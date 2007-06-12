@@ -1,0 +1,53 @@
+In this section the template class ti(GenScat) will be developed. The
+purpose of tt(GenScat) is to em(create) a new class using on the one hand a
+basic building block of the class that's finally constructed and on the other
+hand a series of types that will be fed to the building block.
+
+The building block itself is provided as a 
+        i(template template parameter), 
+    and the final class will inherit from all building blocks instantiated for
+each of the types specified in a provided typelist. However, there is a flaw
+in this plan. 
+
+    If the typelist contains two types, say tt(int) and tt(double) and the
+building block class is tt(std::vector), then the final tt(GenScat) class will
+inherit from tt(vector<int>) and tt(vector<double>). There's nothing wrong
+with that. But what if the typelist contains two tt(int) type specifications?
+In that case the tt(GenScat) class will inherit from em(two) tt(vector<int>)
+classes, and, e.g., tt(vector<int>::size()) will cause an ambiguity which is
+hard to solve. Alexandrescu (2001) 
+    hi(Alexandrescu, A.) in this regard writes (p.67):
+    quote(
+    em(There is one major source of annoyance...: you cannot use it when you
+    have duplicate types in your typelist.nl() .... There is no easy way to
+    solve the ambiguity, [as the eventually derived class/FBB] ends up
+    inheriting [the same base class/FBB] twice.
+    )
+    It is true that the same base class is inherited multiple times when the
+typelist contains duplicate types, but there is a way around this problem. If
+instead of inheriting from the plain base classes these base classes would
+themselves be wrapped in unique classes, then these unique classes can be used
+to access the base classes by implication: since they are mere wrappers they
+inherit the functionality of the `true' base classes. 
+
+    Thus, the problem is shifted from type duplication to finding unique
+        hi(template class: used as unique wrapper)
+wrappers. Of course, em(that) problem has been solved in principle in section
+ref(INTTYPE), where wrappers around plain tt(int) values were
+introduced. A comparable wrapper can be designed in the context of class
+derivation. E.g.,
+    verbinsert(WRAPPER)(templateapp/genscatter.h)
+    Using tt(Wrap) two tt(vector<int>) classes can be distinguished easily:
+tt(Wrap<1, vector<int> >) could be used to refer to one of the vectors,
+tt(Wrap<2, vector<int> >) could refer to the other vector. By ensuring that
+the index values never collide all wrapper types will be unique. 
+
+    Uniqueness of the tt(Wrap) values is realized by the tt(GenScat) class: it
+is itself a wrapper around the class tt(GenScatter), that will do all the
+work. tt(GenScat) merely em(seeds) tt(GenScatter) with an initial value:
+    verbinsert(GENSCAT)(templateapp/genscatter.h)
+    
+    
+
+
+    

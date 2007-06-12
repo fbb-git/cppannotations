@@ -1,0 +1,78 @@
+#include "typelist.h"
+#include "at.h"
+
+namespace 
+{
+//WRAPPER
+    template <int idx, typename Base>
+    struct Wrap: public Base
+    {
+        Wrap(Base const &base)
+        :
+            Base(base)
+        {}
+        Wrap()
+        {}
+    };
+//=
+
+template <typename Type, template <typename> class Policy, int idx>
+class GenScatter
+: 
+    virtual public Wrap<idx, Policy<Type> >
+{
+    typedef Wrap<idx, Policy<Type> > Base;
+
+    public:
+        typedef TYPELIST_1(Base)    BaseList;
+};
+
+
+//GENCORE
+template <
+    typename Head, typename Tail, template <typename> class Policy, int idx
+>
+class GenScatter<TypeList<Head, Tail>, Policy, idx>
+: 
+    public GenScatter<Head, Policy, idx>,
+    public GenScatter<Tail, Policy, idx + 1>
+{
+    typedef Wrap<idx, Policy<Head> >  Base;
+    typedef typename GenScatter<Tail, Policy, idx + 1>::BaseList  RightList;
+
+    public:
+        typedef TypeList<Base, RightList> BaseList;
+};
+//=
+
+
+template <template <typename> class Policy, int idx>
+class GenScatter<NullType, Policy, idx>
+{
+    public:
+        typedef NullType BaseList;
+};
+
+} // namespace
+
+//GENSCAT
+    template <typename Type, template <typename> class Policy>
+    class GenScat: public GenScatter<Type, Policy, 0>
+    {};
+//=
+
+
+template <int idx, typename GenScatterType>
+    typename AtIndex<typename GenScatterType::BaseList, idx>::Result
+ &base(GenScatterType &obj)
+{
+    return obj;
+}
+
+template <int indx, typename Derived>
+struct BaseClass
+{
+    typedef typename AtIndex<typename Derived::BaseList, indx>::Result Init;
+};
+
+
