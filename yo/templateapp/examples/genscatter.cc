@@ -14,7 +14,7 @@ struct Holder
 
 int main()
 {
-    GenScatter<TYPELIST_2(int, double), Holder> gen2;
+    GenScatter<TYPELIST_2(int, doouble), Holder> gen2;
 
     field<0>(gen2) = 12;
 

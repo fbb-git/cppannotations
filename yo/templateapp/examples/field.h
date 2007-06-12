@@ -16,7 +16,7 @@ template <typename GenType, typename Result, int idx>
 inline Result &fieldHelper(GenType &obj, TypeType<Result> tt, IntType<idx>)
 {
     typename GenType::RightBase &subObj = obj;
-    return FieldHelper(subObj, tt, IntType<idx - 1>());
+    return fieldHelper(subObj, tt, IntType<idx - 1>());
 }
 
 
@@ -39,5 +39,15 @@ field(GenScatterType &obj)
     return fieldHelper(obj, TypeType<Result>(), IntType<idx>());
 }
 
+
+
+//typename GenScatterType::LeftBase::Base &
+
+template <int idx, typename GenScatterType>
+    typename AtIndex<typename GenScatterType::BaseList, idx>::Result
+ &base(GenScatterType &obj)
+{
+    return obj;
+}
 
 #endif
