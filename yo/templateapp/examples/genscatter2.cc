@@ -4,28 +4,33 @@
 
 #include "genscatter.h"
 
-template <typename Type>
-struct Holder
-{
-    Type d_value;
-
-    Holder(Type v = Type())
-    :
-        d_value(v)
-    {}
-};
-
+//FIELD
+    template <typename Type>
+    struct Field
+    {
+        Type field;
     
-struct Object: public GenScat<TYPELIST_3(int, std::string &, int), Holder>
-{
-    Object(int i, std::string &s, int i2)
-    :
-        BaseClass<0, Object>::Type(i),
-        BaseClass<1, Object>::Type(s),
-        BaseClass<2, Object>::Type(i2)
-     {}
-};
+        Field(Type v = Type())
+        :
+            field(v)
+        {}
+    };
+//=
+   
+//MYSTRUCT 
+    struct MyStruct: public 
+                        GenScat<TYPELIST_3(int, std::string &, int), Field>
+    {
+        MyStruct(int i, std::string &text, int i2)
+        :
+            BaseClass<0, MyStruct>::Type(i),
+            BaseClass<1, MyStruct>::Type(text),
+            BaseClass<2, MyStruct>::Type(i2)
+         {}
+    };
+//=
 
+//VECTORS
 struct Vectors: public GenScat<TYPELIST_3(int, std::string, int), std::vector>
 {
     Vectors()
@@ -35,31 +40,34 @@ struct Vectors: public GenScat<TYPELIST_3(int, std::string, int), std::vector>
         BaseClass<2, Vectors>::Type(std::vector<int>(3))
      {}
 };
+//=
 
 using namespace std;
 
 int main()
 {
-    string s("hello");
-
-    GenScat<TYPELIST_2(int, int), Holder> gs;
+    GenScat<TYPELIST_2(int, int), Field> gs;
     
-    base<1>(gs).d_value = 12;
-    cout << base<0>(gs).d_value << " " << base<1>(gs).d_value << endl;
+    base<1>(gs).field = 12;
+    cout << base<0>(gs).field << " " << base<1>(gs).field << endl;
 
+    string text("hello");
+    MyStruct myStruct(12345, text, 12);
 
-    Object gen2(12345, s, 12);
+    cout << base<0>(myStruct).field << " " << 
+            base<1>(myStruct).field << " " << 
+            base<2>(myStruct).field << endl;
 
-    cout << base<0>(gen2).d_value << " " << base<1>(gen2).d_value << " " << 
-            base<2>(gen2).d_value << endl;
+    base<0>(myStruct).field = 123;
+    base<1>(myStruct).field = "new text";
 
-    base<0>(gen2).d_value = 123;
-
-    cout << base<0>(gen2).d_value << endl;
+    cout << base<0>(myStruct).field << "\n" <<
+            "`text' now contains: " << text << endl;
 
     Vectors vects;
 
     cout << base<0>(vects).size() << " " << base<1>(vects).size() << " " << 
             base<2>(vects).size() << endl;
-
 }
+
+

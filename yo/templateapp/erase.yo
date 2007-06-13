@@ -4,38 +4,19 @@ typelist:
     itemization(
     it() The basic template is a struct expecting a typelist and a type to
         erase from the typelist:
-        verb(
-    template <typename TypeList, typename EraseType>
-    struct Erase;
-        )
+            verbinsert(ERASE)(templateapp/examples/erase.h)
+
     it() If the typelist itself is tt(NullType), there's nothing to erase, and
         tt(NullType) is the result:
-        verb(
-    template <typename EraseType>
-    struct Erase<NullType, EraseType>
-    {
-        typedef NullType Result;
-    };
-        )
+            verbinsert(NULLTYPE)(templateapp/examples/erase.h)
+
     it() If the typelist's head equals the type to erase, then the result is
         the typelist's tail:
-        verb(
-    template <typename EraseType, typename Tail>
-    struct Erase<TypeList<EraseType, Tail>, EraseType>
-    {
-        typedef Tail Result;
-    };
-        )
+            verbinsert(MATCH)(templateapp/examples/erase.h)
+
     it() Otherwise, the result is the typelist's head and the result obtained
         afdter erasing the type to be erased from the typelist's tail:
-        verb(
-    template <typename Head, typename Tail, typename EraseType>
-    struct Erase<TypeList<Head, Tail>, EraseType>
-    {
-        typedef TypeList<Head, 
-                        typename Erase<Tail, EraseType>::Result> Result;
-    };
-        )
+            verbinsert(TYPELIST)(templateapp/examples/erase.h)
     )
 
     But there's more: what if the intention is to erase all elements from the
@@ -55,22 +36,14 @@ class derivation in combination with specializations to our benefit.
     it() First step: note that all alternatives of tt(Erase) but one can be
 used unaltered by tt(EraseAll). So, tt(EraseAll) inherits from tt(Erase),
 using the generic struct's template parameters:
-        verb(
-    template <typename TypeList, typename EraseType>
-    struct EraseAll: public Erase<TypeList, EraseType>
-    {};
-        )
+            verbinsert(ERASEALL)(templateapp/examples/erase.h)
+
     Thus, tt(EraseAll) is a mere copy of tt(Erase), and it could be used as a
 synonym of tt(Erase) (of course, erasing only the first element). 
     it() Second (and last) step: define a specialization of tt(EraseAll) for
 the case where the type to be removed equals the typelist's head:
-        verb(
-    template <typename EraseType, typename Tail>
-    struct EraseAll<TypeList<EraseType, Tail>, EraseType> 
-    {
-        typedef typename EraseAll<Tail, EraseType>::Result   Result;
-    };
-        )
+            verbinsert(ALLTYPES)(templateapp/examples/erase.h)
+
     Note the tt(EraseAll) action on the template's tail.
     )
     The above two tt(EraseAll) definitions are all it takes to create a

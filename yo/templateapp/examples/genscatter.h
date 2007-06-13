@@ -1,5 +1,5 @@
 #include "typelist.h"
-#include "at.h"
+#include "typeat.h"
 
 namespace 
 {
@@ -17,12 +17,12 @@ namespace
 //=
 
 //GENMAIN
-    template <typename Type, template <typename> class Policy, int idx>
+    template <typename Type, template <typename> class TemplateClass, int idx>
     class GenScatter
     : 
-        virtual public Wrap<Policy<Type>, idx>
+        virtual public Wrap<TemplateClass<Type>, idx>
     {
-        typedef Wrap<Policy<Type>, idx> Base;
+        typedef Wrap<TemplateClass<Type>, idx> Base;
     
         public:
             typedef TYPELIST_1(Base)    WrapList;
@@ -31,24 +31,25 @@ namespace
 
 //GENCORE
     template <
-        typename Head, typename Tail, template <typename> class Policy, 
-        int idx
+        typename Head, typename Tail, 
+        template <typename> class TemplateClass, int idx
     >
-    class GenScatter<TypeList<Head, Tail>, Policy, idx>
+    class GenScatter<TypeList<Head, Tail>, TemplateClass, idx>
     : 
-        virtual public Wrap<Policy<Head>, idx>,
-        public GenScatter<Tail, Policy, idx + 1>
+        virtual public Wrap<TemplateClass<Head>, idx>,
+        public GenScatter<Tail, TemplateClass, idx + 1>
     {
-        typedef typename GenScatter<Tail, Policy, idx + 1>::WrapList  
+        typedef typename GenScatter<Tail, TemplateClass, idx + 1>::WrapList  
                 BaseWrapList;
         public:
-            typedef TypeList<Wrap<Policy<Head>, idx>, BaseWrapList> WrapList;
+            typedef TypeList<Wrap<TemplateClass<Head>, idx>, BaseWrapList> 
+                    WrapList;
     };
 //=
 
 //GENNULL
-    template <template <typename> class Policy, int idx>
-    class GenScatter<NullType, Policy, idx>
+    template <template <typename> class TemplateClass, int idx>
+    class GenScatter<NullType, TemplateClass, idx>
     {
         public:
             typedef NullType WrapList;
@@ -58,8 +59,8 @@ namespace
 } // namespace
 
 //GENSCAT
-    template <typename Type, template <typename> class Policy>
-    class GenScat: public GenScatter<Type, Policy, 0>
+    template <typename Type, template <typename> class TemplateClass>
+    class GenScat: public GenScatter<Type, TemplateClass, 0>
     {};
 //=
 
@@ -68,7 +69,7 @@ namespace
 template <int idx, typename Derived>
 struct BaseClass
 {
-    typedef typename AtIndex<typename Derived::WrapList, idx>::Result Type;
+    typedef typename TypeAt<idx, typename Derived::WrapList>::Type Type;
 };
 //=
 

@@ -1,36 +1,44 @@
+#ifndef _INCLUDED_APPEND_H_
+#define _INCLUDED_APPEND_H_
+
 #include "typelist.h"
 
-template <typename TypeList, typename NewType>
-struct Append;
+//APPEND
+    template <typename TypeList, typename NewType>
+    struct Append;
+//=
 
-template <>
-struct Append<NullType, NullType>
-{
-    typedef NullType Result;
-};
+//NULLTYPE  
+    template <>
+    struct Append<NullType, NullType>
+    {
+        typedef NullType TList;
+    };
+//=
 
-template <typename TypeList>
-struct Append<TypeList, NullType>
-{
-    typedef TypeList Result;
-};
+//ADDNULL    
+    template <typename Head, typename Tail>
+    struct Append<TypeList<Head, Tail>, NullType>
+    {
+        typedef TypeList<Head, Tail>  TList;
+    };
+//=
 
-template <typename Head, typename Tail>
-struct Append<TypeList<Head, Tail>, NullType>
-{
-    typedef TypeList<Head, Tail>  Result;
-};
+//NEWTYPE    
+    template <typename NewType>
+    struct Append<NullType, NewType>
+    {
+        typedef TYPELIST_1(NewType) TList;
+    };
+//=
 
-template <typename NewType>
-struct Append<NullType, NewType>
-{
-    typedef TYPELIST_1(NewType) Result;
-};
+//TYPELIST    
+    template <typename Head, typename Tail, typename NewType>
+    struct Append<TypeList<Head, Tail>, NewType>
+    {
+        typedef TypeList<Head, typename Append<Tail, NewType>::TList>  
+                TList;
+    };
+//=    
 
-template <typename Head, typename Tail, typename NewType>
-struct Append<TypeList<Head, Tail>, NewType>
-{
-    typedef TypeList<Head, 
-                    typename Append<Tail, NewType>::Result>  Result;
-};
-
+#endif

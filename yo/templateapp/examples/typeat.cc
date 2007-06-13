@@ -5,13 +5,21 @@
 // compile with, e.g., -DIDX=3, specify another number to test another index
 // value 
 
+#ifndef IDX
+#define IDX 2
+#endif
+
 int main()
 {
     typedef TYPELIST_3(int, char, bool) list3;
 
-    std::cout << 
-        (ListSearch<TypeAt<IDX, list3>::result, list3>::index == -1 ?
-            "Illegal Index\n"
-        :
-            "Index represents a valid type\n");
+    if (ListSearch<TypeAt<IDX, list3>::Type, list3>::index == -1)
+        std::cout << "Index " << IDX << 
+                     " is *not* a valid index in TYPELIST_3\n";
+    else
+        std::cout << "Index " << IDX << 
+                     " is a valid index in TYPELIST_3\n";
 }
+
+
+

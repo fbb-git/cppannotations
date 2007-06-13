@@ -1,22 +1,35 @@
+#ifndef _INCLUDED_TYPEAT_H_
+#define _INCLUDED_TYPEAT_H_
+
 #include "typelist.h"
 
-template <int index, typename Typelist>
-struct TypeAt;
+//TYPEAT
+    template <int index, typename Typelist>
+    struct TypeAt;
+//=
 
-template <int index>
-struct TypeAt<index, NullType>
-{
-    typedef NullType result;
-};
+//NULLTYPE    
+    template <int index>
+    struct TypeAt<index, NullType>
+    {
+        typedef NullType Type;
+    };
+//=
 
-template <typename Head, typename Tail>
-struct TypeAt<0, TypeList<Head, Tail> >
-{
-    typedef Head result;
-};
+//ZERO    
+    template <typename Head, typename Tail>
+    struct TypeAt<0, TypeList<Head, Tail> >
+    {
+        typedef Head Type;
+    };
+//=
 
-template <int index, typename Head, typename Tail>
-struct TypeAt<index, TypeList<Head, Tail> >
-{
-    typedef typename TypeAt<index - 1, Tail>::result result;
-};
+//TYPELIST    
+    template <int index, typename Head, typename Tail>
+    struct TypeAt<index, TypeList<Head, Tail> >
+    {
+        typedef typename TypeAt<index - 1, Tail>::Type Type;
+    };
+//=
+
+#endif

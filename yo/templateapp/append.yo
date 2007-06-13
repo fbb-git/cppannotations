@@ -6,21 +6,14 @@ recursive algorithm and implement the recursion through specializations.
     itemization(
     it() The basic template is a struct expecting a typelist and a type to add
         to the typelist:
-        verb(
-    template <typename TypeList, typename NewType>
-    struct Append;
-        )
+            verbinsert(APPEND)(templateapp/examples/append.h)
+
     it() Adding tt(NullType):
         itemization(
         it() If the type to add is tt(NullType), and the original type is
             tt(NullType), the result itself is the tt(NullType):
-        verb(
-    template <>
-    struct Append<NullType, NullType>
-    {
-        typedef NullType Result;
-    };
-        )
+        verbinsert(NULLTYPE)(templateapp/examples/append.h)
+
     Note that the simple alternative:
         verb(
     template <typename TypeList>
@@ -34,36 +27,20 @@ template's first template type parameter. E.g., tt(Append<int, NullType>)
 would be accepted, but would certainly not result in a tt(TypeList). 
         it() When attempting to append tt(NullType) to an existing
             tt(TypeList), leave the tt(TypeList) as-is:
-        verb(
-    template <typename Head, typename Tail>
-    struct Append<TypeList<Head, Tail>, NullType>
-    {
-        typedef TypeList<Head, Tail>  Result;
-    };
+        verbinsert(ADDNULL)(templateapp/examples/append.h)
         )
-        )
+
     it() Appending other types than tt(NullType):
         itemization(
         it() If the typelist itself is tt(NullType), the final typelist
         consists of the typelist containing the new type:
-        verb(
-    template <typename NewType>
-    struct Append<NullType, NewType>
-    {
-        typedef TYPELIST_1(NewType) Result;
-    };
-        )
+            verbinsert(NEWTYPE)(templateapp/examples/append.h)
+
         it() Otherwise, the final typelist consists of the head of the initial
             typelist and the typelist resulting from appending the new type to
             the intial typelist's tail:
-        verb(
-    template <typename Head, typename Tail, typename NewType>
-    struct Append<TypeList<Head, Tail>, NewType>
-    {
-        typedef TypeList<Head, 
-                        typename Append<Tail, NewType>::Result>  Result;
-    };
-        ) 
+            verbinsert(TYPELIST)(templateapp/examples/append.h)
+
             Once again: note that tt(typename) is required in front of
             tt(Append) (cf. section ref(DISTINGUISH))
         )

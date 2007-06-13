@@ -1,36 +1,51 @@
+#ifndef _INCLUDED_ERASE_H_
+#define _INCLUDED_ERASE_H_
+
 #include "typelist.h"
 
-template <typename TypeList, typename EraseType>
-struct Erase;
+//ERASE
+    template <typename TypeList, typename EraseType>
+    struct Erase;
+//=
+    
+//NULLTYPE
+    template <typename EraseType>
+    struct Erase<NullType, EraseType>
+    {
+        typedef NullType Result;
+    };
+//=
 
-template <typename EraseType>
-struct Erase<NullType, EraseType>
-{
-    typedef NullType Result;
-};
+//MATCH 
+    template <typename EraseType, typename Tail>
+    struct Erase<TypeList<EraseType, Tail>, EraseType>
+    {
+        typedef Tail Result;
+    };
+//=
 
-template <typename EraseType, typename Tail>
-struct Erase<TypeList<EraseType, Tail>, EraseType>
-{
-    typedef Tail Result;
-};
+//TYPELIST  
+    template <typename Head, typename Tail, typename EraseType>
+    struct Erase<TypeList<Head, Tail>, EraseType>
+    {
+        typedef TypeList<Head, 
+                        typename Erase<Tail, EraseType>::Result> Result;
+    };
+//
 
-template <typename Head, typename Tail, typename EraseType>
-struct Erase<TypeList<Head, Tail>, EraseType>
-{
-    typedef TypeList<Head, 
-                    typename Erase<Tail, EraseType>::Result> Result;
-};
+//ERASEALL    
+    template <typename TypeList, typename EraseType>
+    struct EraseAll: public Erase<TypeList, EraseType>
+    {};
+//=
 
-template <typename TypeList, typename EraseType>
-struct EraseAll: public Erase<TypeList, EraseType>
-{};
-
-template <typename EraseType, typename Tail>
-struct EraseAll<TypeList<EraseType, Tail>, EraseType> 
-{
-    typedef typename EraseAll<Tail, EraseType>::Result Result;
-};
+//ALLTYPES    
+    template <typename EraseType, typename Tail>
+    struct EraseAll<TypeList<EraseType, Tail>, EraseType> 
+    {
+        typedef typename EraseAll<Tail, EraseType>::Result Result;
+    };
+//=
 
 //ERASEDUP
     template <typename TypeList>
@@ -52,3 +67,5 @@ struct EraseAll<TypeList<EraseType, Tail>, EraseType>
             typedef TypeList<Head, NewTail>  Result;
     };
 //=
+
+#endif
