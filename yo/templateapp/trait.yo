@@ -6,10 +6,11 @@ illegal operation on tt(std::string) objects, as in tt(std::string s(1)).
 
     Trait classes are used to make compile-time decisions about types. Traits
 classes allow the software engineer to apply the proper code to the proper
-data type, be it a pointer, a reference, a value, all maybe in combination
-with tt(const). Moreover, the specification of the particular type of data to
-use does not have to be made by the template writer, but can be inferred from
-the actual type that is specified (or implied) when the template is used.
+data type, be it a pointer, a reference, or a plain value, all maybe in
+combination with tt(const). Moreover, the specification of the particular type
+of data to be used does not have to be made by the template writer, but can be
+inferred from the actual type that is specified (or implied) when the template
+is used.
 
     Trait classes allow the software engineer to develop a tt(template
 <typename Type1, typename Type2, ...>) without the need to specify many
@@ -18,7 +19,7 @@ or (const) references, which would soon result in an unmaintainable
 exponential explosion of template specializations (e.g., allowing these five
 different actual types for each template parameter already results in 25
 combinations when two template type parameters are used: each must be covered
-by a potentially different specialization)
+by potentially different specializations).
 
     Having available a trait class, the actual type can be inferred compile
 time, allowing the compiler to deduct whether or not the actual type is a
@@ -30,21 +31,80 @@ are required by several generic algorithms (e.g., link(count_if())(COUNTIF)).
 
     A trait class usually performs no behavior. I.e., it has no constructor
 and no members that can be called. Instead, it defines a series of types and
-enum values that have certain values depending on the actual type that is
-passed to the trait class template.  The compiler uses specialization to
-select the appropriate specialization given an actual template type parameter.
+tt(enum) values that have certain values depending on the actual type that is
+passed to the trait class template.  The compiler uses one of a set of
+available specializations to select the one appropriate for an actual template
+type parameter.
 
     The generic point of departure when defining a trait template is a plain
-vanilla struct, defining the characteristics of a plain value type, e.g., an
-tt(int).  This sets the stage for specific specializations, modifying the
+vanilla tt(struct), defining the characteristics of a plain value type, e.g.,
+an tt(int).  This sets the stage for specific specializations, modifying the
 characteristics for any other type that could be specified for the template.
 
     To make matters concrete, assume the intent is to create a trait class
 tt(BasicTraits) telling us whether a type is a plain value type, a pointer
 type, or a reference type (all of which may or may not be tt(const) types).
 
-    Moreover, whatever the type that's passed, we want to be able to determine
-the `plain' type (i.e., the type without any modifiers, pointers or
+    Moreover, whatever the actual type that's provided, we want to be able to
+determine the `plain' type (i.e., the type without any modifiers, pointers or
 references), the `pointer type' and the `reference type', allowing us to
 define in all cases, e.g., a reference to its basic type, even though we
 passed a const pointer to that type.
+
+    Our point of departure, as mentioned, is a plain tt(struct) defining the
+required parameter. E.g., something like:
+        verbinsert(BASIC)(templateapp/examples/basictraits.h)
+    However, often decisions about types can be made using constant logical
+expressions. Note that the above definition does not contain a
+`tt(isReference)' enumeration value. Such a value is not required as it is
+implied by the expression tt(not isPointer and not isValue). 
+
+    Although some conclusions can be drawn by combining various tt(enum)
+values, it is good practice to provide a full implementation of trait classes,
+not requiring its users to construct these logical expressions
+themselves. Therefore, the basic decisions in a trait class are usually made
+by a 
+        hi(trait class: nested)i(nested trait class), 
+    leaving the task of creating appropriate logical expressions to a
+surrounding trait class. 
+
+    So, the tt(struct Basic) defines the generic form of our inner trait
+class. Specializations handle specific details. E.g., a pointer type is
+recognized by the following specialization:
+        verbinsert(POINTER)(templateapp/examples/basictraits.h)
+
+    whereas a pointer to a const type is matched with the next specialization:
+        verbinsert(CONST)(templateapp/examples/basictraits.h)
+
+    Several other specializations should be defined: e.g., 
+recognizing tt(const) value types or reference types. Eventually all these
+specializations wind up being nested tt(struct)s of an outer class
+tt(BasicTraits), offering the public traits class interface. The outline of
+the outer trait class is:
+        verb(
+    template <typename TypeParam>
+    class BasicTraits
+    {
+        // Define (specializations) of the template `Base' here
+
+        public:
+            typedef typename Basic<TypeParam>::Type ValueType;
+            typedef ValueType *PtrType;
+            typedef ValueType &RefType;
+
+            enum 
+            { 
+                isValueType = Basic<TypeParam>::isValue,
+                isPointerType = Basic<TypeParam>::isPointer,
+                isReferenceType = not Basic<TypeParam>::isPointer and 
+                                  not Basic<TypeParam>::isValue,
+                isConst = Basic<TypeParam>::isConst
+            };
+    };
+        )
+    
+    A trait class template can be used to obtain the proper type, irrespective
+of the template type argument provided, or it can be used to select
+the proper specialization, depending on, e.g., the tt(const)-ness of a
+template type. The following statements serve as an illustration:
+        verbinsert(MAIN)(templateapp/examples/basictraits.cc)
