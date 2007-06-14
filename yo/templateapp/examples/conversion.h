@@ -1,42 +1,44 @@
 #ifndef _INCLUDED_CONVERSION_H_
 #define _INCLUDED_CONVERSION_H_
 
-template <typename T, typename U>
-class Conversion
-{
-    typedef char Convertible;
-    struct NotConvertible
+//CONVERSION
+    template <typename T, typename U>
+    class Conversion
     {
-        char array[2];
+        typedef char Convertible;
+        struct NotConvertible
+        {
+            char array[2];
+        };
+    
+        static T makeT();
+        static Convertible test(U const &);
+        static NotConvertible test(...);
+    
+        public:
+            enum { exists = sizeof(test(makeT())) == sizeof(Convertible) };
+            enum { sameType = 0 };
     };
-
-    static T makeT();
-    static Convertible test(U const &);
-    static NotConvertible test(...);
-
-    public:
-        enum { exists = sizeof(test(makeT())) == sizeof(Convertible) };
-        enum { sameType = 0 };
-};
-
-template <typename T>
-class Conversion<T, T>
-{
-    public:
-        enum { exists = 1 };
-        enum { sameType = 1 };
-};
+    
+    template <typename T>
+    class Conversion<T, T>
+    {
+        public:
+            enum { exists = 1 };
+            enum { sameType = 1 };
+    };
+//=
 
 //BASEFIRST
-#define BASE_1st_DERIVED_2nd(Base, Derived) \
-    (Conversion<Derived const *, Base const *>::exists && \
-     not Conversion<Base const *, void const *>::sameType)
+    #define BASE_1st_DERIVED_2nd(Base, Derived) \
+        (Conversion<Derived const *, Base const *>::exists && \
+         not Conversion<Base const *, void const *>::sameType)
 //=
 
 //BASESTRICT
-#define BASE_1st_DERIVED_2nd_STRICT(Base, Derived) \
-    (BASE_1st_DERIVED_2nd(Base, Derived) && \
-     not Conversion<Base const *, Derived const *>::sameType)
+    #define BASE_1st_DERIVED_2nd_STRICT(Base, Derived) \
+        (BASE_1st_DERIVED_2nd(Base, Derived) && \
+         not Conversion<Base const *, Derived const *>::sameType)
 //=
 
 #endif

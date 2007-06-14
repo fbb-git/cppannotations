@@ -12,8 +12,11 @@ class A2x: public std::istringstream
         A2x(char const *txt);
         A2x(std::string const &str);
 
-        template <typename T>
-        operator T();
+        template <typename Type>
+        operator Type();
+
+        template <typename Type>
+        Type to();
 
         A2x &operator=(char const *txt);
 
@@ -36,15 +39,22 @@ inline A2x::A2x(std::string const &str)
     std::istringstream(str.c_str())
 {}
 //=
-//TYPE
+//TO
 template <typename Type>
-inline A2x::operator Type()
+inline Type A2x::to()
 {
     Type t;
 
     return (*this >> t) ? t : Type();
 }
-/=
+//=
+//TYPE
+template <typename Type>
+inline A2x::operator Type()
+{
+    return to<Type>();
+}
+//=
 inline A2x &A2x::operator=(std::string const &str)
 {
     return operator=(str.c_str());
