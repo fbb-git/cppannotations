@@ -1,10 +1,23 @@
     #include "monitor.ih"
 
+//  void Monitor::killChild(map<int, Child *>::value_type it)
+//  {
+//      if (kill(it.second->pid(), SIGTERM))
+//          cerr << "Couldn't kill process " << it.second->pid() << endl;
+//  }
+
 //KILL
     void Monitor::killChild(map<int, Child *>::value_type it)
     {
         if (kill(it.second->pid(), SIGTERM))
             cerr << "Couldn't kill process " << it.second->pid() << endl;
+
+        // reap defunct child process
+        int status = 0;
+        while( waitpid( it.second->pid(), &status, WNOHANG) > -1)
+        {};
+
+        return result;
     }
 //=
 //EXIT
