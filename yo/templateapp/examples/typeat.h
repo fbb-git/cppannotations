@@ -8,7 +8,7 @@
     struct TypeAt;
 //=
 
-//NULLTYPE    
+//NULLTYPE
     template <int index>
     struct TypeAt<index, NullType>
     {
@@ -16,7 +16,7 @@
     };
 //=
 
-//ZERO    
+//ZERO
     template <typename Head, typename Tail>
     struct TypeAt<0, TypeList<Head, Tail> >
     {
@@ -24,7 +24,7 @@
     };
 //=
 
-//TYPELIST    
+//TYPELIST
     template <int index, typename Head, typename Tail>
     struct TypeAt<index, TypeList<Head, Tail> >
     {

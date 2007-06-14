@@ -3,7 +3,7 @@
 
 #include <vector>
 
-template <typename Data, 
+template <typename Data,
           template <typename> class Policy,
           template <typename> class Container = std::vector
         >

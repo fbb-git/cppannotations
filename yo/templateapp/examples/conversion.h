@@ -13,7 +13,7 @@ class Conversion
     static T makeT();
     static Convertible test(U const &);
     static NotConvertible test(...);
-    
+
     public:
         enum { exists = sizeof(test(makeT())) == sizeof(Convertible) };
         enum { sameType = 0 };

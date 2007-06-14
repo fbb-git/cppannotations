@@ -3,8 +3,8 @@
 
 #include <cstddef>
 
-    // Implementation of auto_ptr using reference counting. 
-    // This implementation was provided and offered for inclusion in the 
+    // Implementation of auto_ptr using reference counting.
+    // This implementation was provided and offered for inclusion in the
     // C++ Annotations by Jesse van den Kieboom (jesse at icecrew.nl).
 
     template<typename Type>
@@ -14,15 +14,15 @@
         {
             Type *d_ptr;
             size_t d_refcount;
-            
+
             public:
                 typedef Type element_type;
 
                 auto_ptr_data(element_type *ptr = 0);
                 ~auto_ptr_data();
-                
+
                 element_type *get() const;
-            
+
                 // Refcounting
                 size_t refcount() const;
                 auto_ptr_data *ref();
@@ -30,7 +30,7 @@
                 element_type *release();
             private:
                 auto_ptr_data(auto_ptr_data const &other); // NI
-                
+
                 void destroy();
         };
 
@@ -44,7 +44,7 @@
             auto_ptr(auto_ptr const &other);
 
             ~auto_ptr();
-            
+
             // Assignment operator
             auto_ptr &operator=(auto_ptr &other);
 
@@ -76,44 +76,44 @@
         if (d_refcount)
             destroy();
     }
-    
+
     template <typename Type>
     inline size_t auto_ptr<Type>::auto_ptr_data::refcount() const
     {
         return d_refcount;
     }
-    
+
     template <typename Type>
     inline Type *auto_ptr<Type>::auto_ptr_data::get() const
     {
         return d_ptr;
     }
-    
+
     template <typename Type>
     Type *auto_ptr<Type>::auto_ptr_data::release()
     {
         // This function releases the pointer so it's no longer
         // maintained by this object.
-        
+
         if (!d_refcount)
             return 0;
-        
+
         --d_refcount;
-        
+
         Type *tmp = d_ptr;
         d_ptr = 0;
-        
+
         return tmp;
     }
 
     // Refcounting
     template <typename Type>
-    typename auto_ptr<Type>::auto_ptr_data 
+    typename auto_ptr<Type>::auto_ptr_data
         *auto_ptr<Type>::auto_ptr_data::ref()
     {
         if (d_ptr)
             ++d_refcount;
-        
+
         return this;
     }
 
@@ -122,12 +122,12 @@
     {
         if (!d_refcount)
             return false;
-        
+
         --d_refcount;
-        
+
         if (!d_refcount)
             destroy();
-        
+
         return d_refcount != 0;
     }
 
@@ -140,38 +140,38 @@
 
 
     /// auto_ptr
-    template <typename Type>            
+    template <typename Type>
     inline auto_ptr<Type>::auto_ptr(element_type *ptr)
     {
         d_data = new auto_ptr_data(ptr);
     }
-    
-    template <typename Type>    
+
+    template <typename Type>
     inline auto_ptr<Type>::auto_ptr(auto_ptr const &other)
     :
         d_data(other.d_data->ref())
     {}
-    
-    template <typename Type>    
+
+    template <typename Type>
     inline auto_ptr<Type>::~auto_ptr()
     {
         destroy();
     }
-    
-    template <typename Type>    
+
+    template <typename Type>
     auto_ptr<Type> &auto_ptr<Type>::operator=(auto_ptr &other)
     {
         if (&other != this)
         {
             destroy();
-        
+
             d_data = other.d_data->ref();
         }
-        
+
         return *this;
     }
-    
-    template <typename Type>    
+
+    template <typename Type>
     inline Type &auto_ptr<Type>::operator*() const
     {
         return *d_data->get();
@@ -180,10 +180,10 @@
     template <typename Type>
     inline Type *auto_ptr<Type>::operator->() const
     {
-        return d_data->get(); 
+        return d_data->get();
     }
-    
-    template <typename Type>    
+
+    template <typename Type>
     inline Type *auto_ptr<Type>::get() const
     {
         return d_data->get();
@@ -201,22 +201,22 @@
 
         return ptr;
     }
-    
+
     template <typename Type>
     void auto_ptr<Type>::reset(Type *ptr)
     {
         // Prevent creating a wild pointer by resetting
         if (ptr == d_data->get())
             return;
-        
+
         // Unref current data
         destroy();
-        
+
         // Set new data
         d_data = new auto_ptr_data(ptr);
     }
-    
-    template <typename Type>        
+
+    template <typename Type>
     void auto_ptr<Type>::destroy()
     {
         if (!d_data->unref())

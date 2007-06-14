@@ -35,7 +35,7 @@
     {
         context.out << str << " ";
 
-        for_each(str.begin(), str.end(), 
+        for_each(str.begin(), str.end(),
             FnWrap1c<char &, std::string const &>(
                                         foundToUpper, context.letters));
 

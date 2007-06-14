@@ -7,7 +7,7 @@ template <typename Data>
 class PlainAlloc
 {
     template<typename IData>
-    friend std::ostream &operator<<(std::ostream &out, 
+    friend std::ostream &operator<<(std::ostream &out,
                                     PlainAlloc<IData> const &alloc);
     Data d_data;
 
@@ -48,7 +48,7 @@ PlainAlloc<Data> &PlainAlloc<Data>::operator=(Data const &data)
 }
 
 template<typename IData>
-inline std::ostream &operator<<(std::ostream &out, 
+inline std::ostream &operator<<(std::ostream &out,
                                 PlainAlloc<IData> const &alloc)
 {
     return out << alloc.d_data;

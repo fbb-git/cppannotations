@@ -9,16 +9,16 @@
     struct Field
     {
         Type field;
-    
+
         Field(Type v = Type())
         :
             field(v)
         {}
     };
 //=
-   
-//MYSTRUCT 
-    struct MyStruct: public 
+
+//MYSTRUCT
+    struct MyStruct: public
                         GenScat<TYPELIST_3(int, std::string &, int), Field>
     {
         MyStruct(int i, std::string &text, int i2)
@@ -47,15 +47,15 @@ using namespace std;
 int main()
 {
     GenScat<TYPELIST_2(int, int), Field> gs;
-    
+
     base<1>(gs).field = 12;
     cout << base<0>(gs).field << " " << base<1>(gs).field << endl;
 
     string text("hello");
     MyStruct myStruct(12345, text, 12);
 
-    cout << base<0>(myStruct).field << " " << 
-            base<1>(myStruct).field << " " << 
+    cout << base<0>(myStruct).field << " " <<
+            base<1>(myStruct).field << " " <<
             base<2>(myStruct).field << endl;
 
     base<0>(myStruct).field = 123;
@@ -66,8 +66,6 @@ int main()
 
     Vectors vects;
 
-    cout << base<0>(vects).size() << " " << base<1>(vects).size() << " " << 
+    cout << base<0>(vects).size() << " " << base<1>(vects).size() << " " <<
             base<2>(vects).size() << endl;
 }
-
-

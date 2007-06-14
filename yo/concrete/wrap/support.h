@@ -17,10 +17,10 @@
     inline void Support::operator()(std::string &str) const
     {
         d_out << str << " ";
-        
+
         for
         (
-            std::string::iterator strIter = str.begin(); 
+            std::string::iterator strIter = str.begin();
                 strIter != str.end();
                     ++strIter
         )

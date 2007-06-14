@@ -14,9 +14,9 @@ using namespace std;
 template <int x>
 struct IntType
 {
-    enum 
+    enum
     {
-        value = x 
+        value = x
     };
 };
 

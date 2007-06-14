@@ -1,5 +1,5 @@
     // accumulating strings from a vector to one big string, using
-    // `accumulate'. 
+    // `accumulate'.
     #include <iostream>
     #include <numeric>
     #include <string>

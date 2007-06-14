@@ -1,7 +1,7 @@
 #include "typelist.h"
 #include "typeat.h"
 
-namespace 
+namespace
 {
 //WRAPPER
     template <typename Base, int idx>
@@ -19,11 +19,11 @@ namespace
 //GENMAIN
     template <typename Type, template <typename> class TemplateClass, int idx>
     class GenScatter
-    : 
+    :
         virtual public Wrap<TemplateClass<Type>, idx>
     {
         typedef Wrap<TemplateClass<Type>, idx> Base;
-    
+
         public:
             typedef TYPELIST_1(Base)    WrapList;
     };
@@ -31,18 +31,18 @@ namespace
 
 //GENCORE
     template <
-        typename Head, typename Tail, 
+        typename Head, typename Tail,
         template <typename> class TemplateClass, int idx
     >
     class GenScatter<TypeList<Head, Tail>, TemplateClass, idx>
-    : 
+    :
         virtual public Wrap<TemplateClass<Head>, idx>,
         public GenScatter<Tail, TemplateClass, idx + 1>
     {
-        typedef typename GenScatter<Tail, TemplateClass, idx + 1>::WrapList  
+        typedef typename GenScatter<Tail, TemplateClass, idx + 1>::WrapList
                 BaseWrapList;
         public:
-            typedef TypeList<Wrap<TemplateClass<Head>, idx>, BaseWrapList> 
+            typedef TypeList<Wrap<TemplateClass<Head>, idx>, BaseWrapList>
                     WrapList;
     };
 //=
@@ -78,4 +78,3 @@ typename BaseClass<idx, GenScatterType>::Type &base(GenScatterType &obj)
 {
     return obj;
 }
-

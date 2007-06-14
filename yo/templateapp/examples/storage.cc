@@ -24,18 +24,18 @@ int main(int argc, char **argv)
                 "p: read strings, using PlacementAlloc with a deque\n"
                 "s: read ints, using a simple PlainAlloc with a list\n";
         break;
-            
+
         case 'n':
         {
             Storage<string, NewAlloc> storage;
-        
+
             copy(istream_iterator<string>(cin), istream_iterator<string>(),
                     back_inserter(storage));
-        
+
             cout << "Element index 1 is " << storage[1] << endl;
             storage[1] = "hello";
-        
-            copy(storage.begin(), storage.end(), 
+
+            copy(storage.begin(), storage.end(),
                  ostream_iterator<NewAlloc<string> >(cout, "\n"));
         }
         break;
@@ -43,11 +43,11 @@ int main(int argc, char **argv)
          case 'p':
          {
             Storage<string, PlacementAlloc, deque> storage;
-        
+
             copy(istream_iterator<string>(cin), istream_iterator<string>(),
                     back_inserter(storage));
-        
-            copy(storage.begin(), storage.end(), 
+
+            copy(storage.begin(), storage.end(),
                  ostream_iterator<PlacementAlloc<string> >(cout, "\n"));
         }
         break;
@@ -55,11 +55,11 @@ int main(int argc, char **argv)
         case 's':
         {
              Storage<int, PlainAlloc, list> storage;
-         
+
              copy(istream_iterator<int>(cin), istream_iterator<int>(),
                      back_inserter(storage));
-         
-             copy(storage.begin(), storage.end(), 
+
+             copy(storage.begin(), storage.end(),
                   ostream_iterator<PlainAlloc<int> >(cout, "\n"));
         }
         break;

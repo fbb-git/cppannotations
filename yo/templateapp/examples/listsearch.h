@@ -1,7 +1,7 @@
 #include "typelist.h"
 
 //LISTSEARCH
-    template <typename SearchType, typename TypeList> 
+    template <typename SearchType, typename TypeList>
     struct ListSearch;
 //=
 
@@ -13,15 +13,15 @@
     };
 //=
 
-//TAIL    
+//TAIL
     template <typename SearchType, typename Tail>
     struct ListSearch<SearchType, TypeList<SearchType, Tail> >
     {
         enum { index = 0 };
     };
 //=
-   
-//TYPELIST 
+
+//TYPELIST
     template <typename SearchType, typename Head, typename Tail>
     class ListSearch<SearchType, TypeList<Head, Tail> >
     {

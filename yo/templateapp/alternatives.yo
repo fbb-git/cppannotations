@@ -13,7 +13,7 @@ exclusive. I.e., it is possible to define a specialization which may be
 compilable in one situation, but not in another, and a second specialization
 which is compilable in the other situation, but not in the first
 situation. This way code can be tailored to the demands of a concrete
-situation. 
+situation.
 
 A feature like this cannot be realized in code. For example, when designing a
 generic storage class the software engineer may have the intention to store
@@ -26,7 +26,7 @@ themselves, and the following code may be conceived of:
     void Storage::add(Type const &obj)
     {
         d_data.push_back(
-            d_ispolymorphic ? 
+            d_ispolymorphic ?
                 obj.clone()
             :
                 new Type(obj)
@@ -35,7 +35,7 @@ themselves, and the following code may be conceived of:
         )
     The intent is to use the tt(clone()) member function of the tt(Type) class
 if tt(Type) is a polymorphic class and the standard copy constructor if
-tt(Type) is a value class. 
+tt(Type) is a value class.
 
     Unfortunately, this scheme will normally fail to compile as value classes
 do not define tt(clone()) member functions and polymorphic base classes should
@@ -60,7 +60,7 @@ non-polymorphic classes:
     and we symply define overloaded versions of our tt(add()) member: the one
 implementing the polymorphic class variant expecting tt(true) as its argument,
 the one implementing the value class variant accepting tt(false) as its
-argument. 
+argument.
 
     Again we run into a problem: overloading members cannot be based on
 argument values, only on types. Fortunately there is a way out: in section
@@ -72,7 +72,7 @@ implementing the polymorphic class. In addition to these overloaded versions
 of the member function tt(add()) the member tt(add()) itself calls the
 appropriate overloaded member by providing an tt(IntType) argument,
 constructed from tt(Storage)'s template non-type parameter. Here are the
-implementations: 
+implementations:
 
     Declared in tt(Storage)'s private section:
         verb(
@@ -101,7 +101,7 @@ implementations:
 primitive value to a type and then (since  each concrete primitive value may be
 used to construct a different type) using these types to define overloaded
 versions of template member functions one of which is then called from a
-(public) member using tt(IntType) to construct the appropriate selector type. 
+(public) member using tt(IntType) to construct the appropriate selector type.
 
     Since template members are only instantiated when used, only one of the
 overloaded private tt(add()) members is instantiated. Since the other one is
@@ -113,11 +113,11 @@ argument could be that value class objects can very well be stored by value,
 rather than by pointer. In those cases we'd like to define the actual type
 used for storing the values as either value types or pointer types. Situations
 like these frequently occur in template meta programming and the following
-tt(struct IfElse) 
+tt(struct IfElse)
         hi(template: IfElse)
         hi(template: select type given bool)
     may be used to obtain one of two types, depending on a tt(bool) selector
-value: 
+value:
         verb(
     template<bool selector, typename FirstType, typename SecondType>
     struct IfElse
@@ -138,12 +138,12 @@ tt(TypeToUse).
 
     The tt(IfElse) struct allows us to emi(templatize structural types): our
 tt(Storage) class may use em(pointers) to store copies of polymorphic class
-type objects, but em(values) to store value class type objects. 
+type objects, but em(values) to store value class type objects.
         verb(
     template <typename Type, bool isPolymorphic>
     class Storage
     {
-        typedef typename IfElse<isPolymorphic, Type *, Type>::TypeToUse 
+        typedef typename IfElse<isPolymorphic, Type *, Type>::TypeToUse
                 DataType;
 
         std::vector<DataType> d_data;
@@ -196,7 +196,7 @@ or pointers for either its key or its value type, illustrates this approach:
     template <typename Key, typename Value, int selector>
     class Storage
     {
-        typedef typename IfElse<        
+        typedef typename IfElse<
                     selector == 1,              // if selector == 1:
                     map<Key, Value>,            // use map<Key, Value>
 
@@ -209,10 +209,10 @@ or pointers for either its key or its value type, illustrates this approach:
                             map<Key *, Value>,  // use map<Key *, Value>
                                                 // otherwise:
                             map<Key *, Value *> // use map<Key *, Value *>
-                                                        
+
                         >::TypeToUse
                     >::TypeToUse
-                >::TypeToUse       
+                >::TypeToUse
                 MapType;
 
         MapType d_map;

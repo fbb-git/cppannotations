@@ -8,17 +8,17 @@ using namespace std;
 int main()
 {
 //CONVERSION
-    cout << 
+    cout <<
         Conversion<ofstream, ostream>::exists << " " <<
         Conversion<ostream, ofstream>::exists << " " <<
         Conversion<int, double>::exists << " " <<
-        Conversion<int, string>::exists << " " << 
+        Conversion<int, string>::exists << " " <<
         endl;
 //=
 
     cout << "\n" <<
-        Conversion<int, int>::sameType << " " << 
-        Conversion<int, string>::sameType << " " << 
+        Conversion<int, int>::sameType << " " <<
+        Conversion<int, string>::sameType << " " <<
         endl;
 
 //INHERITANCE

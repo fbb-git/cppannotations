@@ -8,7 +8,7 @@
     struct Append;
 //=
 
-//NULLTYPE  
+//NULLTYPE
     template <>
     struct Append<NullType, NullType>
     {
@@ -16,7 +16,7 @@
     };
 //=
 
-//ADDNULL    
+//ADDNULL
     template <typename Head, typename Tail>
     struct Append<TypeList<Head, Tail>, NullType>
     {
@@ -24,7 +24,7 @@
     };
 //=
 
-//NEWTYPE    
+//NEWTYPE
     template <typename NewType>
     struct Append<NullType, NewType>
     {
@@ -32,13 +32,13 @@
     };
 //=
 
-//TYPELIST    
+//TYPELIST
     template <typename Head, typename Tail, typename NewType>
     struct Append<TypeList<Head, Tail>, NewType>
     {
-        typedef TypeList<Head, typename Append<Tail, NewType>::TList>  
+        typedef TypeList<Head, typename Append<Tail, NewType>::TList>
                 TList;
     };
-//=    
+//=
 
 #endif

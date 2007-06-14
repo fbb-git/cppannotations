@@ -7,7 +7,7 @@ template<typename Data>
 class PlacementAlloc
 {
     template<typename IData>
-    friend std::ostream &operator<<(std::ostream &out, 
+    friend std::ostream &operator<<(std::ostream &out,
                                     PlacementAlloc<IData> const &alloc);
     Data *d_data;
 
@@ -22,14 +22,14 @@ class PlacementAlloc
         operator Data &();
         PlacementAlloc &operator=(Data const &data);
     private:
-        char *request();   
+        char *request();
 };
 
 template<typename Data>
-char PlacementAlloc<Data>::s_commonPool[1000];    
+char PlacementAlloc<Data>::s_commonPool[1000];
 
 template<typename Data>
-char *PlacementAlloc<Data>::s_free = 
+char *PlacementAlloc<Data>::s_free =
         PlacementAlloc<Data>::s_commonPool;
 
 template<typename Data>
@@ -77,7 +77,7 @@ char *PlacementAlloc<Data>::request()
 }
 
 template<typename IData>
-inline std::ostream &operator<<(std::ostream &out, 
+inline std::ostream &operator<<(std::ostream &out,
                                 PlacementAlloc<IData> const &alloc)
 {
     return out << *alloc.d_data;

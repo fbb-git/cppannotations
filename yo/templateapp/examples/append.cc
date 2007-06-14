@@ -4,7 +4,7 @@
 
 int main()
 {
-    std::cout << 
+    std::cout <<
         ListSize<Append<NullType, NullType>::TList>::size << "\n" <<
         ListSize<Append<NullType, int>::TList>::size << "\n" <<
         ListSize<Append<TYPELIST_1(int), NullType>::TList>::size << "\n" <<

@@ -1,7 +1,7 @@
 #include "typelist.h"
 
 //LISTSIZE
-template <typename TypeList> 
+template <typename TypeList>
 struct ListSize;
 //=
 

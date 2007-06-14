@@ -1,7 +1,7 @@
 In i(template programming) values are preferably represented by tt(enum)
 values. Enums are preferred over, e.g., tt(int const) values since enums never
 have any linkage: they are pure symbolic values with no memory
-representation. 
+representation.
 
 Consider the situation where a programmer must use a cast, say a
 ti(reinterpret_cast). A problem with a tt(reinterpret_cast) is that it is the
@@ -52,9 +52,9 @@ assigned to a desciptive tt(enum) value, resulting in, e.g.,
     template<typename Target, typename Source>
     Target &reinterpret_to_smaller_cast(Source &source)
     {
-        enum 
+        enum
         {
-            the_Target_size_exceeds_the_Source_size = 
+            the_Target_size_exceeds_the_Source_size =
                 1 / (sizeof(Target) <= sizeof(Source))
         };
         return reinterpret_cast<Target &>(source);
@@ -63,7 +63,7 @@ assigned to a desciptive tt(enum) value, resulting in, e.g.,
     When tt(reinterpret_to_smaller_cast) is used to cast from tt(int) to
 tt(ostream) an error is produced by the compiler, like:
         verb(
-    error: enumerator value for 'the_Target_size_exceeds_the_Source_size' 
+    error: enumerator value for 'the_Target_size_exceeds_the_Source_size'
         not integer constant
         )
     whereas no error is reported if, e.g.,
@@ -71,7 +71,7 @@ tt(reinterpret_to_smaller_cast<int>(cout)) is requested.
 
     In the above example a tt(enum) was used to compute, compile time, a value
 that is illegal if an assumption is not met. The creative part is finding an
-appropriate expression. 
+appropriate expression.
 
     Enum values are well suited for these situations as they do not consume
 any memory and their evaluation does not produce any executable code. They can
@@ -81,5 +81,3 @@ illustrate. In general, programs shouldn't do run-time what they can do
         hi(run-time vs. compile-time)
     compile-time and computing complex calculations resulting in constant
 values is a clear example of this principle.
-
-

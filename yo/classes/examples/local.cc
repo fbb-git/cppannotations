@@ -13,13 +13,13 @@ int main(int argc, char *argv[])
 
         public:
             enum                // enums OK
-            { 
-                value = 5 
+            {
+                value = 5
             };
             Local(int argc)     // constructors and member functions OK
             :                   // in-class implementation required
-                d_argc(argc)    
-            {                   
+                d_argc(argc)
+            {
                                 // global data: accessible
                 cout << "Local constructor\n";
                                 // static function variables: accessible

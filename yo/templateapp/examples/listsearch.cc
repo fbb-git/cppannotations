@@ -3,8 +3,7 @@
 
 int main()
 {
-    std::cout << 
+    std::cout <<
         ListSearch<char, TYPELIST_3(int, char, bool)>::index << "\n" <<
         ListSearch<float, TYPELIST_3(int, char, bool)>::index << "\n";
 }
-

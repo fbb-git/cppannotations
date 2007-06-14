@@ -5,4 +5,3 @@
         FBB::auto_ptr<char *> ap3(argv);
         return 0;
     }
-

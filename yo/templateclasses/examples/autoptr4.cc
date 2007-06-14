@@ -5,4 +5,3 @@
         FBB::auto_ptr<std::vector<int> *> vspec;
         return 0;
     }
-

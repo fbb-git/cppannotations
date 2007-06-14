@@ -20,8 +20,8 @@ tt(Type(arguments)) is any constructor of the clas tt(Type).
     The placement tt(new) operator comes in handy when the memory to contain
 one or more objects is already available or when its size is known
 beforehand. The memory could have been statically or dynamically allocated;
-when allocated dynamically the appropriate destructor must 
-eventually be called to destroy the objects and the block of memory. 
+when allocated dynamically the appropriate destructor must
+eventually be called to destroy the objects and the block of memory.
 
 The question of how to call the destructors of objects initialized using
     hi(delete: and placement new)
@@ -29,7 +29,7 @@ the placement tt(new) operator is an interesting one:
 
     itemization(
     it() When one object was initialized in memory not allocated dynamically,
-tt(delete) can of course not be called for the statically allocated memory. 
+tt(delete) can of course not be called for the statically allocated memory.
     it() However, when tt(delete) is called for the pointer returned by the
 placement tt(new) operator the object's destructor isn't called either. So,
 the tt(string) destructor is em(not) called in the following situation:
@@ -47,7 +47,7 @@ all, the memory on which the objects are defined is known to the run-time
 system as a block of (e.g.) characters, for which no destructors are defined.
 Even calling tt(delete) on the pointer returned by the placement tt(new)
 operator doesn't help: it's still the same memory address as the original
-block of characters. 
+block of characters.
 
     So, how then em(can) the destructors of objects initialized by the
 placement tt(new) operator be called? The answer may be surprising: it
@@ -58,16 +58,12 @@ example:
     It's clearly dangerous to use the placement tt(new) operator: object
 destruction is not guaranteed, and since destruction must be performed
 manually there's no guarantee that object destruction takes place in the
-reverse order of object construction. 
+reverse order of object construction.
 
     If in the above example tt(buffer) would have been allocated dynamically,
-a final statement 
+a final statement
         verb(
     delete [] buffer;
         )
     should be added to tt(main). It would merely return tt(buffer)'s allocated
 memory to the common pool, without calling any object destructor whatsoever.
-
-
-    
-

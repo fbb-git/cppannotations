@@ -41,4 +41,3 @@ int main()
     cout << wis.size() << endl;
 
 }
-

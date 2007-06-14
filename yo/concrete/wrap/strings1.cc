@@ -26,7 +26,3 @@
 
         s.uppercase(cout, argv[1]);
     }
-
-
-
-

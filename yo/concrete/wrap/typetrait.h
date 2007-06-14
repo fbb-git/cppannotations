@@ -54,6 +54,6 @@ class TypeTrait
         enum { isPointer = Type<T>::isPointer };
         enum { isConst   = Type<T>::isConst };
         enum { isRef     = Type<T>::isRef };
-        
+
         typedef typename Type<T>::Plain Plain;
 };

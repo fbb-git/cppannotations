@@ -16,7 +16,7 @@
     {
         if (str.empty())
             return true;
-    
+
         // previous implementation (not modified)
 
         return false;
