@@ -1,0 +1,90 @@
+Although class templates may be partially specialized, function templates may
+not. At times that can be annoying. Assume a function template is available
+implementing an instant unary operator that can be used with the
+tt(transform) generic algorithm:
+        verb(
+    template <typename Return, typename Argument>
+    Return chop(Argument const &arg)
+    {
+        return Return(arg);
+    }
+        )
+    This function tt(chop()) is nice and fine, but assume that if tt(Return)
+is tt(std::string) then the specified constructor should not be used.
+Instead a second argument tt(1) should be provided (e.g., if tt(Argument) is
+a bf(C) or bf(C++) string, a string from which the first character is removed
+is returned).
+
+Since tt(chop()) is a function, it is not possible to use a
+partial specialization. So it is not possible to write something like:
+        verb(
+    template <typename Argument>
+    std::string chop<std::string, Argument>(Argument const &arg)
+    {
+        return string(arg, 1);
+    }
+        )
+    It em(is) possible to use overloading, though. Instead of using partial
+specializations em(overloaded function templates) could be designed as
+follows:
+        verb(
+    template <typename Return, typename Argument>
+    Return chop(Argument const &arg, Argument )
+    {
+        return Return(arg);
+    }
+
+    template <typename Argument>
+    std::string chop(Argument const &arg, std::string )
+    {
+        return string(arg, 1);
+    }
+        )
+    This way it em(is) possible to distinguish the two situations, but at the
+expense of a more complex function call (e.g., requiring the use of
+        ti(bind2nd) 
+    to bind the second argument in situations where, e.g., the tt(transform())
+generic algorithm is used) as well as the need to provide a (possibly
+expensive to construct) dummy argument to allow the compiler to choose among
+the two overloaded function templates.
+
+    Overloaded versions could use the tt(IntType) template to select the
+proper overloaded version. E.g., tt(IntType<0>) could be defined as the type
+of the second argument of the first overloaded tt(chop()) function, and
+tt(IntType<1>) could be used for the second overloaded function. As such this
+is an attractive option, as the provided tt(IntType) objects are extremely
+lightweight: they contain no data at all. But their disadvantage in this
+context is obvious too: there is no intuitively clear relation between on the
+one hand the tt(int) value used and on the other hand the intended type. 
+
+    In situations like these it is attractive to use a selecting type 
+comparable to tt(IntType), but this time related to em(types):
+tt(TypeType). Here is its definition:
+        verb(
+    template <typename T>
+    struct TypeType
+    {
+        typedef T Type;
+    };
+        )
+    This too is a lightweight type: it doesn't have data fields
+either. tt(TypeType) allows us to use a natural type association for
+tt(chop())'s second argument. E.g, the overloaded functions are now defined as
+follows:
+        verb(
+    template <typename Return, typename Argument>
+    Return chop(Argument const &arg, TypeType<Argument> )
+    {
+        return Return(arg);
+    }
+
+    template <typename Argument>
+    std::string chop(Argument const &arg, TypeType<std::string> )
+    {
+        return string(arg, 1);
+    }
+        )
+
+    
+    
+
