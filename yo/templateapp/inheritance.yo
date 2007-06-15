@@ -9,11 +9,22 @@ inheritance convertability of (const) pointers is examined. tt(Derived const
     )
     Preventing the latter, inheritance is determined by inspecting
 tt(Conversion<Derived const *, Base const *>::exists):
-        verbinsert(BASEFIRST)(templateapp/examples/conversion.h)
+    COMMENT(Can't use verbinsert here because of the trailing \ (BSSP)
+            Do not remove the blanks following the backslashes in the next two
+            verb macros:)
+        verb(
+    #define BASE_1st_DERIVED_2nd(Base, Derived) BSSP
+        (Conversion<Derived const *, Base const *>::exists && BSSP
+         not Conversion<Base const *, void const *>::sameType)
+        )
 
     If code should not consider a class to be its own base class, then the
 following stricted test is possible, which adds a test for type-equality:
-        verbinsert(BASESTRICT)(templateapp/examples/conversion.h)
+        verb(
+    #define BASE_1st_DERIVED_2nd_STRICT(Base, Derived) BSSP
+        (BASE_1st_DERIVED_2nd(Base, Derived) && BSSP
+         not Conversion<Base const *, Derived const *>::sameType)
+        )
 
 The following example writes tt(1: 0, 2: 1, 3: 0, 4: 1, 5: 0) when run from a
 tt(main()) function:

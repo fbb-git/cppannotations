@@ -57,16 +57,16 @@ required parameter. E.g., something like:
     However, often decisions about types can be made using constant logical
 expressions. Note that the above definition does not contain a
 `tt(isReference)' enumeration value. Such a value is not required as it is
-implied by the expression tt(not isPointer and not isValue). 
+implied by the expression tt(not isPointer and not isValue).
 
     Although some conclusions can be drawn by combining various tt(enum)
 values, it is good practice to provide a full implementation of trait classes,
 not requiring its users to construct these logical expressions
 themselves. Therefore, the basic decisions in a trait class are usually made
-by a 
-        hi(trait class: nested)i(nested trait class), 
+by a
+        hi(trait class: nested)i(nested trait class),
     leaving the task of creating appropriate logical expressions to a
-surrounding trait class. 
+surrounding trait class.
 
     So, the tt(struct Basic) defines the generic form of our inner trait
 class. Specializations handle specific details. E.g., a pointer type is
@@ -76,7 +76,7 @@ recognized by the following specialization:
     whereas a pointer to a const type is matched with the next specialization:
         verbinsert(CONST)(templateapp/examples/basictraits.h)
 
-    Several other specializations should be defined: e.g., 
+    Several other specializations should be defined: e.g.,
 recognizing tt(const) value types or reference types. Eventually all these
 specializations wind up being nested tt(struct)s of an outer class
 tt(BasicTraits), offering the public traits class interface. The outline of
@@ -92,17 +92,17 @@ the outer trait class is:
             typedef ValueType *PtrType;
             typedef ValueType &RefType;
 
-            enum 
-            { 
+            enum
+            {
                 isValueType = Basic<TypeParam>::isValue,
                 isPointerType = Basic<TypeParam>::isPointer,
-                isReferenceType = not Basic<TypeParam>::isPointer and 
+                isReferenceType = not Basic<TypeParam>::isPointer and
                                   not Basic<TypeParam>::isValue,
                 isConst = Basic<TypeParam>::isConst
             };
     };
         )
-    
+
     A trait class template can be used to obtain the proper type, irrespective
 of the template type argument provided, or it can be used to select
 the proper specialization, depending on, e.g., the tt(const)-ness of a

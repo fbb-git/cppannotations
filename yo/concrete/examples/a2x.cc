@@ -22,7 +22,7 @@ int main()
     a2x = " a";                 // reassign a2x to new text
     char c = a2x;               // c now 'a': internally operator>>() is used
     cout << c << endl;          // so initial blanks are skipped.
-    
+
     int expectsInt(int x);      // initialize a parameter using an
     expectsInt(A2x("1200"));    // anonymous A2x object
 
@@ -36,4 +36,3 @@ int expectsInt(int x)
     cout << x << endl;
     return x;
 }
-

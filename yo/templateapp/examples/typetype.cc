@@ -22,15 +22,10 @@
         return chop(std::string(txt), TypeType<Result>());
     }
 
-    
+
     using namespace std;
 
     int main()
     {
         cout << chopper<string>("hello world") << endl;
     }
-
-
-
-
-

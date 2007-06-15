@@ -9,11 +9,11 @@
         struct Basic
         {
             typedef T Type;
-            enum 
-            { 
+            enum
+            {
                 isValue = true,
                 isPointer = false,
-                isConst = false 
+                isConst = false
             };
         };
 //=
@@ -21,11 +21,11 @@
         struct Basic<T const>
         {
             typedef T Type;
-            enum 
-            { 
+            enum
+            {
                 isValue = false,
                 isPointer = true,
-                isConst = true 
+                isConst = true
             };
         };
 //POINTER
@@ -46,11 +46,11 @@
         struct Basic<T const *>
         {
             typedef T Type;
-            enum 
-            { 
+            enum
+            {
                 isValue = false,
                 isPointer = true,
-                isConst = true 
+                isConst = true
             };
         };
 //=
@@ -58,11 +58,11 @@
         struct Basic<T &>
         {
             typedef T Type;
-            enum 
-            { 
+            enum
+            {
                 isValue = false,
                 isPointer = false,
-                isConst = false 
+                isConst = false
             };
         };
 
@@ -70,11 +70,11 @@
         struct Basic<T const &>
         {
             typedef T Type;
-            enum 
-            { 
+            enum
+            {
                 isValue = false,
                 isPointer = false,
-                isConst = true 
+                isConst = true
             };
         };
 
@@ -83,11 +83,11 @@
             typedef ValueType *PtrType;
             typedef ValueType &RefType;
 
-            enum 
-            { 
+            enum
+            {
                 isValueType = Basic<TypeParam>::isValue,
                 isPointerType = Basic<TypeParam>::isPointer,
-                isReferenceType = not Basic<TypeParam>::isPointer and 
+                isReferenceType = not Basic<TypeParam>::isPointer and
                                   not Basic<TypeParam>::isValue,
                 isConst = Basic<TypeParam>::isConst
             };

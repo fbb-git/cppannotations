@@ -22,4 +22,3 @@ int main()
     cout << *otherValue << endl;
 //=
 }
-
