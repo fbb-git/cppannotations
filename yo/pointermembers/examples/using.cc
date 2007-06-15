@@ -7,10 +7,10 @@
             unsigned get() const;
     };
 
-        inline unsigned PointerDemo::get() const
-        {
-            return d_value;
-        }
+    inline unsigned PointerDemo::get() const
+    {
+        return d_value;
+    }
 
     using namespace std;
 

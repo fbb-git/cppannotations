@@ -1,4 +1,5 @@
     #include <iostream>
+    #include <string>
     using namespace std;
 
     void outOfMemory()
@@ -15,7 +16,7 @@
 
         while (true)                        // eat up all memory
         {
-            new int [100000];
+            memset(new int [100000], 0, 100000 * sizeof(int));
             allocated += 100000 * sizeof(int);
             cout << "Allocated " << allocated << " bytes\n";
         }
