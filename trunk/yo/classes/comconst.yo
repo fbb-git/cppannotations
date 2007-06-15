@@ -1,0 +1,100 @@
+Composition of objects has an important consequence for the
+constructor functions of the `composed' (embedded) object. Unless explicitly
+instructed otherwise, the compiler generates code to call the
+    hi(default constructor) default constructors of all composed classes in
+the constructor of the composing class.
+
+    Often it is desirable to initialize a composed object from a specific
+constructor of the composing class. This is illustrated below for the
+class tt(Person). In this fragment it assumed that a constructor
+for a tt(Person) should be defined expecting four arguments: the name, address
+and phone number plus the person's weight:
+        verb(
+    Person::Person(char const *name, char const *address,
+                    char const *phone, size_t weight)
+    :
+        d_name(name),
+        d_address(address),
+        d_phone(phone),
+        d_weight(weight)
+    {}
+        )
+    Following the argument list of the constructor tt(Person::Person()), the
+constructors of the tt(string) data members are explicitly called, e.g.,
+tt(name(mn)). The initialization takes place bf(before) the code block of
+tt(Person::Person()) (now empty) is executed. This construction, where member
+initialization takes place before the code block itself is executed is called
+emi(member initialization). Member initialization can be made explicit in
+the em(member initializer list), that may appear after the parameter list,
+between a colon (announcing the start of the member initializer list) and the
+opening curly brace of the code block of the constructor.
+
+Member initialization em(always) occurs when objects are composed in classes:
+if em(no) constructors are mentioned in the member initializer list the
+default constructors of the objects are called. Note that this only holds true
+for em(objects). Data members of primitive data types are em(not) initialized
+automatically.
+
+Member initialization can, however, also be used for primitive data members,
+like tt(int) and tt(double). The above example shows the initialization of the
+data member tt(d_weight) from the parameter tt(weight). Note that with member
+initializers the data member could even have the same name as the constructor
+parameter (although this is deprecated): with member initialization there is
+no ambiguity and the first (left) identifier in, e.g., tt(weight(weight)) is
+interpreted as the data member to be initialized, whereas the identifier
+between parentheses is interpreted as the parameter.
+
+When a class has multiple composed data members, all members can be
+initialized using a `member initializer list': this list consists of the
+constructors of all composed objects, separated by commas. The em(order) in
+hi(member initialization order) which the objects are initialized is defined
+by the order in which the members are defined in the class interface. If the
+order of the initialization in the constructor differs from the order in the
+class interface, the compiler complains, and reorders the initialization so as
+to match the order of the class interface.
+
+Member initializers should be used as often as possible: it can be downright
+necessary to use them, and em(not) using member initializers can result in
+inefficient code: with objects always at least the default constructor is
+called. So, in the following example, first the tt(string) members are
+initialized to empty strings, whereafter these values are immediately
+redefined to their intended values. Of course, the immediate initialization to
+the intended values would have been more efficent.
+        verb(
+    Person::Person(char const *name, char const *address,
+                    char const *phone, size_t weight)
+    {
+        d_name = name;
+        d_address = address;
+        d_phone = phone;
+        d_weight = weight;
+    }
+        )
+    This method is not only inefficient, but even more: it may not work when
+the composed object hi(composed const object) is declared as a tt(const)
+object.  A data field like tt(birthday) is a good candidate for being
+tt(const), since a person's birthday usually doesn't change too much.
+
+    This means that when the definition of a tt(Person) is altered so as to
+contain a tt(string const birthday) member, the implementation of the
+constructor tt(Person::Person()) in which also the birthday must be
+initialized, a member initializer em(must) be used for tt(birthday). Direct
+assignment of the birthday would be illegal, since tt(birthday) is a tt(const)
+data member. The next example illustrates the tt(const) data member
+hi(const data member initialization) initialization:
+        verb(
+    Person::Person(char const *name, char const *address,
+                    char const *phone, char const *birthday,
+                    size_t weight)
+    :
+        d_name(name),
+        d_address(address),
+        d_phone(phone),
+        d_birthday(birthday),       // assume: string const d_birthday
+        d_weight(weight)
+    {}
+        )
+    Concluding, the rule of thumb is the following: when composition of
+objects is used, the member initializer method is preferred to explicit
+initialization of composed objects. This not only results in more efficient
+code, but it also allows composed objects to be declared as tt(const) objects.

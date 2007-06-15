@@ -1,0 +1,133 @@
+In the previous section we've seen how to define pointers to member
+functions. In order to use these pointers, an object is em(always) required.
+With pointers operating at global scope, the i(dereferencing) operator tt(*)
+is used to reach the object or value the pointer points to.
+With pointers to objects the i(field selector) operator operating on pointers
+(ti(->)) or the field selector operating operating on objects (tt(.)) can be
+used to select appropriate members.
+
+To use a pointer to member in combination with an object the
+    i(pointer to member field selector) (ti(.*)) must be used.  To use a
+pointer to a member via a pointer to an object the `pointer to member field
+selector through a pointer to an object' (ti(->*)) must be used. These two
+operators combine the notions of, on the one hand, a field selection (the
+tt(.) and tt(->) parts) to reach the appropriate field in an object and, on
+the other hand, the notion of dereferencing: a i(dereference) operation is
+used to reach the function or variable the pointer to member points to.
+
+Using the example from the previous section, let's see how we can use the
+pointer to member function and the pointer to data member:
+            verbinclude(pointermembers/examples/using.cc)
+    We note:
+    itemization(
+    it() At statement (1) a tt(PointerDemo) object and a pointer to such an
+object is defined.
+    it() At statement (2) we specify an object, and hence the tt(.*) operator,
+to reach the member tt(valuePtr) points to. This member is given a value.
+    it() At statement (3) the same member is assigned another value, but this
+time using the pointer to a tt(PointerDemo) object. Hence we use the
+tt(->*) operator.
+    it() At statement (4) the tt(.*) and tt(->*) are used once again, but this
+time to call a function through a pointer to member. Realize that the function
+argument list has a higher priority than pointer to member field selector
+    hi(pointer to function members: using ())
+operator, so the latter em(must) be protected by its own set of parentheses.
+    )
+    Pointers to members can be used profitably in situations where a class has
+a member which behaves differently depending on, e.g., a configuration
+state. Consider once again a class tt(Person) from section
+ref(DESTRUCTOR). This class contains fields holding a person's name, address
+and phone number. Let's assume we want to construct a tt(Person) data base of
+employees.  The employee data base can be queried, but depending on the kind of
+person querying the data base either the name, the name and phone number or
+all stored information about the person is made available. This implies that a
+member function like tt(address()) must return something like `tt(<not
+available>)' in cases where the person querying the data base is not allowed
+to see the person's address, and the actual address in other cases.
+
+    Assume the employee data base is opened with an argument reflecting the
+status of the employee who wants to make some queries. The status could
+reflect his or her position in the organization, like tt(BOARD),
+tt(SUPERVISOR), tt(SALESPERSON), or tt(CLERK). The first two categories are
+allowed to see all information about the employees, a tt(SALESPERSON) is
+allowed to see the employee's phone numbers, while the tt(CLERK) is only
+allowed to verify whether a person is actually a member of the organization.
+
+We now construct a member tt(string personInfo(char const *name)) in the
+data base class. A standard implementation of this class could be:
+        verb(
+    string PersonData::personInfo(char const *name)
+    {
+        Person *p = lookup(name);   // see if `name' exists
+
+        if (!p)
+            return "not found";
+
+        switch (d_category)
+        {
+            case BOARD:
+            case SUPERVISOR:
+                return allInfo(p);
+            case SALESPERSON:
+                return noPhone(p);
+            case CLERK:
+                return nameOnly(p);
+        }
+    }
+        )
+    Although it doesn't take much time, the tt(switch) must nonetheless be
+evaluated every time tt(personCode()) is called. Instead of using a switch, we
+could define a member tt(d_infoPtr) as a pointer to a member function of the
+class tt(PersonData) returning a tt(string) and expecting a tt(Person)
+reference as its argument. Note that this pointer can now be used to point to
+tt(allInfo()), tt(noPhone()) or tt(nameOnly()). Furthermore, the function that
+the pointer variable points to will be known by the time the tt(PersonData)
+object is constructed, assuming that the employee status is given as an
+argument to the constructor of the tt(PersonData) object.
+
+    After having set the tt(d_infoPtr) member to the appropriate member
+function, the tt(personInfo()) member function may now be rewritten:
+        verb(
+    string PersonData::personInfo(char const *name)
+    {
+        Person *p = lookup(name);       // see if `name' exists
+
+        return p ? (this->*d_infoPtr)(p) :  "not found";
+    }
+        )
+    Note the syntactical construction when using a pointer to member from
+        hi(pointer to member: access within a class)
+within a class: tt(this->*d_infoPtr).
+
+    The member tt(d_infoPtr) is defined as follows (within the class
+tt(PersonData), omitting other members):
+        verb(
+    class PersonData
+    {
+        string (PersonData::*d_infoPtr)(Person *p);
+    };
+        )
+    Finally, the constructor must initialize tt(d_infoPtr) to point to the
+correct member function. The constructor could, for example, be given the
+following code (showing only the pertinent code):
+        verb(
+    PersonData::PersonData(PersonData::EmployeeCategory cat)
+    {
+        switch (cat)
+        {
+            case BOARD:
+            case SUPERVISOR:
+                d_infoPtr = &PersonData::allInfo;
+            case SALESPERSON:
+                d_infoPtr = &PersonData::noPhone;
+            case CLERK:
+                d_infoPtr = &PersonData::nameOnly;
+        }
+    }
+        )
+    Note how addresses of member functions are determined: the class
+tt(PersonData) scope em(must) be specified, even though we're already inside
+a member function of the class tt(PersonData).
+
+    An example using i(pointers to data members) is given in section
+ref(STABSORT), in the context of the ti(stable_sort()) i(generic algorithm).

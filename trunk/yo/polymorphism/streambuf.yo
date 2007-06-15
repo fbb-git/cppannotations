@@ -1,0 +1,237 @@
+The tt(class) ti(streambuf) (see section ref(STREAMBUF) and figure
+ref(SBBUFFERS)) has many (protected) i(virtual member functions) (see section
+ref(SBPROTECTED)) that are used by the ti(stream) classes using tt(streambuf)
+objects. By deriving a class from the tt(class streambuf) these member
+functions may be overriden in the derived classes, thus implementing a
+specialization of the class tt(streambuf) for which the standard ti(istream)
+and ti(ostream) objects can be used.
+
+Basically, a tt(streambuf) interfaces to some emi(device). The normal behavior
+of the tt(stream)-class objects remains unaltered. So, a ti(string) extraction
+from a tt(streambuf) object will still return a consecutive sequence of non
+white space delimited characters. If the derived class is used for
+    emi(input operations), the following member functions are serious
+candidates to be overridden. Examples in which some of these functions are
+overridden will be given later in this section:
+    itemization(
+    ithtq(streambuf::pbackfail())
+        (int streambuf::pbackfail(int c))
+        (This member is called when
+            itemization(
+            itt(gptr() == 0): no buffering used,
+            itt(gptr() == eback()): no more room to push back,
+            itt(*gptr() != c): a different character than the next character
+                to be read must be pushed back.
+            )
+        If tt(c == endOfFile()) then the input device must be reset one
+        character,  otherwise tt(c) must be prepended to the characters to be
+        read. The function will return endOfFile() on failure. Otherwise 0 can
+        be
+        returned. The function is called when other attempts to push back a
+        character fail.
+        )
+    ithtq(streambuf::showmanyc())
+        (streamsize streambuf::showmanyc())
+        (This member must return a guaranteed lower bound on the
+        number of characters that can be read from the device before
+        tt(uflow()) or tt(underflow()) returns endOfFile(). By default 0 is
+        returned (meaning at least 0 characters will be returned before the
+        latter two functions will return endOfFile()). When a positive value is
+        returned then the next call to the tt(u(nder)flow()) member will not
+        return endOfFile().
+        )
+    ithtq(streambuf::uflow())
+        (int streambuf::uflow())
+        (By default, this function calls tt(underflow()). If tt(underflow())
+        fails, endOfFile() is returned. Otherwise, the next character
+        available character is returned as tt(*gptr()) following a
+        tt(gbump(-1)). The member also moves the pending character that is
+        returned
+        to the backup sequence. This is different from tt(underflow()),
+        which also returns the next available character, but does not alter
+        the input position.
+        )
+    ithtq(streambuf::underflow())
+        (int streambuf::underflow())
+        (This member is called when
+            itemization(
+            it() there is no input buffer (tt(eback() == 0))
+            itt(gptr() >= egptr()): there are no more pending input
+                characters.
+            )
+        It returns the next available input character, which is the character
+        at tt(gptr()), or the first available character from the input device.
+
+        Since this member is eventually used by other member
+        functions for reading characters from a device,
+        at the very least this member function must be overridden for new
+        classes derived from tt(streambuf).
+        )
+    ithtq(streambuf::xsgetn())
+        (streamsize streambuf::xsgetn(char *buffer, streamsize n))
+        (This member function should act as if the returnvalues of tt(n)
+        calls of ti(snext()) are assigned to consecutive locations of
+        tt(buffer). If endOfFile() is returned then reading stops. The actual
+        number of characters read is returned. Overridden versions could
+        optimize the reading process by, e.g., directly accessing the input
+        buffer.
+        )
+    )
+    When the derived class is used for emi(output operations), the next member
+functions should be considered:
+    itemization(
+    ithtq(streambuf::overflow())
+        (int streambuf::overflow(int c))
+       (This member is called to write characters from the pending sequence to
+        the output device. Unless tt(c) is endOfFile(), when calling this
+        function and it returns tt(c) it may be assumed that the character
+        tt(c) is appended to the pending sequence. So, if the pending sequence
+        consists of the characters tt('h', 'e', 'l') and tt('l'), and tt(c ==
+        'o'), then eventually `tt(hello)' will be written to the output
+        device.
+
+        Since this  member is eventually used by other member
+        functions for writing characters to a device,
+        at the very least this member function must be overridden for new
+        classes derived from tt(streambuf).
+
+        )
+    ithtq(streambuf::xsputn())
+        (streamsize streambuf::xsputn(char const *buffer, streamsize n))
+        (This member function should act as if tt(n) consecutive locations of
+        tt(buffer) are passed to  ti(sputc()). If endOfFile() is returned
+        by this latter member, then writing stops. The actual
+        number of characters written is returned. Overridden versions could
+        optimize the writing process by, e.g., directly accessing the output
+        buffer.
+        )
+    )
+    For derived classes using buffers and supporting seek operations, consider
+these member functions:
+    itemization(
+    ithtq(streambuf::setbuf())
+        (streambuf *streambuf::setbuf(char *buffer, streamsize n))
+        (This member function is called by the tt(pubsetbuf()) member
+        function.
+        )
+    ithtq(streambuf::seekoff())
+        (pos_type streambuf::seekoff(off_type offset, ios::seekdir way,
+            ios::openmode mode = ios::in | ios::out))
+        (This member function is called to reset the position of the next
+        character to be processed. It is called by ti(pubseekoff()). The
+        new position or an invalid position (e.g., -1) is returned.
+        )
+    ithtq(streambuf::seekpos())
+        (pos_type streambuf::seekpos(pos_type offset,
+            ios::openmode mode = ios::in | ios::out))
+        (This member function acts similarly as tt(seekoff()), but operates
+        with absolute rather than relative positions.
+        )
+    ithtq(streambuf::sync())
+        (int sync())
+        (This member function flushes all pending characters to the device,
+        and/or resets an input device to the position of the first pending
+        character, waiting in the input buffer to be consumed. It returns
+        0 on success, -1 on failure. As the default tt(streambuf) is not
+        buffered, the default implementation also returns 0.
+        )
+    )
+    Next, consider the following problem, which will be solved by constructing
+a class ti(CapsBuf) derived from tt(streambuf). The problem is to construct a
+streambuf writing its information to the standard output stream in such a way
+that all white-space delimited series of characters are capitalized. The class
+tt(CapsBuf) obviously needs an overridden tt(overflow()) member and a minimal
+awareness of its state. Its state changes from `Capitalize' to `Literal' as
+follows:
+    itemization(
+    it() The start state is `Capitalize';
+    it() Change to `Capitalize' after processing a white-space character;
+    it() Change to `Literal' after processing a non-whitespace character.
+    )
+    A simple variable to remember the last character allows us to keep track
+of the current state. Since `Capitalize' is similar to `last character
+processed is a white space character' we can simply initialize the variable
+with a white space character, e.g., the blank space. Here is the initial
+definition of the  class tt(CapsBuf):
+        verbinclude(polymorphism/examples/capsbuf1.h)
+    An example of a program using tt(CapsBuf) is:
+        verbinclude(polymorphism/examples/capsbuf1.cc)
+    Note the use of the insertion operator, and note that all type and
+i(radix) conversions (inserting ti(hex) and the value 32, coming out as the
+ASCII-characters tt('2') and tt('0')) is neatly done by the ti(ostream)
+object. The real purpose in life for tt(CapsBuf) is to capitalize series of
+ASCII-characters, and that's what it does very well.
+
+    Next, we realize that inserting characters into streams can also be
+realized by a construction like
+        verb(
+    cout << cin.rdbuf();
+        )
+    or, boiling down to the same thing:
+        verb(
+    cin >> cout.rdbuf();
+        )
+    Realizing that this is all about streams, we now try, in the tt(main())
+function above:
+        verb(
+    cin >> out.rdbuf();
+        )
+    We compile and link the program to the executable tt(caps), and start:
+        verb(
+    echo hello world | caps
+        )
+    Unfortunately, nothing happens.... Nor do we get any reaction when we try
+the statement tt(cin) rshift() tt(cout.rdbuf()). What's wrong here?
+
+    The difference between tt(cout) lshift() tt(cin.rdbuf()), which em(does)
+produce the expected results and our using of tt(cin) rshift() tt(out.rdbuf())
+is that the tt(operator)rshift()tt((streambuf *)) (and its insertion
+counterpart) member function performs a tt(streambuf)-to-tt(streambuf) copy
+only if the respective
+    hi(stream mode) stream modes are set up correctly. So, the argument of the
+extraction operator must point to a tt(streambuf) into which information can
+be written. By default, no stream mode is set for a plain tt(streambuf)
+object. As there is no constructor for a tt(streambuf) accepting an
+ti(ios::openmode), we force the required tt(ios::out) mode by defining an
+output buffer using tt(setp()). We do this by defining a buffer, but don't
+want to use it, so we let its size be 0. Note that this is something different
+than using 0-argument values with tt(setp()), as this would indicate `no
+buffering', which would not alter the default situation. Although any non-0
+value could be used for the empty rangett(begin, begin) range, we decided to
+define a (dummy) local tt(char) variable in the constructor, and use
+    rangeti(&dummy, &dummy) to define the empty buffer. This effectively
+defines tt(CapsBuf) as an output buffer, thus activating the
+        verb(
+    istream::operator>>(streambuf *)
+        )
+    member. As the variable tt(dummy) is not used by tt(setp()) it may be
+defined as a local variable. It's only purpose in life it to indicate to
+tt(setp()) that no buffer is used. Here is the revised constructor of the
+class tt(CapsBuf):
+        verb(
+    CapsBuf::CapsBuf()
+    :
+        d_last(' ')
+    {
+        char dummy;
+        setp(&dummy, &dummy);
+    }
+        )
+    Now the program can use either
+        verb(
+    out << cin.rdbuf();
+        )
+    or:
+        verb(
+    cin >> out.rdbuf();
+        )
+    Actually, the tt(ostream) i(wrapper) isn't really needed here:
+        verb(
+    cin >> &cb;
+        )
+    would have produced the same results.
+
+    It is not clear whether the tt(setp()) solution proposed here is actually
+a emi(kludge). After all, shouldn't the tt(ostream) wrapper around tt(cb)
+inform the tt(CapsBuf) that it should act as a tt(streambuf) for doing output
+operations?

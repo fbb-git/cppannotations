@@ -1,0 +1,110 @@
+As with the ti(dynamic_cast<>()) operator, the ti(typeid) is usually applied
+to base class objects, that are actually derived class objects. Similarly, the
+base class should contain one or more virtual functions.
+
+In order to use the tt(typeid) operator, source files must
+    hi(#include <typeinfo>)
+        verb(
+    #include <typeinfo>
+        )
+    Actually, the tt(typeid) operator returns an object of type ti(type_info),
+which may, e.g., be compared to other tt(type_info) objects.
+
+    The class tt(type_info) may be implemented differently by different
+implementations, but at the very least it has the following interface:
+        verb(
+    class type_info
+    {
+        public:
+            virtual ~type_info();
+            int operator==(const type_info &other) const;
+            int operator!=(const type_info &other) const;
+            char const *name() const;
+        private:
+            type_info(type_info const &other);
+            type_info &operator=(type_info const &other);
+    };
+        )
+    Note that this class has a i(private copy constructor) and overloaded
+hi(private assignment operator) hi(copy constructor: private)
+    hi(assignment operator: private) assignment operator. This prevents the
+normal construction or assignment of a tt(type_info) object. Such tt(type_info)
+objects are constructed and returned by the tt(typeid)
+operator. Implementations, however, may choose to extend or elaborate the
+tt(type_info) class and provide, e.g., lists of functions that can be called
+with a certain class.
+
+    If the tt(type_id) operator is given a base class reference (where the
+base class contains at least one virtual function), it will indicate that the
+type of its operand is the derived class. For example:
+        verb(
+    class Base;     // contains at least one virtual function
+    class Derived: public Base;
+
+    Derived d;
+    Base    &br = d;
+
+    cout << typeid(br).name() << endl;
+        )
+    In this example the tt(typeid) operator is given a base class reference.
+It will print the text ``tt(Derived)'', being the i(class name) of the class
+tt(br) actually refers to. If tt(Base) does not contain virtual functions, the
+text ``tt(Base)'' would have been printed.
+
+    The tt(typeid) operator can be used to determine the name of the actual
+type of hi(expression: actual type) expressions, not just of class type
+objects. For example:
+        verb(
+    cout << typeid(12).name() << endl;     // prints:  int
+    cout << typeid(12.23).name() << endl;  // prints:  double
+        )
+    Note, however, that the above example is suggestive at most of the type
+that is printed. It em(may) be tt(int) and tt(double), but this is not
+necessarily the case. If portability is required, make sure no tests against
+these static, built-in text-strings are required. Check out what your compiler
+produces in case of doubt.
+
+    In situations where the tt(typeid) operator is applied to determine the
+type of a derived class, it is important to realize that a base class
+em(reference) hi(typeid: argument) should be used as the argument of the
+tt(typeid) operator. Consider the following example:
+        verb(
+    class Base;     // contains at least one virtual function
+    class Derived: public Base;
+
+    Base *bp = new Derived;     // base class pointer to derived object
+
+    if (typeid(bp) == typeid(Derived *))    // 1: false
+        ...
+    if (typeid(bp) == typeid(Base *))       // 2: true
+        ...
+    if (typeid(bp) == typeid(Derived))      // 3: false
+        ...
+    if (typeid(bp) == typeid(Base))         // 4: false
+        ...
+    if (typeid(*bp) == typeid(Derived))     // 5: true
+        ...
+    if (typeid(*bp) == typeid(Base))        // 6: false
+        ...
+
+    Base &br = *bp;
+
+    if (typeid(br) == typeid(Derived))      // 7: true
+        ...
+    if (typeid(br) == typeid(Base))         // 8: false
+        ...
+        )
+    Here, tt((1)) returns tt(false) as a tt(Base *) is not a tt(Derived
+*). tt((2)) returns tt(true), as the two pointer types are the same, tt((3))
+and tt((4)) return tt(false) as pointers to objects are not the objects
+themselves.
+
+    On the other hand, if tt(*bp) is used in the above expressions, then
+tt((1)) and tt((2)) return tt(false) as an object (or reference to an object)
+is not a pointer to an object, whereas tt((5)) now returns tt(true): tt(*bp)
+actually refers to a tt(Derived) class object, and tt(typeid(*bp)) will return
+tt(typeid(Derived)).  A similar result is obtained if a base class reference
+is used: tt(7) returning tt(true) and tt(8) returning tt(false).
+
+    When a tt(0)-pointer is passed to the tt(operator typeid) a ti(bad_typeid)
+exception is thrown.

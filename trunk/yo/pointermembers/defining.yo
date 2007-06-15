@@ -1,0 +1,86 @@
+Pointers hi(pointer to members: defining) to members are defined by prefixing
+the normal i(pointer notation) with the appropriate class plus
+    i(scope resolution operator). Therefore, in the previous section, we used
+tt(char const * (String::*d_sp)() const) to indicate:
+    itemization(
+    itt(d_sp) is a pointer (tt(*d_sp)),
+    it() to something in the class tt(String) (tt(String::*d_sp)).
+    it() It is a pointer to a tt(const) function, returning a tt(char const *):
+            tt(char const * (String::*d_sp)() const)
+    it() The prototype of the corresponding function is therefore:
+        centt(char const *String::somefun() const;)
+    a tt(const) parameterless function in the class tt(String), returning a
+tt(char const *).
+    )
+    Actually, the normal procedure for i(constructing pointers) can still be
+applied:
+    itemization(
+    it() put parentheses around the function name (and its class name):
+        centt(char const * ( String::somefun ) () const)
+    it() Put a pointer (a star (tt(*))) character immediately before the
+function-name itself:
+        centt(char const * ( String:: * somefun ) () const)
+    it() Replace the function name with the name of the pointer variable:
+        centt(char const * (String::*d_sp)() const)
+    )
+    Another example, this time defining a pointer to a data member. Assume the
+class tt(String) contains a tt(string d_text) member. How to construct a
+pointer to this member? Again we follow the basic procedure:
+    itemization(
+    it() put parentheses around the variable name (and its class name):
+        centt(string (String::d_text))
+    it() Put a pointer (a star (tt(*))) character immediately before the
+variable-name itself:
+        centt(string (String::*d_text))
+    it() Replace the variable name with the name of the pointer variable:
+        centt(string (String::*tp))
+    In this case, the parentheses are superfluous and may be omitted:
+        centt(string String::*tp)
+    )
+    Alternatively, a very simple i(rule of thumb) is
+    itemization(
+    it() Define a normal (i.e., global) pointer variable,
+    it() Prefix the class name to the pointer character, once you point to
+something inside a class
+    )
+    For example, the following pointer to a global function
+        verb(
+    char const * (*sp)() const;
+        )
+    becomes a pointer to a member function after prefixing the class-scope:
+        verb(
+    char const * (String::*sp)() const;
+        )
+    Nothing in the above discussion forces us to define these pointers to
+members in the tt(String) class itself. The pointer to a member may be defined
+in the class (so it becomes a data member itself), or in another class, or as
+a local or global variable. In all these cases the pointer to member
+variable can be given the address of the kind of member it points to. The
+important part is that a pointer to member can be initialized or assigned
+without the need for an object of the corresponding class.
+
+Initializing or assigning an address to such a pointer does nothing but
+indicating to which member the pointer will point. This  can be
+considered a kind of emi(relative address): relative to the object for which
+the function is called. No object is required when pointers to members are
+initialized or assigned. On the other hand, while it is allowed to initialize
+or assign a pointer to member, it is (of course) not possible to em(access)
+these members without an associated object.
+
+In the following example hi(pointers to members: assignment)
+    hi(assignment: pointers to members) initialization of and assignment to
+pointers to members is illustrated (for illustration purposes all members of
+tt(PointerDemo) are defined tt(public)). In the example itself, note the use
+of the tt(&)-operator to determine the addresses of the members. These
+operators, as well as the class-scopes are required. Even when used inside the
+class member implementations themselves:
+        verbinclude(pointermembers/examples/initializing.cc)
+    Actually, nothing special is involved: the difference with pointers at
+i(global scope) is that we're now restricting ourselves to the scope of the
+tt(PointerDemo) class. Because of this restriction, all em(pointer)
+definitions and all variables whose addresses are used must be given the
+tt(PointerDemo) class scope. Pointers to members can also be used with
+tt(virtual)
+        hi(pointer to virtual member function)
+    member functions. No further changes are required if, e.g., tt(get()) is
+defined as a virtual member function.

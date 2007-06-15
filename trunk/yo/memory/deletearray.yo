@@ -1,0 +1,37 @@
+A dynamically allocated array may be deleted using operator
+    ti(delete[]). Operator tt(delete[]) expects a pointer to a block of
+memory, previously allocated using operator ti(new[]).
+
+    When an object is deleted, its em(destructor) (see section
+ref(DESTRUCTOR)) is called automatically, comparable to the calling of the
+object's constructor when the object was created. It is the task of the
+destructor, as discussed in depth link(later in this chapter)(DESTRUCTOR), to
+do all kinds of cleanup operations that are required for the proper
+destruction of the object.
+
+    The operator tt(delete[]) (empty square brackets) expects as its argument
+a pointer to an i(array of objects). This operator will now first call the
+destructors of the individual objects, and will then delete the allocated
+block of memory. So, the proper way to delete an array of tt(Objects) is:
+        verb(
+    Object *op = new Object[10];
+    delete[] op;
+        )
+    Realize that tt(delete[]) only has an additional effect if the block of
+memory to be deallocated consists of em(objects). With pointers or values of
+primitive types normally no special action is performed. Following
+    tt(int *it = new int[10]) the statement tt(delete[] it) the memory
+occupied by all ten tt(int) values is returned to the common pool. Nothing
+special happens.
+
+Note especially that an ti(array of pointers to objects) is not handled as an
+ti(array of objects) by tt(delete[]): the array of pointers to objects doesn't
+contain objects, so the objects are not properly destroyed by tt(delete[]),
+whereas an array of objects contains objects, which are properly destroyed by
+tt(delete[]). In section ref(DESTRUCTOR) several examples of the use of
+tt(delete) em(versus) tt(delete[]) will be given.
+
+    The operator tt(delete) is a different operator than operator
+tt(delete[]). In section ref(NEWDELETEARRAY) redefining tt(delete[]) is
+discussed. The i(rule of thumb) is: if ti(new[]) was used, also use
+tt(delete[]).

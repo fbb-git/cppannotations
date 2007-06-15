@@ -1,0 +1,48 @@
+When should tt(inline) hi(using inline functions) functions be used, and when
+not? There are some hi(rule of thumb) rules of thumb which may be followed:
+    itemization(
+    it() In general tt(inline) functions should bf(not) be used.
+em(Voil\`a); that's simple, isn't it?
+    it() Defining tt(inline) functions can be considered once a fully
+developed and tested program runs too slowly and shows `bottlenecks' in
+certain functions. A i(profiler), which runs a program and determines where
+most of the time is spent, is necessary to perform for such optimizations.
+    itt(inline) functions can be used when member functions consist of one
+very simple statement (such as the return statement in the function
+tt(Person::name())).
+    it() By defining a function as tt(inline), its implementation is inserted
+in the code wherever the function is used. As a consequence, when the
+em(implementation) of the inline function changes, all sources using the
+inline function must be recompiled. In practice that means that all functions
+must be recompiled that include (either directly or indirectly) the header
+file of the class in which the inline function is defined.
+    it() It is only useful to implement an tt(inline) function when the time
+spent during a function call is long compared to the code in the
+function. An example of an  tt(inline) function which will hardly have any
+effect on the program's speed is:
+        verb(
+    void Person::printname() const
+    {
+        cout << d_name << endl;
+    }
+        )
+    This function, which is, for the sake of the example, presented as a
+    member of the class tt(Person), contains only one statement.  However, the
+statement takes a relatively long time to execute. In general, functions which
+perform input and output take lots of time. The effect of the conversion of
+this function tt(printname()) to tt(inline) would therefore lead to an
+insignificant gain in execution time.
+    )
+    All tt(inline) functions hi(inline: disadvantage) have one disadvantage:
+the actual code is inserted by the compiler and must therefore be known
+compile-time. Therefore, as mentioned earlier, an tt(inline) function can
+never be located in a run-time library. Practically this means that an
+tt(inline) function is hi(inline function: placement) placed near the
+interface of a class, usually in the same header file. The result is a header
+file which not only shows the bf(declaration) of a class, but also part of its
+bf(implementation), thus blurring the distinction between interface and
+implementation.
+
+Finally, note once again that the keyword tt(inline) is not really a
+em(command) to the compiler. Rather, it is a em(request) the compiler may
+or may not grant.

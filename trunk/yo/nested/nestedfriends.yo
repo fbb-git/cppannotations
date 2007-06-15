@@ -1,0 +1,205 @@
+    To allow nested classes to access the i(private members) of
+their surrounding class; to access the private members of other nested classes;
+or to allow the surrounding class to access the private members of its nested
+classes, the ti(friend) keyword must be used. Consider the following
+situation, in which a class tt(Surround) has two nested classes
+tt(FirstWithin) and tt(SecondWithin), while each class has a
+    i(static data member) tt(int s_variable):
+        verb(
+    class Surround
+    {
+        static int s_variable;
+        public:
+            class FirstWithin
+            {
+                static int s_variable;
+                public:
+                    int value();
+            };
+            int value();
+        private:
+            class SecondWithin
+            {
+                static int s_variable;
+                public:
+                    int value();
+            };
+    };
+        )
+    If the class tt(Surround) should be able to access tt(FirstWithin) and
+tt(SecondWithin)'s private members, these latter two classes must declare
+tt(Surround) to be their friend. The function tt(Surround::value()) can
+thereupon access the private members of its nested classes. For example (note
+the tt(friend) declarations in the two nested classes):
+        verb(
+    class Surround
+    {
+        static int s_variable;
+        public:
+            class FirstWithin
+            {
+                friend class Surround;
+                static int s_variable;
+                public:
+                    int value();
+            };
+            int value();
+        private:
+            class SecondWithin
+            {
+                friend class Surround;
+                static int s_variable;
+                public:
+                    int value();
+            };
+    };
+    inline int Surround::FirstWithin::value()
+    {
+        FirstWithin::s_variable = SecondWithin::s_variable;
+        return (s_variable);
+    }
+        )
+    Now, to allow the nested classes access to the private members of
+their surrounding class, the class tt(Surround) must declare its nested classes
+as friends. The tt(friend) keyword may only be used when the class that is to
+become a friend is already known as a class by the compiler, so either a
+i(forward declaration) of the nested classes is required, which is followed
+by the friend declaration, or the friend declaration follows the definition of
+the nested classes. The forward declaration followed by the friend declaration
+looks like this:
+        verb(
+    class Surround
+    {
+        class FirstWithin;
+        class SecondWithin;
+        friend class FirstWithin;
+        friend class SecondWithin;
+
+        public:
+            class FirstWithin;
+        ...
+        )
+    Alternatively, the friend declaration may follow the definition of the
+classes. Note that a class can be declared a friend following its definition,
+while the inline code in the definition already uses the fact that it will be
+declared a friend of the outer class. When defining members within the class
+interface implementations of nested class members may use members of the
+surrounding class that have not yet been seen by the compiler. Finally note
+that q`tt(s_variable)' which is
+    hi(nested class members: access to) defined in the class tt(Surround) is
+accessed in the nested classes as tt(Surround::s_variable):
+        verb(
+    class Surround
+    {
+        static int s_variable;
+        public:
+            class FirstWithin
+            {
+                friend class Surround;
+                static int s_variable;
+                public:
+                    int value();
+            };
+            friend class FirstWithin;
+            int value();
+
+        private:
+            class SecondWithin
+            {
+                friend class Surround;
+                static int s_variable;
+                public:
+                    int value();
+            };
+            static void classMember();
+
+            friend class SecondWithin;
+    };
+
+    inline int Surround::value()
+    {
+        FirstWithin::s_variable = SecondWithin::s_variable;
+        return s_variable;
+    }
+
+    inline int Surround::FirstWithin::value()
+    {
+        Surround::s_variable = 4;
+        Surround::classMember();
+        return s_variable;
+    }
+
+    inline int Surround::SecondWithin::value()
+    {
+        Surround::s_variable = 40;
+        return s_variable;
+    }
+        )
+    Finally, we want to allow the nested classes access to each other's
+private members. Again this requires some tt(friend) declarations. In order to
+allow tt(FirstWithin) to access tt(SecondWithin)'s private members nothing but
+a tt(friend) declaration in tt(SecondWithin) is required. However, to allow
+tt(SecondWithin) to access the private members of tt(FirstWithin) the
+tt(friend class SecondWithin) declaration cannot plainly be given in the class
+tt(FirstWithin), as the definition of tt(SecondWithin) is as yet unknown. A
+i(forward declaration) of tt(SecondWithin) is required, and this forward
+declaration must be provided by the class tt(Surround), rather than by the
+class tt(FirstWithin).
+
+    Clearly, the forward declaration tt(class SecondWithin) in the class
+tt(FirstWithin) itself makes no sense, as this would refer to an external
+(global) class tt(SecondWithin). Likewise, it is impossible to provide the
+forward declaration of the nested class tt(SecondWithin) inside
+tt(FirstWithin) as tt(class Surround::SecondWithin), with the compiler issuing
+a message like
+        centt(`Surround' does not have a nested type named `SecondWithin')
+    The proper procedure here is to declare the class tt(SecondWithin) in the
+class tt(Surround), before the class tt(FirstWithin) is defined. Using this
+procedure, the friend declaration of tt(SecondWithin) is accepted inside the
+definition of tt(FirstWithin). The following class definition allows full
+access of the private members of all classes by all other classes:
+        verb(
+    class Surround
+    {
+        class SecondWithin;
+        static int s_variable;
+        public:
+            class FirstWithin
+            {
+                friend class Surround;
+                friend class SecondWithin;
+                static int s_variable;
+                public:
+                    int value();
+            };
+            friend class FirstWithin;
+            int value();
+        private:
+            class SecondWithin
+            {
+                friend class Surround;
+                friend class FirstWithin;
+                static int s_variable;
+                public:
+                    int value();
+            };
+            friend class SecondWithin;
+    };
+    inline int Surround::value()
+    {
+        FirstWithin::s_variable = SecondWithin::s_variable;
+        return s_variable;
+    }
+
+    inline int Surround::FirstWithin::value()
+    {
+        Surround::s_variable = SecondWithin::s_variable;
+        return s_variable;
+    }
+
+    inline int Surround::SecondWithin::value()
+    {
+        Surround::s_variable = FirstWithin::s_variable;
+        return s_variable;
+    }
+        )

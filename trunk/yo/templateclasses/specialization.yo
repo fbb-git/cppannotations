@@ -1,0 +1,117 @@
+    Our earlier class tt(FBB::auto_ptr) can be used for many different
+types. Their common characteristic is that they can simply be assigned to the
+class's tt(d_data) member, e.g., using tt(auto_ptr(Data *data)). However,
+this is not always as simple as it looks. What if tt(Data)'s actual type is
+tt(char *)? Examples of a tt(char **), tt(data)'s resulting type, are
+well-known: tt(main())'s tt(argv) and tt(envp), for example are tt(char **)
+parameters.
+
+    It this special case we might not be interested in the mere reassignment
+of the constructor's parameter to the class's tt(d_data) member, but we might
+be interested in copying the complete tt(char **) structure. To realize this,
+class template specializations may be used.
+
+    Class template specializations are used in cases where member
+        hi(class template: specializations)
+    function templates cannot (or should not) be used for a particular actual
+template parameter type. In those cases specialized template members can be
+constructed, fitting the special needs of the actual type.
+
+    Class template member specializations are specializations of existing
+class members. Since the class members already exist, the specializations will
+em(not) be part of the class interface. Rather, they are defined below the
+interface as members, redefining the more generic members using explicit
+types. Furthermore, as they are specializations of existing class members,
+their function prototypes must exactly match the prototypes of the member
+functions for which they are specializations. For our tt(Data = char *)
+specialization the following definition could be designed:
+        verb(
+    template <>
+    auto_ptr<char *>::auto_ptr(char **argv)
+    :
+        d_n(0)
+    {
+        char **tmp = argv;
+        while (*tmp++)
+            d_n++;
+        d_data = new char *[d_n];
+
+        for (size_t idx = 0; idx < d_n; idx++)
+        {
+            std::string str(argv[idx]);
+            d_data[idx] =
+                strcpy(new char[str.length() + 1], str.c_str());
+        }
+    }
+        )
+    Now, the above specialization will be used to construct the following
+tt(FBB::auto_ptr) object:
+        verb(
+    int main(int argc, char **argv)
+    {
+        FBB::auto_ptr<char *> ap3(argv);
+        return 0;
+    }
+        )
+
+    Although defining a template member specialization may allow us to use the
+occasional exceptional type, it is also quite possible that a single template
+member specialization is not enough. Actually, this is the case when designing
+the tt(char *) specialization, since the template's tt(destroy())
+implementation is not correct for the specialized type tt(Data = char *). When
+multiple members must be specialized for a particular type, then a complete
+class template specialization might be considered.
+
+    A completely specialized class shows the following characteristics:
+    itemization(
+    it() The class template specialization follows the generic class template
+definition. After all, it's a specialization, so the compiler must have seen
+what is being specialized.
+    it() All the class's template parameters are given specific type names or
+(for the non-type parameters) specific values. These specific values are
+explicitly stated in a template parameter specification list (surrounded by
+angle brackets) which is inserted immediately following the template's class
+name.
+    it() All the specialized template members specify the specialized types
+and values where the generic template parameters are used in the generic
+template definition.
+    it() Not all the template's members em(have) to be defined, but, to
+ensure generality of the specialization, em(should) be defined. If a member is
+left out of the specialization, it can't be used for the specialized type(s).
+    it() Additional members may be defined in the specialization. However,
+those that are defined in the generic template too must have corresponding
+members (using the same prototypes, albeit using the generic template
+parameters) in the generic class template definition. The compiler will not
+complain when additional members are defined, and will allow you to use those
+members with objects of the specialized class template.
+    it() Member functions of specialized class templates may be defined
+within their specializing class or they may be declared in the specializing
+class. When they are only declared, then their definitition should be given
+below the specialized class template's interface. Such an implementation may
+em(not) begin with a tt(template <>) announcement, but should immediately
+start with the member function's header.
+    )
+
+    Below a full specialization of the class template tt(FBB::auto_ptr) for
+the actual type tt(Data = char *) is given, illustrating the above
+characteristics. The specialization should be appended to the file already
+containing the generic class template. To reduce the size of the example
+members that are only declared may be assumed to have identical
+implementations as used in the generic template.
+        verbinclude(templateclasses/examples/autoptr2.h)
+
+    Note that specializations not automatically have empty template
+        hi(template specialization: non-empty template parameter list)
+    parameter lists. Consider the following example of an (grossly incomplete)
+specialization of tt(FBB::auto_ptr):
+        verbinclude(templateclasses/examples/autoptr4.h)
+
+    In this example a specialization is created for the type tt(std::vector>),
+instantiated with any data type tt(T). Since tt(T) is not specified, it must
+be mentioned in the template paramter list as a template type parameter.
+E.g., if an tt(FBB::auto_ptr<std::vector<int> *>) is constructed, the compiler
+deducts that tt(T) is an tt(int) and will use the tt(vector<T> *)
+specialization, in which tt(T) could be used as a type specification. The
+following basic example shows that the compiler will indeed select the
+tt(vector<T>*) specialization:
+        verbinclude(templateclasses/examples/autoptr4.cc)

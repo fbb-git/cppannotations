@@ -1,0 +1,29 @@
+%name Parser
+
+%union {
+    int i;
+    double d;
+};
+
+%token  DONE
+        INT
+        DOUBLE
+
+%type   <i> intExpr
+%type   <d> doubleExpr
+
+%left   '+'
+%left   '*'
+%right  UnaryMinus
+
+%define LEX_BODY {return d_scanner.yylex();}
+
+%define ERROR_BODY { std::cerr << "error encountered\n"; }
+
+%define MEMBERS                                         \
+    virtual ~Parser()   {}                              \
+    private:                                            \
+        std::ostringstream d_rpn;                       \
+        Scanner d_scanner;
+
+%define DEBUG 1

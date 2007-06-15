@@ -1,0 +1,52 @@
+Next we would like to illustrate the analogy between
+bf(C) and bf(C++) as far as tt(struct)s are concerned. In bf(C) it is
+common to define several functions to process a tt(struct), which then
+require a pointer to the tt(struct) as one of their arguments. A fragment
+of an imaginary bf(C) header file is given below:
+        verb(
+    // definition of a struct PERSON_
+    typedef struct
+    {
+        char name[80];
+        char address[80];
+    } PERSON_;
+
+    // some functions to manipulate PERSON_ structs
+
+    // initialize fields with a name and address
+    void initialize(PERSON_ *p, char const *nm,
+                       char const *adr);
+
+    // print information
+    void print(PERSON_ const *p);
+
+    // etc..
+        )
+    In bf(C++), the declarations of the involved functions are placed inside
+the definition of the tt(struct) or tt(class). The argument which denotes
+which tt(struct) is involved is no longer needed.
+        verb(
+    class Person
+    {
+        public:
+            void initialize(char const *nm, char const *adr);
+            void print();
+            // etc..
+        private:
+            char d_name[80];
+            char d_address[80];
+    };
+        )
+    The tt(struct) argument is implicit in bf(C++). A bf(C) function call
+such as:
+        verb(
+    PERSON_ x;
+
+    initialize(&x, "some name", "some address");
+        )
+    becomes in bf(C++):
+        verb(
+    Person x;
+
+    x.initialize("some name", "some address");
+        )

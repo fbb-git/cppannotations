@@ -1,0 +1,78 @@
+When the operator tt(delete) releases memory occupied by a dynamically
+allocated object, or when an object goes i(out of scope), the appropriate
+i(destructor) is called to ensure that memory allocated by the object is also
+deleted. Now consider the following code fragment (cf. section
+ref(VehicleSystem)):
+        verb(
+    Vehicle *vp = new Land(1000, 120);
+
+    delete vp;          // object destroyed
+        )
+    In this example an object of a derived class (tt(Land)) is destroyed using
+a base class pointer (tt(Vehicle *)). For a `standard' class definition this
+will mean that tt(Vehicle)'s destructor is called, instead of the tt(Land)
+object's destructor. This not only results in a i(memory leak) when memory is
+allocated in tt(Land), but it will also prevent any other task, normally
+performed by the derived class's destructor from being completed (or, better:
+started). A Bad Thing.
+
+    In bf(C++) this problem is solved using hi(virtual destructor) em(virtual
+destructors).  By applying the keyword tt(virtual) to the declaration of a
+i(destructor) the appropriate derived class destructor is activated when the
+argument of the ti(delete) operator is a i(base class pointer). In the
+following partial class definition the declaration of such a virtual
+destructor is shown:
+        verb(
+    class Vehicle
+    {
+        public:
+            virtual ~Vehicle();
+            virtual size_t weight() const;
+    };
+        )
+    By declaring a virtual destructor, the above tt(delete) operation
+(tt(delete vp)) will correctly call tt(Land)'s destructor, rather than
+tt(Vehicle)'s destructor.
+
+    From this discussion we are now able to formulate the following situations
+in which a hi(destructor: when to define) destructor should be defined:
+    itemization(
+    it() A destructor should be defined when memory is allocated and managed
+by objects of the class.
+    it() This destructor should be defined as a em(virtual) destructor if the
+class contains at least one virtual member function, to prevent incomplete
+destruction of derived class objects when destroying objects using base class
+pointers or references pointing to derived class objects (see the initial
+paragraphs of this section)
+    )
+    In the second case, the destructor doesn't have any special tasks to
+perform. In these cases the virtual
+    hi(empty destructor) hi(destructor: empty)
+    destructor is given an empty body. For example, the definition of
+tt(Vehicle::~Vehicle()) may be as simple as:
+        verb(
+    Vehicle::~Vehicle()
+    {}
+        )
+    Often the destructor will be defined i(inline) below the
+    hi(destructor: inline) i(class interface).
+
+
+    bf(temporary note): With the gnu compiler 4.1.2 an annoying bug prevents
+        hi(virtual destructor: g++ bug)
+em(virtual destructors) to be defined inline below their class interfaces
+without explicitly declaring the virtual destructor as inline within the
+interface. Until the bug has been repaired, inline virtual destructors should
+be defined as follows (using the class tt(Vehicle) as an example):
+        verb(
+    class Vehicle
+    {
+        ...
+        public:
+            inline virtual ~Vehicle();  // note the `inline'
+            ...
+    };
+
+    inline Vehicle::~Vehicle()          // inline implementation
+    {}                                  // is kept unaltered.
+        )

@@ -1,0 +1,30 @@
+#!/bin/bash
+
+PROJECT=c++-annotations
+
+VERSION=`grep DOCVERSION yo/version.yo | sed 's/SUBST(DOCVERSION)(\(.*\))/\1/'`
+
+DISTRIBUTION=${PROJECT}-${VERSION}      # define the distribution's dir name
+
+cd ..
+
+ln -s trunk ${DISTRIBUTION}             # distribution's dir name
+
+if [ "$#" != "0" ]                      # any arg? make debian .orig file
+then
+    ls
+                                        # create the .orig source tar
+    tar czvf \
+        ${HOME}/debian/annotations/tarballs/${PROJECT}_${VERSION}.orig.tar.gz\
+                --exclude-from=${DISTRIBUTION}/excluded \
+                ${DISTRIBUTION}/*
+else
+    tar czvf ${PROJECT}_${VERSION}.tar.gz \
+                --exclude-from=${DISTRIBUTION}/excluded \
+                ${DISTRIBUTION}/*
+fi
+
+rm ${DISTRIBUTION}                      # rm the link
+
+
+

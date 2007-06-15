@@ -1,0 +1,88 @@
+The em(insertion) operator (lshift()) points to the tt(ostream )object wherein
+the  information is inserted. The em(extraction) operator points to the
+object receiving the information obtained from the tt(istream) object.
+
+As an example, the lshift() operator as defined with the tt(class ostream)
+is an overloaded operator having as prototype, e.g.,
+    center(tt(ostream &ostream::operator <<(char const *text)))
+
+The normal associativity of the lshift()-operator remains unaltered, so
+when a statement like
+    center((cout << "hello " << "world"))
+is encountered, the leftmost two operands are evaluated first
+(tt(cout << "hello ")), and a tt(ostream &) object, which is actually the
+same tt(cout) object. From here, the statement is reduced to
+    center((cout << "world"))
+and the second string is inserted into tt(cout).
+
+Since the lshift() operator has a lot of (overloaded) variants, many types of
+variables can be inserted into tt(ostream) objects. There is an overloaded
+lshift()-operator expecting an tt(int), a tt(double), a pointer, etc. etc..
+For every part of the information that is inserted into the stream the operator
+returns the tt(ostream) object into which the information so far was inserted,
+and the next part of the information to be inserted is devoured.
+
+As we have seen in the discussion of em(friends), even new classes can
+contain an overloaded lshift() operator to be used with tt(ostream) objects
+(see sections ref(FriendsFriendfun) and ref(FriendsPrevent)).
+
+COMMENT(
+
+    THE FOLLOWING SITUATION DOES NOT OCCUR ANYMORE WITH THE EGCS COMPILER
+
+Consider the following code example:
+verb(
+    #include <iostream>
+
+    int main()
+    {
+        int
+            value = 15,
+            *p = &value;
+
+        cout << "Value: " << value << "\n"
+            << "via p: " << *p << "\n"
+            << "value's address: " << &value << "\n"
+            << "address via p:   " << p << "\n"
+            << "p's address:     " << &p << "\n";
+    }
+)
+In this form the following output is generated (gnu C++ compiler,
+version 2.7.2):
+verb(
+    Value: 15
+    via p: 15
+    value's address: 1
+    address via p:   1
+    p's address:     1
+)
+
+This is a bit unexpected. How to get the addresses? By using an explicit
+cast to the em(generic pointer) tt(void *) the problem is solved:
+verb(
+    #include <iostream>
+
+    int main()
+    {
+        int
+            value = 15,
+            *p = &value;
+
+        cout << "Value: " << value << "\n"
+            << "via p: " << *p << "\n"
+            << "value's address: " << (void *)&value << "\n"
+            << "address via p:   " << (void *)p << "\n"
+            << "p's address:     " << (void *)&p << "\n";
+    }
+)
+
+The above code produces, e.g.,
+verb(
+    Value: 15
+    via p: 15
+    value's address: 0x804a1e4
+    address via p:   0x804a1e4
+    p's address:     0xbffff9fc
+)
+
+ENDCOMMENT )

@@ -1,0 +1,59 @@
+hi(stable_sort())
+    itemization(
+        it() Header file:
+        centt(#include <algorithm>)
+        it() Function prototypes:
+        itemization(
+            itt(void stable_sort(RandomAccessIterator first,
+                RandomAccessIterator last);)
+            itt(void stable_sort+OPENPARRandomAccessIterator first,
+                RandomAccessIterator last,)linebreak()
+                tt(Compare comp+CLOSEPAR;)
+        )
+        it() Description:
+        itemization(
+           it() The first prototype: the elements in the range rangett(first,
+last) are stable-sorted in ascending order, using ti(operator<()) of the data
+type to which the iterators point: the relative order of equal elements is
+kept.
+            it() The second prototype: the elements in the range
+rangett(first, last) are stable-sorted in ascending order, using the tt(comp)
+binary predicate to compare the elements. This predicate should return
+tt(true) if its first argument should be placed before its second argument in
+the sorted set of element.
+        )
+        it() Example (annotated below):
+        verbinclude(stl/cc/stablesort.cc)
+    )
+    Note that the example implements a solution to an often occurring problem:
+how to i(sort using multiple hierarchical criteria). The example deserves some
+additional attention:
+    enumeration(
+    eit() First, a ti(typedef) is used to reduce the clutter that occurs from
+the repeated use of tt(pair<string, string>).
+    eit() Next, hi(operator<<()) oplshift() is overloaded to be able to insert
+a tt(pair) into an ti(ostream) object. This is merely a service function to
+make life easy. Note, however, that this function is put in the tt(std)
+namespace. If this namespace wrapping is omitted, it won't be used, as
+tt(ostream)'s oplshift() operators must be part of the tt(std) namespace.
+    eit() Then, a class tt(sortby) is defined, allowing us to construct an
+i(anonymous) object which receives a pointer to one of the tt(pair) data
+members that are used for sorting. In this case, as both members are
+tt(string) objects, the constructor can easily be defined: its parameter is a
+pointer to a tt(string) member of the class tt(pair<string, string>).
+    eit() The tt(operator()()) member will receive two tt(pair) references,
+and it will then use the pointer to its members, stored in the tt(sortby)
+object, to compare the appropriate fields of the tt(pairs).
+    eit() In tt(main()), first some data is stored in a tt(vector).
+    eit() Then the first sorting takes place. The least important criterion
+must be sorted first, and for this a simple tt(sort()) will suffice. Since we
+want the names to be sorted within cities, the names represent the least
+important criterion, so we sort by names: tt(sortby(&pss::first)).
+    eit() The next important criterion, the cities, are sorted next. Since the
+relative ordering of the em(names) will not be altered anymore by
+tt(stable_sort()), the ties that are observed when cities are sorted are
+solved in such a way that the existing relative ordering will not be
+broken. So, we end up getting Goldberg in Eugene before Hampson in Eugene,
+before Moran in Eugene. To sort by cities, we use another anonymous tt(sortby)
+object: tt(sortby(&pss::second)).
+    )

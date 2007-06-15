@@ -1,0 +1,112 @@
+#!/usr/bin/icmake -qt/tmp/grambuild
+
+string
+    target;
+list
+    startrulegr,
+    rules,
+    components;
+
+int openblock(string line)
+{
+    int idx;
+    string ch;
+
+    for (idx = strlen(line); idx--; )
+    {
+        ch = element(idx, line);
+        if (substr(" \t\n{", ch) == -1)
+            return 0;
+        if (ch == "{")
+            return 1;
+    }
+    return 0;
+}
+
+void catfile(string file)
+{
+    int linenr;
+    int offset;
+    list result;
+    string line;
+
+    printf(file + " >> " + target + "\n");
+
+    linenr = 1;
+    offset = 0;
+
+    while (sizeof(result = fgets(file, offset)))
+    {
+        linenr++;
+        line = element(0, result);
+        offset = (int)element(1, result);
+
+        fprintf(target, line);
+        if (openblock(line))
+            fprintf(target, "#line ", linenr, "  \"", file, "\"\n");
+    }
+    fprintf(target, "\n\n");
+}
+
+void cat(list parts)
+{
+    int
+        idx,
+        n;
+
+    n = sizeof(parts);
+
+    for (idx = 0; idx < n; ++idx)
+        catfile(element(idx, parts));
+}
+
+int update()
+{
+    system("echo > " + target);     // refresh the target
+
+    cat(components);
+
+    system("echo '%%' >> " + target);
+
+    cat(startrulegr);
+    cat(rules);
+    return 0;
+}
+
+int inspect(list parts)
+{
+    int
+        idx,
+        n;
+
+    n = sizeof(parts);
+
+    for (idx = 0; idx < n; ++idx)
+    {
+        if (element(idx, parts) younger target)
+        {
+            update();
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int main()
+{
+    startrulegr = (list)"startrule.gr0";
+    rules = makelist("*.gr");
+
+    components = makelist("*.gr0") - startrulegr - (list)"header.gr0";
+    components = (list)"header.gr0" + components;
+
+    target = "grammar";
+
+    if (!exists(target))
+        return update();
+
+    if (!inspect(components) && !inspect(startrulegr))
+        inspect(rules);
+
+    return 0;
+}

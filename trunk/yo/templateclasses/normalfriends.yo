@@ -1,0 +1,46 @@
+    A class template may declare a ordinary function, ordinary member function
+or complete ordinary class as its friend.  Such a i(friend) may access the
+class template's i(private members).
+
+    Concrete classes and ordinary functions can be declared as friends, but
+before a single class member function can be declared as a friend, the
+compiler must have seen the i(class interface) declaring that member. Let's
+consider the various possibilities:
+    itemization(
+    it() A class template may declare a ordinary function to be its
+friend. It is not completely clear em(why) we would like to declare a ordinary
+function as a friend. In ordinary cases we would like to pass an object of the
+class declaring the friend to the function. However, this requires us to
+provide the function with a template parameter without specifying its
+types. As the language does not support constructions like
+        centt(void function(std::vector<Type> &vector))
+    unless tt(function()) itself is a template, it is not immediately clear
+how and why such a friend should be constructed. One reason, though, is to
+allow the function to access the class's private static members. Furthermore,
+such friends could themselves instantiate objects of classes declaring them as
+friends, and directly access such object's private members. For example:
+        verbinsert(FUNCTION)(templateclasses/examples/concretefriends.cc)
+    it() Declaring a ordinary class to be a class template's friend probably
+has more practical implications. Here the friend-class may instantiate any
+kind of object of the class template, to access all of its private members
+thereafter. A simple forward declaration of the friend class in front of the
+class template definition is enough to make this work:
+        verbinsert(CLASS)(templateclasses/examples/concretefriends.cc)
+    it() Alternatively, just a single member function of a ordinary class may
+be declared as a friend. This requires that the compiler has read the friend
+class's interface before the friend is declared. Omitting the required
+destructor and overloaded assignment operators, the following shows an example
+of a class whose member tt(randomizer()) is declared as a friend of the class
+tt(Composer):
+        verbinsert(MEMBER)(templateclasses/examples/concretefriends.cc)
+    In this example note that tt(Friend::d_ints) is a pointer member. It
+cannot be a tt(Composer<int>) object, since the tt(Composer) class interface
+hasn't yet been seen by the compiler when it reads tt(Friend)'s class
+interface. Disregarding this and defining a data member tt(Composer<int>
+d_ints) results in the compiler generating the error
+        hi(field `...' has incomplete type)
+        centt(error: field `d_ints' has incomplete type)
+    Incomplete type, as the compiler at this points knows of the existence of
+the class tt(Composer) but as it hasn't seen tt(Composer)'s interface it
+doesn't know what size the tt(d_ints) data member will have.
+    )

@@ -1,0 +1,84 @@
+The class template tt(GenScat) can be used by itself, to define a simple
+tt(struct) containg various data members. The foundation of such a
+conglomerate tt(struct) could be the following tt(struct Field):
+    verbinsert(FIELD)(templateapp/examples/genscatter2.cc)
+    Such an instant tt(struct) could be
+useful in various situations; due to the nature of the tt(struct Field), all
+data types would by default be initialized to their natural defaults. E.g.,
+tt(GenScat) can be used directly as follows:
+        verb(
+    GenScat<TYPELIST_2(int, int), Field> gs;
+
+    base<1>(gs).d_value = 12;
+    cout << base<0>(gs).d_value << " " << base<1>(gs).d_value << endl;
+        )
+    The above code, when it is run from tt(main()) will write the values 0 and
+12, showing that default initialization and assignment to the individual
+fields is simply realized.
+
+Useful as this may be, sometimes more refined initializations may be
+necessary. E.g, an application needs a tt(struct) having two tt(int) data
+fields and a reference to a tt(std::string). Since the tt(struct) contains a
+reference field, an initialization is required at construction time. In this
+case a tt(struct) can be derived from tt(GenScat), while providing a
+constructor for the derived class performing the necessary
+intiializations. For situations like these, the tt(BaseClass) support struct
+(section ref(GENSUPPORT)) comes in quite handy. Here is the tt(struct
+MyStruct), derived from the appropriate tt(GenScat) template, including its
+field-initializations:
+    verbinsert(MYSTRUCT)(templateapp/examples/genscatter2.cc)
+    Note how each of the types in the provided typelist has its order-number
+mapped to the index used with the tt(BaseClass) invocations. Also, since
+tt(MyStruct) is also an object of its base class (tt(GenScat)), it can be
+specified as the tt(Derived) argument of tt(BaseClass). Furthermore, from the
+types specified in the typelist the types of acceptable arguments of the
+tt(Type)s to be initialized can be derived. E.g., the tt(string text) is
+passed as argument to tt(Type) when initializing the second field.
+
+    The following example shows how tt(MyStruct) can be used:
+        verb(
+    string text("hello");
+    MyStruct myStruct(12345, text, 12);
+
+    cout << base<0>(myStruct).field << " " <<
+            base<1>(myStruct).field << " " <<
+            base<2>(myStruct).field << endl;
+
+    base<0>(myStruct).field = 123;
+    base<1>(myStruct).field = "new text";
+
+    cout << base<0>(myStruct).field << "\n" <<
+            "`text' now contains: " << text << endl;
+        )
+    When these lines of code are placed in a tt(main()) function, and the
+program is run the following output is produced showing proper initialization,
+reassignment and reassignment of the refered to tt(string text) via the
+appropriate tt(MyStruct) field:
+        verb(
+    12345 hello 12
+    123
+    `text' now contains: new text
+        )
+
+    As a final example consider the tt(struct Vectors):
+    verbinsert(VECTORS)(templateapp/examples/genscatter2.cc)
+    The tt(struct Vectors) uses tt(std::vector) as its template template
+parameter, and tt(Vectors) objects will thus offer three tt(std::vector)s: the
+first containing tt(int)s, the second tt(string)s, and the third again
+tt(int)s. Due to the nature of the tt(Wrap) template class wrapper, the three
+tt(std::vector) base classes of tt(Vectors) must be initialized by
+tt(std::vector) objects, and the constructor simply provides three vectors of
+varying sizes. Alternatively, the constructor could be furnished with three
+tt(vector) references or three tt(size_t) values to allow a more flexible
+initialization.
+
+    A tt(Vectors) object could be used as follows, showing that the tt(base)
+support function (cf. section ref(GENSUPPORT)) provides easy access to the
+tt(vector) base class of choice:
+        verb(
+    Vectors vects;
+
+    cout << base<0>(vects).size() << " " << base<1>(vects).size() << " " <<
+            base<2>(vects).size() << endl;
+        )
+    Running this code fragment produces the output `tt(1  2 3)', as expected.

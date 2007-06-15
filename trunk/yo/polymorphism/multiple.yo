@@ -1,0 +1,45 @@
+As mentioned in chapter ref(INHERITANCE) a class may be derived from multiple
+base classes. Such a derived class inherits the properties of all its base
+classes. Of course, the base classes themselves may be derived from classes
+yet higher in the hierarchy.
+
+Consider what would happen if more than one `path' would lead from the
+    i(derived class)
+    to the i(base class). This is illustrated in the code example below: a
+class tt(Derived) is doubly derived from a class tt(Base):
+        verb(
+    class Base
+    {
+        int d_field;
+        public:
+            void setfield(int val);
+            int field() const;
+    };
+    inline void Base::setfield(int val)
+    {
+        d_field = val;
+    }
+    inline int field() const
+    {
+        return d_field;
+    }
+
+    class Derived: public Base, public Base
+    {
+    };
+        )
+    Due to the double derivation, the functionality of tt(Base) now occurs
+twice in tt(Derived). This leads to i(ambiguity): when the function
+tt(setfield()) is called for a tt(Derived) object, em(which) function should
+that be, since there are two? In such a duplicate derivation, C++ compilers
+will normally refuse to generate code and will (correctly) identify an error.
+
+The above code clearly duplicates its base class in the derivation, which can
+of course easily be avoided by not doubly deriving from tt(Base). But
+duplication of a base class can also occur through i(nested inheritance),
+where an object is derived from, e.g., an tt(Auto) and from an tt(Air) (see
+the vehicle classification system, section ref(VehicleSystem)). Such a class
+would be needed to represent, e.g., a flying car+footnote(such as the one in
+James Bond vs. the Man with the Golden Gun...). An tt(AirAuto) would
+ultimately contain two tt(Vehicles), and hence two tt(weight) fields, two
+tt(setWeight()) functions and two tt(weight()) functions.

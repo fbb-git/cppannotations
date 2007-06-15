@@ -1,0 +1,121 @@
+In bf(C) i(local variables) can only be defined at the top of a function or at
+the beginning of a nested block. In bf(C++) local variables can be created at
+any position in the code, even between statements.
+
+Furthermore, local variables can be defined inside some statements, just prior
+to their usage. A typical example is the tt(for) statement:
+        verb(
+    #include <stdio.h>
+
+    int main()
+    {
+        for (register int i = 0; i < 20; i++)
+            printf("%d\n", i);
+        return 0;
+    }
+        )
+    In this code fragment the variable tt(i) is created inside the tt(for)
+statement. According to the ANSI-standard, the variable does not exist prior
+to the tt(for)-statement and not beyond the tt(for)-statement.  With some
+older compilers, the variable continues to exist after the execution of the
+tt(for)-statement, but a warning like
+        quote(
+    warning: i(name lookup) of `i' changed for new ANSI `for' scoping
+    using i(obsolete binding) at `i'
+        )
+    will then be issued when the variable is used outside of the tt(for)-loop.
+The implication seems clear: define a variable just before the
+tt(for)-statement if it's to be used after that statement, otherwise the
+variable can be defined inside the tt(for)-statement itself.
+
+Defining i(local variables) when they're needed requires a little getting used
+to. However, eventually it tends to produce more readable and often more
+efficient code than defining variables at the beginning of compound
+statements. We suggest the following rules hi(rule of thumb) of thumb for
+defining local variables:
+    itemization(
+    it() Local variables should be created at `intuitively right' places, such
+as in the example above. This does not only entail the tt(for)-statement, but
+also all situations where a variable is only needed, say, half-way through the
+function.
+    it() More in general, variables should be defined in such a way that
+their scope is as em(limited) and em(localized) as possible.
+Local variables are not necessarily defined anymore at the
+beginning of functions, following the first tt({).
+    it() It is considered good practice to hi(global variables: avoid)
+    emi(avoid global variables). It is fairly easy to lose track of which
+global variable is used for what purpose. In bf(C++) global variables are
+seldomly required, and by localizing variables the well known phenomenon of
+using the same variable for multiple purposes, thereby invalidating each
+individual purpose of the variable, can easily be avoided.
+    )
+
+    If considered appropriate, emi(nested blocks) can be used to localize
+auxiliary variables. However, situations exist where local variables are
+considered appropriate inside nested statements. The just mentioned tt(for)
+statement is of course a case in point, but local variables can also be
+defined within the condition clauses of tt(if-else) statements, within
+selection clauses of tt(switch) statements and condition clauses of tt(while)
+statements. Variables thus defined will be available in the full
+statement, including its nested statements. For example, consider the
+following tt(switch) statement:
+        verbinclude(intro/examples/switch.cc)
+    Note the location of the definition of the character `tt(c)': it is
+defined in the expression part of the tt(switch()) statement. This implies
+that `tt(c)' is available em(only) in the tt(switch) statement itself,
+including its nested (sub)statements, but not outside the scope of the
+tt(switch).
+
+    The same approach can be used with tt(if) and tt(while) statements: a
+variable that is defined in the condition part of an tt(if) and tt(while)
+statement is available in their nested statements. However, one should realize
+that:
+    itemization(
+    it() The variable definition should result in a variable which is
+initialized to a numerical or logical value;
+    it() The variable definition cannot be nested (e.g., using parentheses)
+within a more complex expression.
+    )
+    The latter point of attention should come as no big surprise: in order to
+be able to evaluate the logical condition of an tt(if) or tt(while) statement,
+the value of the variable must be interpretable as either zero (false) or
+non-zero (true). Usually this is no problem, but in bf(C++) em(objects) (like
+objects of the type tt(std::string) (cf. chapter ref(String))) are often
+returned by functions. Such objects may or may not be interpretable as
+numerical values. If not (as is the case with tt(std::string) objects), then
+such variables can em(not) be defined in the condition or expression parts of
+condition- or repetition statements. The following example will, therefore,
+em(not) compile:
+        verb(
+    if (std::string myString = getString())     // assume getString() returns
+    {                                           // a std::string value
+        // process myString
+    }
+        )
+
+    The above deserves further clarification. Often a variable can profitably
+be given local scope, but an extra check is required immediately following its
+initialization. Both the initialization and the test cannot be combined in one
+expression, but two nested statements are required. The following example will
+therefore em(not) compile either:
+        verb(
+    if ((int c = getchar()) && strchr("aeiou", c))
+        printf("Saw a vowel\n");
+        )
+    If such a situation occurs, either use two nested tt(if) statements, or
+localize the definition of tt(int c) using a nested compound statement.
+Actually, other approaches are possible as well, like using em(exceptions)
+(cf. chapter ref(EXCEPTIONS)) and specialized functions, but that's jumping a
+bit too far ahead. At this point in our discussion, we can suggest one of the
+following approaches to remedy the problem introduced by the last example:
+        verb(
+    if (int c = getchar())             // nested if-statements
+        if (strchr("aeiou", c))
+            printf("Saw a vowel\n");
+
+    {                                   // nested compound statement
+        int c = getchar();
+        if (c && strchr("aeiou", c))
+        printf("Saw a vowel\n");
+    }
+        )

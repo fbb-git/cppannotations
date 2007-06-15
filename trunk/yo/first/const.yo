@@ -1,0 +1,138 @@
+The keyword ti(const) is very often seen in bf(C++) programs. Although
+tt(const) is part of the bf(C) grammar, in bf(C) tt(const) is used much less
+frequently.
+
+The tt(const) keyword is a modifier which states that the value of a variable
+or of an argument may not be modified. In the following example the intent is
+to  change the value of a variable tt(ival), which fails:
+        verb(
+    int main()
+    {
+        int const ival = 3;     // a constant int
+                                // initialized to 3
+
+        ival = 4;               // assignment produces
+                                // an error message
+    }
+        )
+    This example shows how tt(ival) may be initialized to a given value in its
+definition; attempts to change the value later (in an assignment) are not
+permitted.
+
+Variables which are declared tt(const) can, in contrast to bf(C), be used as
+the specification of the size of an array, as in the following example:
+        verb(
+    int const size = 20;
+    char buf[size];             // 20 chars big
+        )
+    Another use of the keyword tt(const) is seen in the declaration of
+pointers, e.g., in pointer-arguments. In the declaration
+        verb(
+    char const *buf;
+        )
+    tt(buf) is a pointer variable, which points to tt(char)s. Whatever is
+pointed to by tt(buf) may not be changed: the tt(char)s are declared as
+tt(const). The pointer tt(buf) itself however may be changed. A statement like
+tt(*buf = 'a';) is therefore not allowed, while tt(buf++) is.
+
+In the declaration
+        verb(
+    char *const buf;
+        )
+    tt(buf) itself is a tt(const) pointer which may not be changed. Whatever
+tt(char)s are pointed to by tt(buf) may be changed at will.
+
+Finally, the declaration
+        verb(
+    char const *const buf;
+        )
+    is also possible; here, neither the pointer nor what it points to may be
+changed.
+
+The i(rule of thumb) for the placement of the keyword tt(const) is the
+following: whatever occurs to the em(left) to the keyword may not be changed.
+
+Although simple, this rule of thumb is not often used. For example,
+    hi(Stroustrup)
+    Bjarne Stroustrup states (in
+    hi(http://www.research.att.com/...)
+    tlurl(http://www.research.att.com/~bs/bs_faq2.html#constplacement)):
+    quote(
+    em(Should I put "const" before or after the type?)
+
+    em(I put it before, but that's a matter of taste. "const T" and "T const"
+were always (both) allowed and equivalent. For example:)
+        verb(
+    const int a = 1;        // ok
+    int const b = 2;        // also ok
+        )
+    em(My guess is that using the first version will confuse fewer programmers
+(``is more idiomatic'').)
+    )
+    Below we'll see an example where applying this simple `before' placement
+rule for the keyword tt(const) produces unexpected (i.e., unwanted)
+results. Apart from that, the `idiomatic' before-placement conflicts with the
+notion of emi(const functions), which we will encounter in section
+ref(ConstFunctions), where the keyword tt(const) is also written behind the
+name of the function.
+
+The definition or declaration in which tt(const) is used should be read from
+the variable or function identifier back to the type indentifier:
+        quote(
+    ``Buf is a const pointer to const characters''
+        )
+    This rule of thumb is especially useful in cases where confusion may
+occur.  In examples of bf(C++) code, one often encounters the reverse:
+tt(const) em(preceding) what should not be altered. That this may result in
+sloppy code is indicated by our second example above:
+        verb(
+    char const *buf;
+        )
+    What must remain constant here? According to the sloppy interpretation,
+the pointer cannot be altered (since tt(const) precedes the pointer). In
+fact, the charvalues are the constant entities here, as will be clear when we
+try to compile the following program:
+        verb(
+    int main()
+    {
+        char const *buf = "hello";
+
+        buf++;                  // accepted by the compiler
+        *buf = 'u';             // rejected by the compiler
+
+        return 0;
+    }
+        )
+    Compilation fails on the statement tt(*buf = 'u';), em(not) on the
+statement tt(buf++).
+
+    hi(Cline)
+    hi(http://www/parashift.com/c++-faq-lite/)
+    i(Marshall Cline)'s
+    turl(C++ FAQ)
+    (http://www.parashift.com/c++-faq-lite/const-correctness.html) gives the
+same rule (paragraph 18.5) , in a similar context:
+    quote(em(
+    [18.5] What's the difference between "const Fred* p", "Fred* const p" and
+"const Fred* const p"?)
+
+    em(You have to read pointer declarations right-to-left.)
+    )
+    Marshal Cline's advice might be improved, though: You should start to read
+pointer definitions (and declarations) at the variable name, reading as far as
+possible to the definition's end. Once a closing parenthesis is seen, reading
+continues backwards from the initial point of reading, from right-to-left,
+until the matching open-parenthesis or the very beginning of the definition is
+found. For example, consider the following complex declaration:
+        verb(
+    char const *(* const (*ip)[])[]
+        )
+    Here, we see:
+    itemization(
+    it() the variable tt(ip), being a
+    it() (reading backwards) modifiable pointer to an
+    it() (reading forward)   array of
+    it() (reading backward)  constant pointers to an
+    it() (reading forward)   array of
+    it() (reading backward)  modifiable pointers to constant characters
+    )

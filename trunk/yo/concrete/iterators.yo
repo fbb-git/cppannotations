@@ -1,0 +1,83 @@
+    Earlier, in section ref(RANDOMIT), the construction of iterators and
+reverse iteraters was discussed. In that section the iterator was constructed
+as an inner class in a class derived from a vector of pointers to strings.
+
+    An object of this nested iterator class handled the dereferencing of the
+pointers stored in the vector. This allowed us to sort the em(strings)
+pointed to by the vector's elements rather than the em(pointers).
+
+    A drawback of the approach taken in section ref(RANDOMIT) is that the
+class implementing the iterator is closely tied to the derived class as the
+iterator class was implemented as a nested class. What if we would like to
+provide any class derived from a container class storing pointers with an
+iterator handling the pointer-dereferencing?
+
+    In this section a variant to the earlier (nested class) approach is
+discussed. The iterator class will be defined as a emi(class template),
+    hi(iterator: as class template)
+    parameterizing the data type to which the container's elements point as
+well as the iterator type of the container itself. Once again, we will
+implement a emi(RandomIterator) as it is the most complex iterator type.
+
+    Our class is named tt(RandomPtrIterator), indicating that it is a random
+iterator operating on pointer values. The class template defines three
+template type parameters:
+    itemization(
+    it() The first parameter specifies the derived class type
+(tt(Class)). Like the earlier nested class, tt(RandomPtrIterator)'s
+constructor will be private. Therefore we need tt(friend) declarations to
+allow client classes to construct tt(RandomPtrIterators).  However, a
+tt(friend class Class) cannot be defined: template parameter types cannot be
+used in tt(friend class ...) declarations. But this is no big problem: not
+every member of the client class needs to construct iterators. In fact, only
+tt(Class)'s tt(begin()) and tt(end()) members must be able to construct
+iterators. Using the template's first parameter, friend declarations can be
+specified for the client's tt(begin()) and tt(end()) members.
+    it() The second template parameter parameterizes the container's iterator
+type (tt(BaseIterator));
+    it() The third template parameter indicates the data type to which the
+pointers point (tt(Type)).
+    )
+    tt(RandomPtrIterator) uses one private data
+element, a tt(BaseIterator). Here is the class interface, including the
+constructor's implementation:
+        verbinsert(HEAD)(concrete/examples/iterator.h)
+    Dissecting its tt(friend) declarations, we see that the members
+tt(begin()) and tt(end()) of a class tt(Class), returning a
+tt(RandomPtrIterator) object for the types tt(Class, BaseIterator) and
+tt(Type) are granted access to tt(RandomPtrIterator)'s  private constructor.
+That is exactly what we want. Note that tt(begin()) and tt(end()) are declared
+as emi(bound friend)em(s).
+
+    All tt(RandomPtrIterator)'s remaining members are public. Since
+tt(RandomPtrIterator) is just a generalization of the nested class
+tt(iterator) developed in section ref(RANDOMIT), re-implementing the required
+member functions is easy, and only requires us to change tt(iterator) into
+tt(RandomPtrIterator) and to change tt(std::string) into tt(Type). For
+example, tt(operator<()), defined in the class tt(iterator) as
+        verbinsert(CMP)(templateclasses/examples/stringptr.h)
+    is re-implemented as:
+        verbinsert(CMP)(concrete/examples/iterator.h)
+    As a second example: tt(operator*()), defined in the class
+tt(iterator) as
+        verbinsert(OP*)(templateclasses/examples/stringptr.h)
+    is re-implemented as:
+        verbinsert(OP*)(concrete/examples/iterator.h)
+    The pre- and postfix increment operators are re-implemented as:
+        verbinsert(INC)(concrete/examples/iterator.h)
+    Remaining members can be implemented accordingly, their actual
+implementations are left as an exercise to the reader (or can be obtained from
+the tt(cplusplus.yo.zip) archive, of course).
+
+    Reimplementing the class tt(StringPtr) developed in section ref(RANDOMIT)
+is not difficult either. Apart from including the header file defining the
+class template tt(RandomPtrIterator), it requires only a single modification
+as its tt(iterator) typedef must now be associated with a
+tt(RandomPtrIterator). Here are the full class interface and inline member
+definitions:
+        verbinclude(concrete/examples/stringptr.h)
+
+    Including tt(StringPtr)'s modified header file into the program given in
+section ref(REVERSEIT) will result in a program behaving identically to its
+earlier version, albeit that tt(StringPtr::begin()) and tt(StringPtr::end())
+now return iterator objects constructed from a template definition.

@@ -1,0 +1,38 @@
+As we've seen, classes may be derived from other classes using
+inheritance. Usually the i(derivation type) is ti(public), implying that the
+access rights of the base class's interface is unaltered in the derived class.
+
+Apart from i(public derivation), bf(C++) also supports
+    emi(protected derivation) and emi(private derivation)
+
+To use protected derivation. the keyword tt(protected) is specified in the
+inheritance list:
+        verb(
+    class Derived: protected Base
+        )
+    With protected derivation all the base class's public and protected members
+receive protected access rights in the derived class. Members having protected
+access rights are available to the class itself and to all classes that are
+(directly or indirectly) derived from it.
+
+To use private derivation. the keyword tt(private) is specified in the
+inheritance list:
+        verb(
+    class Derived: private Base
+        )
+    With private derivation all the base class's  members
+receive private access rights in the derived class. Members having private
+access rights are only available to the class itself.
+
+    Combinations of inheritance types do occur. For example, when designing a
+stream-class it is usually derived from tt(std::istream) or
+tt(std::ostream). However, before a stream can be constructed, a
+tt(std::streambuf) must be available. Taking advantage of the fact that the
+inheritance order is taken seriously by the compiler, we can use multiple
+inheritance (see section ref(MULTIPLE)) to derive the class from both
+tt(std::streambuf) and (then) from, e.g., tt(std::ostream). As our class faces
+its clients as a tt(std::ostream) and not as a tt(std::streambuf), we use
+private derivation for the latter, and public derivation for the former class:
+        verb(
+    class Derived: private std::streambuf, public std::ostream
+        )

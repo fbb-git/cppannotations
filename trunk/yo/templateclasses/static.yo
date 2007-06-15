@@ -1,0 +1,49 @@
+    When i(static members) are defined in class templates, they
+        hi(class template: static members)
+    are instantiated for every new i(instantiation). As they are static
+members, there will be only one member when multiple objects of the em(same)
+template type(s) are defined. For example, in a class like:
+        verb(
+    template <typename Type>
+    class TheClass
+    {
+        static int s_objectCounter;
+    };
+        )
+    There will be em(one) tt(TheClass<Type>::objectCounter) for each different
+tt(Type) specification. The following instantiates just one single
+static variable, shared among the different objects:
+        verb(
+    TheClass<int> theClassOne;
+    TheClass<int> theClassTwo;
+        )
+    Mentioning static members in interfaces does not mean these members are
+actually defined: they are only em(declared) by their classes and must be
+em(defined) separately.  With static members of class templates this is not
+different. The i(definitions of static members)
+        hi(class template: defining static members)
+    are usually provided immediately following (i.e., below) the template
+class interface. The static member tt(s_objectCounter) will thus be defined as
+follows, just below its class interface:
+        verb(
+    template <typename Type>                    // definition, following
+    int TheClass<Type>::s_objectCounter = 0;    // the interface
+        )
+    In the above case, tt(s_objectCounter) is an tt(int) and thus independent
+of the template type parameter tt(Type).
+
+    In a list-like construction, where a i(pointer to objects) of the class
+itself is required, the template type parameter tt(Type) must be used to
+define the static variable, as shown in the following example:
+        verbinclude(templateclasses/examples/statictype.cc)
+    As usual, the definition can be read from the variable name back to the
+beginning of the definition: tt(s_objectPtr) of the class tt(TheClass<Type>)
+is a pointer to an object of tt(TheClass<Type>).
+
+    Finally, when a static variable of a template's type parameter is defined,
+it should of course not be given the initial value 0. The default constructor
+(e.g., tt(Type()) will usually be more appropriate):
+        verb(
+    template <typename Type>                    // s_type's definition
+    Type TheClass<Type>::s_type = Type();
+        )

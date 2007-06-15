@@ -1,0 +1,59 @@
+Like the tt(set), the ti(multiset) class implements a
+    hi(sorted collection of value) sorted collection of values. Before
+tt(multiset) containers can be used the following preprocessor directive must have
+been specified: hi(#include <set>)
+        verb(
+    #include <set>
+        )
+    The main difference between the tt(set) and the tt(multiset) is that the
+multiset supports multiple entries of the same value, whereas the set contains
+unique values.
+
+The tt(set) and the tt(multiset) hi(multiset: member functions) have the same
+set of member functions.  Refer to section ref(SET) for an overview
+    hi(multiset: member functions)
+    of the tt(multiset) member functions.  Some member functions, however,
+deserve additional attention when used in the context of the tt(multiset)
+container. These members are discussed below.
+    itemization(
+        ithtq(set::count())(size_t set::count(value))(this member returns
+the number of entries in the multiset associated with the given
+tt(value).)
+        ithtq(multiset::erase())(... multiset::erase())(this member can be
+used to erase elements from the set:)
+            itemization(
+            itt(size_t erase(value)) erases all elements having the
+given tt(value). The number of erased elements is returned.
+            itt(void erase(pos)) erases the element pointed to by the iterator
+tt(pos). Other elements possibly having the same values are not erased.
+            itt(void erase(first, beyond)) erases all elements indicated by
+the iterator range rangett(first, beyond).
+            )
+        ithtq(multiset::equal_range())
+    (pair<multiset::iterator, multiset::iterator> multiset::equal_range(value))
+        (this member function returns a pair of iterators, being respectively
+the return values of tt(multiset::lower_bound()) and
+tt(multiset::upper_bound()), introduced below.  The function provides a simple
+means to determine all elements in the tt(multiset) that have the same
+tt(values).)
+        ithtq(multiset::find())(multiset::iterator multiset::find(value))(this
+member returns an iterator pointing to the first element having the specified
+value. If the element isn't available, tt(multiset::end()) is returned. The
+iterator could be incremented to visit all elements having the given tt(value)
+until it is either tt(multiset::end()), or the iterator doesn't point to
+`tt(value)' anymore.)
+        ithtq(multiset::insert())(... multiset::insert())(this member function
+normally succeeds, and so a emi(multiset::iterator) is returned,
+instead of a tt(pair<multiset::iterator, bool>) as returned with the tt(set)
+container. The returned iterator points to the newly added element.)
+    )
+    Although the functions tt(lower_bound()) and tt(upper_bound()) act
+identically in the tt(set) and tt(multiset) containers, their operation in a
+tt(multiset) deserves some additional attention. In particular note that with
+the tt(multiset) container tt(lower_bound()) and tt(upper_bound()) produce the
+same result for non-existing keys: they both return the first element having a
+key exceeding the provided key.
+
+    Here is an example showing the use of various member functions of a
+multiset:
+    verbinclude(containers/examples/multiset.cc)

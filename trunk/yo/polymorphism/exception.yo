@@ -1,0 +1,31 @@
+Earlier in the Annotations (section ref(EMPTYTHROW)) we hinted at the
+possibility of designing a class tt(Exception) whose tt(process()) member
+would behave differently, depending on the kind of exception that was
+thrown. Now that we've introduced i(polymorphism), we can further develop this
+example.
+
+By now it will probably be clear that our class tt(Exception) should be a
+virtual base class, from which special exception handling classes can be
+derived. It could even be argued that tt(Exception) can be an
+    i(abstract base class) declaring only i(pure virtual member functions). In
+the discussion in section ref(EMPTYTHROW) a member function tt(severity()) was
+mentioned which might not be a proper candidate for a purely abstract member
+function, but for that member we can now use the completely general
+    ti(dynamic_cast<>()) operator.
+
+The (abstract) base class tt(Exception) is designed as follows:
+        verbinclude(polymorphism/examples/exception.h)
+    The tt(operator string()) member function of course replaces the
+tt(toString()) member used in section ref(EMPTYTHROW). The tt(friend)
+oplshift() function is using the (virtual) tt(operator string()) member so
+that we're able to insert an tt(Exception) object into an tt(ostream). Apart
+from that, notice the use of a i(virtual destructor), doing nothing.
+
+    A derived class tt(FatalException: public Exception) could now be defined
+as follows (using a very basic tt(process()) implementation indeed):
+        verbinclude(polymorphism/examples/fatal.h)
+
+    The translation of the example at the end of section ref(EMPTYTHROW) to
+the current situation can now easily be made (using derived classes
+tt(WarningException) and tt(MessageException)), constructed like tt(FatalException):
+        verbinclude(polymorphism/examples/emptythrow.cc)

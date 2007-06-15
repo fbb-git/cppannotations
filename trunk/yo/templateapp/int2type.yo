@@ -1,0 +1,41 @@
+Another use of values buried inside templates is to `templatize' simple scalar
+tt(int) values. This is primarily useful in situations where a scalar value
+(often a tt(bool) value) is available to select an appropriate member
+specialization, a situation that will be encountered shortly (section
+ref(ALTERNATIVES)).
+
+Templatizing
+        hi(templatized integral values)
+    integral values is based on the fact that a
+        hi(class template: defining a type)
+        hi(type definition: using templates)
+    class template together with its template arguments represent a
+type. E.g., tt(vector<int>) and tt(vector<double>) are different types.
+
+Templatizing integral values is simply realized: just define a template, it
+does not have to have any contents at all, but it customarily has the integral
+values stored as an tt(enum) value:
+        verb(
+    template <int x>
+    struct IntType
+    {
+        enum { value = x };
+    };
+        )
+    Since tt(IntType) does not have any members, but just the tt(enum) value,
+the `tt(class)' can be defined as a `tt(struct)', saving us from typing
+tt(public:). Defining the tt(enum) value `tt(value)' allows us to retrieve the
+value used at the instantiation at no cost in memory: enum values are not
+variables or data members, and thus have no address. They are mere values.
+
+    Using the tt(struct IntType) is easy: just define an anonymous or named
+object by specifying a value for its tt(int) non-type parameter:
+        verb(
+    int main()
+    {
+        IntType<1> it;
+        cout << "IntType<1> objects have value: " << it.value << "\n" <<
+                "IntType<2> objects are of a different type "
+                        "and have values " << IntType<2>().value << endl;
+    }
+        )

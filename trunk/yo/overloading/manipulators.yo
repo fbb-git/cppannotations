@@ -1,0 +1,52 @@
+In chapter ref(IOStreams) we saw constructions like tt(cout) lshift() tt(hex)
+lshift() tt(13) lshift() tt( endl) to display the value 13 in i(hexadecimal)
+format. One may wonder by what magic the ti(hex) i(manipulator) accomplishes
+this. In this section the construction of manipulators like tt(hex) is
+covered.
+
+Actually the construction of a manipulator is rather simple. To start, a
+definition of the manipulator is needed. Let's assume we want to create a
+manipulator tt(w10) which will set the i(field width) of the next field to be
+written to the tt(ostream) object to 10. This manipulator is constructed as a
+function. The tt(w10) function will have to know about the tt(ostream) object
+in which the width must be set. By providing the function with a tt(ostream &)
+parameter, it obtains this knowledge. Now that the function knows about the
+tt(ostream) object we're referring to, it can set the width in that object.
+
+Next, it must be possible to use the manipulator in an insertion
+sequence. This implies that the i(return value) of the manipulator must be
+a i(reference) to an ti(ostream) object also.
+
+From the above considerations we're now able to construct our tt(w10)
+function:
+        verbinclude(overloading/examples/w10.cc)
+    The tt(w10) function can of course be used in a `stand alone' mode, but it
+can also be used as a manipulator. E.g.,
+    verbinclude(overloading/examples/w10use.cc)
+        The tt(w10) function can be used as a manipulator because the tt(class
+ostream) hi(operator<<(): and manipulators) has an overloaded oplshift()
+accepting a i(pointer to a function) expecting an tt(ostream &) and returning
+an tt(ostream &). Its definition is:
+        verb(
+    ostream& operator<<(ostream & (*func)(ostream &str))
+    {
+        return (*func)(*this);
+    }
+        )
+
+    The above procedure does not work for i(manipulators requiring arguments):
+it is of course possible to overload oplshift() to accept an
+tt(ostream) reference and the address of a function expecting an tt(ostream &)
+and, e.g., an tt(int), but while the address of such a function may be
+specified with the lshift()-operator, the arguments itself cannot be
+specified. So, one wonders how the following construction has been
+implemented:
+        verb(
+    cout << setprecision(3)
+        )
+    In this case the manipulator is defined as a i(macro). Macro's, however,
+are the realm of the i(preprocessor), and may easily suffer from unwanted
+i(side-effects). In bf(C++) programs they should be avoided whenever
+possible. The following section introduces a way to implement manipulators
+requiring arguments without resorting to macros, but using
+    i(anonymous object)s.

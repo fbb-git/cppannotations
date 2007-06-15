@@ -1,0 +1,154 @@
+    Now that we've covered the construction of function templates, we're ready
+for the next step: constructing class templates. Many useful class templates
+already exist. Instead of illustrating how an existing class template was
+constructed, let's discuss the construction of a useful new class template.
+
+    In chapter ref(STL) we've encountered the tt(auto_ptr) class (section
+ref(AUTOPTR)). The tt(auto_ptr), also called emi(smart pointer), allows us to
+define an object, acting like a pointer. Using tt(auto_ptr)s rather than plain
+pointers we not only ensure proper memory management, but we may also prevent
+memory leaks when objects of classes using pointer data-members cannot
+completely be constructed.
+
+    The one disadvantage of hi(auto_ptr: disadvantage) tt(auto_ptr)s is that
+they can only be used for single objects and not for pointers to
+arrays of objects. Here we'll construct the class template tt(FBB::auto_ptr),
+behaving like tt(auto_ptr), but managing a pointer to an array of objects.
+
+    Using an existing class as our point of departure also shows an important
+design principle: it's often easier to construct a template (function or
+        hi(construction: class template)
+        hi(class template: construction) class) from an existing template than
+to construct the template completely from scratch. In this case the existing
+tt(std::auto_ptr) acts as our model.  Therefore, we want to provide the class
+with the following members:
+    itemization(
+    it() Constructors to create an object of the class tt(FBB::auto_ptr);
+    it() A i(destructor);
+    it() An overloaded ti(operator=());
+    it() An ti(operator[]()) to retrieve and reassign the elements given
+their indices.
+    it() All other members of tt(std::auto_ptr), with the exception of
+the dereference operator (ti(operator*())), since our tt(FBB::auto_ptr) object
+will hold multiple objects, and although it would be entirely possible to
+define it as a member returning a reference to the first element of its array
+of objects, the member tt(operator+(int index)), returning the address of
+object tt(index) would most likely be expected too. These extensions of
+tt(FBB::auto_ptr) are left as exercises to the reader.
+    )
+    Now that we have decided which members we need, the class interface can be
+constructed. Like function templates, a class template definition begins with
+the keyword ti(template), which is also followed by a non-empty list of
+template type
+        hi(template type parameters)
+    and/or non-type parameters, surrounded by angle brackets. The
+tt(template) keyword followed by the template parameter list enclosed in
+angle brackets is called a emi(template announcement) in the bf(C++)
+Annotations. In some cases the template announcement's parameter list may be
+empty, leaving only the angle brackets.
+
+    Following the template announcement the class interface is provided, in
+which the formal template type parameter names may be used to represent types
+and constants. The class interface is constructed as usual. It starts with the
+keyword tt(class) and ends with a semicolon.
+
+    Normal i(design considerations) should be followed when constructing
+class template member functions or class template constructors:
+        hi(class template: member functions)
+    class template type parameters
+        hi(class template: type parameters)
+    should preferably be defined as tt(Type const &), rather than tt(Type), to
+prevent unnecessary copying of large i(data structures). Template
+        hi(class template: constructors)
+    class constructors should use i(member initializers) rather than member
+assignment within the body of the constructors, again to prevent double
+assignment of composed objects: once by the default constructor of the object,
+once by the assignment itself.
+
+Here is our initial version of the class
+        ti(FBB::auto_ptr)
+        hi(auto_ptr: storing multiple objects)
+    showing all its members:
+        verbinclude(templateclasses/examples/autoptr.h)
+    The class interface shows the following features:
+    itemization(
+    it() If it is assumed that the template type tt(Data) is an ordinary type,
+the class interface appears to have no special characteristics at all. It
+looks like any old class interface. This is generally true. Often a template
+class can easily be constructed after having constructed the class for one or
+two ordinary types, followed by an abstraction phase changing all necessary
+references to ordinary data types into generic data types, which then become
+the template's type parameters.
+    it() At closer inspection, some special characteristics can actually be
+discerned. The parameters of the class's copy constructor and overloaded
+assignment operators aren't references to plain tt(auto_ptr) objects, but
+rather references to tt(auto_ptr<Data>) objects. Class template objects (or
+their references or pointers) em(always) require the template type parameters
+to be specified.
+    it() Different from the standard design of copy constructors and
+overloaded assignment operators, their parameters are em(non-)tt(const)
+references. This has nothing to do with the class being a class template, but
+is a consequence of tt(auto_ptr)'s design itself: both the copy constructor
+and the overloaded assignment operator take the other's object's pointer,
+effectively changing the other object into a i(0-pointer).
+    it() Like ordinary classes, members can be defined em(inline). Actually,
+em(all) class template members are defined inline (when using precompiled
+templates
+        emi(precompiled templates)
+        hi(templates: precompiled)
+    this doesn't change; it only means that the compiler has reorganized the
+template definition so that it can process the definition faster).
+As noted in section ref(INLINE), the definition may be put inside the
+        hi(template members: defined in/outside the interface)
+class interface or outside (i.e., following) the class interface. As a
+        i(rule of thumb)
+    the same design principles should be followed here as with ordinary
+classes: they should be defined below the interface to keep the interface
+clean and readable. Long implementations in the interface tend to obscure the
+interface itself.
+    it() When objects of a class template are instantiated, the definitions of
+all the template's member functions that are used (but em(only) those) must
+have been seen by the compiler. Although that characteristic of templates
+could be refined to the point where each definition is stored in a separate
+function template definition file, including only the definitions of the
+function templates that are actually needed, it is hardly ever done that way
+(even though it would speed up the required compilation time). Instead, the
+usual way to define class templates is to define the interface, defining some
+functions inline, and to define the remaining function templates immediately
+below the class template's interface.
+    it() Beside the dereference operator (tt(operator*())), the well-known
+pair of ti(operator[]()) members are defined. Since the class receives no
+information about the size of the array of objects, these members cannot
+support i(array-bound checking).
+    )
+    Let's have a look at some of the member functions defined beyond the class
+interface.     Note in particular:
+    itemization(
+    it() The definition below the interface is the actual template
+definition. Since it is a definition it must start with a
+    ti(template phrase). The function's em(declaration) must also start with a
+ti(template) phrase, but that is implied by the interface itself, which
+already provides the required phrase at its very beginning;
+    it() Wherever tt(auto_ptr) is mentioned in the implementation, the
+template's type parameter is mentioned as well. This is obligatory. Actually,
+the class template's type name is the name of the class template plus its
+        hi(class template: type name)
+template argument. Thus, a tt(vector<int>) represents another em(class type)
+than a tt(vector<float>).
+        )
+    Some remarks about specific members:
+    itemization(
+    it() The advised tt(copy()) and tt(destroy()) members (see section
+ref(CopyDestroy)) are very simple, but were added to the implementation to
+promote standardization of classes containing pointer members.
+    it() The overloaded assignment constructor still has to check for
+i(auto-assignment).
+    )
+    Now that the class has been defined, it can be used. To use the class, its
+object must be instantiated for a particular data type. The example defines a
+new tt(std::string) array, storing all command-line arguments. Then, the first
+command-line argument is printed. Next, the tt(auto_ptr) object is used to
+initialize another tt(auto_ptr) of the same type. It is shown that the
+original tt(auto_ptr) now holds a 0-pointer, and that the second tt(auto_ptr)
+object now holds the command-line arguments:
+        verbinclude(templateclasses/examples/autoptr.cc)

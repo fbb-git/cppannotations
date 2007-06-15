@@ -1,0 +1,241 @@
+    Let's once again look at our tt(add()) template. That template was
+designed to return the sum of two entities. If we would want to compute the
+sum of three entities, we could write:
+        verb(
+    int main()
+    {
+        add(2, add(3, 4));
+    }
+        )
+    This is a perfectly acceptable solution for the occasional
+situation. However, if we would have to add three entities regularly, an
+em(overloaded) version of the tt(add()) function, expecting three arguments,
+might be a useful thing to have. The solution for this problems is simple:
+function templates may be overloaded.
+        hi(overloading: function templates)
+
+    To define an overloaded version, merely put multiple definitions of the
+template in its definition header file. So, with the tt(add()) function this
+would boil down to, e.g.:
+        verb(
+    template <typename Type>
+    Type add(Type const &lvalue, Type const &rvalue)
+    {
+        return lvalue + rvalue;
+    }
+
+    template <typename Type>
+    Type add(Type const &lvalue, Type const &mvalue, Type const &rvalue)
+    {
+        return lvalue + mvalue + rvalue;
+    }
+        )
+    The overloaded function does not have to be defined in terms of simple
+values. Like all overloaded functions, just a unique set of function
+parameters is enough to define an overloaded version. For example, here's an
+overloaded version that can be used to compute the sum of the elements of a
+vector:
+        verb(
+    template <typename Type>
+    Type add(std::vector<Type> const &vect)
+    {
+        return accumulate(vect.begin(), vect.end(), Type());
+    }
+        )
+
+    Overloading templates does not have to restrict itself to the function's
+parameter list. The template's type parameter list itself may also be
+        hi(templates: overloading type parameter list)
+    overloaded. The last definition of the tt(add()) template allows us to
+specify a tt(std::vector) as its first argument, but no tt(deque) or
+tt(map). Overloaded versions for those types of containers could of course be
+constructed, but where's the end to that? Instead, let's look for common
+characteristics of these containers, and if found, define an overloaded
+function template on these common characteristics. One common characteristic
+of the mentioned containers is that they all support tt(begin()) and tt(end())
+members, returning iterators. Using this, we could define a template type
+parameter representing containers that must support these members. But
+mentioning a plain `container type' doesn't tell us for what data type it has
+been instantiated. So we need a second template type parameter representing
+the container's data type, thus overloading the template's type parameter
+list. Here is the resulting overloaded version of the tt(add()) template:
+        verb(
+    template <typename Container, typename Type>
+    Type add(Container const &cont, Type const &init)
+    {
+        return std::accumulate(cont.begin(), cont.end(), init);
+    }
+        )
+    One may wonder whether the tt(init) parameter could not be left out of the
+parameter list as tt(init) will often have a default initialization value. The
+answer is a somewhat complex `yes', It em(is) possible to define the tt(add())
+function as follows:
+        verb(
+    template <typename Type, typename Container>
+    Type add(Container const &cont)
+    {
+        Type init = Type();
+        return std::accumulate(cont.begin(), cont.end(), init);
+    }
+        )
+    But note that the template's type parameters were reordered, which is
+necessary because the compiler won't be able to determine tt(Type) in a call
+like:
+        verb(
+    int x = add(vectorOfInts);
+        )
+    However, it is also possible to use a third kind of template parameter, a
+em(template template parameter), which em(does) allow the compiler to
+determine tt(Type) directly from the actual container argument used when
+calling tt(add()). Template template parameters are discussed in section
+ref(TEMPTEMPPAR).
+
+    With all these overloaded versions in place, we may now start the compiler
+to compile the following function:
+        verb(
+    using namespace std;
+
+    int main()
+    {
+        vector<int> v;
+
+        add(3, 4);          // 1 (see text)
+        add(v);             // 2
+        add(v, 0);          // 3
+    }
+        )
+    itemization(
+    it() With the first statement, the compiler recognizes two identical
+types, both tt(int). It will therefore instantiate tt(add<int>()), our very
+first definition of the tt(add()) template.
+    it() With statement two, a single argument is used. Consequently, the
+compiler will look for an overloaded version of tt(add()) requiring but one
+argument. It finds the version expecting a tt(std::vector), deducing that the
+template's type parameter must be tt(int). It instantiates
+        verb(
+    add<int>(std::vector<int> const &)
+        )
+    it() With statement three, the compiler again encounters an argument list
+having two arguments. However, the types of the arguments are different, so
+it cannot use the tt(add()) template's first definition. But it em(can) use
+the last definition, expecting entities having different types. As a
+tt(std::vector) supports tt(begin()) and tt(end()), the compiler is now able
+to instantiate the function template
+        verb(
+    add<std::vector<int>, int>(std::vector<int> const &, int const &)
+        )
+    )
+
+    Having defined tt(add()) using two different template type parameters, and
+a function template having a parameter list containing two parameters of these
+types, we've exhausted the possibilities to define an tt(add()) function
+template having a function parameter list showing two different types. Even
+though the parameter types are different, we're still able to define a
+function template tt(add()) as a function template merely returning the sum of
+two differently typed entities:
+        verb(
+    template <typename T1, typename T2>
+    T1 add(T1 const &lvalue, T2 const &rvalue)
+    {
+        return lvalue + rvalue;
+    }
+        )
+    However, now we won't be able to instantiate tt(add()) using two
+differently typed arguments anymore: the compiler won't be able resolve the
+ambiguity. It cannot choose which of the two overloaded versions defining two
+differently typed function parameters to use:
+        verb(
+    int main()
+    {
+        add(3, 4.5);
+    }
+    /*
+        Compiler reports:
+
+        error: call of overloaded `add(int, double)' is ambiguous
+        error: candidates are: Type add(const Container&, const Type&)
+                                    [with Container = int, Type = double]
+        error:                 T1 add(const T1&, const T2&)
+                                    [with T1 = int, T2 = double]
+    */
+        )
+    Consider once again the overloaded function accepting three arguments:
+        verb(
+    template <typename Type>
+    Type add(Type const &lvalue, Type const &mvalue, Type const &rvalue)
+    {
+        return lvalue + mvalue + rvalue;
+    }
+        )
+    It may be considered as a disadvantage that only equally typed arguments
+are accepted by this function: e.g., three tt(int)s, three tt(double)s or
+three tt(string)s. To remedy this, we define yet another overloaded version of
+the function, this time accepting arguments of any type. Of course, when
+calling this function we must make sure that tt(operator+()) is defined
+between them, but apart from that there appears to be no problem. Here is the
+overloaded version accepting arguments of any type:
+        verb(
+    template <typename Type1, typename Type2, typename Type3>
+    Type1 add(Type1 const &lvalue, Type2 const &mvalue, Type3 const &rvalue)
+    {
+        return lvalue + mvalue + rvalue;
+    }
+        )
+    Now that we've defined these two overloaded versions, let's call tt(add())
+as follows:
+        centt(add(1, 2, 3);)
+    In this case, one might expect the compiler to report an ambiguity. After
+all, the compiler might select the former function, deducing that tt(Type ==
+int), but it might also select the latter function, deducing that tt(Type1 ==
+int, Type2 == int) and tt(Type3 == int). However, the compiler reports no
+ambiguity. The reason for this is the following: if an overloaded template
+function is defined using em(more specialized) template type parameters (e.g.,
+        hi(function templates: specialized type parameters) all equal types)
+than another (overloaded) function, for which more general template type
+parameters (e.g., all different) have been used, then the compiler will select
+the more specialized function over the more general function wherever
+possible.
+
+    As a i(rule of thumb): when overloaded versions of a function template
+are defined, each overloaded version must use a unique combination of
+template type parameters to avoid ambiguities when the templates are
+instantiated. Note that the em(ordering) of template type parameters in the
+function's parameter list is not important. When trying to instantiate the
+following tt(binarg()) template, an ambiguity will occur:
+        verb(
+    template <typename T1, typename T2>
+    void binarg(T1 const &first, T2 const &second)
+    {}
+    // and:
+    template <typename T1, typename T2>
+    void binarg(T2 const &first, T1 const &second)  // exchange T1 and T2
+    {}
+        )
+    The ambiguity should come as no surprise. After all, template type
+parameters are just formal names. Their names (tt(T1), tt(T2) or tt(Whatever))
+have no concrete meanings whatsoever.
+
+    Finally, overloaded functions may be declared, either using plain
+declarations or instantiation declarations, and explicit template parameter
+types may also be used. For example:
+    itemization(
+    it() Declaring a function template tt(add()) accepting containers
+of a certain type:
+        verb(
+    template <typename Container, typename Type>
+    Type add(Container const &container, Type const &init);
+        )
+    it() The same function, but now using an instantiation declaration (note
+that this requires that the compiler has already seen the template's
+definition):
+        verb(
+    template int add<std::vector<int>, int>
+                    (std::vector<int> const &vect, int const &init);
+        )
+    it() To disambiguate among multiple possibilities detected by the
+compiler, explicit arguments may be used. For example:
+        verb(
+    std::vector<int> vi;
+    int sum = add<std::vector<int>, int>(vi, 0);
+        )
+    )

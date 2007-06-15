@@ -1,0 +1,100 @@
+The similarities between the i(copy constructor) and the
+    i(overloaded assignment) operator are reinvestigated in this section.  We
+present here two primitive functions which often occur in our code, and which
+we think are quite useful. Note the following features of copy constructors,
+overloaded assignment operators, and destructors:
+    itemization(
+    it() The em(copying of (private) data) occurs (1) in the copy constructor
+and (2) in the overloaded assignment function.
+    it() The em(deletion of allocated memory) occurs (1) in the overloaded
+assignment function and (2) in the destructor.
+    )
+    The above two actions (duplication and deletion) can be implemented in two
+private functions, say ti(copy()) and ti(destroy()), which are used in the
+overloaded assignment operator, the copy constructor, and the destructor. When
+we apply this method to the class tt(Person), we can implement this approach
+as follows:
+    itemization(
+    it() First, the class definition is expanded with two tt(private)
+functions tt(copy()) and tt(destroy()). The purpose of these functions is to
+copy the data of another object or to delete the memory of the current
+object em(unconditionally).  Hence these functions implement `primitive'
+functionality:
+        verb(
+    // class definition, only relevant functions are shown here
+    class Person
+    {
+        char *d_name;
+        char *d_address;
+        char *d_phone;
+
+        public:
+            Person(Person const &other);
+            ~Person();
+            Person &operator=(Person const &other);
+        private:
+            void copy(Person const &other);     // new members
+            void destroy(void);
+
+    };
+        )
+    it() Next, the functions tt(copy()) and tt(destroy()) are constructed:
+        verb(
+    void Person::copy(Person const &other)
+    {
+        d_name = strdupnew(other.d_name);       // unconditional copying
+        d_address = strdupnew(other.d_address);
+        d_phone = strdupnew(other.d_phone);
+    }
+
+    void Person::destroy()
+    {
+        delete d_name;                        // unconditional deletion
+        delete d_address;
+        delete d_phone;
+    }
+        )
+    it() Finally the tt(public) functions in which other object's memory
+is copied or in which memory is deleted are rewritten:
+        verb(
+    Person::Person (Person const &other)    // copy constructor
+    {
+        copy(other);
+    }
+
+    Person::~Person()                       // destructor
+    {
+        destroy();
+    }
+                                            // overloaded assignment
+    Person const &Person::operator=(Person const &other)
+    {
+        if (this != &other)
+        {
+            destroy();
+            copy(other);
+        }
+        return *this;
+    }
+        )
+    )
+    What we like about this approach is that the destructor, copy constructor
+and overloaded assignment functions are now completely standard: they are
+em(independent) of a particular class, and em(their implementations can
+therefore be used in every class).  Any class dependencies are reduced to the
+implementations of the private member functions tt(copy()) and tt(destroy()).
+
+    Note, that the ti(copy()) member function is responsible for the copying
+of the other object's data fields to the current object. We've shown the
+situation in which a class em(only) has pointer data members. In most
+situations hi(classes: having non-pointer data) classes have non-pointer data
+members as well. These members must be copied in the copy constructor as
+well. This can simply be realized by the copy constructor's body em(except)
+for the initialization of i(reference data members), which em(must) be
+initialized using the
+    i(member initializer) method, introduced in section
+ref(REFMEMBERS). However, in this case the i(overloaded assignment) operator
+can't be fully implemented either, as reference members cannot
+be given another value once initialized. An object having reference data
+members is inseparately attached to its referenced object(s) once it has been
+constructed.

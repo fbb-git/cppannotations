@@ -1,0 +1,62 @@
+The ti(ofstream) class is derived from the tt(ostream) class: it has the same
+capabilities as the tt(ostream) class, but can be used to i(access files) or
+i(create files) for writing.
+
+In order to use the tt(ofstream) class  in bf(C++) sources, the
+    i(preprocessor directive) ti(#include <fstream>) must be given. After
+including tt(fstream) hi(fstream: and cin, cout) tt(cin), tt(cout) etc. are
+not automatically declared. If these latter objects are needed too, then
+tt(iostream) should be included.
+
+The following hi(ofstream constructors) constructors are available for
+tt(ofstream) objects:
+    itemization(
+        itt(ofstream object):
+            quote(This is the basic constructor. It creates
+an tt(ofstream) object which may be associated with an actual file later,
+using the tt(open()) member (see below).)
+        itt(ofstream object(char const *name, int mode)):
+            quote( This constructor can be used to associate an tt(ofstream)
+object with the file named tt(name), using output mode tt(mode).  The
+emi(output mode) is by default ti(ios::out). See section ref(OUTPUTMODES) for
+a complete overview of available output modes.
+
+In the following example an tt(ofstream) object, associated with the newly
+created file tt(/tmp/scratch), is constructed:
+        verb(
+    ofstream out("/tmp/scratch");
+        )
+            )
+    )
+    Note that it is not possible to open a tt(ofstream) using a
+        emi(file descriptor). The reason for this is (apparently) that file
+descriptors are not universally available over different operating systems.
+Fortunately, file descriptors can be used (indirectly) with a ti(streambuf)
+object (and in some implementations: with a ti(filebuf) object, which is also
+a tt(streambuf)). tt(Streambuf) objects are discussed in section
+ref(STREAMBUF), tt(filebuf) objects are discussed in section ref(FILEBUF).
+
+    Instead of directly associating an tt(ofstream) object with a file, the
+object can be constructed first, and opened later.
+    itemization(
+        ithtq(ofstream::open())
+        (void ofstream::open(char const *name, int mode))
+        (Having constructed an tt(ofstream) object, the member
+function tt(open()) can be used to associate the tt(ofstream) object
+with an actual file.)
+        iti(ofstream::close()):
+            quote(Conversely, it is possible to close an tt(ofstream) object
+explicitly using the tt(close()) member function. The function sets the
+ti(ios::fail) flag of the closed object. Closing the file will flush any
+buffered information to the associated file. A file is hi(closing streams)
+automatically closed when the associated tt(ofstream) object ceases to exist.)
+    )
+    A subtlety is the following: Assume a stream is constructed, but it is not
+actually attached to a file. E.g., the statement tt(ofstream ostr) was
+executed. When we now check its status through tt(good()), a non-zero (i.e.,
+em(ok)) value will be returned.  The `good' status here indicates that the
+stream object has been properly constructed. It doesn't mean the file is also
+open. To test whether a stream is actually open, hi(testing the `open' status)
+inspect hi(is_open) tt(ofstream::is_open()): If ti(true), the stream is
+open. See the following example:
+        verbinclude(iostreams/examples/isopen.cc)

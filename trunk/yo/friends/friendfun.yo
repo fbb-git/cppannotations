@@ -1,0 +1,67 @@
+    Concentrating on the tt(PersonData) class, our initial implementation of
+the insertion operator is:
+        verb(
+    ostream &operator<<(ostream &str, PersonData const &pd)
+    {
+        for (size_t idx = 0; idx < pd.nPersons(); idx++)
+            str << pd[idx] << endl;
+    }
+        )
+    This implementation will perform its task as expected: using the
+(overloaded) insertion operator of the class tt(Person), the information about
+every tt(Person) stored in the tt(PersonData) object will be written on a
+separate line.
+
+    However, repeatedly calling the i(index operator) might reduce the
+efficiency of the implementation. Instead, directly using the array tt(Person
+*d_person) might improve the efficiency of the above function.
+
+    At this point we should ask ourselves if we consider the above oplshift()
+primarily an extension of the globally available oplshift() function, or in
+fact a member function of the class tt(PersonData). Stated otherwise: assume
+we would be able to make oplshift() into a true member function of the class
+tt(PersonData), would we object? Probably not, as the function's task is very
+closely tied to the class tt(PersonData). In that case, the function can
+sensibly be made a emi(friend) of the class tt(PersonData), thereby allowing
+the function access to the private data members of the class tt(PersonData).
+
+    Friend functions must be declared as friends in the class interface. These
+emi(friend declarations) refer neither to tt(private) nor to tt(public)
+functions, so the friend declaration may be placed anywhere in the
+class interface. Convention dictates that friend declaractions are listed
+directly at the top of the class interface. So, for the class tt(PersonData)
+we get:
+        verb(
+    class PersonData
+    {
+        friend ostream &operator<<(ostream &stream, PersonData &pd);
+        friend istream &operator>>(istream &stream, PersonData &pd);
+
+        public:
+            // rest of the interface
+    };
+        )
+    The implementation of the insertion operator can now be altered so as to
+allow the insertion operator direct access to the private data members of
+the provided tt(PersonData) object:
+        verb(
+    ostream &operator<<(ostream &str, PersonData const &pd)
+    {
+        for (size_t idx = 0; idx < pd.d_n; idx++)
+            str << pd.d_person[idx] << endl;
+    }
+        )
+    Once again, whether tt(friend) functions are considered acceptable or not
+remains a matter of taste: if the function is in fact considered a member
+function, but it cannot be defined as a member function due to the nature of
+the bf(C++) grammar, then it is defensible to use the tt(friend) keyword. In
+other cases, the tt(friend) keyword should rather be avoided, thereby
+respecting the principles of emi(encapsulation) and emi(data hiding).
+
+    Explicitly note that if we want to be able to insert tt(PersonData)
+objects into tt(ostream) objects without using the tt(friend) keyword, the
+insertion operator cannot be placed inside the
+tt(PersonData) class. In this case oplshift() is a normal
+overloaded variant of the insertion operator, which must therefore
+be  declared and defined outside of the tt(PersonData) class. This situation
+applies, e.g., to the example at the beginning of this section.

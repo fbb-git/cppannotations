@@ -1,0 +1,64 @@
+Function objects play important roles in combination with generic
+algorithms. For example, there exists a i(generic algorithm) tt(sort())
+expecting two iterators defining the range of objects that should be sorted,
+as well as a function object calling the appropriate comparison operator for
+two objects. Let's take a quick look at this situation. Assume strings are
+stored in a vector, and we want to sort the vector in descending order. In
+that case, sorting the vector tt(stringVec) is as simple as:
+            verb(
+        sort(stringVec.begin(), stringVec.end(), greater<std::string>());
+            )
+    The last argument is recognized as a emi(constructor): it is an
+emi(instantiation) of the ti(greater<>()) class template, applied to
+tt(strings). This object is called as a i(function object) by the tt(sort())
+generic algorithm. It will call the ti(operator>()) of the provided data type
+(here ti(std::string)) whenever its ti(operator()()) is called. Eventually,
+when tt(sort()) returns, the first element of the vector will be the greatest
+element.
+
+    The tt(operator()()) (i(function call operator)) itself is em(not) visible
+at this point: don't confuse the parentheses in tt(greater<string>()) with
+calling tt(operator()()). When that operator is actually used inside
+tt(sort()), it receives two arguments: two strings to compare for
+`greaterness'. Internally, the ti(operator>()) of the data type to which the
+iterators point (i.e., tt(string)) is called by tt(greater<string>)'s function
+operator (tt(operator()())) to compare the two objects. Since tt(greater<>)'s
+function call operator is defined i(inline), the call itself is not actually
+present in the code. Rather, tt(sort()) calls tt(string::operator>()),
+thinking it called tt(greater<>::operator()()).
+
+Now that we know that a constructor is passed as argument to (many) generic
+algorithms, we can design our own function objects. Assume we want to sort our
+vector case-insensitively. How do we proceed? First we note that the default
+tt(string::operator<()) (for an incremental sort) is not appropriate, as it
+does i(case sensitive) comparisons. So, we provide our own tt(case_less)
+class, in which the two strings are compared case insensitively. Using the
+standard bf(C) function ti(strcasecmp()), the following program performs the
+trick. It sorts its command-line arguments in ascending alphabetical order:
+                  verbinclude(stl/examples/strcasecmp.cc)
+    The i(default constructor) of the tt(class case_less) is used with
+tt(sort())'s final argument. Therefore, the only member function that must be
+defined with the class tt(case_less) is the function object operator
+tt(operator()()). Since we know it's called with tt(string) arguments, we
+define it to expect two tt(string) arguments, which are used in the
+tt(strcasecmp()) function. Furthermore, the tt(operator()()) function is made
+i(inline), so that it does not produce overhead when called by  the tt(sort())
+function. The tt(sort()) function calls the function object with various
+combinations of tt(strings), i.e., it em(thinks) it does so. However, in fact
+it calls tt(strcasecmp()), due to the inline-nature of
+tt(case_less::operator()()).
+
+The comparison function object is often a hi(predefined function objects)
+em(predefined function object), since these are available for many commonly
+used operations.  In the following sections the available predefined function
+objects are presented, together with some examples showing their use. At the
+end of the section about function objects emi(function adaptors) are
+introduced. Before predefined function objects can be used the following
+preprocessor directive must have been specified: hi(#include <functional>)
+        verb(
+    #include <functional>
+        )
+    Predefined function objects are used predominantly with generic
+algorithms. Predefined function objects exists for arithmetic, relational, and
+logical operations. In section ref(BITFUN) predefined function objects are
+developed performing i(bitwise operations).

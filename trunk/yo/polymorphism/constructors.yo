@@ -1,0 +1,82 @@
+As we have seen (section ref(VIRTDES)) bf(C++) supports em(virtual
+destructors). Like many other object oriented languages (e.g., bf(Java)),
+however, the notion of a emi(virtual constructor) is not supported. The
+absence of a virtual constructor turns into a problem when only a base class
+reference or pointer is available, and a copy of a derived class object is
+required. em(Gamma et al.) (1995) hi(Gamma, E.) developed the
+    emi(Prototype Design Pattern) hi(Design Pattern: Prototype)
+    to deal with this situation.
+
+    In the Prototype Design Pattern each derived class is given the
+task to make available a member function returning a pointer to a new copy of
+the object for which the member is called. The usual name for this function is
+tt(clone()). A base class supporting `cloning' only needs to define a virtual
+destructor, and a em(virtual copy constructor), a pure virtual function,
+having the prototype tt(virtual Base *clone() const = 0).
+
+    Since tt(clone()) is a pure virtual function all derived classes must
+implement their own `virtual constructor'.
+
+    This setup suffices in most situations where we have a pointer or
+reference to a base class, but fails for example with abstract containers. We
+can't create a tt(vector<Base>), with tt(Base) featuring the pure virtual
+tt(copy()) member in its interface, as tt(Base()) is called to initialize new
+elements of such a vector. This is impossible as tt(clone()) is a pure virtual
+function, so a tt(Base()) object can't be constructed.
+
+    The intuitive solution, providing tt(clone()) with a default
+implementation, defining it as an ordinary virtual function, fails too as the
+container calls the normal tt(Base(Base const &)) copy constructor, which
+would then have to call tt(clone()) to obtain a copy of the copy constructor's
+argument. At this point it becomes unclear what to do with that copy, as the
+new tt(Base) object already exists, and contains no tt(Base) pointer or
+reference data member to assign tt(clone())'s return value to.
+
+    An alternative and preferred approach is to keep the original tt(Base)
+class (defined as an i(abstract base class)), and to manage the tt(Base)
+pointers returned by tt(clone()) in a separate class tt(Clonable()). In
+chapter ref(NESTEDCLASSES) we'll encounter means to merge tt(Base) and
+tt(Clonable) into one class, but for now we'll define them as separate
+classes.
+
+    The class tt(Clonable) is a very standard class. As it contains a pointer
+member, it needs a copy constructor, destructor, and overloaded assignment
+operator (cf. chapter ref(MEMORY)). It's given at least one non-standard
+member: tt(Base &get() const), returning a reference to the derived object to
+which tt(Clonable)'s tt(Base *) data member refers, and optionally a
+tt(Clonable(Base const &)) constructor to allow promotions from objects of
+classes derived from tt(Base) to tt(Clonable).
+
+    Any non-abstract class derived from tt(Base) must implement tt(Base
+*clone()), returning a pointer to a newly created (allocated) copy of the
+object for which tt(clone()) is called.
+
+    Once we have defined a derived class (e.g., tt(Derived1)), we can put our
+tt(Clonable) and tt(Base) facilities to good use.
+
+    In the next example we see tt(main()) in which a tt(vector<Clonable>) was
+defined. An anonymous tt(Derived1) object is thereupon inserted into the
+vector. This proceeds as follows:
+    itemization(
+    it() The anonymous tt(Derived1) object is created;
+    it() It is promoted to tt(Clonable), using tt(Clonable(Base const &)),
+calling tt(Derived1::clone());
+    it() The just created tt(Clonable) object is inserted into the vector,
+using tt(Clonable(Clonable const &)), again using tt(Derived1::clone()).
+    )
+    In this sequence, two temporary objects are used: the anonymous object and
+the tt(Derived1) object constructed by the first tt(Derived1::clone())
+call. The third tt(Derived1) object is inserted into the vector. Having
+inserted the object into the vector, the two temporary objects are destroyed.
+
+    Next, the tt(get()) member is used in combination with tt(typeid) to show
+the actual type of the tt(Base &) object: a tt(Derived1) object.
+
+    The most interesting part of main() is the line tt(vector<Clonable>
+v2(bv)), where a copy of the first vector is created. As shown, the copy keeps
+intact the actual types of the tt(Base) references.
+
+    At the end of the program, we have created two tt(Derived1) objects, which
+are then correctly deleted by the vector's destructors. Here is the full
+program, illustrating the `virtual constructor' concept:
+        verbinclude(polymorphism/examples/virtcons2.cc)

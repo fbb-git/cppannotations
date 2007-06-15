@@ -1,0 +1,97 @@
+Several em(member functions) are available for I/O i(formatting). Often,
+corresponding emi(manipulators) exist, which may directly be inserted into or
+extracted from streams using insertion or extraction operators. See section
+ref(MANIPULATORS) for a discussion of the available manipulators.
+They are:
+    itemization(
+    ithtq(ios::copyfmt())(ios &copyfmt(ios &obj))(This member function copies
+all format definitions from tt(obj) to the current tt(ios) object. The current
+tt(ios) object is returned.)
+    ithtq(ios::fill())(ios::fill() const)(returns (as tt(char)) the
+current padding character. By default, this is the blank space.)
+    itt(ios::fill(char padding)):
+            quote(redefines the padding character. Returns (as tt(char)) the
+em(previous) padding character. Corresponding manipulator: ti(setfill()).)
+    it() hi(ios::flags()) tt(ios::flags() const):
+            quote( returns the current collection of flags controlling the
+format state of the stream for which the member function is called. To inspect
+a particular flag, use the i(binary and) operator, e.g.,
+            verb(
+        if (cout.flags() & ios::hex)
+        {
+            // hexadecimal output of integral values
+        }
+            ))
+    itt(ios::flags(fmtflags flagset)):
+            quote( returns the em(previous) set of flags, and defines the
+current set of flags as tt(flagset), defined by a combination of formatting
+flags, combined by the i(binary or) operator. Note: when setting flags using
+    hi(format flags: changed by ios::flags()) this member, a previously set
+flag may have to be unset first. For example, to change the number conversion
+of tt(cout) from decimal to hexadecimal using this member, do:
+        verb(cout.flags(ios::hex | cout.flags() & ~ios::dec);)
+    Alternatively, either of the following statements could have been used:
+        verb(
+    cout.setf(ios::hex, ios::basefield);
+    cout << hex;
+        )
+            )
+    it() hi(ios::precision()) tt(ios::precision() const):
+            quote( returns (as tt(int)) the number of i(significant digits)
+used for outputting real values (default: 6).)
+    itt(ios::precision(int signif)):
+            quote( redefines the number of significant digits used for
+outputting real values, returns (as tt(int)) the previously used number of
+significant digits. Corresponding manipulator: ti(setprecision()). Example,
+    hi(rounding doubles at insertion)
+    hi(fixed number of digits at insertion)
+    hi(ios::fixed and ios::precision())
+    hi(ios::precision() and ios::fixed)
+rounding all displayed double values to a fixed number of digits (e.g., 3)
+behind the decimal point:
+            verb(
+    cout.setf(ios::fixed);
+    cout.precision(3);
+    cout << 3.0 << " " << 3.01 << " " << 3.001 << endl;
+    cout << 3.0004 << " " << 3.0005 << " " << 3.0006 << endl;
+            )
+    Note that the value 3.0005 is rounded away from zero to 3.001 (-3.0005 is
+rounded to -3.001).
+        )
+    it() hi(ios::setf())  ti(ios::setf(fmtflags flags)):
+            quote( returns the em(previous) set of em(all) flags, and sets
+one or more formatting flags (using the bitwise ti(operator|()) to combine
+multiple flags. Other flags are not affected). Corresponding manipulators:
+ti(setiosflags) and ti(resetiosflags))
+    itt(ios::setf(fmtflags flags, fmtflags mask)):
+            quote(returns the em(previous) set of em(all) flags, clears all
+flags mentioned in tt(mask), and sets the flags specified in
+tt(flags). Well-known mask values are ti(ios::adjustfield),
+ti(ios::basefield) and ti(ios::floatfield). For example:
+        itemization(
+            itt(setf(ios::left, ios::adjustfield)) hi(ios::left)
+        is used to left-adjust wide values in their field.
+(alternatively, ti(ios::right) and ti(ios::internal) can be used).
+            itt(setf(ios::hex, ios::basefield)) hi(ios::hex)
+        is used to activate the hexadecimal representation of integral values
+(alternatively, ti(ios::dec) and ti(ios::oct) can be used).
+            itt(setf(ios::fixed, ios::floatfield)) hi(ios::fixed)
+        is used to activate the fixed value representation of real values
+(alternatively, ti(ios::scientific) can be used).
+        ))
+    it() hi(ios::unsetf()) tt(ios::unsetf(fmtflags flags)):
+            quote( returns the em(previous) set of em(all) flags, and clears
+the specified formatting flags (leaving the remaining flags unaltered). The
+unsetting of an active default flag (e.g., tt(cout.unsetf(ios::dec))) has
+no effect.)
+    ithtq(ios::width())(ios::width() const)( returns (as tt(int)) the current
+output field width (the number of characters to write for numerical values on
+the next insertion operation). Default: 0, meaning `as many characters as
+needed to write the value'. Corresponding manipulator: ti(setw()).)
+    itt(ios::width(int nchars)):
+            quote( returns (as tt(int)) the previously used output field
+width, redefines the value to tt(nchars) for the next insertion
+operation. Note that the field width is reset to 0 after every insertion
+operation, and that tt(width()) currently has no effect on text-values like
+tt(char *) or tt(string) values. Corresponding manipulator: ti(setw(int)).)
+    )

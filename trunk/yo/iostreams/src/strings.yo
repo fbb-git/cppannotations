@@ -1,0 +1,176 @@
+Strings can be processed similarly to tt(iostream) objects, if objects of the
+class tt(istrstream, ostrstream) or tt(strstream) are constructed. Objects of
+these classes can be used to, respectively, read information from memory,
+write information to memory, or both.
+
+These objects can be created by constructors expecting the address
+of a block of memory (and its size) as its argument. It is also possible to
+let the objects to the memory management themselves.
+
+Let's go through some examples. To write something into a block of memory
+using a tt(ostrstream) object, the following code could be used:
+        verb(
+    char
+        buffer[100];
+    ostrstream
+        os(buffer, 100);    // construct the ostrstream object
+
+                            // fill 'buffer' with a well-known text
+    os << "Hello world " << endl << ends;
+
+    cout << os.str(); // display the string
+        )
+    Note the final tt(ends) that is appended: When an ascii-z string is
+inserted into an tt(ostrstream) object it will not automatically write a
+trailing ascii-z sentinel (comparable to the way tt(ostream) objects
+behave). In order to append a terminating ascii-z, the symbolic value tt(ends)
+can be used. After inserting an tt(ends) further insertions into the
+tt(ostrstream) object will succeed, but they will not normally be visible:
+        verb(
+    char
+        buffer[100];
+    ostrstream
+        os(buffer, 100);    // construct the ostrstream object
+
+    os << "Hello world " << ends;
+
+    os << " More text " << ends;
+
+    cout << os.str() << endl; // this only shows 'Hello world'
+        )
+    The information, however, em(is) stored in the string, as shown by the
+following example:
+        verb(
+    void bytes(ostrstream &str)
+    {
+        char
+            *cp = str.str();
+
+        cout << str.pcount() << ": ";
+
+        for (int idx = 0; idx < 10; ++idx)
+            cout << setw(3) << static_cast<int>(cp[idx]) << " ";
+        cout << endl;
+    }
+
+    int main()
+    {
+        char buffer[10];
+
+        memset(buffer, 10, 10);
+
+        ostrstream
+            str(buffer, 100);
+
+        bytes(str);
+
+        str << "A";
+
+        bytes(str);
+
+        str << "B" << ends;
+
+        bytes(str);
+
+        str << "C";
+
+        bytes(str);
+
+        return (0);
+    }
+        )
+    This little program produces the following output:
+        verb(
+    0:  10  10  10  10  10  10  10  10  10  10
+    1:  65  10  10  10  10  10  10  10  10  10
+    3:  65  66   0  10  10  10  10  10  10  10
+    4:  65  66   0  67  10  10  10  10  10  10
+        )
+    This output shows that all insertions succeed, but the tt(ends) writes an
+ascii-z character. This effectively creating an ascii-z string, preventing the
+display of the information beyond when the contents of the tt(ostrstream)
+object are inserted into tt(cout).
+
+    Furthermore, note the use of the member function tt(str()), returning the
+string the tt(ostrstream) object operates on. Using tt(str()) the existence of
+tt(buffer) can be hidden from the users of the tt(ostrstream) object.
+
+    When an tt(ostrstream) object is created without an external memory buffer
+(e.g., `tt(ostrstream str;)' is defined), the tt(ostrstream) object allocates
+the required memory itself. In that case using the tt(str()) member function
+will result in the em(freezing) of the tt(ostrstream) object: it will no
+longer create room for new characters when additional text is inserted into
+the object, and, most important, it will em(not delete allocated memory) when
+the object itself is deleted.
+
+To prevent memory leakage here, the program using the tt(str()) member function
+can take two actions:
+    itemization(
+        it() First, as tt(str()) returns a tt(char *) rather than a tt(char
+const *) the caller of tt(str()) may consider the returned string its own.
+Consequently, the caller of tt(str()) is responsible for deleting
+the string returned by tt(str()). E.g.,
+        verb(
+    ostrstream
+        ostr;
+
+    ostr << "Hello world" << ends;
+
+    char
+        *cp = ostr.gets();  // freezes ostr
+
+    cout << cp;             // use ostr's string
+    delete cp;              // caller deletes ostr's string
+        )
+        it() Alternatively, the string can be em(unfrozen), after which
+insertions are again possible. Now, when the tt(ostrstream) object is
+destroyed the tt(ostrstream)'s internally stored string is destroyed
+too. E.g.,
+        verb(
+    ostrstream
+        ostr;
+
+    ostr << "Hello world" << ends;
+
+    char
+        *cp = ostr.gets();  // freezes ostr
+
+    cout << cp;             // use ostr's string
+
+    ostr.freeze(0);         // ostr will now delete its own string, cp
+                            // should leave the memory it points to alone.
+        )
+    )
+
+    The following member functions are available for tt(strstream) objects:
+    itemization(
+    itt(istrstream::istrstream(const char *str [, int size])): This
+constructor creates an input string class tt(istrstream) object, associating
+it with an existing buffer starting at tt(str), of size tt(size).
+If tt(size) is not specified, the buffer is treated as a null-terminated
+string.
+    itt(ostrstream::ostrstream()): This constructor creates a new stream for
+output to a dynamically managed string, which will grow as needed.
+    itt(ostrstream::ostrstream(char *str, int size [, int mode])): This
+constructor creates a new stream for output to a statically defined string of
+length tt(size), starting at tt(str).  The tt(mode) parameter may
+optionally be specified as one of the iostream modes. By default tt(ios::out)
+is used.
+    itt(int ostrstream::pcount()): returns the current length of the string
+associated with this tt(ostrstream) object.
+    itt(char *ostrstream::str()): The member function returns a pointer to the
+string managed by this tt(ostrstream) object. This function implies
+tt(freeze()), see below:
+    itt(void ostrstream::freeze ([int n])): If tt(n) is nonzero (the default),
+the string associated with this tt(ostrstream) object must not change
+dynamically anymore.  While frozen, it will not be reallocated if it needs
+more space, and it will not be deallocated when the tt(ostrstream) object is
+destroyed.  tt(freeze(1)) can be used to refer to the string as a pointer
+after creating it via tt(ostrstream) facilities. tt(freeze(0)) can be used to
+unfreeze (thaw ?) the object again. Following tt(freeze(0)) the tt(ostrstream)
+object will delete memory it allocated when the object itself is deleted.
+    itt(int ostrstream::frozen()): This member can be used to
+test whether tt(freeze(1)) is in effect for this string.
+    )
+    In order to use the tt(strstream) classes, the header file tt(strstream)
+must be included.

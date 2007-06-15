@@ -1,0 +1,117 @@
+In general, the compiler is able to determine the true nature of a name. As
+discussed in the previous sections, this is not always the case and the
+software engineer sometimes has to advise the compiler. The tt(typename)
+keyword can often used to that purpose.
+
+However, tt(typename) cannot always come to the rescue. While parsing a
+source, the compiler receives a series of em(tokens), representing meaningful
+units of text encountered in the program's source. A token represents, e.g.,
+an identifier or a number. Other tokens represent operators, like tt(=, +) or
+tt(<). It is precisely the last token that may cause problems, as it is used
+in multiple ways, which cannot always be determined from the context in which
+the compiler encounters tt(<). Sometimes, however, the compiler em(will) know
+that tt(<) does not represent the em(less than) operator, as in the situation
+where a template parameter list follows the keyword tt(template), e.g.,
+        verb(
+    template <typename T, int N>
+        )
+    Clearly, in this case tt(<) does not represent a `less than' operator.
+
+The special meaning of tt(<) if preceded by tt(template) forms the basis for
+the syntactical constructs discussed in this section.
+
+    Assume the following class has been defined:
+        verb(
+    template <typename Type>
+    class Outer
+    {
+        public:
+            template <typename InType>
+            class Inner
+            {
+                public:
+                    template <typename X>
+                    void nested();
+            };
+    };
+        )
+    Here a class template tt(Outer) defines a nested class template tt(Inner),
+which in turn defines a template member function.
+
+    Next, a class template tt(Usage) is defined, offering a member function
+tt(caller()) expecting an object of the above tt(Inner) type. E.g., tt(Usage)
+an initial setup for tt(Usage) could now have been written  as follows:
+        verb(
+    template <typename T1, typename T2>
+    class Usage
+    {
+        public:
+            void fun(Outer<T1>::Inner<T2> &obj);
+        ...
+    };
+        )
+    The compiler, however, won't accept this. It interprets
+tt(Outer<T1>::Inner) as a class type, which of course doesn't exist. In this
+situation the compiler generates an error like:
+        verb(
+    error: 'class Outer<T1>::Inner' is not a type
+        )
+    To inform the compiler that in this case tt(Inner) itself is a template,
+using the template type parameter tt(<T2>), the ti(::template) construction is
+required. This tells the compiler that the next tt(<) should not be
+interpreted as a `less than' token, but rather as a template type
+argument. So, the declaration is modified to:
+        verb(
+    void fun(Outer<T1>::template Inner<T2> &obj);
+        )
+    But this still doesn't get us where we want to be: after all tt(Inner<T2>)
+is a type, nested under a class template, depenting on a template type
+parameter. Actually, the compiler produces a series of error messages here,
+one of them being like:
+        verb(
+    error: expected type-name before '&' token
+        )
+    which nicely indicates what should be done to get it right: add
+tt(typename):
+        verb(
+    void fun(typename Outer<T1>::template Inner<T2> &obj);
+        )
+
+    Next, tt(fun()) itself is not only just declared, it is implemented as
+well. The implementation should call tt(Inner)'s member tt(nested()) function,
+instantiated for yet another type tt(X). The class template tt(Usage) should
+now receive a third template type parameter, which can be called tt(T3): let's
+assume it has been defined. To implement tt(fun()), we start out with:
+        verb(
+    void fun(typename Outer<T1>::template Inner<T2> &obj)
+    {
+        obj.nested<T3>();
+    }
+        )
+   However, once again we run into a problem. The compiler once again
+interprets tt(<) as `less than', and expects a logical expression, having as
+its right-hand side a primary expression instead of a formal template type.
+
+    To tell the compiler in situations like these that tt(<T3>) should be
+interpreted as a type to instantiate tt(nested) with, the tt(template) keyword
+is used once more. This time it is used in the context of the member selection
+operator: by writing ti(.template) the compiler is informed that what follows
+is not a `less than' operator, but rather a type specification. The function's
+final implementation becomes:
+        verb(
+    void fun(typename Outer<T1>::template Inner<T2> &obj)
+    {
+        obj.template nested<T3>();
+    }
+        )
+
+    Instead of value or reference parameters functions may define pointer
+parameters. If tt(obj) would have been defined as a  pointer
+parameter the implementation would use the tt(->template) construction, rather
+than the tt(.template) construction. E.g.,
+        verb(
+    void fun(typename Outer<T1>::template Inner<T2> *ptr)
+    {
+        ptr->template nested<T3>();
+    }
+        )

@@ -1,0 +1,80 @@
+        Class templates can be used in i(class derivation) as well. When a
+class template is used in class derivation, the following situations should be
+distinguished:
+    itemization(
+    it() An existing class template is used as base class when deriving
+a ordinary class. In this case, the resulting class is still partially a
+class template, but this is somewhat hidden from view when an object of the
+derived class is constructed.
+    it() An existing class template is used as the base class when deriving
+another class template. Here the template-class characteristics remain clearly
+visible.
+    it() A ordinary class is used as the base class when deriving a template
+class. This interesting hybrid allows us to construct class templates that
+        hi(class template: partially precompiled)
+are em(partially precompiled).
+    )
+    These three variants of i(class template derivation) will now be
+elaborated.
+
+
+Consider the following base class:
+        verb(
+    template<typename T>
+    class Base
+    {
+        T const &t;
+
+        public:
+            Base(T const &t);
+    };
+        )
+    The above class is a class template, which can be used as a i(base class)
+for the following i(derived class template) tt(Derived):
+        verb(
+    template<typename T>
+    class Derived: public Base<T>
+    {
+        public:
+            Derived(T const &t);
+    };
+
+    template<typename T>
+    Derived<T>::Derived(T const &t)
+    :
+        Base(t)
+    {}
+        )
+    Other combinations are possible as well: by specifying ordinary template
+type parameters of the base class, the base class is instantiated and the
+derived class becomes an ordinary class:
+        verb(
+    class Ordinary: public Base<int>
+    {
+        public:
+            Ordinary(int x);
+    };
+
+    inline Ordinary::Ordinary(int x)
+    :
+        Base(x)
+    {}
+
+    // With the following object definition:
+    Ordinary
+        o(5);
+        )
+    This construction allows us in a specific situation to
+    i(add functionality to a class template), without the need for
+constructing a derived class template.
+
+    Class template derivation pretty much follows the same rules as ordinary
+class derivation, not involving class templates. However, some subtleties
+associated with class template derivation may easily cause confusion. In the
+following sections class derivation involving class templates will be
+discussed. Some of the examples shown in these sections may contain unexpected
+statements and expressions, like the use of tt(this) when members of a
+template base class are called from a derived class. The `chicken and egg'
+problem I encountered here was solved by first discussing the principles of
+class template derivation; next the subtleties that are part of class template
+derivation are covered by section ref(SUBTLE).

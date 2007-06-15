@@ -1,0 +1,47 @@
+By using the ti(ios::rdbuf()) member streams can share their tt(streambuf)
+objects. This means that the information that is written to a stream will
+actually be written to another stream, a phenomenon normally called
+emi(redirection). Redirection is normally realized at the level of the
+operating system, and in some situations that is still necessary (see section
+ref(REDIRECTION)).
+
+A standard situation where redirection is wanted is to write error messages to
+file rather than to standard error, usually indicated by its
+    i(file descriptor) number 2. In the i(Unix) operating system using the
+ti(bash) shell, this can be realized as follows:
+        verb(
+    program 2>/tmp/error.log
+        )
+    With this command any error messages written by tt(program) will be saved
+on the file tt(/tmp/error.log), rather than being written to the screen.
+
+    Here is how this can be realized using tt(streambuf) objects. Assume
+tt(program) now expects an optional argument defining the name of the file to
+write the error messages to; so tt(program) is now called as:
+        verb(
+    program /tmp/error.log
+        )
+    Here is the example realizing redirection. It is annotated below.
+        verbinclude(iostreams/examples/redirection.cc)
+    itemization(
+    it() At lines 1-2 local variables are defined: tt(errlog) is the
+tt(ofstream) to write the error messages too, and tt(cerr_buffer) is a pointer
+to a tt(streambuf), to point to the original tt(cerr) buffer. This is further
+discussed below.
+    it() At line 3  the alternate error stream is opened.
+    it() At line 4  the redirection takes place: tt(cerr) will now write to
+the tt(streambuf) defined by tt(errlog). It is important that
+the original buffer used by tt(cerr) is saved, as explained below.
+    it() At line 5  we pause. At this point, two lines were written to
+the alternate error file. We get a chance to take a look at its contents:
+there were indeed two lines written to the file.
+    it() At line 6  the redirection is terminated. This is very important, as
+the tt(errlog) object is destroyed at the end of tt(main()). If tt(cerr)'s
+buffer would not have been restored, then at that point
+tt(cerr) would refer to a non-existing tt(streambuf) object, which might
+produce unexpected results. It is the i(responsibility of the programmer) to
+make sure that an original tt(streambuf) is saved before redirection, and is
+restored when the redirection ends.
+    it() Finally, at line 7, tt(Done) is now written to the screen again, as
+the redirection has been terminated.
+    )

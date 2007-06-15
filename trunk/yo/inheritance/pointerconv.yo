@@ -1,0 +1,62 @@
+    We return to our tt(Vehicle) classes, and define the following objects and
+pointer variable:
+        verb(
+    Land land(1200, 130);
+    Auto auto(500, 75, "Daf");
+    Truck truck(2600, 120, "Mercedes", 6000);
+    Vehicle *vp;
+    )
+    Now we can assign the  addresses of the three objects of
+the derived classes to the tt(Vehicle) pointer:
+        verb(
+    vp = &land;
+    vp = &auto;
+    vp = &truck;
+        )
+    Each of these assignments is acceptable. However, an
+    i(implicit conversion) of the i(derived class) to the i(base class)
+tt(Vehicle) is used, since tt(vp) is defined as a pointer to a
+tt(Vehicle). Hence, when using tt(vp) only the member functions manipulating
+tt(weight) can be called as this is the tt(Vehicle)'s em(only) functionality.
+As far as the compiler can tell this is the object tt(vp) points to.
+
+    The same reasoning holds true for hi(reference) references to
+tt(Vehicles). If, e.g., a function is defined having a tt(Vehicle) reference
+parameter, the function may be passed an object of a class derived from
+tt(Vehicle). Inside the function, the specific tt(Vehicle) members remain
+accessible. This analogy between pointers and references holds true in
+general. Remember that a reference is nothing but a i(pointer in disguise): it
+mimics a plain variable, but actually it is a pointer.
+
+    This i(restricted functionality) furthermore has an important consequence
+for the class tt(Truck). After the statement tt(vp = &truck), tt(vp) points to
+a tt(Truck) object. So, tt(vp->weight()) will return 2600 instead of
+8600 (the combined weight of the cabin and of the trailer: 2600 + 6000),
+which would have been returned by tt(truck.weight()).
+
+    When a function is called using a i(pointer to an object), then the
+    emi(type of the pointer) (and not the type of the object) determines
+which
+    hi(available member functions) hi(member functions: available) member
+functions are available and executed.  In other words, bf(C++) implicitly
+converts the type of an object reached through a pointer to the pointer's
+type.
+
+    If the actual type of the object to which a pointer points is known, an
+explicit i(type cast) can be used to access the full set of member functions
+that are available for the object:
+        verb(
+    Truck truck;
+    Vehicle *vp;
+
+    vp = &truck;        // vp now points to a truck object
+
+    Truck *trp;
+
+    trp = reinterpret_cast<Truck *>(vp);
+    cout << "Make: " << trp->name() << endl;
+        )
+    Here, the second to last statement specifically casts a tt(Vehicle *)
+variable to a tt(Truck *). As is usually the case with type casts, this code
+is not without risk: it will em(only) work if tt(vp) really points to a
+tt(Truck). Otherwise the program may behave unexpectedly.

@@ -1,0 +1,45 @@
+Continuing our discussion of the tt(NavCom) class, introduced in section
+ref(MULTIPLE) We start by defining two objects, a base class and a derived
+class object:
+        verb(
+    ComSet com(intercom);
+    NavComSet navcom(intercom2, dial2);
+        )
+    The object tt(navcom) is constructed using an tt(Intercom) and a tt(Dial)
+object. However, a tt(NavComSet) is at the same time a tt(ComSet), allowing
+the i(assignment) em(from) tt(navcom) (a derived class object) em(to) tt(com)
+(a base class object):
+        verb(
+    com = navcom;
+        )
+    The effect of this assignment should be that the object tt(com) will now
+communicate with tt(intercom2).  As a tt(ComSet) does not have a tt(VHF_Dial),
+the tt(navcom)'s tt(dial) is ignored by the assignment: when assigning a
+base class object from a derived class object only the base class data members
+are assigned, other data members are ignored.
+
+    The assignment from a base class object to a derived class object,
+however, is problematic: In a statement like
+        verb(
+    navcom = com;
+        )
+    it isn't clear how to reassign the tt(NavComSet)'s tt(VHF_Dial) data
+member as they are missing in the tt(ComSet) object tt(com). Such an
+assignment hi(assignment: refused) is therefore refused by the
+compiler. Although derived class objects are also base class objects, the
+reverse does not hold true: a base class object is not also a derived class
+object.
+
+    The following i(general rule) applies: in assignments in which base class
+objects and derived class objects are involved, assignments in which data are
+dropped is legal. However, assignments in which data would remain unspecified
+is em(not) allowed.  Of course, it is possible to redefine an overloaded
+i(assignment operator) to allow the assignment of a derived class object by a
+base class object.  E.g., to achieve compilability of a statement
+        verb(
+    navcom = com;
+        )
+    the class tt(NavComSet) must have an overloaded assignment operator
+ function accepting a tt(ComSet) object for its argument. It would be the
+responsibility of the programmere constructing the assignment operator to
+decide what to do with the missing data.

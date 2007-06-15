@@ -1,0 +1,209 @@
+In the following sections we shall take a  closer look at another usage of the
+operator tt(=). Consider, once again, the tt(class Person). The class has the
+following characteristics:
+    itemization(
+    it() The class contains several pointers, possibly pointing to
+allocated memory. As discussed, such a class needs a constructor and a
+destructor.
+
+    A typical action of the constructor would be to set the pointer members to
+0. A typical action of the destructor would be to delete the
+allocated memory.
+    it() For the same reason the class requires an overloaded assignment
+operator.
+    it() The class has, besides a default constructor, a constructor which
+expects the name, address and phone number of the tt(Person) object.
+    it() For now, the only remaining interface functions return the name,
+address or phone number of the tt(Person) object.
+    )
+    Now consider the following code fragment. The statement references are
+discussed following the example:
+        verb(
+    Person karel("Karel", "Marskramerstraat", "038 420 1971"); // see (1)
+    Person karel2;                                             // see (2)
+    Person karel3 = karel;                                     // see (3)
+
+    int main()
+    {
+        karel2 = karel3;                                    // see (4)
+        return 0;
+    }
+        )
+    itemization(
+    it() Statement 1: this shows an i(initialization).  The object
+tt(karel) is initialized with appropriate texts. This construction of
+tt(karel) therefore uses the constructor expecting three tt(char
+const *) arguments.
+
+    Assume a tt(Person) constructor is available having only one tt(char const
+*) parameter, e.g.,
+        verb(
+    Person::Person(char const *n);
+        )
+    It should be noted that the initialization `tt(Person frank("Frank"))' is
+identical to
+        verb(
+    Person frank = "Frank";
+        )
+    Even though this piece of code uses the operator tt(=), it is no
+assignment: rather, it is an em(initialization), and hence, it's done at
+em(construction time) by a constructor of the class tt(Person).
+    it() Statement 2: here a second tt(Person) object is created. Again a
+constructor is called. As no special arguments are present, the
+    emi(default constructor) is used.
+    it() Statement 3: again a new object tt(karel3) is created. A constructor
+is therefore called once more.  The new object is also initialized. This time
+with a copy of the data of object tt(karel).
+
+    This form of initializations has not yet been discussed. As we can
+rewrite this statement in the form
+        verb(
+    Person karel3(karel);
+        )
+    it is suggested that a constructor is called, having a reference to a
+tt(Person) object as its argument. Such constructors are quite common in
+bf(C++) and are called hi(copy constructor) em(copy constructors).
+    it() Statement 4: here one object is assigned to another. No object is
+em(created) in this statement. Hence, this is just an i(assignment), using
+the i(overloaded assignment) operator.
+    )
+
+The simple rule emanating from these examples is that em(whenever an object is
+created, a constructor is needed).  All constructors have the following
+hi(constructor characteristics) characteristics:
+    itemization(
+    it() Constructors have no return values.
+    it() Constructors are defined in functions having the same names as the
+class to which they belong.
+    it() The actual constructor that is to be used can be
+deduced from the constructor's argument list. The assignment operator may be
+used if the constructor has only one parameter (and also when
+remaining parameters have default argument values).
+    )
+    Therefore, we conclude that, given the above statement (3), the class
+tt(Person) must be augmented with a emi(copy constructor):
+        verb(
+    class Person
+    {
+        public:
+            Person(Person const &other);
+    };
+        )
+    The implementation of the tt(Person) copy constructor is:
+        verb(
+    Person::Person(Person const &other)
+    {
+        d_name    = strdupnew(other.d_name);
+        d_address = strdupnew(other.d_address);
+        d_phone   = strdupnew(other.d_phone);
+    }
+        )
+    The actions of copy constructors are comparable to those of the overloaded
+assignment operators: an object is em(duplicated), so that it
+will contain its own allocated data. The copy constructor, however, is
+simpler in the following respects:
+    itemization(
+    it() A copy constructor doesn't need to delete previously allocated
+memory: since the object in question has just been created, it cannot already
+have its own allocated data.
+    it() A copy constructor never needs to check whether auto-duplication
+occurs. No variable can be initialized with itself.
+    )
+    Apart from the above mentioned quite obvious usage of the copy constructor,
+the copy constructor has other important tasks. All of these tasks are related
+to the fact that the copy constructor is always called when an object is
+initialized using another object of its class.  The copy
+constructor is called even when this new object is a hidden or is a temporary
+variable.
+    itemization(
+    it() When a function takes an i(object as argument), instead of, e.g., a
+pointer or a reference, the copy constructor is called to pass a copy of an
+object as the argument. This argument, which usually is passed via the
+i(stack), is therefore a new object. It is created and initialized with the
+data of the passed argument.
+    This is illustrated in the following code fragment:
+        verb(
+    void nameOf(Person p)       // no pointer, no reference
+    {                           // but the Person itself
+        cout << p.name() << endl;
+    }
+
+    int main()
+    {
+        Person frank("Frank");
+
+        nameOf(frank);
+        return 0;
+    }
+        )
+    In this code fragment tt(frank) itself is not passed as an argument, but
+instead a temporary (stack) variable is created using the copy
+constructor. This temporary variable is known inside tt(nameOf()) as
+tt(p). Note that if tt(nameOf()) would have had a reference parameter, extra
+stack usage and a call to the copy constructor would have been avoided.
+    it() The copy constructor is also implicitly called when a function
+returns an object:
+        verb(
+    Person person()
+    {
+        string name;
+        string address;
+        string phone;
+
+        cin >> name >> address >> phone;
+
+        Person p(name.c_str(), address.c_str(), phone.c_str());
+
+        return p;           // returns a copy of `p'.
+    }
+        )
+    Here a i(hidden object) of the class tt(Person) is initialized, using the
+copy constructor, as the value returned by the function. The local variable
+tt(p) itself ceases to exist when tt(person()) terminates.
+    )
+    To demonstrate that copy constructors are not called in all situations,
+consider the following.  We could rewrite the above function tt(person()) to
+the following form:
+        verb(
+    Person person()
+    {
+        string name;
+        string address;
+        string phone;
+
+        cin >> name >> address >> phone;
+
+        return Person(name.c_str(), address.c_str(), phone.c_str());
+    }
+        )
+    This code fragment is perfectly valid, and illustrates the use of an
+ti(anonymous object). Anonymous objects are emi(const objects): their data
+members may not change. The use of an anonymous object in the above example
+illustrates the fact that i(object return values) should be considered
+constant objects, even though the keyword tt(const) is not explicitly
+mentioned in the return type of the function (as in tt(Person const
+person())).
+
+    As an other example, once again assuming the availability of a
+tt(Person(char const *name)) constructor, consider:
+        verb(
+    Person namedPerson()
+    {
+        string name;
+
+        cin >> name;
+        return name.c_str();
+    }
+        )
+    Here, even though the return value tt(name.c_str()) doesn't match the
+return type tt(Person), there is a em(constructor) available to construct a
+tt(Person) from a tt(char const *). Since such a constructor is available, the
+(anonymous) return value can be constructed by em(promoting) a
+    hi(promoting a type) tt(char const *) type to a tt(Person) type using an
+appropriate constructor.
+
+    Contrary to the situation we encountered with the default constructor, the
+i(default copy constructor) remains available once a constructor (em(any
+constructor)) is defined explicitly. The copy constructor can be redefined,
+but if not, then the default copy constructor will still be available when
+another constructor is defined.

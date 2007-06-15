@@ -1,0 +1,219 @@
+The emi(protected) em(members) of the tt(class) ti(streambuf) are normally not
+accessible. However, they are accessible in specializing classes which are
+derived from tt(streambuf).  They are important for understanding and using
+the tt(class streambuf). Usually there are both protected i(data members) and
+protected i(member functions) defined in the tt(class streambuf). Since using
+data members immediately violates the principle of emi(encapsulation), these
+members are not mentioned here. As the functionality of tt(streambuf), made
+available via its member functions, is quite extensive, directly using its
+data members is probably hardly ever necessary. This section not even lists
+all protected member functions of the tt(class streambuf). Only those member
+functions are mentioned that are useful in constructing specializations. The
+tt(class streambuf) maintains an input- and/or and output buffer, for which
+begin-, actual- and end-pointers have been defined, as depicted in figure
+ref(SBBUFFERS). In upcoming sections we will refer to this figure repeatedly.
+    figure(iostreams/sbbuffers)
+    (Input- and output buffer pointers of the class `streambuf')
+    (SBBUFFERS)
+
+Protected i(constructor):
+    itemization(
+    ittq(streambuf::streambuf())
+        (Default (protected) constructor of the tt(class streambuf).)
+    )
+
+Several protected member functions are related to i(input) operations. The
+member functions marked as tt(virtual) may be redefined in classes derived
+from tt(streambuf). In those cases, the redefined function will be called by
+tt(i/ostream) objects that received the addresses of such derived class
+objects. See chapter ref(POLYMORPHISM) for details about virtual member
+functions. Here are the protected members:
+    itemization(
+    ithtq(streambuf::eback())
+        (char *streambuf::eback())
+        (For the input buffer the tt(class streambuf) maintains three
+        pointers: tt(eback()) points to the `end of the putback' area:
+        characters can safely be put back up to this position. See also figure
+        ref(SBBUFFERS). tt(Eback()) can be considered to represent the
+        em(beginning) of the input buffer.)
+    ithtq(streambuf::egptr())
+        (char *streambuf::egptr())
+        (For the input buffer the tt(class streambuf) maintains three
+        pointers: tt(egptr()) points just beyond the last character
+        that can be retrieved. See also figure ref(SBBUFFERS). If tt(gptr())
+        (see below) equals tt(egptr()) the buffer must be refilled. This
+        should be realized by calling tt(underflow()), see below.)
+    ithtq(streambuf::gbump())
+        (void streambuf::gbump(int n))
+        (This function moves the input pointer over tt(n) positions.)
+    ithtq(streambuf::gptr())
+        (char *streambuf::gptr())
+        (For the input buffer the tt(class streambuf) maintains three
+        pointers: tt(gptr()) points to the next character to be retrieved. See
+        also figure ref(SBBUFFERS).)
+    ithtq(streambuf::pbackfail())
+        (virtual int streambuf::pbackfail(int c))
+        (This member function may be redefined by specializations of the
+        tt(class streambuf) to do something intelligent when putting back
+        character tt(c) fails. One of the things to consider here is to
+        restore the old read pointer when putting back a character fails,
+        because the beginning of the input buffer is reached. This member
+        function is called when ungetting or putting back  a character fails.)
+    ithtq(streambuf::setg())
+        (void streambuf::setg(char *beg, char *next, char *beyond))
+        (This member function initializes an input buffer: tt(beg) points to
+        the beginning of the input area, tt(next) points to the next character
+        to be retrieved, and tt(beyond) points beyond the last character of
+        the input buffer. Ususally tt(next) is at least tt(beg + 1), to allow
+        for a put back operation. No input buffering is used when this member
+        is called with 0-arguments (not em(no) arguments, but arguments having
+        0 values.) See also the member tt(streambuf::uflow()), below.)
+    ithtq(streambuf::showmanyc())
+        (virtual streamsize streambuf::showmanyc())
+        ((Pronounce: s-how-many-c) This member function may be redefined by
+        specializations of the
+        tt(class streambuf). It must return a guaranteed lower bound on the
+        number of characters that can be read from the device before
+        tt(uflow()) or tt(underflow()) returns endOfFile(). By default 0 is
+        returned (meaning at least 0 characters will be returned before the
+        latter two functions will return endOfFile()).)
+    ithtq(streambuf::uflow())
+        (virtual int streambuf::uflow())
+        (This member function may be redefined by specializations of the
+        tt(class streambuf) to reload an input buffer with new characters. The
+        default implementation is to call tt(underflow()), see below, and to
+        increment the read pointer tt(gptr()). When no input buffering is
+        required this function, rather than tt(underflow()) can be
+        overridden to produce the next available character from the device to
+        read.)
+    ithtq(streambuf::underflow())
+        (virtual int streambuf::underflow())
+        (This member function may be redefined by specializations of the
+        tt(class streambuf) to read another character from the device. The
+        default implementation is to return endOfFile(). When buffering is
+        used, often the complete buffer is not refreshed, as this would make
+        it impossible to put back characters just after a reload. This system,
+        where only a subsection of the input buffer is reloaded,
+        is called a emi(split buffer).)
+    ithtq(streambuf::xsgetn())
+        (virtual streamsize streambuf::xsgetn(char *buffer, streamsize n))
+        (This member function may be redefined by specializations of the
+        tt(class streambuf) to retrieve tt(n) characters from the device.
+        The default implementation is to call tt(sbumpc()) for every single
+        character. By default this calls (eventually) tt(underflow()) for
+        every single character.
+        )
+    )
+
+Here are the protected member functions related to i(output)
+operations. Similarly to the functions related to input operations, some of
+the following functions are tt(virtual): they may be redefined in derived
+classes:
+    itemization(
+    ithtq(streambuf::overflow())
+        (virtual int streambuf::overflow(int c))
+       (This member function may be redefined by specializations of the
+        tt(class streambuf) to flush the characters in the output buffer to
+        the device, and then to reset the output buffer pointers such that the
+        buffer may be considered empty. It receives as parameter tt(c) the
+        next character to be processed by the tt(streambuf). If no output
+        buffering is used, tt(overflow()) is called for every single character
+        which is written to the tt(streambuf) object. This is realized by
+        setting the buffer pointers (using, e.g., tt(setp()), see below) to
+        0. The i(default implementation) returns endOfFile(), indicating that
+        no characters can be written to the device.)
+    ithtq(streambuf::pbase())
+        (char *streambuf::pbase())
+        (For the output buffer the tt(class streambuf) maintains three
+        pointers: tt(pbase()) points to the beginning of the output buffer
+        area. See also figure ref(SBBUFFERS).)
+    ithtq(streambuf::pptr())
+        (char *streambuf::epptr())
+        (For the output buffer the tt(class streambuf) maintains three
+        pointers: tt(epptr()) points just beyond the location of the
+        last character
+        that can be written. See also figure ref(SBBUFFERS). If tt(pptr())
+        (see below) equals tt(epptr()) the buffer must be flushed. This is
+        realized by calling tt(overflow()), see below.)
+    ithtq(streambuf::pbump())
+        (void streambuf::pbump(int n))
+        (This function moves the output pointer over tt(n) positions.)
+    ithtq(streambuf::pptr())
+        (char *streambuf::pptr())
+        (For the output buffer the tt(class streambuf) maintains three
+        pointers: tt(pptr()) points to the location of the next character
+        to be written. See also figure ref(SBBUFFERS).)
+    ithtq(streambuf::setp())
+        (void streambuf::setp(char *beg, char *beyond))
+        (This member function initializes an output buffer: tt(beg) points to
+        the beginning of the output area and tt(beyond) points beyond the last
+        character of the output area. Use 0 for the arguments to indicate that
+        i(no buffering) is requested. In that case tt(overflow()) is called
+        for every single character to write to the device.)
+    ithtq(streambuf::xsputn())
+        (streamsize streambuf::xsputn(char const *buffer, streamsize n))
+        (This member function may be redefined by specializations of the
+        tt(class streambuf) to write tt(n) characters immediately to the
+        device. The actual number of inserted characters should be
+        returned. The default implementation calls tt(sputc()) for each
+        individual character, so redefining is only needed if a more efficient
+        implementation is required.)
+    )
+
+Protected member functions related to i(buffer) management and positioning:
+    itemization(
+    ithtq(streambuf::setbuf())
+        (virtual streambuf *streambuf::setbuf(char *buffer, streamsize n))
+        (This member function may be redefined by specializations of the
+        tt(class streambuf) to install a buffer. The default implementation is
+        to do nothing.)
+    it()hi(streambuf::seekoff())
+        tt(virtual
+            pos_type streambuf::seekoff+OPENPARoff_type offset,
+            ios::seekdir way,)nl()
+            tt(ios::openmode mode = ios::in | ios::out+CLOSEPAR)
+       quote(This member function may be redefined by specializations of the
+        tt(class streambuf) to reset the next pointer for input or output to a
+        new i(relative position) (using tt(ios::beg, ios::cur) or
+        tt(ios::end)). The default implementation is to indicate i(failure) by
+        returning -1. The function is called when, e.g., tt(tellg()) or
+        tt(tellp()) is called. When a tt(streambuf) specialization supports
+        seeking, then the specialization should also define this function to
+        determine what to do with a repositioning (or tt(tellp/g())) request.)
+    it() hi(streambuf::seekpos())
+        tt(virtual pos_type streambuf::seekpos+OPENPARpos_type offset,
+            ios::openmode mode =)nl()tt(ios::in | ios::out+CLOSEPAR):
+       quote(This member function may be redefined by specializations of the
+        tt(class streambuf) to reset the next pointer for input or output to a
+        new i(absolute position) (i.e, relative to tt(ios::beg)). The default
+        implementation is to indicate i(failure) by returning -1.)
+    ithtq(streambuf::sync())
+        (virtual int sync())
+        (This member function may be redefined by specializations of the
+        tt(class streambuf) to
+        flush the output buffer to the i(device) or to reset the input device
+        to the position of the last consumed character. The default
+        implementation (not using a buffer) is to return 0, indicating
+        successfull syncing. The member
+        function is used to make sure that any characters that are still
+        buffered are written to the device or to restore unconsumed characters
+        to the device when the tt(streambuf) object ceases to exist.)
+   )
+    Morale: when specializations of the tt(class streambuf) are designed,
+the very least thing to do is to redefine tt(underflow()) for specializations
+aimed at reading information from devices, and to redefine tt(overflow()) for
+specializations aimed at writing information to devices. Several examples of
+specializations of the tt(class streambuf) will be given in the bf(C++)
+Annotations (e.g., in chapter ref(CONCRETE)).
+
+    Objects of the class tt(fstream) use a combined input/output buffer. This
+results from the fact that tt(istream) and tt(ostream), are virtually derived
+from tt(ios), which contains the tt(streambuf). As explained in section
+ref(VIRTUALBASE), this implies that classes derived from both tt(istream) and
+tt(ostream) share their tt(streambuf) pointer. In order to construct a class
+supporting both input and output on separate buffers, the tt(streambuf) itself
+may define internally two buffers. When tt(seekoff()) is called for reading,
+its tt(mode) parameter is set to tt(ios::in), otherwise to tt(ios::out). This
+way, the tt(streambuf) specializaiton knows whether it should access the
+tt(read) buffer or the tt(write) buffer. Of course, tt(underflow()) and
+tt(overflow()) themselves already know on which buffer they should operate.

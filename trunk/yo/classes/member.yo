@@ -1,0 +1,99 @@
+The keyword tt(const) is often used behind the parameter list of
+member functions. This keyword indicates that a member
+function does not alter the data members of its object, but will only inspect
+them. These member functions are called emi(const member functions).
+Using the example of the class tt(Person), we see that the accessor
+functions were declared tt(const):
+        verb(
+    class Person
+    {
+        public:
+            std::string const &name() const;
+            std::string const &address() const;
+            std::string const &phone() const;
+    };
+        )
+    This fragment illustrates that the keyword tt(const) appears
+em(behind) the functions' argument lists. Note that in this situation the
+rule of thumb given in section ref(ConstRule) applies as well: whichever
+appears bf(before) the keyword tt(const), may not be altered and doesn't alter
+(its own) data.
+
+The tt(const) specification must be repeated in the definitions of member
+functions:
+        verb(
+    string const &Person::name() const
+    {
+        return d_name;
+    }
+        )
+    A member function which is declared and defined as tt(const) may not alter
+any data fields of its class. In other words, a statement like
+        verb(
+    d_name = 0;
+        )
+    in the above tt(const) function tt(name()) would result in a
+compilation error.
+
+tt(Const) member functions exist because bf(C++) allows tt(const) objects to
+be created, or (used more often) references to tt(const) objects to be passed
+to functions. For such objects only member functions which do not modify it,
+i.e., the tt(const) member functions, may be called. The only exception to
+this rule are the constructors and destructor: these are called
+`automatically'. The possibility of calling constructors or destructors is
+comparable to the definition of a variable tt(int const max = 10). In
+situations like these, no em(assignment) but rather an em(initialization)
+takes place at creation-time.  Analogously, the constructor
+        hi(initialization of objects)
+    can bf(initialize) its object when the tt(const) variable is created, but
+subsequent assignments cannot take place.
+
+The following example shows the definition of a tt(const) object of the class
+tt(Person). When the object is created the data fields are initialized by the
+constructor:
+        verb(
+    Person const me("Karel", "karel@icce.rug.nl", "542 6044");
+        )
+
+    Following this definition it would be illegal to try to redefine the name,
+address or phone number for the object tt(me): a statement as
+        verb(
+    me.setName("Lerak");
+        )
+    would not be accepted by the compiler. Once more, look at the position of
+the tt(const) keyword in the variable definition: tt(const), following
+tt(Person) and preceding tt(me) associates to the left: the tt(Person) object
+in general must remain unaltered. Hence, if multiple objects were defined
+here, both would be constant tt(Person) objects, as in:
+        verb(
+    Person const        // all constant Person objects
+        kk("Karel", "karel@icce.rug.nl", "542 6044"),
+        fbb("Frank", "f.b.brokken@rug.nl", "363 9281");
+        )
+
+    Member functions which do not modify their object should be defined as
+tt(const) member functions.  This subsequently allows the use of these
+functions with tt(const) objects or with tt(const) references. As a
+    i(rule of thumb) it is stated here that member functions should always be
+given the tt(const) attribute, unless they actually modify the object's data.
+
+    Earlier, in section ref(FunctionOverloading) the concept of function
+overloading was introduced. There it noted that member functions may
+    hi(overloading: by const attribute)
+be overloaded merely by their tt(const) attribute. In those cases, the
+compiler will use the member function matching most closely the
+const-qualification of the object:
+    itemization(
+    it() When the object is a tt(const) object, only tt(const) member
+functions can be used.
+    it() When the object is not a tt(const) object, non-tt(const) member
+functions will be used, em(unless) only a tt(const) member function is
+available. In that case, the tt(const) member function will be used.
+    )
+    An example showing the selection of (non) tt(const) member functions is
+given in the following example:
+        verbinclude(classes/examples/constmembers.cc)
+    Overloading member functions by their tt(const) attribute commonly occurs
+in the context of em(operator overloading). See chapter
+ref(OperatorOverloading), in particular section ref(OPERATORINDEX) for
+details.

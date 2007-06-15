@@ -1,0 +1,61 @@
+When entities from hi(namespace) namespaces are used in hi(header file) header
+files, in general  ti(using) directives should not be used in these header
+files if they are to be used as general header files declaring classes or
+other entities from a i(library). When the tt(using) directive is used in a
+header file then users of such a header file are forced to accept and use the
+declarations in all code that includes the particular header file.
+
+    For example, if in a namespace tt(special) an object tt(Inserter cout) is
+declared, then tt(special::cout) is of course a different object than
+tt(std::cout). Now, if a class tt(Flaw) is constructed, in which the
+constructor expects a reference to a tt(special::Inserter), then the class
+should be constructed as follows:
+        verb(
+    class special::Inserter;
+
+    class Flaw
+    {
+    public:
+        Flaw(special::Inserter &ins);
+    };
+        )
+    Now the person designing the class tt(Flaw) may be in a i(lazy mood), and
+might get bored by continuously having to prefix tt(special::) before every
+entity from that namespace. So, the following construction is used:
+        verb(
+    using namespace special;
+
+    class Inserter;
+
+    class Flaw
+    {
+    public:
+        Flaw(Inserter &ins);
+    };
+        )
+    This works fine, up to the point where somebody wants to include
+tt(flaw.h) in other source files: because of the tt(using) directive, this
+latter person is now by implication also tt(using namespace special), which
+could produce unwanted or unexpected effects:
+        verb(
+    #include <flaw.h>
+    #include <iostream>
+
+    using std::cout;
+
+    int main()
+    {
+        cout << "starting" << endl;     // doesn't compile
+    }
+        )
+    The compiler is confronted with two interpretations for tt(cout): first,
+because of the tt(using) directive in the tt(flaw.h) header file, it considers
+tt(cout) a tt(special::Extractor), then, because of the tt(using) directive in
+the user program, it considers tt(cout) a tt(std::ostream). As compilers do,
+when confronted with an ambiguity, an error is reported.
+
+    As a i(rule of thumb), header files intented to be generally used should
+not contain tt(using) declarations. This rule does not hold true
+for header files which are included only by the sources of a class: here the
+programmer is free to apply as many tt(using) declarations as desired, as
+these directives never reach other sources.

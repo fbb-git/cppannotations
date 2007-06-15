@@ -1,0 +1,80 @@
+When a class is nested within a class template, it automatically becomes a
+class template itself.
+        hi(nested class template)
+    The i(nested class) may use the template parameters of the surrounding
+class, as shown in the following skeleton program. Within a class
+tt(PtrVector), a class tt(iterator) is defined. The nested class receives its
+information from its surrounding class, a tt(PtrVector<Type>) class. Since
+this surrounding class should be the only class constructing its iterators,
+tt(iterator)'s constructor is made i(private), and the surrounding class is
+given access to the private members of tt(iterator) using a
+        emi(bound friend) declaration.
+    Here is the initial section of tt(PtrVector)'s class interface:
+        verbinsert(HEAD)(templateclasses/examples/nesting1.cc)
+    This shows that the tt(std::vector) base class will store pointers to
+tt(Type) values, rather than the values themselves. Of course, a destructor is
+needed now, since the (externally allocated) memory for the tt(Type) objects
+must eventually be freed. Alternatively, the allocation might be part of
+tt(PtrVector)'s tasks, when storing new elements. Here it is assumed that the
+tt(PtrVector)'s clients do the required allocations, and that the destructor
+will be implemented later on.
+
+    The nested class defines its constructor as a private member, and allows
+tt(PtrVector<Type>) objects to access its private members. Therefore only
+objects of the surrounding tt(PtrVector<Type>) class type are allowed to
+construct their tt(iterator) objects. However, tt(PtrVector<Type>)'s clients
+may construct em(copies) of the tt(PtrVector<Type>::iterator) objects they
+use. Here is the nested class tt(iterator), containing the required tt(friend)
+declaration. Note the use of the tt(typename) keyword: since
+tt(std::vector<Type *>::iterator) depends on a template parameter, it is not
+yet an instantiated class, so tt(iterator) becomes an i(implicit typename).
+The compiler issues a corresponding warning if tt(typename) has been
+omitted. In these cases  tt(typename) must be used. Here is the class
+interface:
+        verbinsert(ITER)(templateclasses/examples/nesting1.cc)
+    The implementation of the members shows that the base class's tt(begin())
+member is called to initialize tt(d_begin). Also note that the return type of
+tt(PtrVector<Type>::begin()) must again be preceded by tt(typename):
+        verbinsert(ITERIMP)(templateclasses/examples/nesting1.cc)
+    The remainder of the class is simple. Omitting all other functions that
+might be implemented, the function tt(begin()) will return a newly constructed
+tt(PtrVector<Type>::iterator) object. It may call the constructor since the
+class tt(iterator) called its surrounding class its friend:
+        verbinsert(BEGIN)(templateclasses/examples/nesting1.cc)
+    Here is a simple  i(skeleton program), showing how the nested class
+tt(iterator) might be used:
+        verbinsert(MAIN)(templateclasses/examples/nesting1.cc)
+
+    Nested hi(enumeration: nested) enumerations and hi(typedefs: nested)
+typedefs can also be defined in class templates. The class tt(Table),
+mentioned before (section ref(TFROMC)) inherited the enumeration
+tt(TableType::FillDirection). If tt(Table) would have been implemented as a
+full class template, then this enumeration would have been defined in
+tt(Table) itself as:
+        verb(
+    template <typename Iterator>
+    class Table: public TableType
+    {
+        public:
+            enum FillDirection
+            {
+                Horizontal,
+                Vertical
+            };
+        ...
+    };
+        )
+    In this case, the actual value of the template type parameter must be
+specified when referring to a tt(FillDirection) value or to its type. For
+example (assuming tt(iter) and tt(nCols) are defined as in section
+ref(TFROMC)):
+        verb(
+    Table<istream_iterator<string> >::FillDirection direction =
+                argc == 2 ?
+                    Table<istream_iterator<string> >::Vertical
+                :
+                    Table<istream_iterator<string> >::Horizontal;
+
+    Table<istream_iterator<string> >
+        table(iter, istream_iterator<string>(), nCols, direction);
+        )

@@ -1,0 +1,29 @@
+If emi(Koenig lookup) were called the `Koenig principle', it could have been
+the title of a new i(Ludlum) novell. However, it is not. Instead it refers to
+a bf(C++) technicality.
+
+`Koenig lookup' refers to the fact that if a function is called without
+referencing a namespace, then the namespaces of its arguments are used to find
+the namespace of the function. If the namespace in which the arguments are
+defined contains such a function, then that function is used. This is called
+the `Koenig lookup'.
+
+In the following example this is illustrated. The function
+tt(FBB::fun(FBB::Value v)) is defined in the tt(FBB) namespace. As shown, it
+can be called without the explicit mentioning of a namespace:
+        verbinclude(namespace/examples/koenig1.cc)
+    Note that trying to i(fool the compiler) doesn't work: if in the
+tt(namespace FBB) tt(Value) was defined as tt(typedef int Value) then
+tt(FBB::Value) would have been recognized as tt(int), thus causing the Koenig
+lookup to fail.
+
+    As another example, consider the next program. Here there are two
+namespaces involved, each defining their own tt(fun()) function. There is no
+i(ambiguity) here, since the argument defines the namespace. So,
+tt(FBB::fun()) is called:
+        verbinclude(namespace/examples/koenig2.cc)
+
+    Finally, an example in which there is an ambiguity: tt(fun()) has two
+arguments, one from each individual namespace. Here the ambiguity must be
+resolved by the programmer:
+        verbinclude(namespace/examples/koenig3.cc)

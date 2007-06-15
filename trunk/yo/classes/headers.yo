@@ -1,0 +1,257 @@
+In section ref(CHeaders) the requirements for header files when a bf(C++)
+program also uses bf(C) functions were discussed.
+
+When classes are used, there are more requirements for the organization of
+hi(header file: organization) header files. In this section these requirements
+are covered.
+
+First, the source files. With the exception of the occasional classless
+function, source files should contain the code of member functions of classes.
+With source files there are basically two approaches:
+    itemization(
+    it() All required header files for a member function are included in each
+individual source file.
+    it() All required header files for all member functions are included in the
+class-headerfile, and each sourcefile of that class includes only the header
+file of its class.
+    )
+    The first alternative has the advantage of economy for the compiler: it
+only needs to read the header files that are necessary for a particular source
+file. It has the disadvantage that the program developer must include multiple
+header files again and again in sourcefiles: it both takes time to type the
+tt(include)-directives and to think about the header files which are needed in
+a particular source file.
+
+The second alternative has the advantage of economy for the program developer:
+the header file of the class accumulates header files, so it tends to become
+more and more generally useful. It has the disadvantage that the compiler
+frequently has to read header files which aren't actually used by the function
+defined in the source file.
+
+With computers running faster and faster we think the second alternative is to
+be preferred over the first alternative. So, as a starting point we suggest
+that source files of a particular class tt(MyClass) are organized according to
+the following example:
+        verb(
+    #include <myclass.h>
+
+    int MyClass::aMemberFunction()
+    {}
+        )
+    There is only one tt(include)-directive. Note that the directive refers to
+a header file in a directory mentioned in the ti(INCLUDE)-file environment
+variable. Local header files (using tt(#include "myclass.h")) could be used
+too, but that tends to complicate the organization of the class header file
+itself somewhat.
+
+    If i(name collisions) with existing header files might occur it pays off
+to have a subdirectory of one of the directories mentioned in the tt(INCLUDE)
+environment variable (e.g., tt(/usr/local/include/myheaders/)).
+
+    If a class tt(MyClass) is developed there, create a subdirectory (or
+subdirectory link) tt(myheaders) of one of the standard tt(INCLUDE)
+directories to contain all header files of all classes that are developed as
+part of the project. The tt(include)-directives will then be similar to
+tt(#include <myheaders/myclass.h>), and name collisions with other header
+files are avoided.
+
+The organization of the header file itself requires some attention. Consider
+the following example, in which two classes tt(File) and tt(String) are
+used.
+
+Assume the tt(File) class has a member tt(gets(String &destination)), while
+the class tt(String) has a member function tt(getLine(File &file)). The
+(partial) header file for the tt(class String) is then:
+        verb(
+    #ifndef _String_h_
+    #define _String_h_
+
+    #include <project/file.h>   // to know about a File
+
+    class String
+    {
+        public:
+            void getLine(File &file);
+    };
+    #endif
+        )
+    However, a similar setup is required for the class tt(File):
+        verb(
+    #ifndef _File_h_
+    #define _File_h_
+
+    #include <project/string.h>   // to know about a String
+
+    class File
+    {
+        public:
+            void gets(String &string);
+    };
+    #endif
+        )
+    Now we have created a problem. The compiler, trying to compile the source
+file of the function tt(File::gets()) proceeds as follows:
+    itemization(
+    it() The header file tt(project/file.h) is opened to be read;
+    it() tt(_File_h_) is defined
+    it() The header file tt(project/string.h) is opened to be read
+    it() tt(_String_h_) is defined
+    it() The header file tt(project/file.h) is (again) opened to be read
+    it() Apparently, tt(_File_h_) is already defined, so the remainder of
+            tt(project/file.h) is skipped.
+    it() The interface of the class tt(String) is now parsed.
+    it() In the class interface a reference to a tt(File) object is
+            encountered.
+    it() As the tt(class File) hasn't been parsed yet, a tt(File) is still
+        an undefined type, and the compiler quits with an error.
+    )
+    The solution for this problem is to use a emi(forward class reference)
+em(before) the class interface, and to include the corresponding class header
+file em(after) the class interface. So we get:
+        verb(
+    #ifndef _String_h_
+    #define _String_h_
+
+    class File;                 // forward reference
+
+    class String
+    {
+        public:
+            void getLine(File &file);
+    };
+
+    #include <project/file.h>   // to know about a File
+
+    #endif
+        )
+    A similar setup is required for the class tt(File):
+        verb(
+    #ifndef _File_h_
+    #define _File_h_
+
+    class String;               // forward reference
+
+    class File
+    {
+        public:
+            void gets(String &string);
+    };
+
+    #include <project/string.h>   // to know about a String
+
+    #endif
+        )
+    This works well in all situations where either references or pointers to
+another classes are involved and with (non-inline) member functions having
+    i(class-type return values) or hi(class-type parameters) parameters.
+
+    Note that this setup doesn't work with i(composition), nor with inline
+member functions. Assume the class tt(File) has a em(composed) data member of
+the class tt(String). In that case, the class interface of the class tt(File)
+em(must) include the header file of the class tt(String) before the class
+interface itself, because otherwise the compiler can't tell how big a tt(File)
+object will be, as it doesn't know the size of a tt(String) object once the
+interface of the tt(File) class is completed.
+
+    In cases where classes contain composed objects (or are derived from other
+classes, see chapter ref(INHERITANCE)) the header files of the classes of the
+composed objects must have been read em(before) the class interface itself.
+In such a case the tt(class File) might be defined as follows:
+        verb(
+    #ifndef _File_h_
+    #define _File_h_
+
+    #include <project/string.h>     // to know about a String
+
+    class File
+    {
+        String d_line;              // composition !
+
+        public:
+            void gets(String &string);
+    };
+    #endif
+        )
+    Note that the class tt(String) can't have a tt(File) object as a composed
+member: such a situation would result again in an undefined class while
+compiling the sources of these classes.
+
+    All remaining header files (appearing below the class interface itself)
+are required only because they are used by the class's source files.
+
+    This approach allows us to introduce yet another refinement:
+    itemization(
+    it() Header files defining a class interface should em(declare) what can
+be declared before defining the class interface itself. So, classes that are
+mentioned in a class interface  should be specified using
+    i(forward declarations) em(unless)
+        itemization(
+        it() They are a em(base class) of the current class (see chapter
+ref(INHERITANCE));
+        it() They are the class types of composed data members;
+        it() They are used in inline member functions.
+        )
+    In particular: additional actual header files are em(not) required for:
+        itemization(
+            it() class-type return values of functions;
+            it() class-type value parameters of functions.
+        )
+    Header files of classes of objects that are either composed or inherited
+or that are used in inline functions, em(must) be known to the compiler before
+the interface of the current class starts.  The information in the header
+file itself is protected by the tt(#ifndef ... #endif) construction introduced
+in section ref(CHeaders).
+    it() Program sources in which the class is used only need to include this
+header file. hi(Lakos, J.) em(Lakos), (2001) refines this process even
+further. See his book bf(Large-Scale bf(C++) Software Design) for further
+details. This header file should be made available in a well-known location,
+such as a directory or subdirectory of the standard ti(INCLUDE) path.
+    it() For the implementation of the member functions the class's header file
+is required and usually other header files (like tt(#include <string>)) as
+well. The class header file itself as well as these additional header files
+should be included in a separate internal header file (for which the extension
+tt(.ih) hi(.ih extension) (`i(internal header)') is suggested).
+
+    The tt(.ih) file should be defined in the same directory as the source
+files of the class, and has the following characteristics:
+        itemization(
+        it() There is em(no) need for a protective tt(#ifndef) .. tt(#endif)
+shield, as the header file is never included by other header files.
+        it() The standard tt(.h) header file defining the class interface
+is included.
+        it() The header files of all classes used  as forward references in
+the standard tt(.h) header file are included.
+        it() Finally, all other header files that are required in the source
+files of the class are included.
+        )
+    An example of such a header file organization is:
+        itemization(
+        it() First part, e.g., tt(/usr/local/include/myheaders/file.h):
+        verb(
+    #ifndef _File_h_
+    #define _File_h_
+
+    #include <fstream>      // for composed 'ifstream'
+
+    class Buffer;           // forward reference
+
+    class File              // class interface
+    {
+        ifstream d_instream;
+
+        public:
+            void gets(Buffer &buffer);
+    };
+    #endif
+        )
+        it() Second part, e.g., ~/myproject/file/file.ih, where all sources of
+the class File are stored:
+        verb(
+    #include <myheaders/file.h> // make the class File known
+
+    #include <buffer.h>         // make Buffer known to File
+    #include <string>           // used by members of the class
+    #include <sys/stat.h>       // File.
+        )
+        )
+    )

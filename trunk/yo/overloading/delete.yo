@@ -1,0 +1,36 @@
+The ti(delete) operator may be overloaded too. The ti(operator delete) must
+have a ti(void *) argument, and an optional second argument of type ti(size_t),
+which is the size in bytes of objects of the class for which the tt(operator
+delete) is overloaded. The return type of the overloaded tt(operator delete) is
+tt(void).
+
+Therefore, in a class the operator tt(delete) may be overloaded using the
+following prototype:
+        centt(void operator delete(void *);)
+    or
+        centt(void operator delete(void *, size_t);)
+    Overloading tt(delete[]) is discussed in section ref(NEWDELETEARRAY).
+
+    The `home-made' tt(operator delete) is called after executing the
+i(destructor) of the associated class. So, the statement
+        centt(delete ptr;)
+    with tt(ptr) being a pointer to an object of the class tt(X) for which the
+operator tt(delete) was overloaded, boils down to the following statements:
+        verb(
+    X::~X(ptr);     // call the destructor function itself
+
+                    // and do things with the memory pointed to by ptr
+    X::operator delete(ptr, sizeof(*ptr));
+        )
+    The overloaded tt(operator delete) may do whatever it wants to do with the
+memory pointed to by tt(ptr). It could, e.g., simply delete it. If that
+would be the preferred thing to do, then the
+    hi(default operator delete) default tt(delete) operator
+can be activated using the ti(::) i(scope resolution operator). For example:
+        verb(
+    void X::operator delete(void *ptr)
+    {
+        // any operation considered necessary, then:
+        ::delete ptr;
+    }
+        )

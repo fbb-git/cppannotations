@@ -1,0 +1,70 @@
+    Like tt(operator new[]) ti(operator delete[]) may be overloaded.
+To overload tt(operator delete[]) in a class tt(Object) the interface should
+contain the following lines, showing multiple forms of overloaded forms of
+tt(operator delete[]):
+        verb(
+    class Object
+    {
+        public:
+            void operator delete[](void *p);
+            void operator delete[](void *p, size_t index);
+            void operator delete[](void *p, int extra, bool yes);
+    };
+        )
+
+    subsubsect(`delete[](void *)')
+
+    The first form shows the basic form of tt(operator delete[]). Its
+parameter is initialized to the address of a block of memory previously
+allocated by tt(Object::new[]). These objects can be
+deleted by the emi(global operator delete[]) using the form
+ti(::delete[]). However, the compiler expects tt(::delete[]) to receive a
+pointer to tt(Objects), so a i(type cast) is necessary:
+        verb(
+    ::delete[] reinterpret_cast<Object *>(p);
+        )
+    An example of an overloaded operator tt(delete[]) is:
+        verb(
+    void Object::operator delete[](void *p)
+    {
+        cout << "operator delete[] for Objects called\n";
+        ::delete[] reinterpret_cast<Object *>(p);
+    }
+        )
+    Having constructed the overloaded operator tt(delete[]), it will be used
+automatically in statements like:
+        verb(
+        delete[] new Object[5];
+        )
+
+    subsubsect(`delete[](void *, size_t)')
+
+    Operator tt(delete[]) may be overloaded using additional
+parameters. However, if overloaded as
+        verb(
+    void operator delete[](void *p, size_t size);
+        )
+    then tt(size) is automatically initialized to the size (in bytes) of the
+block of memory to which tt(void *p) points. If this form is defined, then the
+first form should em(not) be defined, to avoid
+    hi(ambiguity: with delete[]) ambiguity.  An example of this form of
+tt(operator delete[]) is:
+        verb(
+    void Object::operator delete[](void *p, size_t size)
+    {
+        cout << "deleting " << size << " bytes\n";
+        ::delete[] reinterpret_cast<Object *>(p);
+    }
+        )
+
+    subsubsect(Alternate forms of overloading operator `delete[]')
+
+    If additional parameters are defined, as in
+        verb(
+    void operator delete[](void *p, int extra, bool yes);
+        )
+    an i(explicit argument list) must be provided. With tt(delete[]), the
+argument list is specified em(following) the brackets:
+        verb(
+    delete[](new Object[5], 100, false);
+        )

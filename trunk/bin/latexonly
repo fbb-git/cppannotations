@@ -1,0 +1,33 @@
+#!/bin/sh
+
+cd ../latex
+
+echo 1>&2 "
+Removing blanks around verbatim environments.
+"
+
+../bin/patchlatexverb < cplusplus${1}.latex > cplusplus.latex2
+mv cplusplus.latex2 cplusplus${1}.latex
+
+echo 1>&2 "
+Constructing preliminary .dvi file in `pwd`.
+"
+
+latex cplusplus${1}.latex
+[ $? -eq 0 ] || exit 1
+latex cplusplus${1}.latex
+[ $? -eq 0 ] || exit 1
+
+echo 1>&2 "
+Constructing the index file in `pwd`.
+"
+
+makeindex cplusplus${1}
+
+../bin/patchlatexidx $1
+
+echo 1>&2 "
+Constructing final .dvi file in `pwd`.
+"
+
+latex cplusplus${1}.latex

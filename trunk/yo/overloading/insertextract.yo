@@ -1,0 +1,91 @@
+    This section describes how a class can be adapted in such a way that it
+can be used with the bf(C++) streams ti(cout) and ti(cerr) and the
+    i(insertion operator) (lshift()). Adapting a class in such a way that the
+ti(istream)'s i(extraction operator) (rshift()) can be used, is implemented
+similarly and is simply shown in an example.
+
+    The implementation of an overloaded tt(operator<<()) in the context of
+tt(cout) or tt(cerr) involves their class, which is ti(ostream). This class is
+declared in the header file ti(ostream) and defines only overloaded operator
+functions for `basic' types, such as, tt(int), tt(char *), etc.. The purpose
+of this section is to show how an i(insertion operator) can be overloaded in
+such a way that an object of any class, say tt(Person) (see chapter
+ref(MEMORY)), can be inserted into an tt(ostream). Having made available such
+an overloaded operator, the following will be possible:
+        verb(
+    Person kr("Kernighan and Ritchie", "unknown", "unknown");
+
+    cout << "Name, address and phone number of Person kr:\n" << kr << endl;
+        )
+    The statement tt(cout) lshift() tt(kr) involves oplshift().
+This member function has two operands: an tt(ostream &) and a tt(Person
+&). The proposed action is defined in an i(overloaded global operator)
+oplshift() expecting two arguments:
+        verb(
+                                // assume declared in `person.h'
+    ostream &operator<<(ostream &, Person const &);
+
+                                // define in some source file
+    ostream &operator<<(ostream &stream, Person const &pers)
+    {
+        return
+            stream <<
+                "Name:    " << pers.name() <<
+                "Address: " << pers.address() <<
+                "Phone:   " << pers.phone();
+    }
+        )
+    Note the following characteristics of oplshift():
+    itemization(
+    it() The function returns a reference to an tt(ostream) object,
+to enable `chaining' of the insertion operator.
+    it() The two operands of oplshift() act as arguments of the
+the overloaded function. In the earlier example, the parameter tt(stream) is
+initialized by tt(cout), the parameter tt(pers) is initialized by tt(kr).
+    )
+
+    In order to overload the extraction operator for, e.g., the tt(Person)
+class, members are needed to modify the private data members. Such
+emi(modifiers) are normally included in the class interface. For the
+tt(Person) class, the following members should be added to the class
+interface:
+        verb(
+    void setName(char const *name);
+    void setAddress(char const *address);
+    void setPhone(char const *phone);
+        )
+    The implementation of these members could be straightforward: the memory
+pointed to by the corresponding data member must be deleted, and the data
+member should point to a copy of the text pointed to by the parameter. E.g.,
+        verb(
+    void Person::setAddress(char const *address)
+    {
+        delete d_address;
+        d_address = strdupnew(address);
+    }
+        )
+    A more elaborate function could also check the reasonableness of the new
+address. This elaboration, however, is not further pursued here. Instead,
+let's have a look at the final i(overloaded extraction operator)
+(rshift()). A simple implementation is:
+        verb(
+    istream &operator>>(istream &str, Person &p)
+    {
+        string name;
+        string address;
+        string phone;
+
+        if (str >> name >> address >> phone)    // extract three strings
+        {
+            p.setName(name.c_str());
+            p.setAddress(address.c_str());
+            p.setPhon(phone.c_str());
+        }
+        return str;
+    }
+        )
+    Note the stepwise approach that is followed with the extraction operator:
+first the required information is extracted, using available extraction
+operators (like a tt(string)-extraction), then, if that succeeds,
+em(modifier) members are used to modify the data members of the object to be
+extracted. Finally, the stream object itself is returned as a reference.

@@ -1,0 +1,170 @@
+INCLUDEFILE(version)
+
+SUBST(BSSP)(\ )
+SUBST(MYEMAIL)(f.b.brokken@rug.nl)
+SUBST(MAILTO)(CHAR(109)ailto:MYEMAIL)
+SUBST(URLEMAIL)(url(email)(MAILTO))
+SUBST(OPENPAR)(CHAR(40))
+SUBST(CLOSEPAR)(CHAR(41))
+SUBST(AFFILIATION)(\
+        Center of Information Technology,nl()
+        University of Groningen nl()\
+        Nettelbosje 1,nl()\
+        P.O. Box 11044,nl()\
+        9700 CA Groningen nl()\
+        The Netherlands nl())
+
+setlatexfigureext(.eps)
+sethtmlfigureext(.gif)  COMMENT(While converting figures to .jpg)
+
+IFDEF(latex)
+(\
+    latexoptions(a4paper,twoside)\
+    latexpackage(latin1)(inputenc)\
+    latexpackage()(makeidx)\
+    COMMENT(
+        latexpackage()(bookman)\
+    )\
+    latexpackage()(newcent)\
+    latexpackage()(epsf)\
+    IFDEF(us)(\
+        latexpackage()(cplusplusus)\
+    )(\
+        latexpackage()(cplusplus)\
+    )\
+    makeindex()\
+    sloppyhfuzz(50)\
+    noxlatin()\
+    latexlayoutcmds(\setcounter{secnumdepth}{3})\
+    latexlayoutcmds(\pagestyle{headings})\
+)()
+
+DEFINEMACRO(linebreak)(0)(\
+    IFDEF(latex)\
+        (latexcommand(\linebreak ))\
+        ())
+
+DEFINEMACRO(turl)(2)(\
+    IFDEF(html)\
+        (htmlcommand(<a target=_top href="ARG2">)ARG1+htmlcommand(</a>))\
+        (url(ARG1)(ARG2)))
+
+DEFINEMACRO(tlurl)(1)(\
+    IFDEF(html)\
+        (htmlcommand(<a target=_top href="ARG1">)ARG1+htmlcommand(</a>))\
+        (lurl(ARG1)))
+
+DEFINEMACRO(lshift)(0)(\
+    IFDEF(latex)(\
+        NOTRANS($<<$)\
+    )(\
+        NOTRANS(<<)\
+    )\
+)
+
+DEFINEMACRO(verbinsert)(2)(\
+    PIPETHROUGH(yodlverbinsert //ARG1 ARG2)()\
+)
+DEFINEMACRO(verbCinsert)(2)(\
+    PIPETHROUGH(yodlverbinsert /*ARG1*/ ARG2)()\
+)
+DEFINEMACRO(rshift)(0)(\
+    IFDEF(latex)(\
+        NOTRANS($>>$)\
+    )(\
+        NOTRANS(>>)\
+    )\
+)
+
+DEFINEMACRO(oplshift)(0)(\
+    tt(operator)\
+    IFDEF(latex)(\
+        NOTRANS($<<$)\
+    )(\
+        NOTRANS(<<)\
+    )\
+    tt(())\
+)
+
+DEFINEMACRO(oprshift)(0)(\
+    tt(operator)\
+    IFDEF(latex)(\
+        NOTRANS($>>$)\
+    )(\
+        NOTRANS(>>)\
+    )\
+    tt(())\
+)
+
+DEFINEMACRO(decrement)(0)(\
+    IFDEF(latex)(\
+        NOTRANS($--$)\
+    )(\
+        NOTRANS(--)\
+    )\
+)
+
+DEFINEMACRO(opdecrement)(0)(\
+    tt(operator)\
+    IFDEF(latex)(\
+        NOTRANS($--$)\
+    )(\
+        NOTRANS(--)\
+    )\
+    tt(())\
+)
+DEFINEMACRO(iopdecrement)(0)(\
+    hix(operator--())\
+    opdecrement()\
+)
+
+DEFINECOUNTER(htmlAnchor)(0)
+
+DEFINEMACRO(annotations)(0)(\
+    bf(C++) Annotations\
+)
+
+def(x)(1)(IFDEF(html)(htmlcommand(<!--!)ARG1+htmlcommand(!-->))()ARG1)
+def(linkit)(2)(it()link(Chapter )(ARG1)ref(ARG1)link(: ARG2.)(ARG1))
+def(itt)(1)(it()tt(ARG1))
+
+def(centt)(1)(\
+    verb(        ARG1)\
+)
+
+def(rangett)(1)(tt(CHAR(91)ARG1+CHAR(41)))
+def(endOfFile)(1)(tt(CHAR(69)CHAR(79)CHAR(70)))
+
+def(c)(1)(COMMENT(ARG1))
+
+def(hix)(1)(\
+    IFDEF(html)(\
+        label(an+USECOUNTER(htmlAnchor))\
+        htmlcommand(
+<index) \
+        COUNTERVALUE(htmlAnchor) \
+        ARG1\
+        +htmlcommand(>
+)\
+    )(\
+        IFDEF(latex)(\
+            latexcommand(\index{)\
+            ARG1\
+            +latexcommand(})\
+        )()\
+    )\
+)
+
+def(hi)(1)(hix(ARG1))
+def(i)(1)(hix(ARG1)ARG1)
+def(ti)(1)(hix(ARG1)tt(ARG1))
+def(bi)(1)(hix(ARG1)bf(ARG1))
+def(emi)(1)(hix(ARG1)em(ARG1))
+def(iti)(1)(it()ti(ARG1))
+def(rangeti)(1)(ti(CHAR(91)ARG1+CHAR(41)))
+def(itht)(2)(it()hix(ARG1)tt(ARG2))
+def(ittq)(2)(it()ti(ARG1):quote(ARG2))
+def(ithtq)(3)(it()hix(ARG1)tt(ARG2):quote(ARG3))
+
+htmlbodyopt(text)(black)
+htmlbodyopt(bgcolor)(white)

@@ -1,0 +1,41 @@
+The basic form to hi(auto_ptr: initialization) initialize an tt(auto_ptr)
+object is to provide its constructor with a block of memory allocated
+by ti(operator new) operator. The generic form is:
+        verb(
+    auto_ptr<type> identifier(new-expression);
+        )
+    For example, to initialize an tt(auto_ptr) to point to
+a tt(string) object  the
+following construction can be used:
+        verb(
+    auto_ptr<string> strPtr(new string("Hello world"));
+        )
+    To initialize an tt(auto_ptr) to point to a tt(double) value the
+following construction can be used:
+        verb(
+    auto_ptr<double> dPtr(new double(123.456));
+        )
+    Note the use of tt(operator new) in the above expressions. Using tt(new)
+ensures the dynamic nature of the memory pointed to by the tt(auto_ptr)
+objects and allows the deletion of the memory once tt(auto_ptr) objects go
+i(out of scope). Also note that the tt(type) does em(not) contain the pointer:
+the hi(auto_ptr: used type) tt(type) used in the tt(auto_ptr) construction is
+the same as used in the tt(new) expression.
+
+In the example allocating an tt(int) values given in section ref(AUTOPTR),
+the memory leak can be avoided using an tt(auto_ptr) object:
+        verb(
+    #include <memory>
+    using namespace std;
+
+    void fun()
+    {
+        auto_ptr<int> ip(new int);
+    }
+        )
+    All hi(auto_ptr: reaching members) member functions  available for
+objects allocated by the tt(new) expression can be reached via the
+tt(auto_ptr) as if it was a plain pointer to the dynamically allocated
+object. For example, in the following program the text `tt(C++)' is inserted
+behind the word `tt(hello)':
+        verbinclude(stl/examples/insertcpp.cc)

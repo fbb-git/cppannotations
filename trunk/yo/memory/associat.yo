@@ -1,0 +1,49 @@
+    According to bf(C++)'s syntax, the assignment operator associates from
+right to left. I.e., in statements like:
+        verb(
+    a = b = c;
+        )
+    the expression tt(b = c) is evaluated first, and the result is assigned to
+tt(a).
+
+    So far, the implementation of the overloaded assignment operator does not
+permit such constructions, as an assignment using the member function returns
+nothing (tt(void)). We can therefore conclude that the previous implementation
+does solve an allocation problem, but concatenated assignments are still not
+allowed.
+
+    The problem can be illustrated as follows. When we rewrite the expression
+tt(a = b = c) to the form which explicitly mentions the overloaded assignment
+member functions, we get:
+        centt(a.operator=(b.operator=(c));)
+    This variant is syntactically wrong, since the sub-expression
+tt(b.operator=(c)) yields tt(void). However, the class tt(Person) contains no
+member functions with the prototype tt(operator=(void)).
+
+    This problem too can be remedied using the ti(this) pointer. The
+i(overloaded assignment) function expects as its argument a reference to a
+tt(Person) object. It can also em(return) a reference to such an
+object. This reference can then be used as an argument in a
+    i(concatenated assignment).
+
+It is customary to let the overloaded assignment return a
+    i(reference to the current object) (i.e., tt(*this)).  The (final) version
+of the overloaded assignment operator for the class tt(Person) thus becomes:
+        verb(
+    Person &Person::operator=(Person const &other)
+    {
+        if (this != &other)
+        {
+            delete d_address;
+            delete d_name;
+            delete d_phone;
+
+            d_address = strdupnew(other.d_address);
+            d_name = strdupnew(other.d_name);
+            d_phone = strdupnew(other.d_phone);
+        }
+        // return current object. The compiler will make sure
+        // that a reference is returned
+        return *this;
+    }
+        )

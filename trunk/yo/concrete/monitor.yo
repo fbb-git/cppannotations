@@ -1,0 +1,171 @@
+    The tt(monitor) program uses a tt(Monitor) object to do most of the
+work. The class has only one public constructor and one public member,
+tt(run()), to perform its tasks. Therefore, all other member functions
+described below should be declared in the class's tt(private) section.
+
+    tt(Monitor) defines the tt(private enum Commands), symbolically listing
+the various commands its input language supports, as well as several data
+members, among which a tt(Selector) object and a tt(map) using child order
+numbers as its keys, and pointer to tt(Child) objects (see section ref(CHILD))
+as its values. Furthermore, tt(Monitor) has a static array member
+tt(s_handler[]), storing pointers to member functions handling user commands.
+
+    A destructor should have been implemented too, but its implementation is
+left as an exercise to the reader. Before the class interface can be processed
+by the compiler, it must have seen tt(select.h) and tt(child.h). Here is the
+class header, including the interface of the nested function object
+class tt(Find):
+        verbinsert(CLASS)(concrete/examples/monitor/monitor.h)
+
+    Since there's only one non-class type data member, the class's constructor
+remains very short and could be implemented inline. However, the array
+tt(s_handler), storing pointers to functions needs to be initialized as
+well. This can be accomplished in several ways:
+    itemization(
+    it() Since the tt(Command) enumeration only contains a fairly limited set
+of commands, compile-time initialization could be considered:
+        verbinsert(HANDLER)(concrete/examples/monitor/data.compiletime)
+    The advantage of this is that it's simple, and not requiring any run-time
+effort. The disadvantage is of course relatively complex maintenance. If for
+some reason tt(Commads) is modified, tt(s_handler) must be modified as
+well. In cases like these, compile-time initialization is a little bit asking
+for trouble. There is a simple alternative though, which admittedly
+does take some execution time:
+    it() A static member may be called before the first tt(Monitor) object is
+constructed, which initializes the elements of the array explicitly. This has
+the advantage of robustness against reordering of enumeration values, which is
+important: enumerations em(do) receive modifications during the development
+cycle of a class.  Maintenance is still required if new values are added to
+the enumeration, but in that case maintenance is required anyway.
+    it() Using a static member that's explicitly called from tt(main()) may
+become a burden, or may be considered unacceptable, as it puts an additional
+responsibility with the software engineer, rather than with the software. It's
+a matter of taste whether that's a consideration to take seriously or not. If
+the initialization function is not called, the program will clearly fail and
+repairing the error caused by not calling the initialization function is
+easily repaired. If that's considered bad practice, the initialization
+function may be called from the class constructors as well. The following
+initialization function used in the current implementation of the class
+tt(Monitor):
+        verbinsert(INIT)(concrete/examples/monitor/monitor.cc)
+    )
+    Since the initialization function immediately returns if the
+initialization has already been performed, tt(Monitor)'s constructor may call
+the initialization and still defensibly be implemented inline:
+        verbinsert(CONS)(concrete/examples/monitor/monitor.h)
+
+    The core of tt(Monitor)'s activities are performed by tt(run()). It
+performs the following tasks:
+    itemization(
+    it() Initially, the tt(Monitor) object only listens to its standard
+input: the set of input file descriptors to which tt(d_selector) will listen
+is initialized to tt(STDIN_FILENO).
+    it() Then, in a loop  tt(d_selector)'s tt(wait()) function is called.
+If input on tt(cin) is available, it is processed by tt(processInput()).
+Otherwise, the input has arived from a child process. Information sent by
+children is processed by tt(processChild()).
+    it() To prevent emi(zombie)em(s), the child processes must catch em(their)
+children's termination signals. This will be discussed below (In an earlier
+version tt(Monitor) caught the termination signals. As noted by Ben Simons
+(tt(ben at mrxfx dot com)) this is inappropriate: the process spawning child
+processes has that responsibility (so, the parent process is responsible for
+its child processes; a child process is in turn responsible for its own child
+processes). Thanks, Ben).
+    )
+    Here is tt(run())'s implementation:
+        verbinclude(concrete/examples/monitor/run.cc)
+
+    The member function tt(processInput()) reads the commands entered by the
+user via the program's standard input stream. The member itself is rather
+simple: it calls tt(next()) to obtain the next command entered by the user,
+and then calls the corresponding function using the matching element of the
+tt(s_handler[]) array. The members tt(processInput()) and
+tt(next()) were defined as follows:
+        verbinsert(INPUT)(concrete/examples/monitor/processinput.cc)
+        verbinsert(NEXT)(concrete/examples/monitor/processinput.cc)
+
+    All other input sensed by tt(d_select) has been created by child
+processes. Because tt(d_select)'s tt(readFd()) member returns the
+corresponding input file descriptor, this descriptor can be passed to
+tt(processChild()). Then, using a ti(ifdstreambuf) (see section ref(IFDBUF)),
+its information is read from an input stream. The emi(communication protocol)
+used here is rather basic: To every line of input sent to a child, the child
+sends exactly one line of text in return. Consequently, tt(processChild())
+just has to read one line of text:
+        verbinsert(CHILD)(concrete/examples/monitor/processchild.cc)
+    Please note the construction tt(d_child[fd]->pid()) used in the above
+source. tt(Monitor) defines the data member tt(map<int, Child *> d_child).
+This map contains the child's order number as its key, and a pointer to
+the tt(Child) object as its value. A pointer is used here, rather than a
+tt(Child) object, since we do want to use the facilities offered by the map,
+but don't want to copy a tt(Child) object.
+
+    The implication of using pointers as tt(map)-values is of course that the
+responsibility to destruct the tt(Child) object once it becomes superfluous
+now lies with the programmer, and not any more with the run-time support
+system.
+
+    Now that tt(run())'s implementation has been covered, we'll concentrate on
+the various commands users might enter:
+    itemization(
+    it() When the tt(start) command is issued, a new child process is started.
+A new element is added to tt(d_child) by the member tt(createNewChild()).
+Next, the tt(Child) object should start its activities, but the tt(Monitor)
+object can not wait here for the child process to complete its activities, as
+there is no well-defined endpoint in the near future, and the user will
+probably want to enter more commands. Therefore, the tt(Child) process
+will run as a emi(daemon): its parent process will terminate immediately, and
+its own child process will continue in the background. Consequently,
+tt(createNewChild()) calls the child's tt(fork()) member. Although it is
+the child's tt(fork()) function that is called, it is still the monitor
+program wherein tt(fork()) is called. So, the em(monitor) program is
+duplicated by tt(fork()). Execution then continues:
+    itemization(
+    it() At the tt(Child)'s tt(parentProcess()) in its parent process;
+    it() At the tt(Child)'s tt(childProcess()) in its child process
+    )
+    As the tt(Child)'s tt(parentProcess()) is an empty function, returning
+immediately, the tt(Child)'s parent process effectively continues immediately
+below tt(createNewChild())'s tt(cp->fork()) statement.  As the child process
+never returns (see section ref(CHILD)), the code below tt(cp->fork()) is never
+executed by the tt(Child)'s child process. This is exactly as it should be.
+
+    In the parent process, tt(createNewChild())'s remaining code simply
+adds the file descriptor that's available for reading information from the
+child to the set of input file descriptors monitored by tt(d_select), and
+uses tt(d_child) to  establish the association between that
+file descriptor and the  tt(Child) object's address:
+        verbinsert(CHILD)(concrete/examples/monitor/createnewchild.cc)
+    it() Direct communication with the child is required for the tt(stop <nr>)
+and tt(<nr> text) commands. The former command terminates child process
+tt(<nr>), by calling tt(stopChild()). This function locates the child process
+having the order number using an anonymous object of the class tt(Find),
+nested inside tt(Monitor). The class tt(Find) simply compares the
+provided tt(nr) with the children's order number returned by their tt(nr())
+members:
+        verbinsert(FIND)(concrete/examples/monitor/monitor.h)
+    If the child process having order number tt(nr) was found, its file
+descriptor is removed from tt(d_selector)'s set of input file
+descriptors. Then the child process itself is terminated by the static member
+tt(killChild()). The member tt(killChild()) is declared as a em(static) member
+function, as it is used as function argument of the tt(for_each()) generic
+algorithm by tt(erase()) (see below). Here is tt(killChild())'s
+implementation:
+        verbinsert(KILL)(concrete/examples/monitor/monitor.cc)
+    Having terminated the specified child process, the corresponding tt(Child)
+object is destroyed and its pointer is removed from tt(d_child):
+        verbinsert(STOP)(concrete/examples/monitor/stopchild.cc)
+    it() The command tt(<nr> text>) will send tt(text) to child process
+tt(nr), using the member function tt(sendChild()). This function too, will
+use a tt(Find) object to locate the process having order number tt(nr), and
+will then simply insert the text into the writing end of a pipe connected to
+the indicated child process:
+        verbinsert(SEND)(concrete/examples/monitor/sendchild.cc)
+    it() When users enter tt(exit) the member tt(exiting()) is called.
+It terminates all child processes, by visiting
+all elements of tt(d_child), using the ti(for_each()) generic
+algorithm (see section ref(FOREACH)). The program is subsequently terminated:
+        verbinsert(EXIT)(concrete/examples/monitor/monitor.cc)
+    )
+    Finally, the program's tt(main()) function is simply:
+        verbinclude(concrete/examples/monitor/main.cc)

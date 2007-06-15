@@ -1,0 +1,85 @@
+In all examples we've discussed up to now, we've seen that tt(private)
+members are only accessible by the members of their class. This is em(good), as
+it enforces the principles of i(encapsulation) and i(data hiding): By
+encapsulating the data in an object we can prevent that code external to
+classes becomes i(implementation dependent) on the data in a class, and by
+hiding the data from external code we can control modifications of the data,
+helping us to maintain i(data integrity).
+
+In this short chapter we will introduce the ti(friend) keyword as a means to
+allow external functions to access the tt(private)
+members of a class. In this chapter the subject of
+    i(friendship among classes) is not discussed. Situations in which it is
+natural to use friendship among classes are discussed in chapters
+ref(NESTEDCLASSES) and ref(TEMPLATES).
+
+Friendship (i.e., using the tt(friend) keyword) is a complex and dangerous
+topic for various reasons:
+    itemization(
+    it() Friendship, when applied to program design, is an
+        emi(escape mechanism) allowing us to circumvent the principles of
+encapsulation and data hiding. The use of friends should therefore be
+em(minimized) to situations where they can be used naturally.
+    it() If friends are used, realize that friend functions or classes become
+i(implementation dependent) on the classes declaring them as friends. Once the
+internal organization of the data of a class declaring friends changes, all
+its friends must be recompiled (and possibly modified) as well.
+    it() Therefore, as a i(rule of thumb): em(don't) use friend functions or
+classes.
+    )
+    Nevertheless, there are situations where the tt(friend) keyword can be
+used quite safely and naturally. It is the purpose of this chapter to
+introduce the required syntax and to develop principles allowing us to
+recognize cases where the tt(friend) keyword can be used with very little
+danger.
+
+Let's consider a situation where it would be nice for an existing class to
+have access to another class.  Such a situation might occur when we would like
+to give a class developed em(earlier) in history access to a class developed
+em(later) in history.
+
+Unfortunately, while developing the older class, it was not yet known that the
+newer class would be developed. Consequently, no provisions were offered in
+the older class to access the information in the newer class.
+
+Consider the following situation.  The i(insertion operator) may be used to
+insert information into a stream.  This operator can be given data of several
+types: tt(int, double, char *), etc.. Earlier (chapter ref(MEMORY)), we
+introduced the class tt(Person). The class tt(Person) has members to retrieve
+the data stored in the tt(Person) object, like tt(char const
+*Person::name()). These members could be used to `insert' a tt(Person)
+object into a stream, as shown in section ref(EXTRACTORS).
+
+    With the tt(Person) class the implementation of the insertion
+and extraction operators is fairly optimal. The insertion operator uses
+emi(accessor) members which can be implemented as inline members,
+effectively making the private data members directly available for
+inspection. The extraction operator requires the use of emi(modifier) members
+that could hardly be implemented differently: the old memory will always have
+to be deleted, and the new value will always have to be copied to newly
+allocated memory.
+
+    But let's once more take a look at the class tt(PersonData), introduced in
+section ref(EXPLICIT). It seems likely that this class has at least the
+following (private) data members:
+        verb(
+    class PersonData
+    {
+        Person *d_person;
+        size_t d_n;
+    };
+        )
+    When constructing an overloaded insertion operator for a tt(PersonData)
+object, e.g., inserting the information of all its persons
+into a stream, the overloaded insertion operator is implemented rather
+inefficiently when the individual persons must be accessed using the
+    i(index operator).
+
+    In cases like these, where the i(accessor) and i(modifier) members tend to
+become rather complex, direct access to the private data members might improve
+efficiency. So, in the context of insertion and extraction, we are looking for
+overloaded member functions implementing the insertion and extraction
+operations and having access to the private data members of the objects to be
+inserted or extracted. In order to implement such functions em(non-member)
+functions must be given access to the private data members of a class. The
+ti(friend) keyword is used to realize this.

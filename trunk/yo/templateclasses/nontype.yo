@@ -1,0 +1,118 @@
+    As we've seen with function templates, template parameters are either
+template type parameters or template non-type parameters (actually, a third
+kind of template parameter exists, the emi(template template parameter), which
+is discussed in chapter ref(TEMPAPP) (section ref(TEMPTEMPPAR))).
+
+    Class templates also may define non-type parameters. Like the non-const
+parameters used with function templates they must be constants whose values
+are known by the time an object is instantiated.
+
+    However, their values are not deduced by the compiler using arguments
+passed to constructors. Assume we modify the class template tt(FBB::auto_ptr)
+so that it has an additional non-type parameter tt(size_t Size). Next we use
+this tt(Size) parameter in a new constructor defining an array of tt(Size)
+elements of type tt(Data) as its parameter. The new tt(FBB::auto_ptr) template
+class becomes (showing only the relevant constructors; note the two template
+type parameters that are now required, e.g., when specifying the type of the
+copy constructor's parameter):
+        verb(
+    namespace FBB
+    {
+        template <typename Data, size_t Size>
+        class auto_ptr
+        {
+            Data *d_data;
+            size_t d_n;
+
+            public:
+                auto_ptr(auto_ptr<Data, Size> &other);
+                auto_ptr(Data2 *data);
+                auto_ptr(Data const (&arr)[Size]);
+                ...
+        };
+
+        template <typename Data, size_t Size>
+        inline auto_ptr<Data, Size>::auto_ptr(Data const (&arr)[Size])
+        :
+            d_data(new Data2[Size]),
+            d_n(Size)
+        {
+            std::copy(arr, arr + Size, d_data);
+        }
+    }
+        )
+    Unfortunately, this new setup doesn't satisfy our needs, as the values of
+template non-type parameters are not deduced by the compiler. When the
+compiler is asked to compile the following tt(main()) function it reports a
+mismatch between the required and actual number of template parameters:
+        verb(
+    int main()
+    {
+        int arr[30];
+
+        FBB::auto_ptr<int> ap(arr);
+    }
+    /*
+        Error reported by the compiler:
+
+        In function `int main()':
+            error: wrong number of template arguments (1, should be 2)
+            error: provided for `template<class Data, size_t Size>
+                   class FBB::auto_ptr'
+    */
+        )
+    Defining tt(Size) as a non-type parameter having a default value doesn't
+work either. The compiler will use the default, unless explicitly specified
+otherwise. So, reasoning that tt(Size) can be 0 unless we need another value,
+we might specify tt(size_t Size = 0) in the templates parameter type list.
+However, this causes a mismatch between the default value 0 and the actual
+size of the array tt(arr) as defined in the above tt(main()) function. The
+compiler, using the default value, reports:
+        verb(
+    In instantiation of `FBB::auto_ptr<int, 0>':
+    ...
+    error: creating array with size zero (`0')
+        )
+    So, although class templates may use non-type parameters, they must be
+specified like the type parameters when an object of the class is
+defined. Default values can be specified for those non-type parameters, but
+then the default will be used when the non-type parameter is left unspecified.
+
+    Note that hi(template parameter: default value)
+    emi(default template parameter value)em(s) (either type or non-type
+template parameters) may em(not) be used when template member functions are
+defined outside the class interface.  Function template definitions (and thus:
+class template member functions) may not be given default template (non) type
+parameter values. If default template parameter values are to be used for
+class template members, they have to be specified in the class interface.
+
+    Similar to  non-type parameters of function templates, non-type parameters
+of class templates may only be specified as constants:
+    itemization(
+    it() Global hi(global variable) variables have constant addresses, which
+can be used as arguments for non-type parameters.
+    it() Local hi(local variables) and i(dynamically allocated variables) have
+addresses that are not known by the compiler when the source file is
+compiled. These addresses can therefore not be used as arguments for non-type
+parameters.
+    it() Lvalue hi(lvalue transformations) transformations are allowed: if a
+pointer is defined as a non-type parameter, an array name may be specified.
+    it() hi(conversions) Qualification hi(qualification conversions)
+conversions are allowed: a pointer to a non-const object may be used with a
+non-type parameter defined as a tt(const) pointer.
+    it() Promotions hi(promotions) are allowed: a constant of a `narrower'
+data type may be used for the specification of a non-type parameter of a
+`wider' type (e.g., a tt(short) can be used when an tt(int) is called for, a
+tt(long) when a tt(double) is called for).
+    it() Integral hi(integral conversions) conversions are allowed: if an
+tt(size_t) parameter is specified, an tt(int) may be used too.
+    it() Variables cannot be used to specify template non-type parameters, as
+their values are not constant expressions. Variables defined using the
+tt(const) modifier, however, may be used, as their values never change.
+    )
+
+    Although our attempts to define a constructor of the class
+tt(FBB::auto_ptr) accepting an array as its argument, allowing us to use the
+array's size within the constructor's code has failed so far, we're not yet
+out of options. In the next section an approach will be described allowing us
+to reach our goal, after all.

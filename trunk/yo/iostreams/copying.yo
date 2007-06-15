@@ -1,0 +1,45 @@
+Usually, files are copied hi(copy files) either by reading a source file
+character by character or line by line. The basic em(mold) for
+    i(processing files) is as follows:
+        itemization(
+            it() In an eternal loop:
+            enumeration(
+                it() read a character
+                it() if reading did not succeed (i.e., tt(fail()) returns
+                        true), tt(break) from the loop
+                it() process the character
+            )
+        )
+    It is important to note that the reading must em(precede) the testing, as
+it is only possible to know after the actual attempt to read from a file
+whether the reading succeeded or not. Of course, variations are possible:
+tt(getline(istream &, string &)) (see section ref(ISTREAMREAD)) returns an
+tt(istream &) itself, so here reading and testing may be realized in one
+expression. Nevertheless, the above mold represents the general case. So,
+the following program could be used to copy tt(cin) to tt(cout):
+        verbinclude(iostreams/examples/copycincout.cc)
+
+    By combining the tt(get()) with the tt(if)-statement a construction
+comparable to tt(getline()) could be used:
+        verb(
+    if (!cin.get(c))
+        break;
+        )
+Note, however, that this would still follow the basic rule:
+    `i(read first, test later)'.
+
+    This simple copying of a file, however, isn't required very often. More
+often, a situation is encountered where a file is processed up to a certain
+point, whereafter the remainder of the file can be copied unaltered. The
+following program illustrates this situation: the tt(ignore()) call is used to
+skip the first line (for the sake of the example it is assumed that the first
+line is at most 80 characters long), the second statement uses a special
+overloaded version of the lshift()-operator, in which a ti(streambuf) pointer
+hi(insert streambuf *) is inserted into another stream. As the member
+tt(rdbuf()) returns a tt(streambuf *), it can thereupon be inserted into
+tt(cout). This immediately copies the remainder of tt(cin) to tt(cout):
+        verbinclude(iostreams/examples/copystreambuf.cc)
+    Note that this method assumes a tt(streambuf) object, so it will work for
+all specializations of tt(streambuf). Consequently, if the tt(class streambuf)
+is specialized for a particular i(device) it can be inserted into any other
+stream using the above method.

@@ -1,0 +1,75 @@
+    The tt(for_each()) (ref(FOREACH)) generic algorithm implements a very
+useful algorithm: each of its visited elements may be modified by either a
+function or a function object. However, in practice it is often somewhat
+complex to use this algorithm. Functions passed to the algorithm cannot
+maintain state, and so special classes for function objects passed to the
+algorithm often have to be constructed.
+
+    In many cases the functionality performed by the function object passed to
+the tt(for_each()) generic algorithm is actually already available in the
+class whose members use tt(for_each()). However, when tt(*this) is passed as
+tt(for_each())'s function object, then the object used by tt(for_each()) is
+actually a copy of the object tt(this) points to, which is usually also
+undesirable.
+
+    The following function template ti(ForEach()) was designed to remedy these
+drawbacks.  The tt(ForEach()) function template has three template parameters:
+tt(Iterator) represents the iterator type used to iterate over a series of
+elements; tt(Class) represents a class type; tt(Data) represents the data type
+to which tt(Iterators) refer. The actual types of these parameters are
+deduced by the compiler when tt(ForEach()) is called. This function template
+itself defines four parameters:
+    itemization(
+    itt(Iterator begin): the begin point of an iterator range rangett(begin,
+end);
+    itt(Iterator end): the endpoint of the iterator range rangett(begin, end);
+    itt(Class &object): a reference to an object of class type tt(Class);
+    itt(void (Class::*member)(Data &)): a pointer to a member function of the
+class tt(Class), expecting a reference to a tt(Data) element. This member
+function is called for the tt(object) passed to tt(ForEach()) as its third
+argument.
+    )
+    Here is its implementation:
+        verbinsert(FOREACH1)(concrete/examples/foreach.h)
+    When this function is used, each
+element in the iterator range defined by its first two arguments will be
+passed in turn to tt(object)'s  tt(member()) function.
+
+    Using tt(ForEach()) is easy. It requires us to specify an iterator range,
+an object and one of its members. For example, the following program extracts
+strings from the standard input and stores them in a vector of strings using
+the vector's member tt(push_back()):
+        verbinclude(concrete/examples/for1.cc)
+
+    tt(ForEach()) has several overloaded versions:
+    itemization(
+    it() The first overloaded version is used with constant member functions
+and non-constant objects. The function expects a pointer to one of its
+constant member functions. Here is tt(ForEach())'s implementation calling
+constant member functions:
+        verbinsert(FOREACH2)(concrete/examples/foreach.h)
+    The next program uses this overloaded function. A simple class
+tt(StringVector) is derived from tt(vector<string>). It contains the constant
+member tt(display()), displaying its argument to the standard output
+stream. Note that tt(ForEach())'s em(first) implementation is used when the
+tt(vs) object itself is defined as a tt(const vs) object:
+        verbinclude(concrete/examples/for2.cc)
+    it() The second overloaded version assumes that tt(object) itself is a
+function object, and thus its tt(operator()()) function is called. Since the
+data type remains implicit, it is removed from the template's parameter
+list. Eventually, the compiler will infer its type when tt(ForEachObj)'s
+tt(operator()()) is called. Here is tt(ForEach())'s the second overloaded
+version:
+        verbinsert(FOREACH3)(concrete/examples/foreach.h)
+    The following program illustrates its use. Again, the tt(StringVector)
+object and its tt(operator()()) member may or may not be given a tt(const)
+modifier (except, of course, a constant object and a non-constant member):
+        verbinclude(concrete/examples/for3.cc)
+    In practice, this final overloaded version should be used sparingly. When
+a class overloads its function call operator, then multiple tt(ForEach())
+calls may be used, distinguishable only by their iterator types. The resulting
+sources are harder to read than tt(ForEach()) calls in which explicit member
+functions, suggesting their purposes, are used. As a i(rule of thumb) this
+final overloaded version should be used only when the class's tt(operator()())
+member was em(not) overloaded.
+    )

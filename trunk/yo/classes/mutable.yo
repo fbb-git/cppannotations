@@ -1,0 +1,36 @@
+Earlier, in section ref(ConstFunctions), the concepts of
+tt(const) member functions and tt(const)
+    hi(const objects)
+    objects were introduced.
+
+bf(C++), however, allows the construction of objects which are, in a sense,
+neither tt(const) objects, nor em(non-)tt(const) objects. Data members which
+are defined using the keyword ti(mutable), can be modified by tt(const) member
+functions.
+
+An example of a situation where tt(mutable) might come in handy is where a
+tt(const) object needs to register the number of times it was used. The
+following example illustrates this situation:
+
+    verbinclude(classes/examples/mutable.cc)
+
+The keyword tt(mutable) may also be useful in classes implementing, e.g.,
+reference counting. Consider a class implementing reference counting for
+textstrings. The object doing the reference counting might be a tt(const)
+object, but the class may define a copy constructor. Since tt(const) objects
+can't be modified, how would the copy constructor be able to increment the
+reference count? Here the tt(mutable) keyword may profitably be used, as it
+can be incremented and decremented, even though its object is a tt(const)
+object.
+
+The advantage of having a tt(mutable) keyword is that, in the end, the
+programmer decides which data members can be modified and which data members
+can't. But that might as well be a disadvantage: having the keyword
+tt(mutable) around prevents us from making rigid assumptions about the
+stability of tt(const) objects. Depending on the context, that may or may not
+be a problem. In practice, tt(mutable) tends to be useful only for internal
+bookkeeping purposes: accessors returning values of mutable data members might
+return puzzling results to clients using these accessors with tt(const)
+objects. In those situations, the nature of the returned value should clearly
+be documented. As a i(rule of thumb): do not use tt(mutable) unless there is a
+very clear reason to divert from this rule.

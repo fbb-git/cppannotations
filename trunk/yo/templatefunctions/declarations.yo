@@ -1,0 +1,74 @@
+    Up to now, we've only defined function templates. There are various
+        hi(function templates: multiply included)
+consequences of including function template definitions in multiple source
+files, none of them serious, but worth knowing.
+    itemization(
+    it() Like class interfaces, template definitions are usually included in
+header files. Every time a header file containing a template definition is
+read by the compiler, the compiler must process the full definition, even
+though it might not actually need the template. This will relatively slow-down
+the compilation. For example, compiling a template header file like
+tt(algorithm) on my old laptop takes about four times the amount of time it
+takes to compile a plain header file like tt(cmath). The header file
+tt(iostream) is even harder to process, requiring almost 15 times the amount
+of time it takes to process tt(cmath). Clearly, processing templates is
+serious business for the compiler. On the other hand: don't overweigh this
+drawback: compilers are getting better and better in their template processing
+capacity and computers keep on getting faster and faster. What was a nuisance
+a few years ago is hardly noticeable today.
+    it() Every time a function template is instantiated, its code appears in
+the resulting object module. However, if multiple instantiations of a
+template, using the same actual types for its template parameter exist in
+multiple object files, then the linker will weed out superfluous
+instantiations. In the final program only one instantiation for a particular
+set of actual template type parameters will be used (see also section
+ref(TEMPFUNINST) for an illustration). Therefore, the linker will have an
+additional task to perform (em(viz.) weeding out multiple instantiations),
+which will slow down the linking process.
+    it() Sometimes the definitions themselves are not required, but only
+references or pointers to the templates are required. Requiring the compiler
+to process the full template definitions in those cases will unnecessarily
+slow down the compilation process.
+    it() In the context of emi(template meta programming) (see chapter
+ref(TEMPAPP)) it is sometimes not even required to provide a template
+implementation. Instead, only em(specializations) (cf. section
+ref(SPECIALIZING)) are created, all of which are then based on the mere
+em(declaration).
+    )
+    So, depending on the context, template definitions may not be
+required. Usually template definitions do exist, but when appropriate the
+software enginieer may opt to em(declare) a template, rather than to include
+its definition time and again in various source files.
+
+    When templates are declared, the compiler will not have to process the
+template's definitions again and again; and no instantiations will be created
+on the basis of template declarations alone. Any actually required
+instantiation must then be available elsewhere (of course, this holds true for
+declarations in general). Unlike the situation we encounter with ordinary
+functions, which are usually stored in libraries, it is currently not possible
+to store templates in libraries (although the compiler may construct
+emi(precompiled header) em(files)). Consequently, using template declarations
+puts a burden on the shoulders of the software engineer, who has to make sure
+that the required instantiations exist. Below a simple way to accomplish that
+is introduced.
+
+    A function template declaration is simply created: the function's body is
+replaced by a semicolon. Note that this is exactly identical to the way
+ordinary function declarations are constructed. So, the previously defined
+function template tt(add()) can simply be declared as
+        verb(
+    template <typename Type>
+    Type add(Type const &lvalue, Type const &rvalue);
+        )
+
+    Actually, we've already encountered i(template declarations). The header
+file tt(iosfwd) may be included in sources not requiring instantiations
+        hi(#include <iosfwd>)
+    of elements from the class ti(ios) and its derived classes. For example,
+in order to compile the em(declaration)
+        centt(std::string getCsvline(std::istream &in, char const *delim);)
+    it is not necessary to include the tt(string) and tt(istream) header
+files. Rather, a single
+        centt(#include <iosfwd>)
+    is sufficient, requiring about one-ninth the amount of time it takes to
+compile the declaration when tt(string) and tt(istream) are included.

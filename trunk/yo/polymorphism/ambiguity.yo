@@ -1,0 +1,51 @@
+Let's investigate closer why an tt(AirAuto) introduces i(ambiguity), when
+derived from tt(Auto) and tt(Air).
+    itemization(
+    it() An tt(AirAuto) is an tt(Auto), hence a tt(Land), and hence a
+tt(Vehicle).
+    it() However, an tt(AirAuto) is also an tt(Air), and hence a tt(Vehicle).
+    )
+    The duplication of tt(Vehicle) data is further illustrated in
+fig(ambiguity).
+    figure(polymorphism/ambiguity)
+        (Duplication of a base class in multiple derivation.)
+        (ambiguity)
+    The internal organization of an tt(AirAuto) is shown in
+fig(InternalOrganization)
+    figure(polymorphism/internal)
+        (Internal organization of an tt(AirAuto) object.)
+        (InternalOrganization)
+    The bf(C++) compiler will detect the ambiguity in an tt(AirAuto) object,
+and will therefore fail to compile a statement like:
+        verb(
+    AirAuto cool;
+
+    cout << cool.weight() << endl;
+        )
+    The question of which member function tt(weight()) should be called,
+cannot be answered by the compiler. The programmer has two possibilities to
+resolve the ambiguity explicitly:
+    itemization(
+    it() First, the function call where the ambiguity occurs can be
+modified. The ambiguity is resolved using the i(scope resolution operator):
+        verb(
+    // let's hope that the weight is kept in the Auto
+    // part of the object..
+    cout << cool.Auto::weight() << endl;
+        )
+    Note the position of the scope operator and the class name: before the name
+of the member function itself.
+    it() Second, a dedicated function tt(weight()) could be created for
+the class tt(AirAuto):
+        verb(
+    int AirAuto::weight() const
+    {
+        return Auto::weight();
+    }
+        )
+    )
+    The second possibility from the two above is preferable, since it relieves
+the programmer who uses the class tt(AirAuto) of special precautions.
+
+However, apart from these explicit solutions, there is a more elegant one,
+discussed in the next section.

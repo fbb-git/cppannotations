@@ -1,0 +1,58 @@
+    Once we've implemented an iterator, the matching emi(reverse iterator) can
+be implemented in a jiffy. Comparable to the tt(std::iterator) a
+        ti(std::reverse_iterator) hi(reverse_iterator)
+    exists, which will nicely implement the reverse iterator for us, once we
+have defined an iterator class. Its constructor merely requires an object of
+the iterator type for which we want to construct a reverse iterator.
+
+    To implement a reverse iterator for tt(StringPtr), we only need to define
+the tt(reverse_iterator) type in its interface. This requires us to specify
+only one line of code, which must be inserted after the interface of the class
+tt(iterator):
+        centt(typedef std::reverse_iterator<iterator> reverse_iterator;)
+    Finally, the well known members ti(rbegin()) and ti(rend()) are added to
+tt(StringPtr)'s interface. Again, they can easily be implemented inline:
+        verbinsert(RBEGEND)(templateclasses/examples/stringptr.h)
+    Note the arguments the tt(reverse_iterator) constructors receive: the
+        hi(reverse_iterator: initialized by iterator)
+    em(begin point) of the reversed iterator is obtained by providing
+tt(reverse_iterator)'s constructor with tt(end()): the em(endpoint) of the
+normal iterator range; the em(endpoint) of the reversed iterator is obtained
+by providing tt(reverse_iterator)'s constructor with tt(begin()): the
+em(begin point) of the normal iterator range.
+
+    The following little program illustrates the use of tt(StringPtr)'s
+tt(RandomAccessIterator):
+        verbinclude(templateclasses/examples/iterators.cc)
+    Although it is thus possible to construct a reverse iterator from a normal
+iterator, the opposite does not hold true: it is not possible to
+    i(initialize a normal iterator from a reverse iterator).
+        hi(iterator: initialized by reverse iterator)
+    Let's assume we would like to process all lines stored in a
+tt(vector<string> lines) up to any trailing empty lines (or lines only
+containing blanks) it might contain. How would we proceed? One approach is to
+start the processing from the first line in the vector, continuing until
+the first of the trailing empty lines. However, once we encounter an empty
+line it does of course not have to be the first line of the set of trailing
+empty lines. In that case, we would like to use the following algorithm:
+    itemization(
+    it() First, use
+            centt(rit = find_if(lines.rbegin(), lines.rend(), NonEmpty());)
+        to obtain a tt(reverse_iterator rit) pointing to the last non-empty
+        line.
+    it() Next, use
+            centt(for_each(lines.begin(), --rit, Process());)
+        to process all lines up to the first empty line.
+    )
+    However, we can't mix iterators and reverse iterators when using generic
+algorithms. So how can we initialize the second iterator using the available
+tt(reverse_iterator)? The solution is actually not very difficult, as an
+iterator may be initialized by a pointer. The reverse iterator tt(rit) is not
+a pointer, but tt(&*(rit - 1)) or tt(&*--rit) is. Thus, we can use
+        centt(for_each(lines.begin(), &*--rit, Process());)
+    to process all the lines up to the first of the set of trailing empty
+lines. In general, if tt(rit) is a tt(reverse_iterator) pointing to some
+element, but we need an tt(iterator) to point to that element, we may use
+tt(&*rit) to initialize the iterator. Here, the dereference operator is
+applied to reach the element the reverse iterator refers to. Then the address
+operator is applied to obtain its address.

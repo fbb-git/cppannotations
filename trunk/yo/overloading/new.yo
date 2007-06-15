@@ -1,0 +1,135 @@
+When ti(operator new) is overloaded, it must have a ti(void *) return type,
+and at least an argument of type ti(size_t). The tt(size_t) type is defined in
+the header file ti(cstddef), which must therefore be included when the
+operator ti(new) is overloaded.
+
+It is also possible to define multiple versions of the tt(operator new), as
+long as each version has its own unique set of arguments. The global tt(new)
+operator can still be used, through the ti(::)-operator. If a class tt(X)
+overloads the operator tt(new), then the system-provided operator tt(new) is
+activated by
+                        centt(X *x = ::new X();)
+    Overloading ti(new[]) is discussed in section ref(NEWDELETEARRAY).
+The following example shows an overloaded version of tt(operator new):
+        verb(
+    #include <cstddef>
+
+    void *X::operator new(size_t sizeofX)
+    {
+        void *p = new char[sizeofX];
+
+        return memset(p, 0, sizeof(X));
+    }
+        )
+    Now, let's see what happens when tt(operator new) is overloaded for the
+tt(class X). Assume that class is defined as
+    follows+footnote(For the sake of simplicity we have violated the principle
+of i(encapsulation) here. The principle of encapsulation, however, is
+immaterial to the discussion of the workings of the operator tt(new).):
+        verb(
+    class X
+    {
+        public:
+            void *operator new(size_t sizeofX);
+
+            int d_x;
+            int d_y;
+    };
+        )
+    Now, consider the following program fragment:
+        verb(
+    #include "x.h"  // class X interface
+    #include <iostream>
+    using namespace std;
+
+    int main()
+    {
+        X *x = new X();
+
+        cout << x->d_x << ", " << x->d_y << endl;
+    }
+        )
+This small program produces the following output:
+        centt(0, 0)
+    At the call of tt(new X()), our little program performed the following
+actions:
+    itemization(
+    it() First, tt(operator new) was called, which allocated and initialized
+        a block of memory, the size of an tt(X) object.
+    it() Next, a pointer to this block of memory was passed to the
+        (default) tt(X()) constructor. Since no constructor was defined,
+        the constructor itself didn't do anything at all.
+    )
+    Due to the initialization of the block of memory by tt(operator new)
+the allocated tt(X) object was already initialized to zeros when the
+constructor was called.
+
+    Non-static member functions are passed a (hidden) pointer to the object on
+which they should operate. This i(hidden pointer) becomes the ti(this) pointer
+in i(non-static member functions). This procedure is also followed for
+constructors.  In the next pieces of pseudo bf(C++) code, the pointer is made
+visible. In the first part an tt(X) object tt(x) is defined directly, in the
+second part of the example the (overloaded) tt(operator new) is used:
+        verb(
+    X::X(&x);                       // x's address is passed to the
+                                    // constructor
+    void *ptr = X::operator new();  // new allocates the memory
+
+    X::X(ptr);                      // next the constructor operates on the
+                                    // memory returned by 'operator new'
+        )
+    Notice that in the pseudo tt(C++) fragment the member functions were
+treated as static member function of the class tt(X). Actually, tt(operator
+new) em(is) a i(static member function) of its class: it cannot reach data
+members of its object, since it's normally the task of the tt(operator new)
+to create room for that object. It can do that by allocating enough
+memory, and by initializing the area as required. Next, the memory is passed
+(as the tt(this) pointer) to the constructor for further processing. The
+fact that an overloaded operator tt(new) is actually a static function, not
+requiring an object of its class, can be illustrated in the following (frowned
+upon in normal situations!) program fragment, which can be compiled without
+problems (assume tt(class X) has been defined and is available as before):
+        verb(
+    int main()
+    {
+        X x;
+
+        X::operator new(sizeof x);
+    }
+        )
+The call to tt(X::operator new()) returns a tt(void *) to an initialized block
+of memory, the size of an tt(X) object.
+
+    The tt(operator new) can have multiple parameters. The first parameter is
+initialized by an i(implicit argument) and is always the ti(size_t) parameter,
+other parameters are initialized by i(explicit arguments) that are specified
+when tt(operator new) is used. For example:
+        verb(
+    class X
+    {
+        public:
+            void *operator new(size_t p1, size_t p2);
+            void *operator new(size_t p1, char const *fmt, ...);
+    };
+
+    int main()
+    {
+        X
+            *p1 = new(12) X(),
+            *p2 = new("%d %d", 12, 13) X(),
+            *p3 = new("%d", 12) X();
+    }
+        )
+    The pointer tt(p1) is a pointer to an tt(X) object for which the memory
+has been allocated by the call to the first overloaded tt(operator new),
+followed by the call of the constructor tt(X()) for that block of memory.  The
+pointer tt(p2) is a pointer to an tt(X) object for which the memory has been
+allocated by the call to the second overloaded tt(operator new), followed
+again by a call of the constructor tt(X()) for its block of memory.  Notice
+that pointer tt(p3) also uses the second overloaded tt(operator new()), as
+that i(overloaded operator) accepts a i(variable number of arguments), the
+first of which is a tt(char const *).
+
+    Finally note that no explicit argument is passed for tt(new)'s first
+parameter, as this argument is implicitly provided by the type specification
+that's required for operator tt(new).

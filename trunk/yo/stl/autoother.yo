@@ -1,0 +1,29 @@
+    An tt(auto_ptr) hi(auto_ptr: initialization) may also be initialized
+by another tt(auto_ptr) object for the same type.
+The generic form is:
+        verb(
+    auto_ptr<type> identifier(other auto_ptr object);
+        )
+    For example, to initialize an tt(auto_ptr<string>), given the variable
+tt(sp) defined in the previous section, the following construction can be
+used:
+        verb(
+    auto_ptr<string> strPtr(sp);
+        )
+    Analogously, the assignment operator can
+hi(auto_ptr: assignment) be used. An tt(auto_ptr) object may be assigned
+to another tt(auto_ptr) object of the same type. For example:
+        verbinclude(stl/examples/autoother.cc)
+    Looking at the above example, we see that
+    itemization(
+    it() tt(hello1) is initialized as described in the previous section.
+    it() Next tt(hello2) is defined, and it receives its value from
+tt(hello1), using a i(copy constructor) type of initialization. This
+effectively changes tt(hello1) into a 0-pointer.
+    it() Then tt(hello3) is defined as a default tt(auto_ptr<string>), but it
+receives its value through an assignment from tt(hello2), which then becomes a
+0-pointer too.
+    )
+    The program generates a emi(segmentation fault). The reason
+for this will now be clear: it is caused by dereferencing 0-pointers. At the
+end, only tt(hello3) actually points to a tt(string).

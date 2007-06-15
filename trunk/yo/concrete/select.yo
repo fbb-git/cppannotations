@@ -1,0 +1,110 @@
+    The ti(select()) system call was developed to handle asynchronous
+        hi(multiplexing)
+        emi(I/O multiplexing).
+    This system call can be used to handle, e.g., input appearing
+simultaneously at a set of file descriptors.
+
+    The tt(select()) system function is rather complex, and its full
+discussion is beyond the bf(C++) Annotations' scope.
+However, its use may be simplified by providing a tt(class Selector),
+hiding its details and offering an easy-to-use public interface. Here its
+characteristics are discussed:
+    itemization(
+    it() Most of tt(Select)'s members are very small, allowing us to define
+most of its members as inline functions. The class requires quite a few data
+members. Most of them of types that were specifically constructed for use by
+tt(select()). Therefore, before the class interface can be handled by the
+compiler, various header files must have been read by it:
+        verbinsert(HEADERS)(concrete/examples/selector.h)
+    it() The class definition and its data members may appear next. The data
+type tt(fd_set) is a type designed to be used by tt(select()) and variables of
+this type contain the set of filedescriptors on which tt(select()) has sensed
+some activity. Furthermore, tt(select()) allows us to fire an
+        emi(asynchronous alarm). To specify alarm times, the class receives a
+ti(timeval) data member. The remaining members are used by the class for
+internal bookkeeping purposes, illustrated below. Here is the class's
+interface:
+        verbinsert(CLASS)(concrete/examples/selector.h)
+    )
+    The following member functions are part of the class's public interface:
+    itemization(
+    itht(Selector::Selector())(Selector()): the (default) constructor. It
+clears the read, write, and execute tt(fd_set) variables, and switches off the
+alarm. Except for tt(d_max), the remaining data members do not require
+initializations. Here is the implementation of tt(Selector)'s constructor:
+        verbinsert(SELECTOR)(concrete/examples/selector.cc)
+    itht(Selector::wait())(int wait()): this member function will em(block())
+until activity is sensed at any of the file descriptors monitored by
+the tt(Selector) object, or if the em(alarm) times out. It will throw an
+exception when the tt(select()) system call itself fails. Here is tt(wait())'s
+implementation:
+        verbinsert(WAIT)(concrete/examples/selector.cc)
+    itht(Selector::nReady())(int nReady): this member function's return value
+is defined only when tt(wait()) has returned. In that case it returns
+0 for a alarm-timeout, -1 if tt(select()) failed, and the number of file
+descriptors on which activity was sensed otherwise. It can be implemented
+inline:
+        verbinsert(NREADY)(concrete/examples/selector.h)
+    itht(Selector::readFd())(int readFd()): this member function's return
+value also is defined only after tt(wait()) has returned. Its return value is
+-1 if no (more) input file descriptors are available. Otherwise the next file
+descriptor available for reading is returned. Its inline implementation is:
+        verbinsert(READFD)(concrete/examples/selector.h)
+    itht(Selector::writeFd())(int writeFd()): operating analogously to
+tt(readFd()), it returns the next file descriptor to which output is written.
+Using tt(d_writeidx) and tt(d_ret_read), it is implemented analogously to
+tt(readFd());
+    itht(Selector::exceptFd())(int exceptFd()): operating analogously to
+tt(readFd()), it returns the next exception file descriptor on which activity
+was sensed.  Using tt(d_except_idx) and tt(d_ret_except), it is implemented
+analogously to tt(readFd());
+    itht(Selector::setAlarm())(void setAlarm(int sec, int usec = 0)): this
+member activates tt(Select)'s alarm facility. At least the number of seconds
+to wait for the alarm to go off must be specified. It simply assigns values to
+tt(d_alarm)'s fields. Then, at the next tt(Select::wait()) call, the alarm
+will fire (i.e., tt(wait()) returns with return value 0) once the configured
+alarm-interval has passed. Here is its (inline) implementation:
+        verbinsert(SETALARM)(concrete/examples/selector.h)
+    itht(Selector::noAlarm())(void noAlarm()): this member switches off the
+alarm, by simply setting the alarm interval to a very long period. Implemented
+inline as:
+        verbinsert(NOALARM)(concrete/examples/selector.h)
+    itht(Selector::addReadFd())(void addReadFd(int fd)): this member adds a
+file descriptor to the set of input file descriptors monitored by the
+tt(Selector) object. The member function tt(wait()) will return once input is
+available at the indicated file descriptor. Here is its inline implementation:
+        verbinsert(ADDREAD)(concrete/examples/selector.h)
+    itht(Selector::addWriteFd())(void addWriteFd(int fd)): this member adds a
+file descriptor to the set of output file descriptors monitored by the
+tt(Selector) object. The member function tt(wait()) will return once output is
+available at the indicated file descriptor. Using tt(d_write), it is
+implemented analogously as tt(addReadFd());
+    itht(Selector::addExceptFd())(void addExceptFd(int fd)): this member adds
+a file descriptor to the set of exception file descriptors to be monitored by
+the tt(Selector) object.  The member function tt(wait()) will return once
+activity is sensed at the indicated file descriptor. Using tt(d_except), it
+is implemented analogously as tt(addReadFd());
+    itht(Selector::rmReadFd())(void rmReadFd(int fd)): this member removes a
+file descriptor from the set of input file descriptors monitored by the
+tt(Selector) object. Here is its inline implementation:
+        verbinsert(RMREAD)(concrete/examples/selector.h)
+    itht(Selector::rmWriteFd())(void rmWriteFd(int fd)): this member removes a
+file descriptor from the set of output file descriptors monitored by the
+tt(Selector) object.  Using tt(d_write), it is implemented analogously as
+tt(rmReadFd());
+    itht(Selector::rmExceptFd())(void rmExceptFd(int fd)): this member removes
+a file descriptor from the set of exception file descriptors to be monitored
+by the tt(Selector) object.  Using tt(d_except), it is implemented analogously
+as tt(rmReadFd());
+    )
+    The class's remaining (two) members are support members, and should not be
+used by non-member functions. Therefore, they should be declared in the class's
+tt(private) section:
+    itemization(
+    it() The member tt(addFd()) adds a certain file descriptor to a certain
+tt(fd_set). Here is its implementation:
+        verbinsert(ADDFD)(concrete/examples/selector.cc)
+    it() The member tt(checkSet()) tests whether a certain file descriptor
+(tt(*index)) is found in a certain tt(fd_set). Here is its implementation:
+        verbinsert(CHECKSET)(concrete/examples/selector.cc)
+    )

@@ -1,0 +1,35 @@
+Knowing how pointers to variables and objects are used does not intuitively
+lead to the concept of em(pointers to members) hi(pointer to members). Even if
+the return types and parameter types of member functions are taken into
+account, surprises are likely to be encountered.  For example, consider the
+following class:
+        verb(
+    class String
+    {
+        char const *(*d_sp)() const;
+
+        public:
+            char const *get() const;
+    };
+        )
+    For this class, it is not possible to let a tt(char const *(*d_sp)()
+const) data member point to the tt(get()) member function of the tt(String)
+class: tt(d_sp) cannot be given the address of the member function tt(get()).
+
+    One of the reasons why this doesn't work is that the variable tt(d_sp) has
+i(global scope), while the member function tt(get()) is defined within the
+tt(String) class, and has tt(class scope). The fact that the variable tt(d_sp)
+is part of the tt(String) class is irrelevant. According to tt(d_sp)'s
+definition, it points to a function living em(outside) of the class.
+
+Consequently, in order to define a pointer to a member (either data or
+function, but usually a function) of a class, the scope of the pointer must be
+within the class's scope.  Doing so, a pointer to a member of the class
+tt(String) can be defined as
+        verb(
+    char const *(String::*d_sp)() const;
+        )
+    So, due to the tt(String::) prefix, tt(d_sp) is defined as a pointer only
+in the context of the class tt(String). It is defined as a pointer to a
+function in the class tt(String), not expecting arguments, not modifying its
+object's data, and returning a pointer to constant characters.

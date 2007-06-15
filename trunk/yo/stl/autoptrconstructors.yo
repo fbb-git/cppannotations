@@ -1,0 +1,54 @@
+    Now that the tt(auto_ptr)'s main features have been described, consider
+the following simple class:
+        verb(
+    // required #includes
+
+    class Map
+    {
+        std::map<string, Data> *d_map;
+        public:
+            Map(char const *filename) throw(std::exception);
+    };
+        )
+    The class's constructor tt(Map()) performs the following tasks:
+    itemization(
+    it() It allocates a tt(std::map) object;
+    it() It opens the file whose name is given as the constructor's argument;
+    it() It reads the file, thereby filling the map.
+    )
+    Of course, it may not be possible to open the file.  In that case an
+appropriate exception is thrown. So, the constructor's implementation will
+look somewhat like this:
+        verb(
+    Map::Map(char const *fname)
+    :
+        d_map(new std::map<std::string, Data>) throw(std::exception)
+    {
+        ifstream istr(fname);
+        if (!istr)
+            throw std::exception("can't open the file");
+        fillMap(istr);
+    }
+        )
+    What's wrong with this implementation? Its main weakness is that it hosts
+a potential i(memory leak). The memory leak only occurs when the exception is
+actually thrown. In all other cases, the function operates perfectly
+well. When the exception is thrown, the map has just been dynamically
+allocated. However, even though the class's destructor will dutifully call
+tt(delete d_map), the destructor is actually never called, as the destructor
+    hi(destructor: and incomplete objects) will only be called to destroy
+objects that were constructed completely. Since the constructor terminates in
+an exception, its associated object is not constructed completely, and
+therefore that object's destructor is never called.
+
+    tt(Auto_ptrs) may be used to prevent these kinds of problems. By defining
+tt(d_map) as
+        centt(std::auto_ptr<std::map<std::string, Data> >)
+    it suddenly changes into an object. Now, tt(Map)'s constructor may safely
+throw an exception. As tt(d_map) is an object itself, its destructor will be
+called by the time the (however incompletely constructed) tt(Map) object goes
+out of scope.
+
+    As a i(rule of thumb): classes should use tt(auto_ptr) objects, rather
+than plain pointers for their pointer data members if there's any chance that
+their constructors will end prematurely in an exception.

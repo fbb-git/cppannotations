@@ -1,0 +1,62 @@
+    To overload tt(operator new[]) in a class tt(Object) the interface should
+contain the following lines, showing multiple forms of overloaded forms of
+tt(operator new[]):
+        verb(
+    class Object
+    {
+        public:
+            void *operator new[](size_t size);
+            void *operator new[](size_t index, size_t extra);
+    };
+        )
+    The first form shows the basic form of tt(operator new[]). It
+should return a ti(void *), and defines at least a ti(size_t) parameter. When
+tt(operator new[]) is called, tt(size) contains the number of em(bytes) that
+must be allocated for the required number of objects. These objects can be
+initialized by the emi(global operator new[]) using the form hi(::new[])
+        verb(
+    ::new Object[size / sizeof(Object)]
+        )
+    Or, alternatively, the required (uninitialized) amount of memory can be
+allocated using:
+        verb(
+    ::new char[size]
+        )
+An example of an overloaded operator tt(new[]) member function, returning an
+array of tt(Object) objects all filled with 0-bytes, is:
+        verb(
+    void *Object::operator new[](size_t size)
+    {
+        return memset(new char[size], 0, size);
+    }
+        )
+    Having constructed the overloaded operator tt(new[]), it will be used
+automatically in statements like:
+        verb(
+    Object *op = new Object[12];
+        )
+    Operator tt(new[]) may be overloaded using additional parameters. The
+second form of the overloaded operator tt(new[]) shows such an additional
+tt(size_t) parameter. The definition of such a function is standard, and
+could be:
+        verb(
+    void *Object::operator new[](size_t size, size_t extra)
+    {
+        size_t n = size / sizeof(Object);
+        Object *op = ::new Object[n];
+
+        for (size_t idx = 0; idx < n; idx++)
+            op[idx].value = extra;          // assume a member `value'
+
+        return op;
+    }
+        )
+    To use this overloaded operator, only the additional parameter must be
+provided. It is given in a i(parameter list) just after the name of the
+operator itself:
+        verb(
+    Object
+        *op = new(100) Object[12];
+        )
+    This results in an array of 12 tt(Object) objects, all having their
+tt(value) members set to 100.

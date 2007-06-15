@@ -1,0 +1,136 @@
+    An existing class may be used as the base class for deriving a template
+        hi(class template: derived from ordinary class)
+class. The advantage of such an inheritance tree is that the base class's
+members may all be compiled beforehand, so when objects of the class template
+are instantiated only the used members of the derived (template) class need to
+be instantiated.
+
+    This approach may be used for all class templates having member functions
+whose implementations do not depend on template parameters. These members may
+be defined in a separate class which is then used as a base class of the
+class template derived from it.
+
+    As an illustration of this approach we'll develop such a class template in
+this section. We'll develop a class tt(Table) derived from an ordinary
+class tt(TableType). The class tt(Table) will display elements of some type in
+a table having a configurable number of columns. The elements are either
+displayed horizontally (the first em(k) elements occupying the first row) or
+vertically (the first em(r) elements occupying a first column).
+
+    When displaying the table's elements they are inserted into a stream. This
+allows us to define the handling of the table in a separate class
+(tt(TableType)), implementing the table's presentation. Since the table's
+elements are inserted into a stream, the conversion to text (or tt(string))
+can be implemented in tt(Table), but the handling of the strings is left to
+tt(TableType). We'll cover some characteristics of tt(TableType) shortly,
+concentrating on tt(Table)'s interface first:
+    itemization(
+    it() The class tt(Table) is a class template, requiring only one template
+type parameter: tt(Iterator) refers to an iterator to some data type:
+        verbinsert(HEAD)(templateclasses/examples/table/table/table.h)
+    it() It requires no data members: all data manipulations are performed by
+tt(TableType).
+    it() It has two constructors. The constructor's first two parameters are
+tt(Iterator)s used to iterate over the elements to enter into the
+table. Furthermore, the constructors require us to specify the number of
+columns we would like our table to have, as well as a
+em(FillDirection). tt(FillDirection) is an tt(enum) type that is actually
+defined by tt(TableType), having values tt(Horizontal) and tt(Vertical). To
+allow tt(Table)'s users to exercise control over headers, footers,
+captions, horizontal and vertical separators, one constructor has
+tt(TableSupport) reference parameter. The class tt(TableSupport) will be
+developed later as a virtual class allowing clients to exercise this
+control. Here are the class's constructors:
+        verbinsert(CONS)(templateclasses/examples/table/table/table.h)
+    it() The constructors are tt(Table)'s only two public members. Both
+constructors use a base class initializer to initialize their tt(TableType)
+base class and then call the class's private member tt(fill()) to insert data
+into the tt(TableType) base class object. Here are the constructor's
+implementations:
+        verbinsert(CONSIMP)(templateclasses/examples/table/table/table.h)
+    it() The class's tt(fill()) member iterates over the range of elements
+rangett(begin, end), as defined by the constructor's first two parameters.
+As we will see shortly, tt(TableType) defines a protected data member
+tt(std::vector<std::string> d_string). One of the requirements of the data
+type to which the iterators point is that this data type can be inserted into
+streams. So, tt(fill()) uses a tt(ostringstream) object to obtain the textual
+representation of the data, which is then appended to tt(d_string):
+        verbinsert(FILL)(templateclasses/examples/table/table/table.h)
+    )
+    This completes the implementation of the class tt(Table). Note that this
+class template only has three members, two of them constructors. Therefore, in
+most cases only two function templates will have to be instantiated: a
+constructor and the class's tt(fill()) member. For example, the following
+constructs a table having four columns, vertically filled by tt(string)s
+extracted from the standard input stream:
+        verb(
+    Table<istream_iterator<string> >
+        table(istream_iterator<string>(cin), istream_iterator<string>(),
+              4, TableType::Vertical);
+        )
+    Note here that the fill-direction is specified as
+tt(TableType::Vertical). It could also have been specified using tt(Table),
+but since tt(Table) is a class template, the specification would become
+somewhat more complex: tt(Table<istream_iterator<string> >::Vertical).
+
+    Now that the tt(Table) derived class has been designed, let's turn our
+attention to the class tt(TableType). Here are its essential characteristics:
+    itemization(
+    it() It is a ordinary class, designed to operate as tt(Table)'s base
+class.
+    it() It uses various private data members, among which tt(d_colWidth), a
+vector storing the width of the widest element per column and tt(d_indexFun),
+pointing to the class's member function returning the element in
+tt(table[row][column]), conditional to the table's fill
+direction. tt(TableType) also uses a tt(TableSupport) pointer and a
+reference. The constructor not requiring a tt(TableSupport) object uses the
+tt(TableSupport *) to allocate a (default) tt(TableSupport) object and then
+uses the tt(TableSupport &) as the object's alias. The other constructor
+initializes the pointer to 0, and uses the reference data member to refer to
+the tt(TableSupport) object provided by its parameter. Alternatively, a static
+tt(TableSupport) object might have been used to initialize the reference data
+member in the former constructor. The remaining private data members are
+probably self-explanatory:
+        verbinsert(DATA)(templateclasses/examples/table/tabletype/tabletype.h)
+    it() The actual tt(string) objects populating the table are stored in a
+protected data member:
+        verbinsert(PROT)(templateclasses/examples/table/tabletype/tabletype.h)
+    it() The (protected) constructors perform basic tasks: they initialize the
+object's data members. Here is the constructor expecting a reference to a
+tt(TableSupport) object:
+        verbinclude(templateclasses/examples/table/tabletype/tabletype.cc)
+    it() Once tt(d_string) has been filled, the table is initialized by
+tt(Table::fill()). The tt(init()) protected member resizes tt(d_string) so
+that its size is exactly tt(rows x columns), and it determines the maximum
+width of the elements per column. Its implementation is straightforward:
+        verbinclude(templateclasses/examples/table/tabletype/init.cc)
+    it() The public member tt(insert()) is used by the insertion operator
+(oplshift()) to insert a tt(Table) into a stream. First it informs the
+tt(TableSupport) object about the table's dimensions. Next it displays the
+table, allowing the tt(TableSupport) object to write headers, footers and
+separators:
+        verbinclude(templateclasses/examples/table/tabletype/insert.cc)
+    it() The tt(cplusplus.yo.zip) archive contains tt(TableSupport)'s full
+implementation. This implementation is found in the directory
+tt(yo/templateclasses/examples/table). Most of its remaining members are
+private. Among those, the following two members return table element
+tt([row][column]) for, respectively, a horizontally filled table and a
+vertically filled table:
+      verbinsert(INDEX)(templateclasses/examples/table/tabletype/tabletype.h)
+    )
+
+    The support class tt(TableSupport) is used to display headers, footers,
+captions and separators. It has four virtual members to perform those tasks
+(and, of course, a virtual constructor):
+    itemization(
+    itt(hline(size_t rowIndex)): called just before the elements in row
+tt(rowIndex) will be displayed.
+    itt(hline()): called immediately after displaying the final row.
+    itt(vline(size_t colIndex)): called just before the element in column
+tt(colIndex) will be displayed.
+    itt(vline()): called immediately after displaying all elements in a row.
+    )
+    The reader is referrred to the tt(cplusplus.yo.zip) archive for the full
+implementation of the classes tt(Table), tt(TableType) and tt(TableSupport).
+Here is a small program showing their use:
+    verbinclude(templateclasses/examples/table/table.cc)

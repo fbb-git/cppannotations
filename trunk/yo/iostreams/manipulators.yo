@@ -1,0 +1,137 @@
+tt(Ios) objects define a set of em(format flags) that are used for determining
+the way values are inserted (see section ref(FORMATFLAGS)).  The format flags
+can be controlled by member functions (see section ref(FORMATMEMBERS)), but
+also by emi(manipulators).  Manipulators are em(inserted) into output streams
+or extracted from input streams, instead of being activated through the member
+selection operator (`tt(.)').
+
+Manipulators are functions.  New manipulators can be constructed as well. The
+construction of manipulators is covered in section ref(MANIPCONSTRUCTION). In
+this section the manipulators that are available in the bf(C++) I/O library
+are discussed. Most manipulators affect emi(format flags). See section
+ref(FORMATFLAGS) for details about these flags. Most manipulators are
+parameterless. Sources in which manipulators expecting arguments are used, must
+do:
+    hi(#include <iomanip>)
+        centt(
+    #include <iomanip>
+        )
+
+    itemization(
+    iti(std::boolalpha):
+        quote(This manipulator will set the tt(ios::boolalpha) flag.)
+    iti(std::dec):
+        quote(This manipulator enforces the display and reading of integral
+numbers in i(decimal format). This is the default conversion. The conversion
+is applied to values inserted into the stream after processing the
+manipulators. For example (see also tt(std::hex) and tt(std::oct), below):
+        verb(
+    cout << 16 << ", " << hex << 16 << ", " << oct << 16;
+    // produces the output:
+    16, 10, 20
+        ))
+    iti(std::endl):
+        quote(This manipulator will insert a newline character into an output
+buffer and will flush the buffer thereafter.)
+    iti(std::ends):
+        quote(This manipulator will insert a string termination character
+into an output buffer.)
+    iti(std::fixed):
+        quote(This manipulator will set the tt(ios::fixed) flag.)
+    iti(std::flush):
+        quote(This manipulator will flush an output buffer.)
+    iti(std::hex):
+        quote(This manipulator enforces the display and reading of integral
+numbers in i(hexadecimal format).)
+    iti(std::internal):
+        quote(This manipulator will set the tt(ios::internal) flag.)
+    iti(std::left):
+        quote(This manipulator will align values to the left in wide fields.)
+    iti(std::noboolalpha):
+        quote(This manipulator will clear the tt(ios::boolalpha) flag.)
+    iti(std::noshowpoint):
+        quote(This manipulator will clear the tt(ios::showpoint) flag.)
+    iti(std::noshowpos):
+        quote(This manipulator will clear the tt(ios::showpos) flag.)
+    iti(std::noshowbase):
+        quote(This manipulator will clear the tt(ios::showbase) flag.)
+    iti(std::noskipws):
+        quote(This manipulator will clear the tt(ios::skipws) flag.)
+    iti(std::nounitbuf):
+        quote(This manipulator will stop flushing an output stream after each
+write operation. Now the hi(flushing a stream) stream is flushed at a
+tt(flush), tt(endl), tt(unitbuf) or when it is closed.)
+    iti(std::nouppercase):
+        quote(This manipulator will clear the tt(ios::uppercase) flag.)
+    iti(std::oct):
+        quote(This manipulator enforces the display and reading of integral
+numbers in i(octal format).)
+    ithtq(std::resetiosflags())(std::resetiosflags(flags))(This manipulator
+calls tt(std::resetf(flags)) to clear the indicated flag values.)
+    iti(std::right):
+        quote(This manipulator will align values to the right in wide fields.)
+    iti(std::scientific):
+        quote(This manipulator will set the tt(ios::scientific) flag.)
+    itht(std::setbase())(std::setbase(int b)):
+        quote(This manipulator can be used to display integral values using
+the base 8, 10 or 16. It can be used as an alternative to tt(oct, dec, hex) in
+situations where the base of integral values is parameterized.)
+    itht(std::setfill())(std::setfill(int ch)):
+        quote(This manipulator defines
+the filling character in situations where the values of numbers are too small
+to fill the width that is used to display these values. By default the blank
+space is used.)
+    ithtq(std::setiosflags())(std::setiosflags(flags))(This manipulator calls
+tt(std::setf(flags)) to set the indicated flag values.)
+    itht(std::setprecision())(std::setprecision(int width)):
+        quote(This manipulator will set the precision in which a tt(float) or
+tt(double) is displayed. In combination with tt(std::fixed) it can be used to
+display a fixed number of digits of the fractional part of a floating or
+double value:
+            verb(
+    cout << fixed << setprecision(3) << 5.0 << endl;
+    // displays: 5.000
+            )
+        )
+    itht(std::setw())(std::setw(int width)):
+        quote(This manipulator expects as its argument the width of the field
+that is inserted or extracted next. It can be used as manipulator for
+insertion, where it defines the maximum number of characters that are
+displayed for the field, but it can also be used during
+    hi(extraction manipulators) extraction, where it defines the maximum
+number of characters that are inserted into an array of characters.  To
+prevent i(array bounds overflow) when extracting from tt(cin), tt(setw()) can
+be used as well:
+        verb(
+    cin >> setw(sizeof(array)) >> array;
+        )
+    A nice feature is that a long string appearing at tt(cin) is split
+into substrings of at most tt(sizeof(array) - 1) characters, and that
+an ti(ASCII-Z) character is automatically appended.
+    Notes:
+        itemization(
+        itt(setw()) is valid em(only) for the next field. It does em(not) act
+like e.g., tt(hex) which changes the general state of the output stream for
+displaying numbers.
+        it() When tt(setw(sizeof(someArray))) is used, make sure that
+tt(someArray) really is an array, and not a pointer to an array: the size of a
+pointer, being, e.g., four bytes, is usually not the size of the array that it
+points to....
+        ))
+    iti(std::showbase):
+        quote(This manipulator will set the tt(ios::showbase) flag.)
+    iti(std::showpoint):
+        quote(This manipulator will set the tt(ios::showpoint) flag.)
+    iti(std::showpos):
+        quote(This manipulator will set the tt(ios::showpos) flag.)
+    iti(std::skipws):
+        quote(This manipulator will set the tt(ios::skipws) flag.)
+    iti(std::unitbuf):
+        quote(This manipulator will flush an output stream  after each write
+operation.)
+    iti(std::uppercase):
+        quote(This manipulator will set the tt(ios::uppercase) flag.)
+    iti(std::ws):
+        quote(This manipulator will remove all whitespace characters that are
+available at the current read-position of an input buffer.)
+    )

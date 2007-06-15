@@ -1,0 +1,68 @@
+Like the tt(map), the ti(multimap) class implements a (sorted)
+    i(associative array). Before tt(multimap) containers can be used the
+following preprocessor directive must have been specified: hi(#include <map>)
+        verb(
+    #include <map>
+        )
+    The main difference between the tt(map) and the tt(multimap) is that the
+multimap supports multiple values associated with the same key, whereas the
+map contains single-valued keys. Note that the multimap also accepts multiple
+identical values associated with identical keys.
+
+The tt(map) and the tt(multimap) hi(multimap: member functions) have the same
+set of member functions, with the exception of the i(index operator)
+(ti(operator[]())), which is not supported hi(multimap: no operator[]) with
+the multimap. This is understandable: if multiple entries of the same key are
+allowed, which of the possible values should be returned for tt(object[key])?
+
+Refer to section ref(MAP) for an hi(multimap: member functions) overview of
+the tt(multimap) member functions. Some member functions, however, deserve
+additional attention when used in the context of the tt(multimap)
+container. These members are discussed below.
+    itemization(
+        ithtq(map::count())(size_t map::count(key))(this member returns the
+number of entries in the multimap associated with the given tt(key).)
+        ithtq(multimap::erase())(... multimap::erase())(this member can be
+used to erase elements from the map:)
+            itemization(
+            itt(size_t erase(key)) erases all elements having the
+given tt(key). The number of erased elements is returned.
+            itt(void erase(pos)) erases the single element pointed to by
+tt(pos). Other elements possibly having the same keys are not erased.
+            itt(void erase(first, beyond)) erases all elements indicated by
+the iterator range rangett(first, beyond).
+            )
+        ithtq(multimap::equal_range())
+    (pair<multimap::iterator, multimap::iterator> multimap::equal_range(key))
+        (this member function returns a pair of iterators, being respectively
+the return values of tt(multimap::lower_bound()) and
+tt(multimap::upper_bound()), introduced below.  The function provides a simple
+means to determine all elements in the tt(multimap) that have the same
+tt(keys). An example illustrating the use of these member functions is given
+at the end of this section.)
+        ithtq(multimap::find())(multimap::iterator multimap::find(key))(this
+member returns an iterator pointing to the first value whose key is
+tt(key). If the element isn't available, tt(multimap::end()) is returned. The
+iterator could be incremented to visit all elements having the same tt(key)
+until it is either tt(multimap::end()), or the iterator's tt(first) member is
+not equal to tt(key) anymore.)
+        ithtq(multimap::insert())(multimap::iterator multimap::insert())(this
+member function normally succeeds, and so a emi(multimap::iterator) is
+returned, instead of a tt(pair<multimap::iterator, bool>) as returned with the
+tt(map) container. The returned iterator points to the newly added element.)
+    )
+    Although the functions tt(lower_bound()) and tt(upper_bound()) act
+identically in the tt(map) and tt(multimap) containers, their operation in a
+tt(multimap) deserves some additional attention. The next example illustrates
+tt(multimap::lower_bound()), tt(multimap::upper_bound()) and
+tt(multimap::equal_range) applied to a tt(multimap):
+        verbinclude(containers/examples/multimap.cc)
+    In particular note the following characteristics:
+    itemization(
+    itt(lower_bound()) and tt(upper_bound()) produce the same result for
+non-existing keys: they both return the first element having a key that
+exceeds the provided key.
+    it() Although the keys are ordered in the tt(multimap), the values for
+equal keys are not ordered: they are retrieved in the order in which they were
+enterd.
+    )

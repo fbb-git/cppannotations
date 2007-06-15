@@ -1,0 +1,70 @@
+#!/usr/bin/icmake -qt/tmp/cppannotations
+
+#include "INSTALL.im"
+
+#define ECHO_COMMANDS       1
+#define COPT                "-Wall -O2 -g"
+
+string
+    g_cwd;              // current WD
+
+#include "icmake/run"
+#include "icmake/clean"
+#include "icmake/programs"
+#include "icmake/man"
+#include "icmake/docs"
+#include "icmake/install"
+
+void main(int argc, list argv, list envp)
+{
+    string option;
+
+    echo(ECHO_COMMANDS);
+
+    option = element(1, argv);
+    g_cwd = chdir(".");
+
+    setLocations();     // from INSTALL.im
+
+    if (option == "clean")
+        clean();
+
+    if (option == "programs")
+    {
+        programs();
+        exit(0);
+    }
+
+    if (option == "docs")
+        docs();
+
+    if (option == "man")
+    {
+        man();
+        exit(0);
+    }
+
+    if (option == "install")
+        install(0, element(2, argv));
+
+    if (option == "cinstall")
+        install(1, element(2, argv));
+
+    printf("Usage: build what\n"
+        "Where `what' is one of:\n"
+        "   clean           - clean up remnants of previous compilations\n"
+        "   cinstall <base> - to install the C++ Annotations in the "
+                                                                "locations\n"
+        "                     defined in the INSTALL.im file, optionally\n"
+        "                     below <base>\n"
+        "   docs            - construct the C++ Annotations\n"
+        "   install <base>  - to install the C++ Annotations in the "
+                                                                "locations\n"
+        "                     defined in the INSTALL.im file, optionally\n"
+        "                     below <base>\n"
+        "   man             - build the manual page (requires Yodl)\n"
+        "   programs        - build support programs\n"
+        "\n"
+    );
+    exit(1);
+}

@@ -1,0 +1,231 @@
+Some of the operations that can be performed on strings return indices within
+the strings. Whenever such an operation fails to find an appropriate index,
+the em(value) ti(string::npos) is returned. This value is a (symbolic) value
+of type ti(string::size_type), which is (for all practical purposes) an
+(tt(unsigned)) tt(int).
+
+Note that in all operations with tt(strings) both tt(string) objects
+and tt(char const *) values and variables can be used.
+
+Some tt(string)-members use em(iterators). Iterators will be
+covered in section ref(ITERATORS). The member functions using iterators are
+listed in the next section (ref(STRINGOVERVIEW)), they are not further
+illustrated below.
+
+The following operations can be performed on strings:
+    itemization(
+    it() hi(string initialization) Initialization: String objects can
+be em(initialized). For the initialization a plain ti(ASCII-Z) string, another
+tt(string) object, or an implicit initialization can be used. In the example,
+note that the implicit initialization does not have an argument, and may not
+use an argument list. Not even empty.
+        verbinclude(string/cc/stringinitialization.cc)
+    it() hi(string assignment) Assignment: String objects can be assigned to
+each other. For this the assignment operator (i.e., the tt(=) operator) can be
+used, which accepts both a tt(string) object and a bf(C)-style character
+string as its right-hand argument:
+        verbinclude(string/cc/stringassign.cc)
+    it() hi(string to ASCII-Z conversion) String to ASCII-Z conversion: In the
+previous example a standard bf(C)-string (an ASCII-Z string) was implicitly
+converted to a tt(string)-object. The reverse conversion (converting a
+tt(string) object to a standard bf(C)-string) is not performed
+automatically. In order to obtain the tt(C)-string that is stored within the
+tt(string) object itself, the member function tt(c_str()), which returns a
+tt(char const *), can be used:
+        verbinclude(string/cc/stringcstr.cc)
+    it() hi(string elements) String elements: The individual elements of a
+string object can be accessed for reading or writing. For this operation the
+subscript-operator (tt([])) is available, but there is em(no)
+    i(string pointer dereferencing operator) (tt(*)). The subscript operator
+does not perform range-checking. hi(string range checking) If range
+checking is required the ti(string::at()) member function should be used:
+        verbinclude(string/cc/stringsubscript.cc)
+    When an illegal index is passed to the tt(at()) member function, the
+program aborts (actually, an em(exception) is generated, which could be
+caught. Exceptions are covered in chapter ref(EXCEPTIONS)).
+    it() hi(string comparisons) Comparisons: Two strings can be compared for
+(in)equality or ordering, using the tt(==, !=, <, <=, >) and tt(>=) operators
+or the ti(string::compare()) member function. The tt(compare()) member
+function comes in several flavors (see section ref(STRINGMEMBERS) for
+details). E.g.:
+        itemization(
+        itt(int string::compare(string const &other)): this variant offers
+a bit more information than the comparison-operators do.  The return value of
+the tt(string::compare()) member function may be used for
+    i(lexicographical ordering): a negative value is returned if the string
+stored in the string object using the tt(compare()) member function (in the
+example: tt(stringOne)) is located earlier in the
+    emi(ASCII collating sequence) than the string stored in the string
+object passed as argument.
+        verbinclude(string/cc/stringcompare.cc)
+    Note that there is no member function to perform a
+        i(case insensitive comparison of strings).
+        itt(int string::compare(string::size_type pos, size_t n, string
+const &other)): the first argument indicates the position in the current
+string that should be compared; the second argument indicates the number of
+characters that should be compared (if this value exceeds the number of
+characters that are actually available, only the available characters are
+compared); the third argument indicates the string which is compared to the
+current string.
+        it() More variants of tt(string::compare()) are available. As stated,
+refer to section ref(STRINGMEMBERS) for details.
+        )
+    The following example illustrates the tt(compare()) function:
+        verbinclude(string/cc/stringcompare2.cc)
+        it() hi(string appends) Appending: A tt(string) can be appended to
+another string. For this the tt(+=) operator can be used, as well as the
+tt(string &string::append()) member function.
+
+    Like the tt(compare()) function, the tt(append()) member function may have
+extra arguments. The first argument is the string to be appended, the
+second argument specifies the index position of the first character that will
+be appended. The third argument specifies the number of characters that will
+be appended.  If the first argument is of type tt(char const *), only a second
+argument may be specified. In that case, the second argument specifies the
+number of characters of the first argument that are appended to the tt(string)
+object.  Furthermore, the tt(+) operator can be used to append two strings
+within an expression:
+        verbinclude(string/cc/stringappend.cc)
+    The tt(+) operator can be used in cases where at least one term of the
+tt(+) operator is a tt(string) object (the other term can be a tt(string, char
+const *) or tt(char)).
+
+When neither operand of the tt(+) operator is a tt(string), at least one
+operand must be converted to a tt(string) object first. An easy way
+to do this is to use an emi(anonymous string) object:
+        centt(string("hello") + " world";)
+        it() hi(string insertions) Insertions: The tt(string &string::insert()) member
+function to insert (parts of) a tt(string) has at least two, and at most four
+arguments:
+        itemization(
+        it() The first argument is the offset in the current tt(string) object
+    where another string should be inserted.
+        it() The second argument is the string to be inserted.
+        it() The third argument specifies the index position of the
+    first character in the provided tt(string)-argument that will be inserted.
+        it() The fourth argument specifies the number of characters that will
+            be inserted.
+        )
+    If the first argument is of type tt(char const *), the fourth argument is
+not available. In that case, the third argument indicates the number of
+characters of the provided tt(char const *) value that will be inserted.
+        verbinclude(string/cc/stringinsert.cc)
+    Several variants of tt(string::insert()) are available. See section
+ref(STRINGOVERVIEW) for details.
+        it() hi(string replacements) Replacements: At times, the contents of
+tt(string) objects must be replaced by other information. To replace parts of
+the contents of a tt(string) object by another string the member function
+tt(string &string::)tt(replace()) can be used.
+    The member function has at least three and possibly five arguments, having
+the following meanings
+(see section ref(STRINGOVERVIEW) for overloaded versions of
+tt(replace()), using different types of arguments):
+    itemization(
+    it() The first argument indicates the position of the first character that
+must be replaced
+    it() The second argument gives the number of characters that
+must be replaced.
+    it() The third argument defines the replacement text (a
+tt(string) or tt(char const *)).
+    it() The fourth argument specifies the index position of
+the first character in the provided tt(string)-argument that will be inserted.
+    it() The fifth argument can be used to specify the number of
+characters that will be inserted.
+    )
+    If the third argument is of type tt(char const *), the fifth argument is
+not available. In that case, the fourth argument indicates the number of
+characters of the provided tt(char const *) value that will be inserted.
+
+The following example shows a very simple em(file changer): it reads lines
+from tt(cin), and replaces occurrences of a `searchstring' by a
+`replacestring'. Simple tests for the correct number of arguments and the
+contents of the provided strings (they should be unequal) are applied as well.
+label(REPLACECC)
+        verbinclude(string/cc/stringreplace.cc)
+        it() hi(string swapping)  Swapping: The member function
+        tt(string &string::swap(string &other))
+    swaps the contents of two tt(string)-objects. For example:
+        verbinclude(string/cc/stringswap.cc)
+        it() hi(string erasing)  Erasing: The member function tt(string
+&string::erase()) removes characters from a tt(string). The standard form has
+two optional arguments:
+        itemization(
+        it() If no arguments are specified, the stored string is erased
+    completely: it becomes the empty string (tt(string()) or tt(string(""))).
+        it() The first argument may be used to specify the offset of the first
+    character that must be erased.
+        it() The second argument may be used to specify the number of
+            characters that are to be erased.
+        )
+    See section ref(STRINGOVERVIEW) for overloaded versions of tt(erase()). An
+example of the use of tt(erase()) is given below:
+        verbinclude(string/cc/stringerase.cc)
+        it() hi(string searches) Searching: To find i(substrings) in a
+tt(string) the member function tt(string::size_type)linebreak()
+    tt(string::find()) can be used. This function looks for the string that is
+provided as its first argument in the tt(string) object calling tt(find()) and
+returns the index of the first character of the substring if found. If the
+string is not found tt(string::npos) is returned. The member function
+tt(rfind()) looks for the substring from the end of the tt(string) object back
+to its beginning. An example using tt(find()) was given
+link(earlier.)(REPLACECC)
+        it() i(Substrings): To extract a substring from a tt(string) object,
+the member function tt(string)linebreak()tt(string::substr()) is
+available. The returned tt(string) object contains a copy of the substring in
+the tt(string)-object calling tt(substr()) The tt(substr()) member function
+has two optional arguments:
+        itemization(
+        it() Without arguments, a copy of the tt(string) itself is returned.
+        it() The first argument may be used to specify the offset of the first
+            character to be returned.
+        it() The second argument may be used to specify the number of
+            characters that are to be returned.
+        )
+    For example:
+        verbinclude(string/cc/stringsubstr.cc)
+        it() i(Character set searches): Whereas tt(find()) is used to find a
+substring, the functions tt(find_first_of(), find_first_not_of(),
+find_last_of()) and tt(find_last_not_of()) can be used to find em(sets) of
+characters (Unfortunately, regular expressions are not supported here). The
+following program reads a line of text from the standard input stream, and
+displays the substrings starting at the first vowel, starting at the last
+vowel, and starting at the first non-digit:
+        verbinclude(string/cc/stringfindfirst.cc)
+        it() hi(string size) String size: The number of characters that are
+stored in a string are obtained by the tt(size()) member function, which, like
+the standard bf(C) function ti(strlen()) does not include the terminating
+ASCII-Z character. For example:
+     verbinclude(string/cc/stringsize.cc)
+        it() hi(empty strings) Empty strings: The tt(size()) member function
+can be used to determine whether a string holds no characters. Alternatively,
+the ti(string::empty()) member function can be used:
+         verbinclude(string/cc/stringempty.cc)
+        it() hi(resizing strings) Resizing strings: If the size of a string is
+not enough (or if it is too large), the member function tt(void
+string::resize()) can be used to make it longer or shorter. Note that
+operators like tt(+=) automatically resize a tt(string) when needed.
+    it() hi(reading a string) Reading a line from a stream into a string: The
+function
+        verb(
+    istream &getline(istream &instream, string &target, char delimiter)
+        )
+may be used to read a line of text (up to the first delimiter or the
+end of the stream) from tt(instream) (note that tt(getline()) is not a
+em(member) function of the class tt(string)).
+
+The delimiter has a default value tt('\n'). It is removed from tt(instream),
+but it is em(not) stored in tt(target).  The member tt(istream::eof()) may be
+called to determine whether the delimiter was found. If it returns tt(true)
+the delimiter was em(not) found (see chapter ref(IOStreams) for details about
+tt(istream) objects). The function tt(getline()) was used in several earlier
+examples (e.g., with the link(replace())(REPLACECC) member function).
+    it() hi(extracting a string) A tt(string) variables may be extracted from
+a stream. Using the construction
+            verb(
+    istr >> str;
+            )
+    where tt(istr) is an tt(istream) object, and tt(str) is a tt(string), the
+next consecutive series of non-blank characters will be assigned to
+tt(str). Note that by default the extraction operation will skip any
+blanks that precede the characters that are extracted from the stream.
+    )

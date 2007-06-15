@@ -1,0 +1,38 @@
+bf(C) supports several ways in which  a program can react to situations which
+break the normal unhampered flow of the program:
+    itemization(
+    it() The function may notice the abnormality and issue a message. This is
+probably the least disastrous reaction a program may show.
+    it() The function in which the abnormality is observed may decide to stop
+its intended task, returning an i(error code) to its caller. This is a great
+example of i(postponing decisions): now the em(calling function) is faced with
+a problem. Of course the calling function may act similarly, by passing the
+error code up to em(its) caller.
+    it() The function may decide that things are going out of hand, and may
+call ti(exit()) to terminate the program completely. A tough way to handle a
+problem....
+    it() The function may use a combination of the functions ti(setjmp()) and
+ti(longjmp()) to enforce i(non-local exits). This mechanism implements a kind
+of ti(goto) jump, allowing the program to continue at an outer level,
+skipping the intermediate levels which would have to be visited if a series of
+returns from nested functions would have been used.
+    )
+    In bf(C++) all the above ways to handle i(flow-breaking situations) are
+still available. However, of the mentioned alternatives, the tt(setjmp()) and
+tt(longjmp()) approach isn't frequently seen in bf(C++) (or even in bf(C))
+programs, due to the fact that the program flow is completely disrupted.
+
+bf(C++) offers emi(exceptions) as the preferred alternative to tt(setjmp())
+and tt(longjmp()) are. Exceptions allow bf(C++) programs to perform a
+controlled i(non-local return), without the disadvantages of tt(longjmp()) and
+tt(setjmp()).
+
+Exceptions are the proper way to bail out of a situation which cannot be
+handled easily by a function itself, but which is not disastrous enough for
+a program to terminate completely. Also, exceptions provide a flexible layer
+of control between the short-range ti(return) and the crude ti(exit()).
+
+In this chapter exceptions and their syntax will be introduced. First an
+example of the different impacts exceptions and tt(setjmp()) and tt(longjmp())
+have on a program will be given. Then the discussion will dig into the
+formalities exceptions.

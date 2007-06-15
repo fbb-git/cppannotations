@@ -1,0 +1,127 @@
+The class ti(istream) supports both formatted and unformatted
+    emi(binary input).  The emi(extraction operator) (ti(operator>>())) may be
+used to extract values in a i(type safe) way from tt(istream) objects.  This
+is called i(formatted input), whereby human-readable i(ASCII) characters are
+converted, according to certain formatting rules, to binary values which are
+stored in the computer's memory.
+
+Note that the extraction operator points to the objects or variables which
+must receive new values.  The normal associativity of rshift()
+remains unaltered, so when a statement like
+        verb(
+    cin >> x >> y;
+        )
+    is encountered, the leftmost two
+operands are evaluated first (tt(cin) rshift() tt(x)), and an tt(istream &)
+object, which is actually the same tt(cin) object, is returned. Now, the
+statement is reduced to
+        verb(
+    cin >> y
+        )
+    and the tt(y) variable is extracted from tt(cin).
+
+The rshift() operator has a lot of (overloaded) variants, so many types of
+variables can be extracted from tt(istream) objects. There is an overloaded
+rshift() available for the extraction of an tt(int), of a tt(double),
+of a string, of an array of characters, possibly to a pointer,
+etc. etc.. String or character array extraction hi(string extraction)
+hi(extracting strings) will (by default) skip all white space characters, and
+will then extract all consecutive non-white space characters. After processing
+an extraction operator, the tt(istream) object into which the information so
+far was inserted is returned, which will thereupon be used as the em(lvalue)
+for the remaining part of the statement.
+
+    Streams do not have facilities for formatted input (like bf(C)'s
+ti(scanf()) and ti(vscanf()) functions). Although it is not difficult to make
+these facilities available in the world of streams, tt(scanf())-like
+functionality is hardly ever required in bf(C++) programs. Furthermore, as it
+is potentially type-em(unsafe), it might be better to avoid this functionality
+completely.
+
+    When hi(binary files) binary files must be read, the information should
+normally not be formatted: an tt(int) value should be read as a series of
+unaltered bytes, not as a series of i(ASCII) numeric characters 0 to 9. The
+following member functions for reading information from tt(istream) objects
+are available:
+    itemization(
+        itht(istream::gcount())(int istream::gcount()):
+            quote(this function does not actually read from the input stream,
+but returns the number of characters that were read from the input stream
+during the last unformatted input operation.)
+        itht(istream::get())(int istream::get()):
+            quote(this function returns endOfFile() or reads and returns the
+next available single character as an tt(int) value.)
+        itt(istream &istream::get(char &c)):
+            quote(this function reads the next single character from the input
+stream into tt(c). As its return value is the stream itself, its return value
+can be queried to determine whether the extraction succeeded or not.)
+        itt(istream& istream::get(char *buffer, int len [, char delim])):
+            quote(This function reads a series of tt(len - 1) characters from
+the input stream into the array starting at tt(buffer), which should be at
+least tt(len) bytes long. At most tt(len - 1) characters are read into the
+buffer. By default, the delimiter is a newline (tt('\n')) character.  The
+delimiter itself is em(not removed) from the input stream.
+
+    After reading the series of characters into tt(buffer), an ti(ASCII-Z)
+character is written beyond the last character that was written to tt(buffer).
+The functions tt(eof()) and tt(fail()) (see section
+ref(IOSTATES)) return 0 (tt(false)) if the delimiter was not
+encountered before tt(len - 1) characters were read.  Furthermore, an
+tt(ASCII-Z) can be used for the delimiter: this way strings terminating in
+tt(ASCII-Z) characters may be read from a (binary) file. The program using
+this tt(get()) member function should know in advance the maximum number of
+characters that are going to be read.
+        )
+        itht(istream::getline())
+        (istream& istream::getline(char *buffer, int len [, char delim])):
+            quote(This function operates analogously to the previous tt(get())
+member function, but tt(delim) is removed from the stream if it is
+actually encountered. At most tt(len - 1) bytes are written into the
+tt(buffer), and a trailing tt(ASCII-Z) character is appended to the string
+that was read. The delimiter itself is em(not) stored in the tt(buffer). If
+tt(delim) was em(not) found (before reading tt(len - 1) characters)
+the tt(fail()) member function, and possibly also
+tt(eof()) will return true. Note that the tt(std::string) class also has a
+support function tt(getline()) which is used more often than this
+tt(istream::getline()) member function (see section ref(STRINGMEMBERS)).)
+        itht(istream::ignore())
+        (istream& istream::ignore(int n , int delim)):
+            quote(This member function has two (optional) arguments. When
+called without arguments, one character is skipped from the
+input stream. When called with one argument, tt(n) characters are skipped. The
+optional second argument specifies a delimiter: after skipping tt(n) or the
+tt(delim) character (whichever comes first) the function returns.)
+        itht(istream::peek())(int istream::peek()):
+            quote(this function returns the next available input character,
+but does not actually remove the character from the input stream.)
+        itht(istream::putback())
+        (istream& istream::putback (char c)):
+            quote(The character tt(c) that was last read from the stream is
+`pushed back' into the input stream, to be read again as the next
+character. endOfFile() is returned if this is not allowed. Normally, one
+character may always be put back. Note that tt(c) em(must) be the character
+that was last read from the stream. Trying to put back any other character
+will fail.)
+        itht(istream::read())
+        (istream& istream::read(char *buffer, int len)):
+            quote(This function reads at most tt(len) bytes from the input
+stream into the buffer. If endOfFile() is encountered first, fewer bytes are
+read, and the member function tt(eof()) will return tt(true). This function
+will normally be used for reading em(binary) files. Section ref(IFSTREAM)
+contains an example in which this member function is used. The member function
+tt(gcount()) should be used to determine the number of characters that were
+retrieved by the tt(read()) member function.
+        )
+        itht(istream::readsome())
+        (istream& istream::readsome(char *buffer, int len)):
+            quote(This function reads at most tt(len) bytes from the input
+stream into the buffer. All available characters are read into the buffer, but
+if endOfFile() is encountered first, fewer bytes are
+read, without setting the tt(ios_base::eofbit) or tt(ios_base::failbit).
+        )
+        itht(istream::unget())
+        (istream& istream::unget()):
+            quote(an attempt is made to push back the last character that was
+read into the stream. Normally, this succeeds if requested only once after a
+read operation, as is the case with tt(putback()))
+    )

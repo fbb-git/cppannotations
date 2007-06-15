@@ -1,0 +1,75 @@
+    In this section we'll concentrate on the process by which the compiler
+deduces the actual types of the template type parameters when a template
+function is called, a process called emi(template parameter deduction). As
+we've already seen, the compiler is able to substitute a wide range of actual
+types for a single formal template type parameter. Even so, not every
+thinkable conversion is possible. In particular when a function has multiple
+parameters of the same template type parameter, the compiler is very
+restrictive in what argument types  it will actually accept.
+
+    When the compiler deduces the actual types for template type parameters,
+it will only consider the types of the arguments. Neither local variables nor
+the function's return value is considered in this process. This is
+understandable: when a function is called, the compiler will only see the
+function template's arguments with certainty. At the point of the call it will
+definitely not see the types of the function's local variables, and the
+function's return value might not actually be used, or may be assigned to a
+variable of a subrange (or super-range) type of a deduced template type
+parameter. So, in the following example, the compiler won't ever be able to
+call tt(fun()), as it has no way to deduce the actual type for the tt(Type)
+template type parameter.
+        verb(
+    template <typename Type>
+    Type fun()              // can never be called as `fun()'
+    {
+        return Type();
+    }
+        )
+    Although the compiler won't be able to handle a call to `tt(fun())', it
+em(is) possible to call tt(fun()) using an exmplicit type specification. E.g.,
+tt(fun<int>()) will call tt(fun()), instantiated for tt(int). This, of course
+is em(not) the same as em(compiler) argument deduction.
+
+    In general, when a function has multiple parameters of identical template
+type parameters, the actual types must be exactly the same. So, whereas
+        centt(void binarg(double x, double y);)
+    may be called using an tt(int) and a tt(double), with the tt(int) argument
+implicitly being converted to a tt(double), the corresponding
+function template cannot be called using an tt(int) and tt(double) argument:
+the compiler won't itself promote tt(int) to tt(double) and to decide next
+that tt(Type) should be tt(double):
+        verb(
+    template <typename Type>
+    void binarg(Type const &p1, Type const &p2)
+    {}
+
+    int main()
+    {
+        binarg(4, 4.5); // ?? won't compile: different actual types
+    }
+        )
+
+    What, then, are the transformations the compiler will apply when deducing
+the actual types of template type parameters? It will perform only three types
+of
+        hi(template: parameter type transformations)
+    parameter type transformations (and a fourth one to function parameters of
+any fixed type (i.e., of a function non-template parameter type)). If it
+cannot deduce the actual types using these transformations, the template
+function will not be considered. These transformations are:
+    itemization(
+    it() em(lvalue transformations), creating an em(rvalue) from an
+em(lvalue);
+    it() em(qualification transformations), inserting a tt(const) modifier to
+a non-constant argument type;
+    it() em(transformation to a base class instantiated from a class template),
+using a template base class when an argument of a template derived class type
+was provided in the call.
+    it() Standard transformations for template non-type function
+parameters. This isn't a template parameter type transformation, but it refers
+to any remaining template non-type parameter of function templates. For these
+function parameters the compiler will perform any standard conversion it has
+available (e.g., tt(int) to tt(size_t), tt(int) to tt(double), etc.).
+    )
+    The first three types of transformations will now be discussed and
+illustrated.
