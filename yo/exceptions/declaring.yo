@@ -40,3 +40,34 @@ If the function throw list is not used, the function may either throw
 exceptions (of any kind) or not throw exceptions at all. Without a function
 throw list the responsibility of providing the correct handlers is in the
 hands of the program's designer.
+
+Declaring exception throwers is for various reason a questionable
+activity. Declaring exception throwers does not mean that the compiler will
+check whether an improper exception is thrown. Rather, the function will be
+surrounded by additional code in which the actual exception that is thrown is
+processed. So, instead of compile time checks one gets run-time overhead as
+well as extra code added to the function's code. The prototypical
+implementation of a function having an exception throw list (e.g., tt(throw
+(int))) is:
+        verb(
+    function fun() throw (int)
+    try                         // this code resulting from throw(int)
+    {
+        // code of this function, throwing all kinds of exceptions
+    }
+    catch (int)                 // remaining code resulting from throw(int)
+    {
+        throw;  // rethrow the exception, so it can be caught by the
+                // `intended' handler
+    }
+    catch (...) // catch all other exceptions
+    {
+        throw bad_exception;    
+    }
+        )
+    (see section ref(STDEXC) for a description of ti(bad_exception)). The
+run-time overhead is caused by doubling the number of thrown and caught
+exceptions. Without a throw list a thrown tt(int) is simply caught by its
+intended handler; with a throw list the tt(int) is em(first) caught by the
+`safeguarding' handler added to the function. Inside that handler it is now
+em(rethrown) to be caught only thereafter by the intended handler.
