@@ -18,18 +18,16 @@
         else if (stringOne.compare(stringTwo) < 0)
             cout << "stringOne before stringTwo in the alphabet\n";
         else
-            cout << "Both strings are the same\n";
+            cout << "The two strings are the same\n";
 
         // Alternatively:
 
         if (stringOne > stringTwo)
-            cout <<
-            "stringOne after stringTwo in the alphabet\n";
+            cout << "stringOne after stringTwo in the alphabet\n";
         else if (stringOne < stringTwo)
-            cout <<
-            "stringOne before stringTwo in the alphabet\n";
+            cout << "stringOne before stringTwo in the alphabet\n";
         else
-            cout << "Both strings are the same\n";
+            cout << "The two strings are the same\n";
 
         return 0;
     }

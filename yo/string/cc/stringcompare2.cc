@@ -18,11 +18,10 @@
                     " to 'ello World': ok\n";
 
             // comparing from a certain offset in stringOne over a
-            // certain number of characters in "World and more"
-            // This fails, as all of the chars in stringOne
-            // starting at index 6 are compared, not just
-            // 3 chars in "World and more"
-        if (!stringOne.compare(6, 3, "World and more"))
+            // certain number of characters with a second C-string
+            // This fails, as 3 chars in stringOne starting at 
+            // index 6 are compared with "World"
+        if (!stringOne.compare(6, 3, "World"))
             cout <<
             "comparing 'Hello World' from index 6 over"
             " 3 positions to 'World and more': ok\n";
