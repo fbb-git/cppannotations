@@ -25,3 +25,43 @@ that way because the decision em(which) function to call (a base class
 function or a function of a derived class) cannot be made emi(compile-time),
 but is postponed until the program is actually executed: only then it is
 determined which member function will actually be called.
+
+Note that in bf(C++) late binding is em(not) the default way functions are
+called. By default emi(static binding) (or emi(early binding)) is used: the
+class types of objects, object pointers or object refences determine which
+member functions are called. Late binding is an inherently different (and
+somewhat slower) procdure since it is decided i(run-time), rather than
+i(compile-time) what function is called (see section ref(howpolymorphism) for
+details). As bf(C++) supports em(both) late- and early-binding bf(C++)
+programmers are offered an option in what kind of binding to use, and so
+choices can be optimized to the situations at hand. Many other languages
+offering object oriented facilities (e.g., bf(Java)) only offer late
+binding. bf(C++) programmers should be keenly aware of this, as expecting
+early binding and getting late binding might easily produce nasty bugs. 
+
+Let's have a look at a simple example (put here even though polymorphism
+hasn't been covered yet at this point in order to have the example stand
+clearly) to hone our awareness of the differences between early and late
+binding. The example merely illustrates. Explanations of em(why) things are as
+shown are found in subsequent sections of this chapter.
+
+The following (using in-class implementations to reduce its size) shows a
+little program that may be compiled and run:
+        verbinclude(polymorphism/examples/notvirtual.cc)
+    This program could have been constructed from some predecessor, in which
+maybe just one class was defined. At some point its author decided that it
+would have been nice to have a separate tt(Base) class, maybe in order to
+factor out common functionality to be used by various derived classes. Note,
+for example, how the tt(derived) object calls tt(process()) which is defined
+in tt(Base): that's common functionality. Unfortunately, an error has crept
+in. The aim (which is automatically realized in many other object oriented
+programming languages) was that specialized functionality would be made
+available in derived classes. So, tt(Derived) re-implements tt(hello()). Alas:
+when run, the program displays tt(base hello). What went wrong? The answer is:
+static binding. Due to static binding tt(process()) only knows about
+tt(Base::hello()), and so that function is called. Polymorphism, which is not
+the default in bf(C++), solves the problem and allows the author of the
+classes to reach its goal. For the curious reader: prefix tt(void hello()) in
+the tt(Base) class with the keyword tt(virtual) and recompile. Running the
+modified program produces the intended and expected tt(derived hello). Why
+this happens is explained next.
