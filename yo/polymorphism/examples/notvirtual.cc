@@ -1,6 +1,6 @@
     #include <iostream>
     using namespace std;
-    
+
     class Base
     {
         public:
@@ -13,7 +13,7 @@
                 hello();
             }
     };
-    
+
     class Derived: public Base
     {
         public:
@@ -22,11 +22,11 @@
                 cout << "derived hello\n";
             }
     };
-    
+
     int main()
     {
         Derived derived;
-    
+
         derived.process();
         return 0;
     }

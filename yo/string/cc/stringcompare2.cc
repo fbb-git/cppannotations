@@ -19,7 +19,7 @@
 
             // comparing from a certain offset in stringOne over a
             // certain number of characters with a second C-string
-            // This fails, as 3 chars in stringOne starting at 
+            // This fails, as 3 chars in stringOne starting at
             // index 6 are compared with "World"
         if (!stringOne.compare(6, 3, "World"))
             cout <<
