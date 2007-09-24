@@ -17,8 +17,9 @@ tt(type_info), but at the very least it must provide the following interface:
     {
         public:
             virtual ~type_info();
-            int operator==(const type_info &other) const;
-            int operator!=(const type_info &other) const;
+            int operator==(type_info const &other) const;
+            int operator!=(type_info const &other) const;
+            bool before(type_info const &rhs) const
             char const *name() const;
         private:
             type_info(type_info const &other);
@@ -106,6 +107,27 @@ is not a pointer to an object, whereas tt((5)) now returns tt(true): tt(*bp)
 actually refers to a tt(Derived) class object, and tt(typeid(*bp)) will return
 tt(typeid(Derived)).  A similar result is obtained if a base class reference
 is used: tt(7) returning tt(true) and tt(8) returning tt(false).
+
+    The tt(type_info::before(type_info const &rhs)) member can be used to
+determine the emi(collating order) of classes that can be used for comparing
+two types for equality.  The function returns a nonzero value if tt(*this)
+precedes tt(rhs) in the collating order for types. When a derived class is
+compared to its base class the comparison returns 0, otherwise a non-zero
+value. E.g.:
+        verb(
+    cout << typeid(ifstream).before(typeid(istream)) << endl;   // not 0
+    cout << typeid(istream).before(typeid(ifstream)) << endl;   // 0
+        )
+    With basic types the implementor may implement that a comparison of a
+`wider' type with a `smaller' type returns non-0, and 0 otherwise:
+        verb(
+    cout << typeid(double).before(typeid(int)) << endl;   // not 1
+    cout << typeid(int).before(typeid(double)) << endl;   // 0
+        )
+    When two equal types are compared, 0 is returned:
+        verb(
+    cout << typeid(ifstream).before(typeid(ifstream)) << endl;   // 0
+        )
 
     When a tt(0)-pointer is passed to the tt(operator typeid) a ti(bad_typeid)
 exception is thrown.
