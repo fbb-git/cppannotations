@@ -1,0 +1,75 @@
+Below the way Bisonc++ may use a polymorphic semantic value is discussed. The
+approach discussed below is a direct result of a suggestion initially brought
+forward by Dallas A. Clement in September 2007.
+
+One may wonder why a tt(union) is still used by Bisonc++ as bf(C++) offers
+inherently superior approaches to combine multiple types into one type. The
+bf(C++) way to combine types into one type is by defining a polymorphic base
+class and a series of derived classes implementing the alternative data
+types. Bisonc++ supports The tt(union) approach for backward compatibility
+reasons: both bf(bison)(1) and bf(bison++) support the tt(%union) directive. 
+
+The alternative to using a tt(union) is using a polymorphic base class. This
+class will be developed below as the class tt(Base). Since it's a polymorphic
+base class it should have the following characteristics:
+    itemization(
+    it() Its destructor must be virtual;
+    it() Objects of the derived classes may be obtained using a
+        pure virtual tt(clone()) member to implement as so-called em(virtual
+        constructor) (cf. the emi(virtual constructor) i(design pattern),
+        em(Gamma et al.) (1995)); hi(Gamma, E.)
+    it() Several convenient utility members may be  provided: a pure virtual
+        tt(insert()) member and an overloaded tt(operator<<()) were defined to
+        allow derived objects to be inserted into tt(ostream) objects.
+    )
+
+The class bf(Base) has the following interface:
+    verbinclude(concrete/poly/base/base.h)
+
+The alternatives as defined by a classical tt(union) are now defined by
+classes derived from the class tt(Base). For example:
+    itemization(
+    it() Objects of the class tt(Int) contain tt(int) values. Here is
+its interface (and implementation):
+    verbinclude(concrete/poly/int/int.h)
+
+    it() Objects of the class tt(Text) contain text. These objects can be
+used, e.g., to store the names of identifiers recognized by a lexical scanner.
+Here is the interface of the class tt(Text):
+    verbinclude(concrete/poly/text/text.h)
+    )
+
+The polymorphic tt(Base), however, can't be used as the parser's semantic
+value type:
+    itemization(
+    it() A tt(Base) class object cannot contain derived class's data members,
+so plain tt(Base) class objects cannot be used to store the parser's semantic
+values.
+    it() It's not possible to define a tt(Base) class reference as a semantic
+value either as containers cannot store references.
+    it() Finally, the semantic value should not be a pointer to a tt(Base)
+class object. Although a pointer would offer programmers the benefits of the
+polymorphic nature of the tt(Base) class, it would also require them to keep
+track of all memory used by tt(Base) objects, thus countering many of the
+benefits of using a polymorphic base class.
+    )
+
+To solve the above problems, a em(wrapper class) tt(Semantic) around a
+tt(Base) pointer is used. The wrapper class will take care of the proper
+destruction of objects accessed via its tt(Base) pointer data member and it
+willl offer facilities to access the proper derived class. The interface of
+the class tt(Semantic) is:
+    verbinclude(concrete/poly/semantic/semantic.h)
+
+
+tt(Semantic) is a slightly more `complete' class than tt(Base) and its
+derivatives, since it contains a pointer which must be handled
+appropriately. So it needs a copy constructor, an overloaded assignment
+operator and a destructor. Apart from that, it supports members to obtain a
+reference to the base class. This reference is then used by the overloaded
+tt(operator<<()) to allow insertion into streams of objects of classes derived
+from tt(Base). It also offers a small member template returning a reference to
+a derived class object from the semantic value's tt(Base) class pointer. This
+member effectively implements (and improves) the type safety that is otherwise
+strived for by typed nonterminals and typed tokens (using the tt(%type)
+directive). 
