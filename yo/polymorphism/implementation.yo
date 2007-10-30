@@ -1,8 +1,9 @@
 This section briefly describes how i(polymorphism) is implemented in bf(C++).
-It is not necessary to understand how polymorphism is implemented if using
-this feature is the only intention. However, we think it's nice to know how
-polymorphism is at all possible. Besides, the following discussion does
-explain why there is a cost of polymorphism in terms of memory usage.
+It is not necessary to understand how polymorphism is implemented if you only
+want to em(use) polymorphism. However, we think it's not just nice to know how
+polymorphism is at all possible but knowing how polymorphism is implemented
+also clarifies why there is a (small) penalty to using polymorphism in terms
+of both memory usage and efficiency.
 
 The fundamental idea behind polymorphism is that the compiler does not know
 which function to call i(compile-time); the appropriate function will be
@@ -14,12 +15,12 @@ tt(vp->weight()) calls a member function of tt(Truck); the address of this
 function is determined from the actual object which tt(vp) points to.
 
 A common implementation is the following: An object containing virtual member
-functions holds as its i(first data member) a hi(hidden data member) hidden
-field, pointing to an array of pointers containing the addresses of the
-virtual member functions. The hidden data member is usually called the
-emi(vpointer), the array of virtual member function addresses the emi(vtable).
-Note that the discussed implementation is compiler-dependent, and is by no
-means dictated by the bf(C++) i(ANSI/ISO) standard.
+functions also contains, usually as its i(first data member) a hi(hidden data
+member) hidden field, pointing to an array of pointers containing the
+addresses of the virtual member functions. The hidden data member is usually
+called the emi(vpointer), the array of virtual member function addresses the
+emi(vtable).  Note that the discussed implementation is compiler-dependent,
+and is by no means dictated by the bf(C++) i(ANSI/ISO) standard.
 
 The table of addresses of virtual functions is shared by all objects of
 the class. Multiple classes may even share  the same table. The
@@ -55,3 +56,73 @@ fig(CaumonFigure), all objects which use virtual functions must have one
 the classes tt(Vehicle) and tt(Auto) both address the same table. The class
 tt(Truck), however, introduces its own version of tt(weight()): therefore,
 this class needs its own table of function pointers.
+
+A slight complication is encountered when a class is derived from multiple
+base classes, each defining virtual functions. Consider the sitation
+illustrated by the following example:
+        verb(
+    class Base1
+    {
+        public:
+            virtual ~Base1();
+            virtual void vOne();
+            virtual void vTwo();
+    };
+
+    class Base2
+    {
+        public:
+            virtual ~Base2();
+            virtual void vThree();
+    };
+
+    class Derived: public Base1, public Base2
+    {
+        public:
+            virtual ~Derived();
+            virtual ~vOne();
+            virtual ~vThree();
+    };
+        )
+    In the example the class tt(Derived) is multiply derived from tt(Base1)
+and tt(Base2), each supporting virtual functions. Because of this, tt(Derived)
+also supports virtual functions, and so tt(Derived) has a tt(vtable) allowing
+a base class pointer or reference to access the proper virtual member. In
+those cases, when tt(vOne()) is called tt(Derived::vOne()) will be used, when
+tt(vTwo()) is called tt(Base1::vTwo()) will be called, and when tt(vThree())
+is called, tt(Derived::vThree()) will be called. The complication is with the
+tt(vtable): the base class pointer accesses the object's tt(vtable), and
+selects the function pointer matching the function that is being called. E.g.,
+when tt(vOne()) is called, the second virtual function of the class's
+tt(vtable) is called. However, when tt(vThree()) is called the second virtual
+function is em(again) selected, since tt(vThree()) is the second virtual
+function in the class tt(Base2). 
+
+Of course a single tt(vtable) cannot store multiple pointers to virtual member
+functions in the same location. Therefore, when multiple inheritance from base
+classes (each defining virtual members) is used another approach must be
+followed when determining which virtual function to call. In this situation
+(cf. figure fig(MultiVtableFig))
+the class tt(Derived) receives em(two) tt(vtable)s, and each tt(Derived) class
+object harbors em(two) hidden tt(vtable) pointers. For each of the base
+classes a separate tt(vtable) is defined, where each of tt(vtable) pointers
+points to one of the tables.
+
+        figure(polymorphism/multivtable)
+        (Vtables and vpointers with multiple base classes)
+        (MultiVtableFig)
+
+    Since the base class pointer or base class reference refers either to 
+a tt(Base1) or a tt(Base2) class object, the compiler may determine which
+tt(vtable) pointer to use from the type of the base class pointer or reference
+that is used, thus handling the complication involved when multiple base
+classes are used, each implementing virtual member functions. 
+
+    In general, then, the following holds true:
+    itemization(
+    it() A tt(vtable) is defined for each of the base classes (having virtual
+members) that were used to define the derived class;
+    it() Each object of the derived class has tt(vtable)-pointers as
+additional (hidden) data member for each of the base classes (having virtual
+members) that were used to define the derived class.
+    )
