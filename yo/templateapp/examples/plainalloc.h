@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_PLAINALLOC_H_
-#define _INCLUDED_PLAINALLOC_H_
+#ifndef INCLUDED_PLAINALLOC_H_
+#define INCLUDED_PLAINALLOC_H_
 
 #include <ostream>
 

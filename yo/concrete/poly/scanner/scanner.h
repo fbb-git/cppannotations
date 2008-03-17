@@ -1,11 +1,11 @@
-#ifndef _SCANNER_H_
-#define _SCANNER_H_
+#ifndef SCANNER_H_
+#define SCANNER_H_
 
 #include "../semantic/semantic.h"
 
-#if ! defined(_SKIP_YYFLEXLEXER_) && ! defined(_SYSINC_FLEXLEXER_H_)
+#if ! defined(_SKIP_YYFLEXLEXER_) && ! defined(SYSINC_FLEXLEXER_H_)
 #include <FlexLexer.h>
-#define _SYSINC_FLEXLEXER_H_
+#define SYSINC_FLEXLEXER_H_
 #endif
     
 class Scanner: public yyFlexLexer

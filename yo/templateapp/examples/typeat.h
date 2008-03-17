@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_TYPEAT_H_
-#define _INCLUDED_TYPEAT_H_
+#ifndef INCLUDED_TYPEAT_H_
+#define INCLUDED_TYPEAT_H_
 
 #include "typelist.h"
 

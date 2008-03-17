@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_INT_
-#define _INCLUDED_INT_
+#ifndef INCLUDED_INT_
+#define INCLUDED_INT_
 
 #include <ostream>
 

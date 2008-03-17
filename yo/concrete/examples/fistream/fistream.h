@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_FISTREAM_H_
-#define _INCLUDED_FISTREAM_H_
+#ifndef INCLUDED_FISTREAM_H_
+#define INCLUDED_FISTREAM_H_
 
 #include <iosfwd>
 #include <istream>

@@ -1,17 +1,17 @@
-#ifndef _INCLUDED_OPIPE_H_
-#define _INCLUDED_OPIPE_H_
+#ifndef INCLUDED_OPIPE_H_
+#define INCLUDED_OPIPE_H_
 
-#ifndef _INCLUDED_PIPE_H_
+#ifndef INCLUDED_PIPE_H_
 #include "../pipe/pipe.h"
 #endif
 
-#ifndef _INCLUDED_OFDNSTREAMBUF_H_
+#ifndef INCLUDED_OFDNSTREAMBUF_H_
 #include "../ofdnstreambuf/ofdnstreambuf.h"
 #endif
 
-#ifndef _INCLUDED_OSTREAM_
+#ifndef INCLUDED_OSTREAM_
 #include <ostream>
-#define _INCLUDED_OSTREAM_
+#define INCLUDED_OSTREAM_
 #endif
 
 

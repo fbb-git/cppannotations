@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_INTTYPE_H_
-#define _INCLUDED_INTTYPE_H_
+#ifndef INCLUDED_INTTYPE_H_
+#define INCLUDED_INTTYPE_H_
 
 template <int nr>
 struct IntType

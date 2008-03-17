@@ -1,7 +1,7 @@
 //                              driver.h
 
-#ifndef _H_driver_
-#define _H_driver_
+#ifndef H_driver_
+#define H_driver_
 
 /*
    $Id: driver.h 2 2003-05-27 19:11:03Z frank $

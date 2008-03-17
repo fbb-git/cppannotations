@@ -1,5 +1,5 @@
-    #ifndef _OFDNSTREAMBUF_H_
-    #define _OFDNSTREAMBUF_H_
+    #ifndef OFDNSTREAMBUF_H_
+    #define OFDNSTREAMBUF_H_
 
     #include <unistd.h>
     #include <streambuf>

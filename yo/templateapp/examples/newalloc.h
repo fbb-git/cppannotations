@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_NEWALLOC_H_
-#define _INCLUDED_NEWALLOC_H_
+#ifndef INCLUDED_NEWALLOC_H_
+#define INCLUDED_NEWALLOC_H_
 
 #include <ostream>
 

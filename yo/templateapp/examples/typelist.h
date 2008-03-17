@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_TYPELIST_H_
-#define _INCLUDED_TYPELIST_H_
+#ifndef INCLUDED_TYPELIST_H_
+#define INCLUDED_TYPELIST_H_
 
 #include "nulltype.h"
 

@@ -1,13 +1,13 @@
-#ifndef _INCLUDED_IPIPE_H_
-#define _INCLUDED_IPIPE_H_
+#ifndef INCLUDED_IPIPE_H_
+#define INCLUDED_IPIPE_H_
 
-#ifndef _INCLUDED_PIPE_H_
+#ifndef INCLUDED_PIPE_H_
 #include "../pipe/pipe.h"
 #endif
 
-#ifndef _INCLUDED_ISTREAM_
+#ifndef INCLUDED_ISTREAM_
 #include <istream>
-#define _INCLUDED_ISTREAM_
+#define INCLUDED_ISTREAM_
 #endif
 
 namespace FBB

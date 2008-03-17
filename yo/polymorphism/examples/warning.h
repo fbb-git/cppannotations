@@ -1,5 +1,5 @@
-    #ifndef _WARNINGEXCEPTION_H_
-    #define _WARNINGEXCEPTION_H_
+    #ifndef WARNINGEXCEPTION_H_
+    #define WARNINGEXCEPTION_H_
 
     #include "exception.h"
 

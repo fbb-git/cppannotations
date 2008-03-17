@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_FORK_H_
-#define _INCLUDED_FORK_H_
+#ifndef INCLUDED_FORK_H_
+#define INCLUDED_FORK_H_
 
 namespace FBB
 {

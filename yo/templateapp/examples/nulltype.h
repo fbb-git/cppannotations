@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_NULLTYPE_H_
-#define _INCLUDED_NULLTYPE_H_
+#ifndef INCLUDED_NULLTYPE_H_
+#define INCLUDED_NULLTYPE_H_
 
 struct NullType
 {};

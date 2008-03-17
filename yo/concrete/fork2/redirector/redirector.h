@@ -1,14 +1,14 @@
-#ifndef _INCLUDED_REDIRECTOR_H_
-#define _INCLUDED_REDIRECTOR_H_
+#ifndef INCLUDED_REDIRECTOR_H_
+#define INCLUDED_REDIRECTOR_H_
 
-#ifndef _INCLUDED_IOSFWD_
+#ifndef INCLUDED_IOSFWD_
 #include <iosfwd>
-#define _INCLUDED_IOSFWD_
+#define INCLUDED_IOSFWD_
 #endif
 
-#ifndef _INCLUDED_IOSTREAM_
+#ifndef INCLUDED_IOSTREAM_
 #include <iostream>
-#define _INCLUDED_IOSTREAM_
+#define INCLUDED_IOSTREAM_
 #endif
 
 namespace FBB

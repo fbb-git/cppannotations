@@ -15,33 +15,33 @@
 
 */
 
-#ifndef _INCLUDED_PIPE_H_
+#ifndef INCLUDED_PIPE_H_
 #include "../pipe.h"
 #endif
 
-#ifndef _INCLUDED_TYPES_H_
+#ifndef INCLUDED_TYPES_H_
 #include <sys/types.h>
-#define _INCLUDED_TYPES_H_
+#define INCLUDED_TYPES_H_
 #endif
 
-#ifndef _INCLUDED_WAIT_H_
+#ifndef INCLUDED_WAIT_H_
 #include <sys/wait.h>
-#define _INCLUDED_WAIT_H_
+#define INCLUDED_WAIT_H_
 #endif
 
-#ifndef _INCLUDED_UNISTD_H_
+#ifndef INCLUDED_UNISTD_H_
 #include <unistd.h>
-#define _INCLUDED_UNISTD_H_
+#define INCLUDED_UNISTD_H_
 #endif
 
-#ifndef _INCLUDED_IOSTREAM_
+#ifndef INCLUDED_IOSTREAM_
 #include <iostream>
-#define _INCLUDED_IOSTREAM_
+#define INCLUDED_IOSTREAM_
 #endif
 
-#ifndef _INCLUDED_STRING_
+#ifndef INCLUDED_STRING_
 #include <string>
-#define _INCLUDED_STRING_
+#define INCLUDED_STRING_
 #endif
 
 using namespace std;

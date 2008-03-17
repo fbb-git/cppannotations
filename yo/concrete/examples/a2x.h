@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_A2X_H_
-#define _INCLUDED_A2X_H_
+#ifndef INCLUDED_A2X_H_
+#define INCLUDED_A2X_H_
 
 #include <sstream>
 #include <string>

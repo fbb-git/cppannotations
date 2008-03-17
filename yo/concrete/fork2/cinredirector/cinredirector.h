@@ -1,12 +1,12 @@
-#ifndef _INCLUDED_CINREDIRECTOR_H_
-#define _INCLUDED_CINREDIRECTOR_H_
+#ifndef INCLUDED_CINREDIRECTOR_H_
+#define INCLUDED_CINREDIRECTOR_H_
 
 
-#ifndef _INCLUDED_REDIRECTOR_H_
+#ifndef INCLUDED_REDIRECTOR_H_
 #include "../redirector/redirector.h"
 #endif
 
-#ifndef _INCLUDED_OPIPE_H_
+#ifndef INCLUDED_OPIPE_H_
 #include "../opipe/opipe.h"
 #endif
 

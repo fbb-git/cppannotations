@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_TABLESUPPORT_
-#define _INCLUDED_TABLESUPPORT_
+#ifndef INCLUDED_TABLESUPPORT_
+#define INCLUDED_TABLESUPPORT_
 
 #include <ostream>
 #include <vector>

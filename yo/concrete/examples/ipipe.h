@@ -1,17 +1,17 @@
-#ifndef _INCLUDED_IPIPE_H_
-#define _INCLUDED_IPIPE_H_
+#ifndef INCLUDED_IPIPE_H_
+#define INCLUDED_IPIPE_H_
 
-#ifndef _INCLUDED_PIPE_H_
+#ifndef INCLUDED_PIPE_H_
 #include "../pipe/pipe.h"
 #endif
 
-#ifndef _INCLUDED_IFDSTREAMBUF_H_
+#ifndef INCLUDED_IFDSTREAMBUF_H_
 #include "../ifdstreambuf/ifdstreambuf.h"
 #endif
 
-#ifndef _SYSINC_ISTREAM_
+#ifndef SYSINC_ISTREAM_
 #include <istream>
-#define _SYSINC_ISTREAM_
+#define SYSINC_ISTREAM_
 #endif
 
 namespace FBB

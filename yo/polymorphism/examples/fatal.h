@@ -1,5 +1,5 @@
-    #ifndef _FATALEXCEPTION_H_
-    #define _FATALEXCEPTION_H_
+    #ifndef FATALEXCEPTION_H_
+    #define FATALEXCEPTION_H_
 
     #include "exception.h"
 

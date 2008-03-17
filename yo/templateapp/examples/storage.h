@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_STORAGE_H_
-#define _INCLUDED_STORAGE_H_
+#ifndef INCLUDED_STORAGE_H_
+#define INCLUDED_STORAGE_H_
 
 #include <vector>
 

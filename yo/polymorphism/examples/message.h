@@ -1,5 +1,5 @@
-    #ifndef _MESSAGEEXCEPTION_H_
-    #define _MESSAGEEXCEPTION_H_
+    #ifndef MESSAGEEXCEPTION_H_
+    #define MESSAGEEXCEPTION_H_
 
     #include "exception.h"
 

@@ -1,5 +1,5 @@
-    #ifndef _IFDNBUF_H_
-    #define _IFDNBUF_H_
+    #ifndef IFDNBUF_H_
+    #define IFDNBUF_H_
 
     #include <unistd.h>
     #include <streambuf>

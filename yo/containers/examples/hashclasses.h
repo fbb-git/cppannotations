@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_HASHCLASSES_H_
-#define _INCLUDED_HASHCLASSES_H_
+#ifndef INCLUDED_HASHCLASSES_H_
+#define INCLUDED_HASHCLASSES_H_
 
 #include <string>
 #include <cctype>

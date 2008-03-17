@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_ERASE_H_
-#define _INCLUDED_ERASE_H_
+#ifndef INCLUDED_ERASE_H_
+#define INCLUDED_ERASE_H_
 
 #include "typelist.h"
 

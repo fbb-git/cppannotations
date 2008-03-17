@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_SEMANTIC_
-#define _INCLUDED_SEMANTIC_
+#ifndef INCLUDED_SEMANTIC_
+#define INCLUDED_SEMANTIC_
 
 #include <ostream>
 

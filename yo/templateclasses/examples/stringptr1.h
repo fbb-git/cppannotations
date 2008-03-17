@@ -1,5 +1,5 @@
-    #ifndef _INCLUDED_STRINGPTR_H_
-    #define _INCLUDED_STRINGPTR_H_
+    #ifndef INCLUDED_STRINGPTR_H_
+    #define INCLUDED_STRINGPTR_H_
 
     #include <string>
     #include <vector>

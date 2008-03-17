@@ -11,9 +11,9 @@ With source files there are basically two approaches:
     itemization(
     it() All required header files for a member function are included in each
 individual source file.
-    it() All required header files for all member functions are included in the
-class-headerfile, and each sourcefile of that class includes only the header
-file of its class.
+    it() All required header files (for all member functions of a class) 
+are included in a header file that is included by each of the source 
+files defining class members.
     )
     The first alternative has the advantage of economy for the compiler: it
 only needs to read the header files that are necessary for a particular source
@@ -28,10 +28,10 @@ more and more generally useful. It has the disadvantage that the compiler
 frequently has to read header files which aren't actually used by the function
 defined in the source file.
 
-With computers running faster and faster we think the second alternative is to
-be preferred over the first alternative. So, as a starting point we suggest
-that source files of a particular class tt(MyClass) are organized according to
-the following example:
+With computers running faster and faster (and compilers getting smarter and
+smarter) I think the second alternative is to be preferred over the first
+alternative. So, as a starting point source files of a particular class
+tt(MyClass) could be organized according to the following example:
         verb(
     #include <myclass.h>
 
@@ -63,8 +63,8 @@ Assume the tt(File) class has a member tt(gets(String &destination)), while
 the class tt(String) has a member function tt(getLine(File &file)). The
 (partial) header file for the tt(class String) is then:
         verb(
-    #ifndef _String_h_
-    #define _String_h_
+    #ifndef String_h_
+    #define String_h_
 
     #include <project/file.h>   // to know about a File
 
@@ -77,8 +77,8 @@ the class tt(String) has a member function tt(getLine(File &file)). The
         )
     However, a similar setup is required for the class tt(File):
         verb(
-    #ifndef _File_h_
-    #define _File_h_
+    #ifndef File_h_
+    #define File_h_
 
     #include <project/string.h>   // to know about a String
 
@@ -93,11 +93,11 @@ the class tt(String) has a member function tt(getLine(File &file)). The
 file of the function tt(File::gets()) proceeds as follows:
     itemization(
     it() The header file tt(project/file.h) is opened to be read;
-    it() tt(_File_h_) is defined
+    it() tt(File_h_) is defined
     it() The header file tt(project/string.h) is opened to be read
-    it() tt(_String_h_) is defined
+    it() tt(String_h_) is defined
     it() The header file tt(project/file.h) is (again) opened to be read
-    it() Apparently, tt(_File_h_) is already defined, so the remainder of
+    it() Apparently, tt(File_h_) is already defined, so the remainder of
             tt(project/file.h) is skipped.
     it() The interface of the class tt(String) is now parsed.
     it() In the class interface a reference to a tt(File) object is
@@ -109,8 +109,8 @@ file of the function tt(File::gets()) proceeds as follows:
 em(before) the class interface, and to include the corresponding class header
 file em(after) the class interface. So we get:
         verb(
-    #ifndef _String_h_
-    #define _String_h_
+    #ifndef String_h_
+    #define String_h_
 
     class File;                 // forward reference
 
@@ -126,8 +126,8 @@ file em(after) the class interface. So we get:
         )
     A similar setup is required for the class tt(File):
         verb(
-    #ifndef _File_h_
-    #define _File_h_
+    #ifndef File_h_
+    #define File_h_
 
     class String;               // forward reference
 
@@ -145,21 +145,21 @@ file em(after) the class interface. So we get:
 another classes are involved and with (non-inline) member functions having
     i(class-type return values) or hi(class-type parameters) parameters.
 
-    Note that this setup doesn't work with i(composition), nor with inline
-member functions. Assume the class tt(File) has a em(composed) data member of
-the class tt(String). In that case, the class interface of the class tt(File)
-em(must) include the header file of the class tt(String) before the class
-interface itself, because otherwise the compiler can't tell how big a tt(File)
-object will be, as it doesn't know the size of a tt(String) object once the
-interface of the tt(File) class is completed.
+    Note that this setup doesn't work with i(composition), nor with in-class
+inline member functions. Assume the class tt(File) has a em(composed) data
+member of the class tt(String). In that case, the class interface of the class
+tt(File) em(must) include the header file of the class tt(String) before the
+class interface itself, because otherwise the compiler can't tell how big a
+tt(File) object will be, as it doesn't know the size of a tt(String) object
+once the interface of the tt(File) class is completed.
 
     In cases where classes contain composed objects (or are derived from other
 classes, see chapter ref(INHERITANCE)) the header files of the classes of the
 composed objects must have been read em(before) the class interface itself.
 In such a case the tt(class File) might be defined as follows:
         verb(
-    #ifndef _File_h_
-    #define _File_h_
+    #ifndef File_h_
+    #define File_h_
 
     #include <project/string.h>     // to know about a String
 
@@ -228,8 +228,8 @@ files of the class are included.
         itemization(
         it() First part, e.g., tt(/usr/local/include/myheaders/file.h):
         verb(
-    #ifndef _File_h_
-    #define _File_h_
+    #ifndef File_h_
+    #define File_h_
 
     #include <fstream>      // for composed 'ifstream'
 

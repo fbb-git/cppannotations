@@ -1,5 +1,5 @@
-    #ifndef _INCLUDED_ITERATOR_H_
-    #define _INCLUDED_ITERATOR_H_
+    #ifndef INCLUDED_ITERATOR_H_
+    #define INCLUDED_ITERATOR_H_
 
 //HEAD
     #include <iterator>

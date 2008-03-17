@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_PIPE_H_
-#define _INCLUDED_PIPE_H_
+#ifndef INCLUDED_PIPE_H_
+#define INCLUDED_PIPE_H_
 
 namespace FBB
 {

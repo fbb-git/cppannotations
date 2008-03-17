@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_TEXT_
-#define _INCLUDED_TEXT_
+#ifndef INCLUDED_TEXT_
+#define INCLUDED_TEXT_
 
 #include <string>
 #include <ostream>

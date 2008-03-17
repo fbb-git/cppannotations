@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_BASICTRAITS_H_
-#define _INCLUDED_BASICTRAITS_H_
+#ifndef INCLUDED_BASICTRAITS_H_
+#define INCLUDED_BASICTRAITS_H_
 
     template <typename TypeParam>
     class BasicTraits

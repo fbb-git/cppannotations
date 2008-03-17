@@ -1,5 +1,5 @@
-    #ifndef _INCLUDED_BASE_
-    #define _INCLUDED_BASE_
+    #ifndef INCLUDED_BASE_
+    #define INCLUDED_BASE_
     
     #include <iosfwd>
     

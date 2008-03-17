@@ -1,5 +1,5 @@
-    #ifndef _INCLUDED_SELECTOR_H_
-    #define _INCLUDED_SELECTOR_H_
+    #ifndef INCLUDED_SELECTOR_H_
+    #define INCLUDED_SELECTOR_H_
 //HEADERS
     #include <limits.h>
     #include <unistd.h>

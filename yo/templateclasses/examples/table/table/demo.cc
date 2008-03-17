@@ -1,8 +1,8 @@
 #include "table.h"
 
-#ifndef _SYSINC_STRING_
+#ifndef SYSINC_STRING_
 #include <string>
-#define _SYSINC_STRING_
+#define SYSINC_STRING_
 #endif
 
 using namespace std;

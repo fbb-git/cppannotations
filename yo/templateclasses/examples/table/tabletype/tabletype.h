@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_TABLETYPE_
-#define _INCLUDED_TABLETYPE_
+#ifndef INCLUDED_TABLETYPE_
+#define INCLUDED_TABLETYPE_
 
 #include <string>
 #include <vector>

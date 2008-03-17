@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_CONVERSION_H_
-#define _INCLUDED_CONVERSION_H_
+#ifndef INCLUDED_CONVERSION_H_
+#define INCLUDED_CONVERSION_H_
 
 //CONVERSION
     template <typename T, typename U>

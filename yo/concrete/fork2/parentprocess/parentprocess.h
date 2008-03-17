@@ -1,9 +1,9 @@
-#ifndef _INCLUDED_PARENTPROCESS_H_
-#define _INCLUDED_PARENTPROCESS_H_
+#ifndef INCLUDED_PARENTPROCESS_H_
+#define INCLUDED_PARENTPROCESS_H_
 
-#ifndef _INCLUDED_IOSFWD_
+#ifndef INCLUDED_IOSFWD_
 #include <iosfwd>
-#define _INCLUDED_IOSFWD_
+#define INCLUDED_IOSFWD_
 #endif
 
 namespace FBB

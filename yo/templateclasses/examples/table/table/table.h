@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_TABLE_
-#define _INCLUDED_TABLE_
+#ifndef INCLUDED_TABLE_
+#define INCLUDED_TABLE_
 
 #include <sstream>
 #include "../tabletype/tabletype.h"
