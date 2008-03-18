@@ -68,10 +68,10 @@
                 sizeof(long)
             )
         )
-            err("Writing failed to index: ", offset);
+            return err("Writing failed to index: ", offset);
 
         if (!(strings << line << endl))           // write the line itself
-            err("Writing to `strings' failed");
+            return err("Writing to `strings' failed");
                                                   // confirm writing the line
         cout << "Write at offset " << offset << " line: " << line << endl;
     }
@@ -88,6 +88,9 @@
         while (true)
         {
             cout << "r <nr>, w <line>, q ? ";       // show prompt
+
+            index.clear();
+            strings.clear();
 
             string cmd;
 

@@ -3,77 +3,24 @@
     #include <string>
     using namespace std;
 
-    void err(char const *msg)
-    {
-        cout << msg << endl;
-        return;
-    }
-
-    void err(char const *msg, long value)
-    {
-        cout << msg << value << endl;
-        return;
-    }
+    void err(char const *msg);      // see earlier example
+    void err(char const *msg, long value);
 
     void read(istream &index, istream &strings)
     {
-        int idx;
+        index.clear();
+        strings.clear();
 
-        if (!(cin >> idx))                          // read index
-            return err("line number expected");
-
-        index.seekg(idx * sizeof(long));            // go to index-offset
-
-        long offset;
-
-        if
-        (
-            !index.read                             // read the line-offset
-            (
-                reinterpret_cast<char *>(&offset),
-                sizeof(long)
-            )
-        )
-            return err("no offset for line", idx);
-
-        if (!strings.seekg(offset))                 // go to the line's offset
-            return err("can't get string offet ", offset);
-
-        string line;
-
-        if (!getline(strings, line))                // read the line
-            return err("no line at ", offset);
-
-        cout << "Got line: " << line << endl;       // show the line
+        // insert the body of the read() function of the earlier example
     }
 
 
     void write(ostream &index, ostream &strings)
     {
-        string line;
+        index.clear();
+        strings.clear();
 
-        if (!getline(cin, line))                  // read the line
-            return err("line missing");
-
-        strings.seekp(0, ios::end);               // to strings
-        index.seekp(0, ios::end);                 // to index
-
-        long offset = strings.tellp();
-
-        if
-        (
-            !index.write                          // write the offset to index
-            (
-                reinterpret_cast<char *>(&offset),
-                sizeof(long)
-            )
-        )
-            err("Writing failed to index: ", offset);
-
-        if (!(strings << line << endl))           // write the line itself
-            err("Writing to `strings' failed");
-                                                  // confirm writing the line
-        cout << "Write at offset " << offset << " line: " << line << endl;
+        // insert the body of the write() function of the earlier example
     }
 
     int main()

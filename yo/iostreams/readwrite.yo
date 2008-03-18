@@ -25,63 +25,59 @@ tt(ios::ate) is not ti(ios::app), so it would then still have been possible to
 repositioned tt(rw) using tt(seekg()) or tt(seekp()).
 
 Under hi(MS-DOS) hi(MS-WINDOWS) hi(DOS) hi(WINDOWS) bf(DOS)-like operating
-systems, which use the multiple character tt(\r\n) sentinels to separate lines
-in i(text files) the flag ti(ios::binary) is required for
-processing i(binary files) to ensure that tt(\r\n) combinations are processed
-as two characters.
+systems, using the multiple character tt(\r\n) sentinels to separate lines in
+i(text files) the flag ti(ios::binary) is required for processing i(binary
+files) to ensure that tt(\r\n) combinations are processed as two
+characters. In general, tt(ios::binary) should be usd when binary (non-text)
+files are to be processed. Text files are assumed when tt(ios::binary) is not
+specified. This will leave the proper handling of line-endings to the run-time
+support system.
 
 With tt(fstream) objects, combinations of file flags are used to make sure
 that a stream is or is not (re)created empty when opened. See section
 ref(OUTPUTMODES) for details.
 
     Once a file has been opened in read and write mode, the lshift() operator
-can be used to insert information to the file, while the rshift() operator may
-be used to extract information from the file. These operations may be
-performed in random order.  The following fragment will read a blank-delimited
-word from the file, and will then write a string to the file, just beyond the
-point where the string just read terminated, followed by the reading of yet
-another string just beyond the location where the string just written ended:
+can be used to insert information into the file, while the rshift() operator
+may be used to extract information from the file. These operations may be
+performed in any order, but a tt(seekg()) or tt(seekp()) operation is required
+when switching between insertions and extractions.  The following fragment
+will read a blank-delimited word from the file, and will then write a string
+to the file, just beyond the point where the string just read terminated,
+followed by the reading of yet another string just beyond the location where
+the string just written ended (assuming that the file tt(filename) contains
+enough information for the extractions to succeed:
         verb(
-    fstream f("filename", ios::in | ios::out | ios::trunc);
+    fstream f("filename", ios::in | ios::out);
     string  str;
 
     f >> str;       // read the first word
                     // write a well known text
+
+    f.seekg(0, ios::cur);
     f << "hello world";
+
+    f.seekp(0, ios::cur);
     f >> str;       // and read again
         )
-    Since the operators lshift() and rshift() can apparently be used with
-tt(fstream) objects, you might wonder whether a series of lshift() and rshift()
-operators in one statement might be possible. After all, tt(f) rshift() tt(str)
-should produce an tt(fstream &), shouldn't it?
+    Since a em(seek) or em(clear) operation is required between alternating
+read and write (extraction and insertion) operations on the same file it is
+not possible to execute a series of lshift() and rshift() operations in one
+expression statement.
 
-    The answer is: it doesn't. The compiler casts the tt(fstream) object into
-an ti(ifstream) object in combination with the extraction operator, and into
-an ti(ofstream) object in combination with the insertion
-operator. Consequently, a statement like
-        verb(
-    f >> str << "grandpa" >> str;
-        )
-    results in a compiler error like
-        verb(
-    no match for `operator <<(class istream, char[8])'
-        )
-    Since the compiler complains about the tt(istream) class, the tt(fstream)
-object is apparently considered an tt(ifstream) object in combination with the
-extraction operator.
-
-Of course, random insertions and extractions are hardly used. Generally,
-insertions and extractions take place at specific locations in the file.
-In those cases, the position where the insertion or extraction must take
-place can be controlled and monitored by the ti(seekg()) and ti(tellg())
-member functions (see sections ref(OSTREAMPOS) and ref(ISTREAMPOS)).
+Of course, random insertions and extractions are hardly ever used. Generally,
+insertions and extractions take place at specific locations in the file.  In
+those cases, the position where the insertion or extraction must take place
+can be controlled and monitored by the ti(seekg()), ti(seekp()), ti(tellg())
+and ti(tellp()) member functions (see sections ref(OSTREAMPOS) and
+ref(ISTREAMPOS)).
 
 Error conditions (see section ref(IOSTATES)) occurring due to, e.g., reading
 beyond end of file, reaching end of file, or positioning before begin of file,
 can be cleared using the ti(clear()) member function.  Following tt(clear())
 processing may continue. E.g.,
         verb(
-    fstream f("filename", ios::in | ios::out | ios::trunc);
+    fstream f("filename", ios::in | ios::out);
     string  str;
 
     f.seekg(-10);   // this fails, but...
@@ -94,7 +90,7 @@ processing may continue. E.g.,
 size, and where the location and size of pieces of information is well
 known. For example, the following program may be used to add lines of text to
 a (possibly existing) file, and to retrieve a certain line, based on its
-order-numer from the file. Note the use of the emi(binary file) tt(index) to
+order-number from the file. Note the use of the emi(binary file) tt(index) to
 retrieve the location of the first byte of a line.
         verbinclude(iostreams/examples/readwrite.cc)
     As another example of reading and writing files, consider the following
