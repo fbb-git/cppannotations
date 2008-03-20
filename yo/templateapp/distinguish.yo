@@ -41,11 +41,14 @@ value of, e.g, the enum value
         hi(isClass enum value)
     tt(isClass)).
 
-    So, one function template will be something like:
+    So, our function template will be something like:
         verb(
     template <typename ClassType>
     static (returntype)   fun(void (ClassType::*)());
         )
+    Note that in this function `tt((returntype))' is not yet specified. It
+will be shortly.
+
     The question about what the return type should be will be answered
 shortly. Arbitrarily the function's parameter defines a pointer to a member
 returning tt(void). Note that there's em(no) need for such a function to exist
@@ -59,14 +62,14 @@ for an actual object when tt(fun()) is called.
     So far for the class-types. What about the non-class types? For those
 types a (generic) alternative must be found, one the compiler will select when
 the actual type is not a class type. Again, the language offers a `worst case'
-sulution in the
+solution in the
         hi(parameter: ellipsis)
     emi(ellipsis) parameter list. The ellipsis is a final resort the compiler
 may turn to if everything else fails. It's not only used to define (the in
-        hi(arguments: variable number of)
-bf(C++) deprecated) functions with variable number of arguments, but it's also
-used to define the catch-all exception tt(catch) clause. Therefore, the
-`generic case' can be defined as follows:
+        hi(arguments: variable number of) 
+    bf(C++) deprecated) functions having a variable number of arguments, but
+it's also used to define the catch-all exception tt(catch) clause. Therefore,
+the `generic case' can be defined as follows:
         verb(
     template <typename NonClassType>
     static (returntype)   fun(...);
@@ -89,7 +92,7 @@ parameter when tt(fun(...)) is selected.
     Now for the return type: the return type cannot be a simple value (like
 tt(true) or tt(false)). When using a simple value the tt(isClass) enum value
 cannot be defined, since
-        vern(
+        verb(
     enum { isClass = fun<Type>(0) } ;
         )
     needs to be evaluated to obtain tt(fun)'s return value, which is clearly
@@ -130,7 +133,7 @@ compile time, allowing the compiler to determine tt(isClass)'s value:
         )
 
     Note, however, that no tt(fun()) function template em(ever) makes it to
-the initialization stage, but that the compiler nonetheless is able to infer
+the instantiation stage, but the compiler nonetheless is able to infer
 what tt(fun)'s return type will be, given a concrete template type
 argument. This inference is then used by the compiler to determine the truth
 of an expression, in turn enabling the compiler to compute the required
