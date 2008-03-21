@@ -39,7 +39,7 @@ inline Semantic::~Semantic()
 {
     delete d_bp;
 }
-       
+
 inline Semantic::Semantic(Semantic const &other)
 {
     copy(other);
@@ -50,7 +50,7 @@ inline Semantic &Semantic::operator=(Semantic const &other)
     if (this != &other)
     {
         delete d_bp;
-        copy(other);        
+        copy(other);
     }
     return *this;
 }

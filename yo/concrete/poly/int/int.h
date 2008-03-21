@@ -29,7 +29,7 @@ inline Int::Int(int v)
     d_value(v)
 {}
 
-inline Base *Int::clone() const 
+inline Base *Int::clone() const
 {
     return new Int(*this);
 }

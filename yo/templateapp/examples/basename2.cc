@@ -29,7 +29,7 @@
         template <typename T>
         Derived<T>::Derived()
         {
-            this->member();         // Using `this' implies <T> at 
+            this->member();         // Using `this' implies <T> at
                                     // instantiation time.
             Base<T>::member();      // Same.
         }

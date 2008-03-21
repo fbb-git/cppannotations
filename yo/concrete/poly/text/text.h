@@ -22,7 +22,7 @@ inline Text::Text(char const *id)
     d_text(id)
 {}
 
-inline Base *Text::clone() const 
+inline Base *Text::clone() const
 {
     return new Text(*this);
 }

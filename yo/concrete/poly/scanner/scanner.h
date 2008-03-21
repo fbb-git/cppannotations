@@ -7,7 +7,7 @@
 #include <FlexLexer.h>
 #define SYSINC_FLEXLEXER_H_
 #endif
-    
+
 class Scanner: public yyFlexLexer
 {
     Semantic *d_semval;
@@ -23,6 +23,3 @@ inline Scanner::Scanner(Semantic *semval)
 {}
 
 #endif
-
-
-
