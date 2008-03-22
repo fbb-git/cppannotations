@@ -82,19 +82,19 @@ dimensions are known em(a priori). Since a vector of tt(Columns) elements (a
 em(row) of the matrix), as well as a vector of tt(Row) elements (a em(column)
 of the matrix) is often used, em(typedefs) could be used by the class. The
 class interface's initial section therefore contains:
-        verbinsert(HEAD)(templateclasses/examples/matrix.h)
+        verbinsert(HEAD)(classtemplates/examples/matrix.h)
     it() It should offer constructors: a default constructor and, for example,
 a constructor initializing the matrix from a stream. No copy constructor is
 required, since the default copy constructor performs its task
 properly. Analogously, no overloaded assignment operator or destructor is
 required. Here are the constructors, defined in the public section:
-        verbinsert(CONSTRUCTORS)(templateclasses/examples/matrix.h)
+        verbinsert(CONSTRUCTORS)(classtemplates/examples/matrix.h)
     it() The class's tt(operator[]()) member (and its tt(const) variant) only
 handles the first index, returning a reference to a complete
 tt(MatrixRow). How to handle the retrieval of elements in a tt(MatrixRow) will
 be covered shortly. To keep the example simple, no array bound check has been
 implemented:
-        verbinsert(OPERATOR=)(templateclasses/examples/matrix.h)
+        verbinsert(OPERATOR=)(classtemplates/examples/matrix.h)
     it() Now we get to the interesting parts: computing marginals and the sum
 of all elements in a tt(Matrix). Considering that marginals are vectors,
 either a tt(MatrixRow), containing the column marginals, a tt(MatrixColumn),
@@ -106,7 +106,7 @@ and a partial specialization handling tt(1 x 1) matrices. Since we're about
 to define these specializations, we can use them when computing
 marginals and the matrix' sum of all elements. Here are the implementations of
 these members:
-        verbinsert(MARGINALS)(templateclasses/examples/matrix.h)
+        verbinsert(MARGINALS)(classtemplates/examples/matrix.h)
     )
 
     Class template em(partial specializations) may be defined for any (subset)
@@ -134,15 +134,15 @@ parameters. In the tt(MatrixRow) specialization tt(Rows) is specified as 1,
 since we're talking here about one single row. Both tt(Columns) and
 tt(DataType) remain to be specified. So, the tt(MatrixRow) partial
 specialization starts as follows:
-        verbinsert(MATRIXROW)(templateclasses/examples/matrix.h)
+        verbinsert(MATRIXROW)(classtemplates/examples/matrix.h)
     it() A tt(MatrixRow) contains the data of a single row. So it needs a
 data member storing tt(Columns) values of type tt(DataType). Since tt(Columns)
 is a constant value, the tt(d_row) data member can be defined as an array:
-        verbinsert(ROWDATA)(templateclasses/examples/matrix.h)
+        verbinsert(ROWDATA)(classtemplates/examples/matrix.h)
     it() The constructors require some attention. The default constructor is
 simple. It merely initializes the tt(MatrixRow)'s data elements using
 tt(DataType)'s default constructor:
-        verbinsert(ROWCONS1)(templateclasses/examples/matrix.h)
+        verbinsert(ROWCONS1)(classtemplates/examples/matrix.h)
     However, we also need a constructor initializing a tt(MatrixRow) object
 with the column marginals of a generic tt(Matrix) object. This requires us to
 provide the constructor with a non-specialized tt(Matrix) parameter. In cases
@@ -154,7 +154,7 @@ member template's template announcement. Since this parameter refers to the
 generic matrix' number of rows, let's simply call it tt(Rows). Here then, is
 the definition of the second constructor, initializing the tt(MatrixRow)'s
 data with the column marginals of a generic tt(Matrix) object:
-        verbinsert(ROWCONS2)(templateclasses/examples/matrix.h)
+        verbinsert(ROWCONS2)(classtemplates/examples/matrix.h)
     Note the way the constructor's parameter is defined: it's a reference to a
 tt(Matrix) template using the additional tt(Row) template parameter as well
 as the template parameters of the partial specialization itself.
@@ -162,7 +162,7 @@ as the template parameters of the partial specialization itself.
 needs. To access the data elements of the tt(MatrixRow) an overloaded
 tt(operator[]()) is of course useful. Again, the tt(const) variant can be
 implemented like the non-tt(const) variant. Here is its implementation:
-        verbinsert(ROWOPERATOR=)(templateclasses/examples/matrix.h)
+        verbinsert(ROWOPERATOR=)(classtemplates/examples/matrix.h)
     )
     Now that we have defined the generic tt(Matrix) class as well as the
 partial specialization defining a single row, the compiler will select the
@@ -178,21 +178,21 @@ similarly. Let's present its highlights (the full tt(Matrix) class template
 definition as well as all its specializations are provided in the
 tt(cplusplus.yo.zip) archive (at url(ftp.rug.nl)
 (ftp:://ftp.rug.nl/contrib/frank/documents/annotations/)) in the
-file tt(yo/templateclasses/examples/matrix.h)):
+file tt(yo/classtemplates/examples/matrix.h)):
     itemization(
     it() The class template partial specialization again starts with a
 template announcement. The class definition itself now specifies a fixed
 value for the second (generic) template parameter, illustrating that we can
 construct partial specializations for every single template parameter; not
 just the first or the last:
-        verbinsert(MATRIXCOLUMN)(templateclasses/examples/matrix.h)
+        verbinsert(MATRIXCOLUMN)(classtemplates/examples/matrix.h)
     it() Its constructors are implemented completely analogously to the way
 the tt(MatrixRow) constructors were implemented. Their implementations are
 left as an exercise to the reader (and they can be found in tt(matrix.h)).
     it() An additional member tt(sum()) is defined to compute the sum of the
 elements of a tt(MatrixColumn) vector. It's simply implemented
 using the tt(accumulate()) generic algorithm:
-        verbinsert(SUMCOLUMN)(templateclasses/examples/matrix.h)
+        verbinsert(SUMCOLUMN)(classtemplates/examples/matrix.h)
     )
 
     The reader might wonder what happens if we specify the following matrix:
@@ -208,11 +208,11 @@ obtain the sum of the elements of a tt(Matrix), it's covered here as well:
 announcement, this time only specifying tt(DataType). The class definition
 specifies two fixed values using 1 for both the number of rows and the number
 of columns:
-        verbinsert(MATRIX1X1)(templateclasses/examples/matrix.h)
+        verbinsert(MATRIX1X1)(classtemplates/examples/matrix.h)
     it() The specialization defines the usual batch of constructors. Again,
 constructors expecting a more generic tt(Matrix) type are implemented as
 member templates. For example:
-        verbinsert(1X1CONS)(templateclasses/examples/matrix.h)
+        verbinsert(1X1CONS)(classtemplates/examples/matrix.h)
     it() Since tt(Matrix<1, 1>) is basically a wrapper around a tt(DataType)
 value, we need members to access that latter value. A type conversion
 operator might be usefull, but we'll also need a tt(get()) member to obtain
@@ -220,8 +220,8 @@ the value if the conversion operator isn't used by the compiler (which
 happens when the compiler is given a choice, see section
 ref(ConversionOperators)). Here are the accessors (leaving out their tt(const)
 variants):
-        verbinsert(ACCESSORS)(templateclasses/examples/matrix.h)
+        verbinsert(ACCESSORS)(classtemplates/examples/matrix.h)
     )
     The following tt(main()) function shows how the tt(Matrix) class template
 and its partial specializations can be used:
-    verbinclude(templateclasses/examples/matrix.cc)
+    verbinclude(classtemplates/examples/matrix.cc)
