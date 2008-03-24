@@ -1,30 +1,48 @@
 #!/bin/bash
 
-PROJECT=c++-annotations
+PROJECT=annotations
 
 VERSION=`grep DOCVERSION yo/version.yo | sed 's/SUBST(DOCVERSION)(\(.*\))/\1/'`
 
-DISTRIBUTION=${PROJECT}-${VERSION}      # define the distribution's dir name
+DISTRIBUTION=c++-${PROJECT}-${VERSION}   # define the distribution's dir name
 
 cd ..
 
-ln -s trunk ${DISTRIBUTION}             # distribution's dir name
+tgz()
+{
+    ln -s trunk ${DISTRIBUTION}             # distribution's dir name
 
-if [ "$#" != "0" ]                      # any arg? make debian .orig file
-then
-    ls
-                                        # create the .orig source tar
-    tar czvf \
-        ${HOME}/debian/annotations/tarballs/${PROJECT}_${VERSION}.orig.tar.gz\
-                --exclude-from=${DISTRIBUTION}/excluded \
-                ${DISTRIBUTION}/*
-else
-    tar czvf ${PROJECT}_${VERSION}.tar.gz \
-                --exclude-from=${DISTRIBUTION}/excluded \
-                ${DISTRIBUTION}/*
-fi
+    tar czvf $1 --exclude-from=${DISTRIBUTION}/excluded  ${DISTRIBUTION}/*
 
-rm ${DISTRIBUTION}                      # rm the link
+    rm ${DISTRIBUTION}                      # rm the link
+}
 
+case "$1" in 
+    (o)
+        tgz ${HOME}/debian/${PROJECT}/tarballs/c++-${PROJECT}_${VERSION}.orig.tar.gz
+    ;;
 
+    (t|u)
+        tgz c++-${PROJECT}_${VERSION}.tar.gz
+
+        if [ "$1" == "u" ]
+        then
+            scp c++-${PROJECT}_${VERSION}.tar.gz \
+                                        oosix:ftp/debian/${PROJECT}
+            md5sum c++-${PROJECT}_${VERSION}.tar.gz
+        fi
+    ;;
+
+    (*)
+        echo "
+Provide arg:
+    o (orig.tar.gz) to create a local .orig.tar.gz archive in 
+                    ../debian/${PROJECT}/tarballs
+    t (tar.gz)      to create ${PROJECT}_${VERSION}.tar.gz in this directory
+    u (upload)      same as 't', but upload to oosix and show MD5 hash
+"
+    exit 1
+    ;;
+
+esac
 
