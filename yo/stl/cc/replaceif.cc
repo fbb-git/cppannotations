@@ -17,6 +17,7 @@
                    string("ALPHA"));
         copy(words, words + size, ostream_iterator<string>(cout, " "));
         cout << endl;
+        return 0;
     }
     /*
         generated output:

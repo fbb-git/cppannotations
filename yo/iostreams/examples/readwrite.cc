@@ -37,7 +37,7 @@
             return err("no offset for line", idx);
 
         if (!strings.seekg(offset))                 // go to the line's offset
-            return err("can't get string offet ", offset);
+            return err("can't get string offset ", offset);
 
         string line;
 
@@ -46,7 +46,6 @@
 
         cout << "Got line: " << line << endl;       // show the line
     }
-
 
     void write(fstream &index, fstream &strings)
     {

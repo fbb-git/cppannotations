@@ -76,11 +76,11 @@
             virtual Base *clone() const;
     };
 
-        inline Derived::~Derived1()
+        inline Derived1::~Derived1()
         {
             std::cout << "~Derived1() called\n";
         }
-        inline Base *Derived::clone() const
+        inline Base *Derived1::clone() const
         {
             return new Derived1(*this);
         }

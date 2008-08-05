@@ -23,7 +23,7 @@
     {
         pair<string, MyClass> pairs[] =
         {
-            pair<string, MyClass>("one", MyClass()),
+            pair<string, MyClass>("one", MyClass())
         };
         cout << "pairs constructed\n";
 

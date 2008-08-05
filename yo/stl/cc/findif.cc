@@ -22,7 +22,7 @@
     {
         string sarr[] =
             {
-                "Alpha", "Bravo", "Charley", "Delta", "Echo",
+                "Alpha", "Bravo", "Charley", "Delta", "Echo"
             };
         string  *last = sarr + sizeof(sarr) / sizeof(string);
 

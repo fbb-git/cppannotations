@@ -38,7 +38,7 @@
         string sarr[] =
             {
                 "alpha", "BRAVO", "charley", "DELTA", "echo",
-                "FOXTROT", "golf", "HOTEL",
+                "FOXTROT", "golf", "HOTEL"
             };
         string *last = sarr + sizeof(sarr) / sizeof(string);
 
