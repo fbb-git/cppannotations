@@ -11,5 +11,3 @@ IndexEntry::IndexEntry(string const &keystring,
 
     labels.push_back(pair<unsigned, unsigned>(filenameIndex, labelNr));
 }
-    
-

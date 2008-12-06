@@ -1,19 +1,19 @@
 /*
     Cloneable template class protects a derived object from slicing when
     used with stl containers
-    
+
     Author: Jesse van den Kieboom
 
     Jesse provides the following example based on his class template Cloneable:
 
         vector<Cloneable<A> > vec;
-        
+
         vec.push_back(B());
         vec.push_back(B());
-        
+
         Cloneable<A> a = B();
         a->(functie op A/B)
-        
+
         Cloneable<B> b = B();
         a = b;
 
@@ -31,40 +31,40 @@ namespace jessevdk
         public:
             /* Default constructor */
             Cloneable();
-        
+
             template <typename Other>
             Cloneable(Cloneable<Other> const &other);
-        
+
             /* Specialisation needed to override default copy constructor */
             Cloneable(Cloneable<Base> const &other);
-        
+
             template <typename Other>
             Cloneable(Other const &other);
 
             /* Deconstructor */
             virtual ~Cloneable();
-        
+
             /* Public functions */
             template <typename Other>
             Cloneable<Base> &operator=(Cloneable<Other> const &other);
-        
+
             /* Specialisation needed to override default assignment operator */
             Cloneable<Base> &operator=(Cloneable<Base> const &other);
-                
+
             template <typename Other>
             Cloneable<Base> &operator=(Other const &other);
-        
+
             /* Operators */
             Base &operator*();
             Base const &operator*() const;
-        
+
             Base *operator->();
             Base const *operator->() const;
             operator Base&();
         private:
             /* Private functions */
             void destroy();
-        
+
             template <typename Other>
             Cloneable<Base> &assign(Other const &other);
     };
@@ -116,7 +116,7 @@ namespace jessevdk
             destroy();
             d_base = other.clone();
         }
-    
+
         return *this;
     }
 

@@ -12,9 +12,9 @@ vector<string>
     filenameVector;
 string
     lastFilename;
-char 
+char
     indexSection = 'A' - 1;
-int 
+int
     returnValue = 0;
 
 void handler()
@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 
     Arg::initialize("", argc, argv);
 
-    Arg &arg(Arg::getInstance());
+    Arg &arg(Arg::instance());
 
     if (isatty(STDIN_FILENO))
         usage(arg.basename());
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 
     head();
 
-    unsigned 
+    unsigned
         n = indexVector.size(),
         halfway = (n + 1) / 2;
 
@@ -54,7 +54,7 @@ int main(int argc, char **argv)
         cout << "</tr>\n";
     }
 
-    cout << "</table>\n" <<            
+    cout << "</table>\n" <<
             "</td>\n" <<                    // left column done
             "<td valign=top>\n" <<
             "<table>\n";                    // right column as a table
@@ -66,11 +66,11 @@ int main(int argc, char **argv)
         cout << "</tr>\n";
     }
 
-    cout << "</table>\n" <<            
+    cout << "</table>\n" <<
             "</td>\n";                  // right column done
 
-    
+
     tail();
-    
+
     return returnValue;
 }

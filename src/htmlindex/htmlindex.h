@@ -47,12 +47,12 @@ typedef HashString<unsigned>::iterator
 class IndexEntry
 {
     public:
-        IndexEntry(string const &key, 
+        IndexEntry(string const &key,
                     unsigned filenameIndex, unsigned labelNr);
         void push_back(unsigned filenameIndex, unsigned labelNr)
-        {        
+        {
             labels.push_back(pair<unsigned, unsigned>(filenameIndex, labelNr));
-        }    
+        }
         bool operator<(IndexEntry const &other) const;
 
         string const &getKey()
@@ -63,13 +63,13 @@ class IndexEntry
         {
             return uppercaseKey[0];
         }
-        void showRefs();    
+        void showRefs();
     private:
-        string 
+        string
             uppercaseKey,
             key;
         vector<pair<unsigned, unsigned> >
-            labels;    
+            labels;
 };
 
 extern vector<IndexEntry>

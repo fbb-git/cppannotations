@@ -69,13 +69,13 @@ try
 
         stack<size_t> linenr;
         unsigned line = 0;
-        string text;    
-        
+        string text;
+
         while (getline(in, text))
         {
             ++line;
 
-            for 
+            for
             (
                 string::iterator pos = text.begin(); pos != text.end();
                 ++pos
@@ -90,7 +90,7 @@ try
                         if (linenr.empty())
                         {
                             header(argv[idx]);
-                            cout << "\tExtra closepar in line " << line 
+                            cout << "\tExtra closepar in line " << line
                                  << endl;
                             ok = false;
                             break;

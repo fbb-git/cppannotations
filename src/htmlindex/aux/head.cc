@@ -16,4 +16,3 @@ void head()
 "<table>\n"
 "<tr>\n";
 }
-

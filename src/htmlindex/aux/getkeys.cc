@@ -46,14 +46,14 @@ void getKeys()
             filenameIndex = filenameVector.size();
             filenameVector.push_back(filename);
             lastFilename = filename;
-            cerr << "File " << filename << 
-                    " at " << filenameIndex << endl; 
+            cerr << "File " << filename <<
+                    " at " << filenameIndex << endl;
         }
 
 
     /*
         hash<string key, unsigned idx>
-            indexHash    
+            indexHash
                 contains the key and an idx in `index' where
                 IndexEntry objects are stored.
 
@@ -70,7 +70,7 @@ void getKeys()
             it = indexHash.find(key);
 
         if (it != indexHash.end())           // key already available
-        {    
+        {
             //cerr << "duplicate key: " << key;
             indexVector[it->second].push_back(filenameIndex, labelNr);
         }
@@ -93,10 +93,3 @@ void getKeys()
         //cerr << " inserted\n";
     }
 }
-
-
-
-
-
-
-
