@@ -162,17 +162,34 @@ is tt(void))
 are set for an tt(ios) object. To test for a particular flag, use the
 i(bitwise and) operator:
         verb(
-    if (iosObject.rdstate() & ios::good)
+    if (!(iosObject.rdstate() & ios::failbit))
     {
-        // state is good
+        // last operation didn't fail
     }
         )
+    Note that this test cannot be performed for tt(ios::goodbit) as the
+tt(goodbit) flag value equals zero. To test for `good' use a construction
+like:
+        verb(
+    if (iosObject.rdstate() == ios::goodbit)
+    {
+        // state is `good'
+    }
         )
+     )
         it() hi(setstate(): with streams)
-            hi(ios::setstate()) ti(ios::setstate(int flags)):
+            hi(ios::setstate()) ti(ios::setstate(iostate state)):
         quote(hi(stream state flags: modifying)
-    This member is used to em(set) a particular set of flags. Its return type
-is tt(void). The member tt(ios::clear()) is a shortcut to clear all error
+    This member is used to em(set) a particular state. Its return type is
+tt(void). E.g.,
+        verb(
+    cin.setstate(ios::failbit);     // set state to `fail'
+        )
+    To set multiple flags in one tt(setstate()) call use a cast. E.g.,
+        verb(
+    cin.setstate(static_cast<_Ios_Iostate>(ios::failbit | ios::eofbit))
+        )
+    The member tt(ios::clear()) is a shortcut to clear all error
 flags.  Of course, clearing the flags doesn't automatically mean the
 error condition has been cleared too. The strategy should be:
         itemization(

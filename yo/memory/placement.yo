@@ -71,4 +71,21 @@ a final statement
     delete [] buffer;
         )
     should be added to tt(main). It would merely return tt(buffer)'s allocated
-memory to the common pool, without calling any object destructor whatsoever.
+memory to the common pool, without calling any object destructor
+whatsoever. Of course, em(if) the buffer is allocated dynamically the need to
+call explicitly the objects destructor em(and) use the tt(delete) operator for
+the dynamically allocated block is somewhat overdone. In that case a procedure
+like the following can be used to return the memory to the common pool:
+        verb(
+    Object *obj = new (new char[](sizeof(Object))) Object;
+    delete obj;
+        )
+    But then again: the same is realized with a simple
+        verb(
+    Object *obj = new Object;
+    delete obj;
+        )
+    But the placement new operator nicely illustrates what actually happens
+when an object is allocated dynamically. Using the placement new operator
+we're `playing memory allocator' ourselves, see also sections
+ref(OVERLOADNEW), ref(OVERLOADDELETE) and ref(NEWDELETEARRAY).

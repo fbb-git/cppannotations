@@ -41,4 +41,5 @@
     MyClass destructor
     mapsm constructed
     MyClass destructor
+    MyClass destructor
     */
