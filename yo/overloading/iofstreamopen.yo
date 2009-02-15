@@ -1,0 +1,79 @@
+Earlier, in section ref(OUTPUTMODES), it was noted that the
+tt([io]fstream::open()) members expect an tt(ios::openmode) value as their
+final argument. E.g., to open an tt(fstream) object for writing the following
+code fragment can be used:
+        verb(
+    fstream out;
+    out.open("/tmp/out", ios::out);
+        )
+    Combinations are possible as well. To open an tt(fstream) object for
+em(both) reading and writing the following stanza is often seen:
+        verb(
+    fstream out;
+    out.open("/tmp/out", ios::in | ios::out);
+        )
+    
+    When trying to combine enum values using a `home made' tt(enum) we may run
+into problems, though. Consider the following code snippet:
+    verb(
+    enum Permission
+    {
+        READ =      1 << 0,
+        WRITE =     1 << 1,
+        EXECUTE =   1 << 2
+    };
+
+    void setPermission(Permission permission);
+
+    int main()
+    {
+        setPermission(READ | WRITE);
+    }
+        )
+    When offering this little program to the compiler it will reply with an
+error message like the following:
+    center(tt(invalid conversion from 'int' to 'Permission'))
+
+    The question is of course: why is it OK to combine tt(ios::openmode)
+values and pass these combined values to the stream's tt(open()) member, but
+is it not OK to combine tt(Permission) values.
+
+    hi(enum values: and arithmetic operators)
+    Combining enum values using arithmetic operators results in tt(int)-typed
+values. On the other hand, em(conceptually) this might not be the
+intention. Conceptually it can be correct to combine enum values with the
+resulting value still conceptually within the original enumeration
+domain. Note that even adding a value tt(READWRITE = READ | WRITE) to the
+above tt(enum) will not allow us to specify tt(READ | WRITE) as an argument to
+tt(setPermission()).
+
+    To answer the question about how to combine enumeration values and yet
+stay within the enumeration's domain we turn to operator overloading. Up to
+this point operator overloading has been applied to class types. Free
+functions like tt(operator<<()) have been overloaded, but even those overloads
+were conceptually within the domain of some class. bf(C++), however, is a
+stronly typed language and defining an tt(enum) is really something more than
+just associating tt(int)-values with symbolic names. An enumeration type is a
+real type, and as with any type its operators can be overloaded. When writing
+tt(READ | WRITE) the compiler will perform the default converstion from enum
+values to tt(int) values and thus will apply the operator to tt(ints). It does
+this as it is offered no alternative. But by overloading operators for
+enum-type values we can ensure that we'll remain within the enum's domain even
+though the resulting value wasn't defined by the enum. The advantage of
+type-safety and conceptual clarity is considered to outweigh the somewhat
+peculiar introduction of values hitherto not defined by the enum.
+
+    Here is an example of such an overloaded operator:
+        verb(
+    Permission operator|(Permission left, Permission right)
+    {
+        return static_cast<Permission>(left | right);
+    }
+        )
+    Other operators can easily be conveived of where applicable.
+
+    Operators like the above were defined for the  tt(ios::openmode)
+enumeration type, allowing us to specify tt(ios::in | ios::out) as argument to
+tt(open()) while specifying the corresponding parameter as tt(ios::openmode)
+as well. Clearly, operator overloading can be used in many situations, not
+necessarily involving class-types.
