@@ -7,7 +7,7 @@
         inline void Base::member()
         {}
 
-    class Derived
+    class Derived: public Base
     {
         public:
             virtual void member();      // only declared

@@ -34,58 +34,53 @@ the placement tt(new) operator is an interesting one:
 
     itemization(
     it() When one object was initialized in memory not allocated dynamically,
-tt(delete) can of course not be called for the statically allocated memory.
-    it() However, when tt(delete) is called for the pointer returned by the
-placement tt(new) operator the object's destructor isn't called either. So,
-the tt(string) destructor is em(not) called in the following situation:
+tt(delete) can of course not be called to free the statically allocated memory.
+    it() However, when tt(delete) is called to free the memory pointed to by 
+the pointer returned by the dynamically allocated memory is properly returned
+to the common pool.
+    ) 
+    Assuming that tt(buffer) is an array the size of a tt(std::string) the
+tt(string)'s destructor is called in both situations:
         verb(
-    char *buffer = new char[sizeof(string)];
+    delete   new(buffer) string("hello world");
+        )
+    In this case tt(delete) performs two actions:
+    itemization(
+    it() First, the object's destructor is called;
+    it() Next, the memory occupied by the object whose destructor has just
+been called is assumed to have been dynamically allocated and is returned to
+the common pool.
+    )
+    Of course, the second step will fail when the buffer hasn't been allocated
+dynamically as in the following example:
+        verb(
+    char buffer[sizeof(string)];
     delete new(buffer) string("hello world");
         )
-    it() Comparable conclusions can be drawn when multiple objects are
-initialized by the placement tt(new) operator: the object's destructors are
-not called.
-    )
-    It should come as em(no surprise) that the object's destructors aren't
-called (assuming a dynamically allocated em(substrate) for the objects). After
-all, the memory on which the objects are defined is known to the run-time
-system as a block of (e.g.) characters, for which no destructors are defined.
-Even calling tt(delete) on the pointer returned by the placement tt(new)
-operator doesn't help: it's still the same memory address as the original
-block of characters.
-
-    So, how then em(can) the destructors of objects initialized by the
-placement tt(new) operator be called? The answer may be surprising: it
+    Consequently, when the placement tt(new) operator is used to initialize a
+em(statically) allocated block of memory tt(delete) cannot be called. This
+immediately raises the question of how to activate the destructor of the
+object initialized in tt(buffer). The answer may come as a surprising: it
 must be called hi(destructor: called explicitly) explicitly. Here is an
 example:
         verbinclude(memory/examples/placement.cc)
 
-    It's clearly dangerous to use the placement tt(new) operator: object
-destruction is not guaranteed, and since destruction must be performed
-manually there's no guarantee that object destruction takes place in the
-reverse order of object construction.
+    Using the placement tt(new) operator is clearly dangerous: depending on
+the nature of the used buffer (dynamically allocated or statically allocated)
+tt(delete) will either succeed or fail and it's the responsibility of the
+software engineer to make sure that either tt(delete) is called or the
+object's destructor is explicitly called.
 
-    If in the above example tt(buffer) would have been allocated dynamically,
-a final statement
-        verb(
-    delete [] buffer;
-        )
-    should be added to tt(main). It would merely return tt(buffer)'s allocated
-memory to the common pool, without calling any object destructor
-whatsoever. Of course, em(if) the buffer is allocated dynamically the need to
-call explicitly the objects destructor em(and) use the tt(delete) operator for
-the dynamically allocated block is somewhat overdone. In that case a procedure
-like the following can be used to return the memory to the common pool:
-        verb(
-    Object *obj = new (new char[](sizeof(Object))) Object;
-    delete obj;
-        )
-    But then again: the same is realized with a simple
-        verb(
-    Object *obj = new Object;
-    delete obj;
-        )
-    But the placement new operator nicely illustrates what actually happens
+    So far, so good. All is well as long as we're using but one object. What
+about allocating an array of objects? Initialization is performed as usual.
+But as with tt(delete), tt(delete[]) cannot be called when the buffer was
+allocated statically. Instead, when multiple objects were initialized using
+the placement tt(new) operator in combination with a statically allocated
+buffer all the objects' destructors must be called explicitly, as in the
+following example:
+        verbinsert(memory/examples/placement2.cc)(CODE)
+
+    The placement new operator nicely illustrates what actually happens
 when an object is allocated dynamically. Using the placement new operator
 we're `playing memory allocator' ourselves, see also sections
 ref(OVERLOADNEW), ref(OVERLOADDELETE) and ref(NEWDELETEARRAY).
