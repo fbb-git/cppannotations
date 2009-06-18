@@ -1,0 +1,87 @@
+The class template tt(shared_ptr<Type>) implements reference counting on a
+pointer. 
+
+Cons:
+
+Construct empty, CC, from allocated pointer, fm ptr + deleter
+
+Ops:
+    operator=
+    operator*
+    operator->
+    operator bool
+    bool unique()   (use_count == 1)
+    swap(other)
+
+Members:
+
+reset():        re-initializes
+reset(ptr)
+reset(ptr, deleter)
+use_count()
+get()
+
+see stl/examples/sharedptr.cc
+
+
+Customizable Deleters 
+
+A deleter is a function that the smart pointer uses for deallocating its
+resource. By default, unique_ptr's deleter uses plain delete, as
+expected. However, certain resources require special cleanup
+operations. Here's how you install a custom deleter that has no effect:
+
+
+struct nop_deleter
+{
+ template <class T> void operator()(T*) {}; // do nothing
+};
+
+int main()
+{
+ int n=0;
+ // stack memory. Safe, deleter does nothing
+unique_ptr<int, nop_deleter> pi(&n);
+ *pi = 10;
+ assert(sizeof(pi)==sizeof(int*)); //zero space overhead
+}
+
+In the following example, a custom deleter calls std::free() to deallocate an object allocated using std::malloc():
+
+
+#include <cstdlib>
+double* d =(double*) std::malloc(sizeof(double));
+//deleter calls free(), not delete 
+unique_ptr<int, void (*)(void*)> pd(d, std::free); 
+
+Arrays
+
+The interface of smart pointers to single objects differs fundamentally from
+that of smart pointers to arrays:
+
+    * A single object smart pointer often supports derived-to-base conversions
+while array smart pointers must not support such conversions.
+    * A dereference operator for a single object makes sense but for an array
+it makes less sense because it will dereference only the first element.
+    * Operator [] makes sense only for an array smart pointer.
+
+The designers of unique_ptr solved these discrepancies by creating a partial
+specialization for arrays:
+
+
+unique_ptr<int[]> arrup (new int[3]);
+arrup[0]=1;
+arrup[1]=2;
+arrup[2]=3;
+
+The trailing [] after the type in the unique_ptr declaration indicates that
+the "array version" (no dereference, no conversions, indexing supported) shall
+be used. As expected, the default deleter here is delete[].
+
+Elegant Smart
+
+unique_ptr isn't just a safer alternative to the deprecated auto_ptr. It
+offers services that auto_ptr doesn't support, including safe usage with
+containers and algorithms, customizable deleters, and array
+handling. Surprisingly, this versatility doesn't exact a performance toll; you
+only pay for what you're actually using.

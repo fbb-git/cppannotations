@@ -1,0 +1,97 @@
+Deprecating auto_ptr
+
+After years of debates, the C++ standards committee decided that auto_ptr
+should be deprecated. Since the deprecation alone will not make the problems
+of auto_ptr disappear it was decided that a new smart pointer class with more
+or less the same strict ownership semantics of auto_ptr -- but with a cleaner
+and safer interface -- should be added to C++0x. That replacement class is
+called unique_ptr. If you have used auto_ptr before, you will find
+unique_ptr's usage pretty straightforward. However, unlike auto_ptr,
+unique_ptr requires an explicit move operation for moving from lvalues; you
+can't use copy syntax for that purpose. Consequently, STL containers and
+algorithms, and in fact, any generic code will either fail to compile when
+operating on unique_ptr (instead of leaving the bug unreported and crashing at
+runtime), or it will produce valid results if unique_ptr is allowed. In
+addition to solving the safety problems of auto_ptr, the designers of
+unique_ptr decided to extend its functionality without adding space or runtime
+overhead (unless such overhead is explicitly requested) while still
+maintaining source compatibility with auto_ptr (except the ability to move
+from an lvalue with copy syntax).  
+
+Anything auto_ptr Can Do, But Better
+
+It should be noted that unique_ptr is not a 100% source-compatible drop-in
+replacement for auto_ptr. If it were, the standards committee could simply
+patch auto_ptr instead of deprecating it and introducing a new class template
+as a replacement. That said everything you can do with auto_ptr, unique_ptr
+will do as well with the same syntax except for moving from lvalues:
+
+#include <utility> 
+using std::auto_ptr;
+using std::unique_ptr;
+// default construction
+auto_ptr<int> ap;
+unique_ptr<int> up;
+// initialize with pointer
+auto_ptr<int> ap(new int(9));
+unique_ptr<int> up(new int(9));
+// dereference
+*ap = 23;
+*up = 23;
+// reset
+ap.reset();
+up.reset();
+assert (sizeof(auto_ptr<T>) == sizeof(unique_ptr<T>));
+
+When it comes to copy operations, there's a difference:
+
+auto_ptr<int> ap1(new int);
+auto_ptr<int> ap2 = ap1; // OK, albeit unsafe 
+unique_ptr<int> up1(new int);
+unique_ptr<int> up2 = up1; // compilation error: private copy ctor inaccessible
+
+If you really want to transfer ownership from the lvalue unique_ptr, you have
+to use an explicit std::move() call:
+
+unique_ptr<int> up1(new int);
+unique_ptr<int> up2 = move(up1); // ok, explicit move
+
+unique_ptr permits move from rvalues with copy syntax using a move constructor
+(which binds to rvalues), while blocking the copy from lvalues by making the
+copy constructor (which binds to lvalues) private:
+
+template <class T>
+class unique_ptr
+{
+public:
+ unique_ptr(unique_ptr&& u);   // rvalues bind here
+private:
+ unique_ptr(const unique_ptr&); // lvalues bind here
+};
+
+In the next part of this series I will discuss passing unique_ptr to a
+function and returning unique_ptr from a function, using unique_ptr with
+algorithms and containers, customizing a deleter, and using unique_ptr for
+storing arrays.
+
+
+Containers and Algorithms
+
+If a container of unique_ptr objects moves elements internally instead of
+copying them, your code will work without problems. If, however, a container
+or an algorithm uses copy semantics for its value_type you will get a
+compilation error. Thus, you won't encounter a run time error due to a move
+operation being mistaken for a copy:
+
+
+vector<unique_ptr<int> > vi;
+v.push_back(unique_ptr<int>(new int(8)));  
+v.push_back(unique_ptr<int>(new int(4)));
+v.push_back(unique_ptr<int>(new int(1)));
+sort(v.begin(),v.end(),indirect_less()); //result {1,4,8}
+
+
+Deleter: as with shared ptr
+
+g++ 4.4
+
