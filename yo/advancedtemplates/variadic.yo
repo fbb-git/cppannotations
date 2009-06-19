@@ -1,0 +1,58 @@
+Up to this point we've only encountered templates having a fixed number of
+template parameters. The i(C++-0x standard) extends this with 
+    emi(variadic templates).
+
+Variadic templates are defined for function templates and for class
+templates. Variadic templates allow the specification of an arbitrary
+number of arguments of any type.
+
+They were added to the language to prevent the template constructor from
+having to define many overloaded template versions and to be able to create
+emi(type safe) functions. Although bf(C) (and bf(C++)) support i(variadic
+functions), their use has always been deprecated in bf(C++) as those functions
+are notoriously type-em(un)safe. Furthermore, variadic function templates can
+be used to allow these functions to process objects that until now couldn't be
+processed properly by traditional variadic functions.
+
+Here is an example of the declaration of a variadic template tt(Variadic):
+        verb(
+    template<typename... Values> class Variadic;
+        )
+    Assuming the template's definition has been provided then 
+this template can be instantiated using any number of typenames. E.g.,
+        verb(
+    class Variadic<
+            int, 
+            std::vector<int>, 
+            std::map<std::string, std::vector<int>>
+    > v1;
+        )
+    It is also possible to define an `empty' variadic template, by not
+specifying any type when instantiating the variadic template. E.g.,
+        verb(
+    class Variadic<> empty;
+        )
+    Variadic templates can also have one or more fixed paramters. This can be
+used to prevent the instantiation of an empty variadic template. This uses the
+following syntax:
+        verb(
+    template<typename First, typename... Rest> class tuple;
+        )
+
+    Here is an example of the declaration of a variadic function template
+tt(printf): 
+        verb(
+    template<typename ... Params> 
+    void printf(std::string const &strFormat, Params ... parameters);
+        )
+
+Note the use of the i(ellipsis) (i(...)). It serves two purposes:
+    itemization(
+    it() Written to the em(left) of a parameter name, it declares a 
+       emi(parameter pack). A parameter pack allows the software engineer to
+        associate arguments (maybe none) with the variadic template
+        parameters. Parameter packs can be used to bind type and non-type
+        template parameters.
+    it() Written to the em(right) of a template or function call argument, it
+        represents a series of template arguments.
+    )

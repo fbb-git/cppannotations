@@ -1,0 +1,59 @@
+    As the variadic parameters themselves are not directly available to the
+implementation of a function or class the software engineer must resort to
+other means to obtain them. Typically a recursive definition is used decaying
+to a non-argument implementation once all parameters have been processed. 
+
+E.g., a variadic template definition of tt(printf) might process all template
+parameters and then call the following tt(printf) implementation to print the
+remainder of the format string, em(en passant) checking for any left-over
+format specifications:
+        verb(
+    void printf(char const *s)
+    {
+        while (*s)
+        {
+            if (*s == '%' && *(++s) != '%')
+                throw std::runtime_error(
+                            "invalid format string: missing arguments");
+            std::cout << *s++;
+        }
+    }
+        )
+
+    Please don't let the tt(printf) function name confuse you: it's not
+bf(C). Note that the type's value is inserted into the output stream 
+by tt(cout) (line 8): type safety and extensibility is guaranteed.
+
+    The implementation of tt(printf) itself is recursive. The function's
+template parameter list (line 1) specifies an initial type followed by a
+variadic type list, and only that type's value is directly processed by the
+function's body (in line 8). 
+
+    At line 9 the function calls itself, passing the remaining values to its
+recursive call. A subtlety in the recursive call allows for the detection of
+any remaining types, not accounted for by the format specification list. In
+that case the function will throw an exception. Also note that the 
+    i(format string) differs somewhat from what is used by bf(C) (line 6). The
+character following the tt(%) format specifier is ignored unless it is another
+tt(%), in which case a tt(%) is printed. Since tt(cout) takes care of the type
+safety there's no need to specify exactly what the type of a particular
+argument is. Extending the format specifiers so that field widths etc. are
+recognized by this tt(printf) implementation is left as an exercise to the
+Annotation's reader.
+        verb(
+    template<typename T, typename ... Args>                 // 1      
+    void printf(const char* s, T value, Args ... args)      // 2
+    {
+        while (*s)
+        {
+            if (*s == '%' && *(++s) != '%')                 // 6
+            {
+                std::cout << value;                         // 8
+                printf(*s ? ++s : s, args...);              // 9 
+                return;
+            }
+            std::cout << *s++;
+        }
+        throw std::logic_error("extra arguments provided to printf");
+    }
+        )

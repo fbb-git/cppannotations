@@ -1,0 +1,60 @@
+    The emi(unpack operator) can be used to obtain the template arguments in
+many situations. No mechanism (other than recursion, as shown in the previous
+section) is available to obtain the individual types or values of a variadic
+template. 
+
+    The unpack operator can be used to define a template defining a class
+derived from any number of base classes:
+        verb(
+    template <typename... BaseClasses> 
+    class ClassName: public BaseClasses ...
+    {
+        public:
+            ClassName(BaseClasses && ... baseClasses)
+            :
+                BaseClasses(baseClasses) ... 
+            {}
+    }
+        )
+    The unpack operator appears in the above example as the ellipses trailing
+tt(BaseClasses). The class tt(ClassName) is derived from each of the types
+specified when instantiating tt(ClassName). In this example tt(ClassName)'s
+constructor expects a reference to each base class which is used to initialize
+the base classes of ClassName.
+
+    The unpack operator can also be used with function templates. Here it is
+used to forward the variadic parameters. When combined with rvalue references
+this allows for perfect forwarding (cf. section ref(MOVE)). Here is an
+example:
+        verb(
+    template<typename TypeToConstruct> 
+    struct SharedPtrAllocator
+    {
+        template<typename ... Args> 
+        std::shared_ptr<TypeToConstruct> 
+                        ConstructWithSharedPtr(Args && ... params) 
+        {
+            return std::shared_ptr<TypeToConstruct>(
+                    new TypeToConstruct(std::forward<Args>(params) ...)); 
+        }
+    }
+        )
+    In this example the argument list is unpacked into the constructor of
+tt(TypeToConstruct). The tt(std::forward<Args>(params)) syntax perfectly
+forwards arguments as their proper types to the constructor. The unpack
+operator propagates the forwarding syntax to each parameter. In this
+implementation the allocated memory is accessed via a tt(std::shared_ptr) as a
+prevention against memory leaks.
+
+Finally, the number of arguments in a template parameter pack can be
+determined. For this the following construction is available (its use is shown
+below the struct definition):
+        verb(
+    template<typename ...Args> 
+    struct StructName
+    {
+        static size_t const s_size = sizeof...(Args);
+    };
+
+    // SomeName<int, char>::s_size          -- returns 2
+        )
