@@ -1,0 +1,51 @@
+A special use of the keyword ti(auto) is defined by the i(C++-0x standard)
+allowing the compiler to determine the type of a variable automatically rather
+than requiring the software engineer to define a variable's type explicitly.
+
+This can be very useful in situations where it is very hard to determine the
+variable's type in advance. These situations occur, e.g., in the contect of
+em(templates), topics covered in chapters ref(STL) until ref(TEMPAPP).
+
+At this point in the Annotations only simple examples can be given, and some
+hints will be provided about more general uses of the tt(auto) keyword. 
+
+A simple example is the following. When defining and initializing a variable
+tt(int variable = 5) the type of the initializing expression is well known:
+it's an tt(int), and unless the programmer's intentions are different this
+relationship can be exploited by automatically defining tt(variable)'s type:
+        verb(
+    auto variable = 5;
+        )
+    In practice tt(auto) shouldn't be used like that but there are situations
+in which this feature becomes very useful. In chapter ref(String) the concept
+of emi(iterator) is introduced which is further exploited in later chapters
+(e.g., in chapters ref(Containers) and ref(STL)). Iterators sometimes have
+long type definitions, like
+        verb(
+    std::vector<std::string>::const_reverse_iterator
+        )
+    Functions may return such types, which will be perfectly known by the
+compiler. Assuming that a function tt(begin()) is declared as follows:
+        verb(
+    std::vector<std::string>::const_reverse_iterator begin();
+        )
+    Rather than writing the following verbose variable definition (at tt(// 1)
+a much shorter definition (at tt(// 2)) could be used.
+        verb(
+    std::vector<std::string>::const_reverse_iterator iter = begin();    // 1
+    auto iter = begin();                                                // 2
+        )
+    More variables of this type can easily be defined. When initializing those
+variables using tt(iter) the tt(auto) keyword can be used again:
+        verb(
+    auto start = iter;
+        )
+    But if tt(start) can't be initialized immediately using an existing
+variable the type of a well known variable of function can be used in
+combination with the ti(decltype) keyword, as in:
+        verb(
+    decltype(iter) start;
+    decltype(begin()) spare;
+        )
+
+The tt(auto) and tt(decltype) keywords become available in tt(g++ 4.4).
