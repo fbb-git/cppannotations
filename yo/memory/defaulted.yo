@@ -1,0 +1,53 @@
+In everyday class design two situation are frequently encountered:
+    itemization(
+        it() A class offering constructors explicitly has to define a default
+copy constructor;
+        it() A class (e.g., a class implementing a stream or a singleton class) 
+should not allow copy construction or class-to-class (overloaded) assignment.
+    )
+    Once a class defines at least one constructor its default constructor is
+not provided by the compiler. The i(C++-0x standard) relaxes that restriction
+somewhat by offering the tt(= default) syntax. A class may specify 
+tt(= default;) following its default constructor declaration to indicate that
+the i(trivial default constructor) should be provided by the compiler. E.g.,
+the following class tt(Strings) uses this new facility to define a default
+constructor alongside other, explicitly defined constructors:
+        verb(
+    class Strings
+    {
+        public:
+            Strings() = default;
+            Strings(Strings const &other);
+            Strings(std::vector<std::string> const &vs);
+    };
+        )
+    Other class members for which trivial implementations can be provided by
+the compiler can be defined similarly: the copy constructor, the overloaded
+assignment operator and the destructor.
+
+    Alternatively, situations occur in which some members are em(not) to be
+implemented. By explicitly declaring that a member is not available (rather
+than using the approach previously advocated consisting of declaring the
+suppressed members in the class's private section) the compiler is aware that
+the suppressed function cannot be called, not even from other class
+members. It should be noted that this latter use of members was still allowed
+when those members were declared in the class's private section, eventually
+resulting in a linker error rather than a compilation error.
+
+    All members for which the compiler is able to offer a trivial
+implementation can be suppressed by adding the tt(= deleted;) phrase to the
+member's declaration. In the above example the trivial copy constructor and
+overloaded assignment could easily be prevented from being provided by the
+compiler:
+        verb(
+    class Strings
+    {
+        public:
+            Strings() = default;
+            Strings(Strings const &other) = delete;
+            Strings(std::vector<std::string> const &vs);
+            Strings &operator=(Strings const &lhs) = delete;
+    };
+        )
+
+Defaulted and deleted class members will be available from tt(g++ 4.4).
