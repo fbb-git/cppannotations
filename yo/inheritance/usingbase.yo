@@ -1,0 +1,32 @@
+The i(C++-0x standard) allows derived classes to be constructed without
+        hi(inheritance: no derived class constructors)
+    explicitly defining derived class constructors. In these cases the
+available base class constructors are called instead. Either this feature is
+used or it isn't. It is not possible to omit some of the derived class
+constructors and having the corresponding base class constructors used
+instead. In order to use this feature for classes that are derived from
+multiple base classes the constructors of the base classes must have different
+signatures. Considering the complexities that are involved here it's
+probably best to avoid letting classes using multiple inheritance merely use
+their base class's constructors. 
+
+    To delegate construction of derived class objects to its base class
+        hi(delegating class construction)
+        hi(class construction: delegating)
+constructor(s) the following syntax will be used:
+        verb(
+    class BaseClass
+    {
+        public:
+            // BaseClass constructr(s)
+    };
+     
+    class DerivedClass: public BaseClass
+    {
+        public:
+            using BaseClass::BaseClass; // No DerivedClass constructors
+    };
+        )
+
+Delegation of derived class constructors to base class construction is not yet
+available in the tt(g++) compiler.

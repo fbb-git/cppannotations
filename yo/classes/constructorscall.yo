@@ -1,0 +1,80 @@
+Often constructors are specializations of each other, allowing objects to be
+constructed using subsets of arguments for its data members, and/or using
+default argument values for other data members. In many situations classes are
+defining an initialization member that is called by the various
+constructors. A class tt(Stat) defined as a wrapper class around bf(C)'s
+bf(stat)(2) function might define three constructors: one expecting no
+arguments and initializing all data members to appropriate values; a second
+one doing the same, but then calling tt(stat) on the filename provided with
+the constructor and a third one expecting a filename and a search path for the
+provided file name. Rather than repeating the initialization code in each
+constructor,  the common code can be factorized into a member tt(init()) which
+is thereupon called by the constructors.
+
+The i(C++-0x standard) offers an alternative to this design by allowing
+constructors to call each other. In the example given, the C++-0x standard
+allows the constructors to be implemented as follows:
+        verb(
+    class Stat
+    {
+        public:
+            Stat()
+            :
+                // default initialization of members
+            {}
+            Stat(std::string const &fileName)
+            :
+                Stat()
+            {
+                set(fileName);
+            }
+            Stat(std::string const &fileName, std::string const &searchPath)
+            :
+                Stat()
+            {
+                set(fileName, searchPath);
+            }
+            ...
+    };
+        )
+    There is one em(caveat): bf(C++) will consider the object constructed once
+a constructor has normally finished. Once a constructor has finished the
+class's destructor is guaranteed to be called (cf. chapter ref(MEMORY)) and so
+remaining code must make sure that, e.g., all the class's pointer data members
+remain in a valid state. Also, as a prelude to chapter ref(EXCEPTIONS), the
+software engineer using this feature should realize that a destructor em(will)
+be called if a constructor throws an exception after having completed the call
+to another constructor.
+
+    bf(C++) allows static const integral data members to be initialized in the
+        hi(data member: initialization) class interfaces themselves
+(cf. chapter ref(StaticDataFun)). The i(C++-0x) standard adds to this the
+facility to provide all data members (const or non-const, integral or
+non-integral) with a default initialization which is specified in the class
+interface. These default initializations may be overruled again in
+constructors. E.g., if the class tt(Stat) uses a data member tt(bool
+d_hasPath) which is tt(false) by default but the third constructor (see above)
+should initialize it to tt(true) then the following approach is possible:
+        verb(
+    class Stat
+    {   
+        bool d_hasPath = false;
+        
+        public:
+            ...
+            Stat(std::string const &fileName, std::string const &searchPath)
+            :
+                Stat(),
+                d_hasPath(true)
+            {
+                set(fileName, searchPath);
+            }
+            ...
+    };
+        )
+    The member tt(d_hasPath) will receive its value only once: it's always set
+to tt(false) except when the shown constructor is used in which case it's set
+to tt(true).
+
+Constructors calling constructors and default data member initialization is
+not yet available in the tt(g++) compiler.
