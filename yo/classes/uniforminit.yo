@@ -1,0 +1,58 @@
+In addition to using constructors and initializer lists the i(C++-0x) standard
+offers yet another way to initialize variables and objects: i(uniform
+initialization). Uniform initialization uses the following syntax:
+        verb(
+    Type object{value list};
+        )
+    When defining objects using a variable list then each individual object
+may use its own uniform initialization.
+
+The advantage of uniform initialization over using a constructor is that at
+times using constructors can result in an ambiguity as constructing an object
+can sometimes be confused with using the object's overloaded function call
+operator (cf. section ref(FUNOBJ)). As initializer lists can only be used with
+pod types and with classes that are `initializer list aware' (like
+tt(std::vector)) they cannot be used as a generic alternative.
+
+    Uniform initialization can be used to explicitly initialize an object or
+variable, but also to initialize data members in a constructor or implicitly
+in the return statement of functions. Here are two examples:
+        verb(
+    class Person
+    {
+        std::string d_name;
+        size_t d_age;
+
+        public:
+            Person(std::string const &name, size_t age)
+            :
+                d_name{name},
+                d_age{age}
+            {}
+
+            Person copy() const
+            {
+                return {d_name, d_age};
+            }
+    };
+        ) 
+    Although the uniform intialization syntax is slightly different from the
+use of an initializer list (the latter using the assignment operator) the
+compiler will nevertheless use the initializer list if a constructor
+supporting an initializer list is available. As an example consider:
+        verb(
+    class Vector
+    {
+        public:
+            Vector(size_t size);
+            Vector(std::initializer_list<int> values);
+    };
+
+    Vector vi{4};
+        )
+    The above construction will initialize the vector with one value 4 rather
+than initializing a vector having size 4. Consequently, if the vector having
+size 4 is required the definition using the standard constructor syntax must
+be used. I.e., tt(Vector vi(4)).
+
+Uniform initialization becomes available in tt(g++ 4.4).
