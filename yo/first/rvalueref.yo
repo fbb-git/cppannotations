@@ -12,7 +12,9 @@ functions.
 In this parlance the bf(C++) reference should be considered an 
     emi(lvalue reference) (which uses the tt(typename &) notation). In
 contrast, the em(rvalue reference) uses the tt(typename &&) notation which can
-be used to refer to temporaries. Here is an example:
+be used to refer to temporaries. When the term reference is used, it refers to
+both kinds of reference: lvalue reference and rvalue reference. Here is an
+example:
         verb(
     int &ir = int(3);       // fails: int(3) is a temporary
     int const &ic = int(3)  // OK: immutable temporary 
@@ -23,7 +25,7 @@ be used to refer to temporaries. Here is an example:
 
 The above clearly is a rather complex way to define a variable. However, the
 concept allows the implementation of em(move semantics) and em(perfect
-forwarding). 
+forwarding) . 
 
 At this point in the Annotations the concept of emi(move semantics) cannot yet
 fully be discussed (but see section ref(MOVE) for a more thorough
@@ -43,6 +45,7 @@ leak that might result from using Data::copy() can be ignored):
         void copy(Data const &other)
         {
             text = strdup(other.text);
+            size = strlen(text);
         }
     };
         )
@@ -50,13 +53,13 @@ leak that might result from using Data::copy() can be ignored):
         verb(
     Data makeData(char const *txt)
     {
-        Data ret = {strdup(txt)};
+        Data ret = {strdup(txt), strlen(txt)};
         return ret;
     }
 
     int main()
     {
-        Data d1 = {strdup("hello")};
+        Data d1 = {strdup("hello"), strlen("hello")};
 
         Data d2;
         d2.copy(d1);                        // 1 (see text)
@@ -111,4 +114,3 @@ the pointer value is simply moved to its new owner;
     it() Since the tt(other.text) doesn't point to dynamically allocated
 memory anymore the memory leak is prevented.
     )
-
