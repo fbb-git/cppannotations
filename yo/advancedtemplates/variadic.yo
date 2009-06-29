@@ -28,16 +28,16 @@ this template can be instantiated using any number of typenames. E.g.,
             std::map<std::string, std::vector<int>>
     > v1;
         )
-    It is also possible to define an `empty' variadic template, by not
+    It is possible to define an `empty' variadic template by not
 specifying any type when instantiating the variadic template. E.g.,
         verb(
     class Variadic<> empty;
         )
-    Variadic templates can also have one or more fixed parameters. This can be
-used to prevent the instantiation of an empty variadic template. This uses the
-following syntax:
+    On the other hand,  the instantiation of an empty variadic template may be
+prevented by providing one or more fixed parameters. E.g.,
         verb(
-    template<typename First, typename... Rest> class tuple;
+    template<typename First, typename... Rest> 
+    class tuple;
         )
 
     Here is an example of the declaration of a variadic function template
@@ -57,3 +57,18 @@ Note the use of the i(ellipsis) (i(...)). It serves two purposes:
     it() Written to the em(right) of a template or function call argument, it
         represents a series of template arguments.
     )
+
+Although no syntax is offered to determine the individual parameters they can
+be determined recursively. An example is provided in the next section. In
+addition hi(variadic template: number of arguments)the number of arguments in
+a template parameter pack can be determined using ti(sizeof) as shown in the
+following example:
+        verb(
+    template<typename ... Args> 
+    struct StructName
+    {
+        static size_t const s_size = sizeof...(Args);
+    };
+
+    // SomeName<int, char>::s_size          -- returns 2
+        )

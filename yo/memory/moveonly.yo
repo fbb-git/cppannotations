@@ -1,0 +1,19 @@
+Classes may very well allow move semantics without offering copy
+semantics. Most stream classes belong to this category. Extending their
+definition with move semantics greatly enhances their usability. Once move
+semantics becomes available for such classes, so called emi(factory functions)
+(functions returning an object constructed by the function) can easily be
+implemented. E.g.,
+        verb(
+    // assume char *filename
+    ifstream inStream = openIstream(filename); 
+        )
+    For this example to work tt(openIstream) must return an rvalue reference,
+and tt(ifstream) must implement move semantics. At any time there will be 
+only one set of data referring to the open tt(istream).
+
+    Once classes offer move semantics their objects can also safely be stored
+in standard containers. When the container performs reallocation (e.g., when
+its size is enlarged) it will use the object's move semantics when
+reallocating objects.  As the class suppresses copy semantics such containers
+can't still be assigned to each other.
