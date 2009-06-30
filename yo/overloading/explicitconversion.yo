@@ -1,0 +1,37 @@
+In addition to explicit constructors, the i(C++-0x standard) adds 
+    emi(explicit conversion operators) to bf(C++).
+
+For example, a class might define tt(operator bool() const) returning tt(true)
+if an object of that class is in a usable state and tt(false) if not.
+Since the type tt(bool) is an arithmetic type this could result in unexpected
+or unintended behavior. Consider:
+        verb(
+    class StreamHandler
+    {
+        public:
+            operator bool() const;      // true: object is fit for use
+            ...
+    };
+
+    int fun(StreamHandler &sh)
+    {
+        int sx;
+
+        if (sh)                         // intended use of operator bool()
+            ... use sh as usual; also use `sx'
+
+        process(sh);                    // typo: `sx' was intended
+    }
+        )
+    In this example tt(process) unintentionally receives the value returned by
+tt(operator bool) using the implicit conversion from tt(bool) to tt(int).
+        
+
+As C++0x allows the use of tt(explicit) with conversion operators as well
+implicit conversions like the one shown in the example is prevented. If the
+context explicitly asks for a tt(bool) value (as in, e.g., the conditions of
+if-statements and repetition statements or when specifying operands of logical
+operators) will accept the tt(bool) conversion operator's return value as
+these are considered explicit conversions.
+
+Explicit conversion operators are not yet supported by the tt(g++) compiler.
