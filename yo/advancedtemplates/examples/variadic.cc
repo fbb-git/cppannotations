@@ -64,4 +64,12 @@
         // or:  void Demo2<char>::mem(int &&);
         
     // pointers to Demo2::mem:
-    void (Demo2<char>::*mpd2)(int &&) = &Demo2<char>::mem;
+//OK    void (Demo2<char>::*mpd2)(int &&) = &Demo2<char>::mem;
+    void (Demo2<char>::*mpd2)(int &&) = &Demo2<char>::mem<int>; // ook OK
+
+
+
+
+
+
+
