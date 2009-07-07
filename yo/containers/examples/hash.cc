@@ -1,18 +1,11 @@
+    #include <unordered_map>
     #include <iostream>
-        // the following header file must be available in the compiler's
-        // INCLUDE path:
-    #include <hashclasses.h>
+    #include <string>
     using namespace std;
-    using namespace FBB;
 
     int main()
     {
-        __gnu_cxx::hash_map<string, int, HashString > months;
-        // Alternatively, using the classes defined in hashclasses.h,
-        // the following definitions could have been used:
-        //      CharPtrHash<int> months;
-        // or:
-        //      StringHash<int> months;
+        unordered_map<string, int> months;
 
         months["january"] = 31;
         months["february"] = 28;

@@ -1,0 +1,108 @@
+The i(C++-0x standard) officially adds hash tables to the language.
+
+As discussed, the map is a sorted data structure. The keys in maps are sorted
+using the ti(operator<()) of the key's i(data type). Generally, this is not
+the fastest way to either store or retrieve data.  The main benefit of sorting
+is that a listing of sorted keys appeals more to humans than an unsorted list.
+However, a by far faster method to store and retrieve data is to use
+emi(hashing).
+
+Hashing uses a function (called the emi(hash function)) to compute an
+(unsigned) number from the key, which number is thereupon used as an index in
+the table in which the keys are stored. Retrieval of a key is as simple as
+computing the i(hash value) of the provided key, and looking in the table at
+the computed index location: if the key is present, it is stored in the table,
+and its value can be returned. If it's not present, the key is not stored.
+
+Collisions hi(collision) occur when a computed index position is already
+occupied by another element. For these situations the abstract containers have
+solutions available. A simple solution, adopted by the i(C++-0x standard) is
+to use emi(linear chaining) which uses a linked list to store colliding table
+elements in.
+
+In the C++-0x standard the term em(unordered) is used rather than
+em(hash) to avoid name collisions with hash tables developed before the advent
+of the C++-0x standard. Except where tt(unordered) is required as part of a
+type name, the term em(hash) will be used here as it is the term commonly
+encountered. 
+
+Four forms of tt(unordered) data structures are supported: ti(unordered_map),
+ti(unordered_multimap), ti(unordered_set), and ti(unordered_multiset).
+
+Below the ti(unordered_map) container is discussed.  Other containers using
+hashing (ti(unordered_multimap), ti(unordered_set) and ti(unordered_multiset))
+also use hashing but provide functionality corresponding to, respectively, the
+tt(multimap, set) and tt(multiset).
+
+Concentrating on the tt(unordered_map), its constructor needs a emi(key type),
+a i(value type), an object computing a hash value for the key, and an object
+comparing two keys for equality.  Predefined hash functions are available for
+    tt(std::string) keys, and for all the standard 
+    i(scalar numeric types) tt(char, short, int) etc.. If another data type is
+used, a hash function (object) and a equality function (object) must be made
+available (see also section ref(FUNOBJ)). For both situations examples are
+given below.
+
+The class implementing the hash function could be called tt(hash).  Its
+i(function call operator) (ti(operator()())) returns the (tt(size_t)) hash
+value of the key that is passed as its argument.
+
+A em(generic algorithm) (see chapter ref(STL)) exists performing tests of
+equality (i.e., tt(equal_to())). These tests can be used if the key's data
+type supports the equality operator. Alternatively, an overloaded
+ti(operator==()) or specialized i(function object) could be constructed
+returning tt(true) if two keys are equal and tt(false) otherwise. Both
+cases are illustrated below.
+
+The tt(unordered_map) class implements an i(associative array) in which the
+elements are stored according to some hashing scheme. To use an
+tt(unordered_map) container the header file ti(unordered_map) must be
+included:
+        verb(
+    #include <unordered_map>
+        )
+    Constructors, operators and member functions available for the tt(map) are
+also available for the tt(unordered_map). The tt(map) and tt(unordered_map)
+support the same set of operators and member functions. However, the
+emi(efficiency) of a tt(unordered_map) in terms of speed should greatly exceed
+the efficiency of the tt(map). Comparable conclusions may be drawn for the
+tt(unordered_set), tt(unordered_multimap) and the tt(unordered_multiset).
+
+Compared to the tt(map) container, the tt(unordered_map) has an additional
+constructor:
+        verb(
+        unordered_map<...> hash(n);
+        )
+    where tt(n) is a tt(size_t) value, may be used to construct a
+tt(unordered_map) consisting of an initial number of at least tt(n) empty
+slots to put key/value combinations in. This number is automatically extended
+when needed.
+
+The hashed key type is almost always text. So, a tt(unordered_map) in which the
+key's data type is a tt(std::string) occurs most often. Note that although 
+a tt(char *) is allowed as key type this is almost always a bad idea since two
+tt(char *) variables pointing to equal bf(C)-strings stored at different
+locations will be considered different keys.
+
+    The following program defines a unordered_map containing the names of the
+months of the year and the number of days these months (usually) have. Then,
+using the subscript operator the days in several months are displayed. The
+equality operator used the generic algorithm tt(equal_to<string>), which is
+the default fourth argument of the tt(unordered_map) constructor:
+        verbinclude(containers/examples/hash.cc)
+
+A comparable example, showing the use of explicitly defined hash and equality
+functions and key-type tt(char const *):
+        verbinclude(containers/examples/hash2.cc)
+
+
+The tt(unordered_multimap, unordered_set) and tt(unordered_multiset)
+containers are used analogously. For these containers the tt(equal) and
+tt(hash) classes must also be defined. The tt(unordered_multimap) also
+requires the tt(unordered_map) header file.
+
+To use the tt(unordered_set) and tt(unordered_multiset) containers the header
+ti(unordered_set) must have been included:
+        verb(
+    #include <unordered_set>
+        )
