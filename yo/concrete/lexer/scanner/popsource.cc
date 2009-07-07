@@ -8,7 +8,9 @@
         yy_delete_buffer(current);
         yy_switch_to_buffer(d_state.top());
         d_state.pop();
-        d_fileName.pop_back();
+
+        delete d_fileInfo.back().d_in;      // closes the stream as well
+        d_fileInfo.pop_back();
 
         return true;
     }

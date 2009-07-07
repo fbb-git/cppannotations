@@ -3,5 +3,5 @@
     Scanner::Scanner(istream *yyin, string const &initialName)
     {
         switch_streams(yyin, yyout);
-        d_fileName.push_back(initialName);
+        d_fileInfo.push_back(FileInfo(initialName, false));
     }

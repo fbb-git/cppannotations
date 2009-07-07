@@ -33,13 +33,21 @@ class tt(Scanner):
     itemization(
     it() First, we have a look at the class's initial section, showing the
 conditional inclusion of tt(FlexLexer.h), its tt(class) opening, and its
-private data. Its tt(public) section starts off by defining the tt(enum Error)
-defining various symbolic constants for errors that may be detected:
+private data. At the top of the class interface the private struct
+tt(FileInfo) is defined. tt(FileInfo) is used to store the names and pointers
+to open files. The struct has two constructors: one merely accepting a
+filename, the other also expecting a tt(bool) argument indicating that the
+file is already open and should not be handled by tt(FileInfo). This former
+constructor is used only once: as the initial stream is an already open file
+there is no need to open it again and so tt(Scanner)'s constructor will use
+this constructor to store the name of the initial file only. tt(Scanner)'s
+public section starts off by defining the tt(enum Error) defining various
+symbolic constants for errors that may be detected:
         verbinsert(HEAD)(concrete/lexer/scanner/scanner.h)
     it() As they are objects, the class's data members are initialized
 automatically by tt(Scanner)'s i(constructor). It activates the initial input
-(and output) file and pushes the name of the initial input file. Here is its
-implementation:
+(and output) file and pushes the name of the initial input file, using the
+second tt(FileInfo) constructor. Here is its implementation:
         verbinclude(concrete/lexer/scanner/scanner.cc)
     it() The scanning process proceeds as follows:
     once the scanner extracts a filename from an tt(#include) directive, a
@@ -56,8 +64,9 @@ inclusions when switching to new files. This function throws an exception if a
 filename is included twice using a simple literal name check. Here is its
 implementation:
         verbinclude(concrete/lexer/scanner/throwoncircular.cc)
-        it() Then a new tt(ifstream) object is created, for the filename
-in tt(nextSource). If this fails, the scanner throws a tt(cantRead) exception.
+        it() Then the new filename is added to the tt(FileInfo) vector, at the
+same time creating a new tt(ifstream) object.  If this fails, the scanner
+throws a tt(cantRead) exception.
         it() Finally, a new ti(yy_buffer_state) is created for the newly
 opened stream, and the lexical scanner is instructed to switch to that stream
 using tt(yyFlexLexer)'s member function ti(yy_switch_to_buffer()).
@@ -94,11 +103,12 @@ first inspects the size of the tt(d_state) stack: if empty, tt(false) is
 returned and the function terminates. If not empty, then the current buffer is
 deleted, to be replaced by the state waiting on top of the stack. The file
 switch is performed by the tt(yyFlexLexer) members ti(yy_delete_buffer()) and
-tt(yy_switch_to_buffer()). Note that tt(yy_delete_buffer()) takes care of the
-closing of the tt(ifstream) and of deleting the memory allocated for this
-stream in tt(pushSource()). Furthermore, the filename that was last entered in
-the tt(d_fileName) vector is removed. Having done all this, the function
-returns tt(true):
+tt(yy_switch_to_buffer()). Note that tt(yy_delete_buffer()) does em(not) close
+the tt(ifstream) does em(not) delete the memory allocated for this stream by
+tt(pushSource()). Therefore the tt(delete) is called for the tt(ifstream)
+pointer stored at the back of tt(d_fileInfo) to take care of both. Following
+this the last tt(FileInfo) entry is removed from tt(d_fileInfo). Finally the
+function returns tt(true):
         verbinclude(concrete/lexer/scanner/popsource.cc)
     it() Two service members are offered: tt(stackTrace()) dumps the names of
 the currently pushed files to the standard error stream. It may be called by

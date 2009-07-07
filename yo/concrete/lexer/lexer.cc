@@ -6,14 +6,16 @@
         if (argc == 1)
         {
             cerr << "Filename argument required\n";
-            exit (1);
+            return 1;
         }
+
         ifstream yyin(argv[1]);
         if (!yyin)
         {
             cerr << "Can't read " << argv[1] << endl;
-            exit(1);
+            return 1;
         }
+
         Scanner scanner(&yyin, argv[1]);
         try
         {

@@ -6,9 +6,9 @@
             throw nestingTooDeep;
 
         throwOnCircularInclusion();
-        d_fileName.push_back(d_nextSource);
+        d_fileInfo.push_back(FileInfo(d_nextSource));
 
-        ifstream *newStream = new ifstream(d_nextSource.c_str());
+        ifstream *newStream = d_fileInfo.back().d_in;
 
         if (!*newStream)
             throw cantRead;
