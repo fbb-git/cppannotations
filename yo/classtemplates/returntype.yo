@@ -1,0 +1,90 @@
+As amply illustrated in chapter ref(STL) function objects play an important
+role when using generic algorithms. Like generic algorithms themselves,
+function objects can be generically defined as members of class
+templates. When the function call operator (tt(operator()())) of such classes
+themselves have arguments, then the types of those arguments may be abstracted
+as well by defining the function call operator as a member template. 
+Consider the following example:
+        verb(
+    template <typename Class> 
+    class Filter
+    {
+        Class obj;
+        public:
+            template <typename Arg> 
+            Arg operator()(Arg const &arg) const
+            {
+                return obj(arg));    
+            }
+    };
+        )
+    The tt(Filter) class template is a wrapper around tt(Class), filtering
+tt(Class)'s overloaded function call through its own function call
+operator. In the above example the return value of tt(Class)'s function call
+operator is simply passed on, but any other manipulation is possible as
+well.
+    
+    A particular type specified with tt(Filter)'s instantiation may have
+multiple function call operators, e.g.:
+        verb(
+    struct Math
+    {
+        int operator()(int x);
+        double operator()(double x);
+    };
+        )
+    tt(Math) objects can now be filtered defining tt(Filter<Math> fm) and then
+either using tt(Math)'s first or second function call operator, depending on
+the actual argument type. With tt(fm(5)) the tt(int)-version is used, with
+tt(fm(12.5)) the tt(double)-version is used.
+
+    Unfortunately the scheme doesn't work if the function call operators have
+different return and argument types. E.g., the following class tt(Convert)
+cannot be used with tt(Filter):
+        verb(
+    struct Convert
+    {
+        double operator()(int x);
+        std::string operator()(double x);
+    };
+        )
+    This problem can be tackled successfully using defines the class template
+tt(std::)ti(result_of<Functor(Typelist)>) defined by the 
+    i(C++-0x standard). This class template defines tt(type) representing the
+type returned by tt(Functor<TypeList>). It can be used to improve tt(Filter)
+as follows:
+        verb(
+    template <typename Class> 
+    class Filter
+    {
+        Class obj;
+        public:
+            template <typename Arg> 
+            typename std::result_of<Class(Arg)>::type 
+            Arg operator()(Arg const &arg) const
+            {
+                return obj(arg));    
+            }
+    };
+        )
+    Using this definition, tt(Filter<Convert> fc) can be constructed and
+tt(fc(5)) will return a tt(double), while tt(fc(4.5)) returns a
+tt(std::string). 
+
+    The template type parameter that is used when tt(result_of) is used must
+represent the type(s) of a function call operator. It starts with the
+operator's class type (which may be a template type parameter, as shown),
+followed by a (possibly empty) list of types. The compiler will match the
+provided specification with existing function call operators and will define
+the template's tt(::type) as the return type of the matched function call
+operator. 
+
+To use the tt(std::result_of) template the header file ti(functional) must be
+included. The tt(std::result_of) template becomes available in tt(g++ 4.4).
+
+
+
+
+
+
+
