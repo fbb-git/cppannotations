@@ -1,97 +1,81 @@
-Deprecating auto_ptr
+One of the problems using pointers is that strict i(bookkeeping) is required
+with respect to their memory use and lifetime. When a pointer variable goes
+    i(out of scope), the memory pointed to by the pointer is suddenly
+inaccessible, and the program suffers from a i(memory leak). For example, in
+the following function tt(fun()), a memory leak is created by calling
+tt(fun()): the allocated tt(int) value remains inaccessibly allocated:
+        verb(
+    void fun()
+    {
+        new int;
+    }
+        )
+    To prevent memory leaks strict bookkeeping is required: the programmer has
+to make sure that the memory pointed to by a pointer is deleted just before
+the pointer variable goes i(out of scope). The above example could easily be repaired:
+        verb(
+    void fun()
+    {
+        delete new int;
+    }
+        )
+    Now tt(fun()) merely wastes some time.
 
-After years of debates, the C++ standards committee decided that auto_ptr
-should be deprecated. Since the deprecation alone will not make the problems
-of auto_ptr disappear it was decided that a new smart pointer class with more
-or less the same strict ownership semantics of auto_ptr -- but with a cleaner
-and safer interface -- should be added to C++0x. That replacement class is
-called unique_ptr. If you have used auto_ptr before, you will find
-unique_ptr's usage pretty straightforward. However, unlike auto_ptr,
-unique_ptr requires an explicit move operation for moving from lvalues; you
-can't use copy syntax for that purpose. Consequently, STL containers and
-algorithms, and in fact, any generic code will either fail to compile when
-operating on unique_ptr (instead of leaving the bug unreported and crashing at
-runtime), or it will produce valid results if unique_ptr is allowed. In
-addition to solving the safety problems of auto_ptr, the designers of
-unique_ptr decided to extend its functionality without adding space or runtime
-overhead (unless such overhead is explicitly requested) while still
-maintaining source compatibility with auto_ptr (except the ability to move
-from an lvalue with copy syntax).  
+    When a pointer variable points to em(a single value or object), the
+bookkeeping requirements may be relaxed when the pointer variable is defined
+as a tt(std::unique_ptr)hi(unique_ptr) object. Unique_ptrs are em(objects),
+masquerading as pointers. Since they're objects, their destructors are called
+when they go out of scope, and because of that, their destructors will take
+the responsibility of deleting the dynamically allocated memory.
 
-Anything auto_ptr Can Do, But Better
+Before tt(unique_ptrs) can be used the following preprocessor directive must
+have been specified:hi(#include <memory>)
+        verb(
+    #include <memory>
+        )
+    Normally, an tt(unique_ptr) object is initialized with a dynamically
+created value or object.
 
-It should be noted that unique_ptr is not a 100% source-compatible drop-in
-replacement for auto_ptr. If it were, the standards committee could simply
-patch auto_ptr instead of deprecating it and introducing a new class template
-as a replacement. That said everything you can do with auto_ptr, unique_ptr
-will do as well with the same syntax except for moving from lvalues:
+    The following should be considered when using tt(unique_ptr)s:
+    itemization(
+    it() when assigning a tt(unique_ptr) to another em(move semantics) is
+used. If move semantics are not available compilation will fail. On the other
+hand, if compilation succeeds then the used containers or generic algorithms
+support the use of tt(unique_ptr)s. Here is an example:
+        verb(
+    std::unique_ptr<int> up1(new int);
+    std::unique_ptr<int> up2 = up1;      // compilation error
+        )
+    The second definition fails to compile since tt(unique_ptr)'s copy
+constructor is private (the same holds true for the assignment
+operator). The tt(unique_ptr) class em(does) offer facilities to initialize
+and assign from em(rvalue references):
+        verb(
+    class unique_ptr                        // interface partially shown 
+    {
+        public:
+            unique_ptr(unique_ptr &&other); // rvalues bind here
+        private:
+            unique_ptr(const unique_ptr &other);
+    };
+        )
+    Consequently, in the above example move semantics should be used. E.g.,
+        verb(
+    std::unique_ptr<int> up1(new int);
+    std::unique_ptr<int> up2 = std::move(up3); 
+        )
+    it() a tt(unique_ptr) object should only point to memory that was made
+available dynamically, as only i(dynamically allocated memory) can be deleted.
+    it() multiple tt(unique_ptr) objects should not be allowed to point to the
+same block of dynamically allocated memory. The tt(unique_ptr)'s interface was
+designed to prevent this from happening. Once an tt(unique_ptr) object goes out
+of scope, it deletes the memory it points to, immediately changing any other
+object also pointing to the allocated memory into a hi(wild pointer) wild
+pointer.
+    )
+    The tt(class unique_ptr) defines several member functions
+to access the pointer itself or to have the tt(unique_ptr) point to another
+block of memory. These member functions and ways to construct tt(unique_ptr)
+objects are discussed in the next sections.
 
-#include <utility> 
-using std::auto_ptr;
-using std::unique_ptr;
-// default construction
-auto_ptr<int> ap;
-unique_ptr<int> up;
-// initialize with pointer
-auto_ptr<int> ap(new int(9));
-unique_ptr<int> up(new int(9));
-// dereference
-*ap = 23;
-*up = 23;
-// reset
-ap.reset();
-up.reset();
-assert (sizeof(auto_ptr<T>) == sizeof(unique_ptr<T>));
-
-When it comes to copy operations, there's a difference:
-
-auto_ptr<int> ap1(new int);
-auto_ptr<int> ap2 = ap1; // OK, albeit unsafe 
-unique_ptr<int> up1(new int);
-unique_ptr<int> up2 = up1; // compilation error: private copy ctor inaccessible
-
-If you really want to transfer ownership from the lvalue unique_ptr, you have
-to use an explicit std::move() call:
-
-unique_ptr<int> up1(new int);
-unique_ptr<int> up2 = move(up1); // ok, explicit move
-
-unique_ptr permits move from rvalues with copy syntax using a move constructor
-(which binds to rvalues), while blocking the copy from lvalues by making the
-copy constructor (which binds to lvalues) private:
-
-template <class T>
-class unique_ptr
-{
-public:
- unique_ptr(unique_ptr&& u);   // rvalues bind here
-private:
- unique_ptr(const unique_ptr&); // lvalues bind here
-};
-
-In the next part of this series I will discuss passing unique_ptr to a
-function and returning unique_ptr from a function, using unique_ptr with
-algorithms and containers, customizing a deleter, and using unique_ptr for
-storing arrays.
-
-
-Containers and Algorithms
-
-If a container of unique_ptr objects moves elements internally instead of
-copying them, your code will work without problems. If, however, a container
-or an algorithm uses copy semantics for its value_type you will get a
-compilation error. Thus, you won't encounter a run time error due to a move
-operation being mistaken for a copy:
-
-
-vector<unique_ptr<int> > vi;
-v.push_back(unique_ptr<int>(new int(8)));  
-v.push_back(unique_ptr<int>(new int(4)));
-v.push_back(unique_ptr<int>(new int(1)));
-sort(v.begin(),v.end(),indirect_less()); //result {1,4,8}
-
-
-Deleter: as with shared ptr
-
-g++ 4.4
-
+tt(Unique_ptr)s become available in tt(g++ 4.4).

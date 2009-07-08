@@ -1,0 +1,34 @@
+    An tt(unique_ptr) hi(unique_ptr: initialization) may also be initialized
+by another tt(unique_ptr) object for the same type provided tt(type) supports
+emi(move semantics) or move semantics is forced using ti(std::move).
+The generic form is:
+        verb(
+    unique_ptr<type> identifier(other unique_ptr object);
+        )
+    For example, to initialize an tt(unique_ptr<string>), given the variable
+tt(sp) defined in the previous section, the following construction can be
+used:
+        verb(
+    unique_ptr<string> sp2(move(sp));
+        )
+    This move-construction can be used when the data type specified with
+tt(unique_ptr) implements its move-constructor.
+
+    Analogously, the assignment operator can hi(unique_ptr: assignment) be
+used. An tt(unique_ptr) object may be assigned to another tt(unique_ptr)
+object of the same type, again using move-semantics. For example:
+        verbinclude(stl/examples/uniqueother.cc)
+    Looking at the above example, we see that
+    itemization(
+    it() tt(hello1) is initialized as described in the previous section.
+    it() Next tt(hello2) is defined, and it receives its value from
+tt(hello1) using a i(move constructor) initialization. This
+effectively changes tt(hello1) into a 0-pointer.
+    it() Then tt(hello3) is defined as a default tt(unique_ptr<string>), but
+it receives its value through a move-assignment from tt(hello2), which then
+becomes a 0-pointer too.
+    )
+    If, in the example program, tt(hello1) or tt(hello2) would be inserted
+into tt(cout) a emi(segmentation fault) would be generated. The reason for
+this will now be clear: it is caused by dereferencing 0-pointers. In the end,
+only tt(hello3) actually points to a tt(string).
