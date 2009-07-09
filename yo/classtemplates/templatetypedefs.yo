@@ -1,0 +1,63 @@
+Standard C++ allows the use of tt(typedef)s to create `shorthand' notations
+for extensive type names, often resulting in code that is easier to write and
+usually easier to read and understand. E.g., instead of writing
+        verb(
+    std::map<std::shared_ptr<KeyType>, std::vector<std::set<std::string>>>
+        mapObject;
+        )
+    it is possible to write     
+        verb(
+    MapKeyVectorStringSet mapObject;
+        )
+    after having defined
+        verb(
+    typedef 
+       std::map<std::shared_ptr<KeyType>, std::vector<std::set<std::string>>>
+            MapKeyVectorStringSet;
+        )
+    However, it may be that the data type varies. Multiple maps might be used,
+some of them storing tt(string) objects, other might store tt(double) values.
+A class may be defined inheriting from this complex map allowing the
+specification of, e.g., the final key and value types. E.g.,
+        verb(
+    template <typename DeepKey, typename DeepValue>
+    class DeepMap: public std::map<std::shared_ptr<DeepKey>, 
+                            std::vector<std::set<DeepMap>>>
+    {};
+        )
+    This doubtlessly reduces the amount of work, as it is now possible to
+write
+        verb(
+    DeepMap<KeyType, std::string> mapObject;
+        )
+
+The i(C++-0x standard) adds to this the possibility to become even lazier: it
+allows the definition of a tt(typedef) in which some of the template
+parameters are specified leaving other parameters to be specified at a later
+moment in time. E.g., the C++-0x standard allows fixating the key type and
+    hi(typedef: fixating some template params)
+leaving the value type open by introducing the following syntax:
+        verb(
+    template< typename DeepValue>
+    using MapKeyDeepValue = DeepMap<KeyType, DeepValue>;
+
+    MapKeyDeepValue<std::string> sameTypeAs(mapObject);
+        )
+    a similar shorthand notation could be used to fixate the value type and
+leave the key type open for later specification.
+
+    In addition to the above emi(templated typedef)em(s) the ti(using) keyword
+can also be used to separate a typedef name from a complex type
+definition. Consider constructing a typedef for a pointer to a function
+expecting and returning a tt(double). The traditional way to define such a
+type is as follows:
+        verb(
+    typedef double (*PFD)(double);
+        )
+    The i(C++-0x standard allows the use of the following alternative syntax:
+        verb(
+    using PFD = double (*)(double);
+        )
+
+Partially specified typedefs and the alternative syntax for type definition
+are not yet supported by the tt(g++) compiler.
