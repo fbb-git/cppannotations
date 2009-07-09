@@ -1,95 +1,158 @@
 #include <iostream>
 #include <utility>
+#include <functional>
+
 #include <vector>
 #include <string>
 #include <stack>
+#include <thread>
 
 using namespace std;
 
-//template <class T, class A1>
-//void factory(A1&& a1)
-//{
-//    new T(std::forward<A1>(a1));
-//}
-//
-//struct Forward
-//{
-//    Forward() 
-//    {
-//        cout << "Cons\n";
-//    }
-//    Forward(Forward const &fwr)
-//    {
-//        cout << "L-value const reference\n";
-//    }
-//    Forward(Forward &fwr)
-//    {
-//        cout << "L-value reference\n";
-//    }
-//    Forward(Forward *fwr)
-//    {
-//        cout << "Pointer\n";
-//    }
-//    Forward(Forward const *fwr)
-//    {
-//        cout << "Const Pointer\n";
-//    }
-//    Forward(Forward &&fwr)
-//    {
-//        cout << "R-value reference\n";
-//    }
-//    static Forward make()
-//    {
-//        return Forward();
-//    }
-//};
-//
-//template <typename... BaseClasses> 
-//class ClassName: public BaseClasses ...
-//{
-//    public:
-//        ClassName(BaseClasses && ... baseClasses)
-//        :
-//            BaseClasses(baseClasses) ... 
-//        {}
-//};
-//
-//
-//ClassName<string, vector<string>>
-//    object("wim", vector<string>(3));
-
-
-template<typename Iter, typename Object, typename Member>
-void foreach(Iter begin, Iter const &end, 
-                     Object &object, Member member)
+struct Forwarder
 {
+    string d_cl;
+
+    Forwarder()
+    :
+        d_cl("1234567890")
+    {}
+    template<typename ...Args> 
+    string substr(Args&&... args)
+    {
+        return d_cl.substr(std::forward<Args>(args)...);
+    }
+
+////    void fwd(size_t (std::string::*ptr)())
+
+////////////////////////////////////////////////////////////////
+//    template <typename Ret, typename Member, typename Arg>
+//    Ret fwd(Member member, Arg arg)
+//
+////        decltype (static_cast<Client &>(
+////                    *static_cast<Client *>(0)
+////                    ))
+//
+//    
+////        decltype(s_r)
+//    
+//// Niet met .*       decltype ((d_cl.*member)(arg))
+//
+//    {
+//        return (d_cl.*member)(arg);
+//    }
+////////////////////////////////////////////////////////////////
+
+//    template <typename Ret, typename Member, typename ...Args> 
+//    Ret fwd(Member member, Args&&... args)
+//    {
+//        return (d_cl.*member)(std::forward<Args>(args)...);
+//    }
+};
+
+
+struct X
+{
+    template <typename T>//, typename ... Args>
+    struct result
+    {
+        typedef void type;
+    };
+    
+    void operator()(int x)
+    {
+        cout << "int\n";
+    }
+    void operator()(double x)
+    {
+        cout << "double\n";
+    }
+    void operator()(double x, char const *)
+    {
+        cout << "double, string\n";
+    }
+    void operator()(ostream &out, double &x, char const *)
+    {
+        cout << "double, string\n";
+    }
+};
+
+struct One
+{
+    One() 
+    {
+        cout << "One()\n";
+    }
+    One(int) 
+    {
+        cout << "One(int)\n";
+    }
+};
+
+struct Two
+{
+    Two() 
+    {
+        cout << "Two()\n";
+    }
+    Two(int)
+    {
+        cout << "Two(int)\n";
+    }
+};
+
+template <typename Class, typename ... Args>
+Class factory(Args&& ... args)
+{
+    return Class(std::forward<Args>(args) ...);
 }
 
+    void calledFunction(ostream &out)
+    {
+        out << "hello\n";
+    }
 
+    void calledFunction(int x)
+    {
+        ++x;
+    }
+
+    void calledFunction(int &x)
+    {
+        ++x;
+    }
+
+    template <typename ... Args>
+    void caller(Args &&... args)
+    {
+        calledFunction(std::forward<Args>(args) ...);
+    }
 
 int main()
 {
-    stack<int> si;
-    vector<int> vi;
+    int x = 0;
+    caller(cout);
+    caller(x);
+    cout << x << endl;
 
-//    void (stack<int>::*fp)(int&&) = &stack<int>::push;
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-    foreach(vi.begin(), vi.end(), si, &stack<int>::push<int>);
-#else
-    foreach(vi.begin(), vi.end(), si, &stack<int>::push);
-#endif
-
-//    Forward f;
-//    Forward &f1 = f;
-//    Forward &&f2 = f;
-//    Forward const &f3 = f;
+//    int arg;
+//    X x;
+//    Forwarder forwarder;
 //
-//    factory<Forward>(f1);
-//    factory<Forward>(f3);
-//    factory<Forward>(&f1);
-//    factory<Forward>(&f3);
-//    factory<Forward>(Forward::make());
+//    string &&out = forwarder.substr(5, 2);
+//
+//    factory<One>();
+//    Two two(factory<Two>(3));
+//
+//    factory<Two>(two);
+//
+//    cout << out << endl;
+
+//    forwarder.function(x, 0);
+//    forwarder.function(x, 0.0);
+//
+//    double d;
+//    thread t(x, ref(cout), ref(d), "hi");
 }
 
 

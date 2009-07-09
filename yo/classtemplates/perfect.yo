@@ -1,0 +1,127 @@
+Rvalue references, introduced in bf(C++) by the i(C++-0x standard) can also be
+used to achieve emi(perfect forwarding), which was not available in bf(C++)
+before the advent of the C++-0x standard. In combination with variadic
+templates rvalue references allow function templates to forward arguments to
+other functions accepting such arguments. The provided arguments are
+`perfectly forwarded' as they are forwarded in a type-safe way: called
+functions must have matching arguments, matching both in types and number, in
+order to be called.
+
+Perfect forwarding is very useful in situations where objects must pass on
+arguments to (overloaded) members of, e.g., composed objects. Traditionally, a
+class intending to expose some of the functionality of a composed member
+had to repeat that part of the composed member's interface in its own
+interface. Perfect forwarding may change this and may only require the
+addition of one single member template to the composing class's
+interface. In the following example a class tt(Composer) wants to expose the
+tt(substr) members of its composed tt(std::string d_str). Rather than to
+repeat all overloaded versions of tt(std::string) in its own interface it uses
+perfect forwarding to be able to call all overloaded tt(substr) members of
+tt(d_str):
+        verb(
+    class Composer
+    {
+        string d_str;   // somehow initialized, e.g., via a constructor
+    
+        public:
+            template<typename ...Args> 
+            string substr(Args&&... args)
+            {
+                return d_cl.substr(std::forward<Args>(args)...);
+            }
+    };
+        )
+    The core elements in the above example are:
+    itemization(
+    it() The definition of tt(substr) as a variadic template
+    it() em(Forwarding) hi(forward function arguments)
+            the function's arguments, keeping track of their
+            types, using  ti(std::forward)tt(<Args>(args) ...).
+    )
+    As a result, the version of tt(d_str.substr) that is actually called
+depends on the arguments passed to tt(Composer::substr).
+
+Another situation where perfect forwarding is useful is where a 
+    i(factory function) is to be constructed. A factory function forwards its
+arguments to constructors of other classes, returning the thus constructed
+object. When a factory function also receives the typename of the class to
+construct it can be constructed as a generic factory function. A factory
+function may be useful when the construction of several objects of several
+types must be centralized (e.g., when object construction should be logged or
+objects should be constructed dynamically and shared pointers are used to
+refer to constructed objects). Here is an example of a generic factory
+function that may be used to obtain any kind of object using whatever set of
+arguments the constructors may expect:
+        verb(
+    template <typename Class, typename ... Args>
+    Class factory(Args&& ... args)
+    {
+        return Class(std::forward<Args>(args) ...);
+    }
+        )
+    This example shows the same core elements as encountered previously. A
+variadic function template forwarding its argument to a constructor of a class
+specified at call-time. Assume the existence of two classes tt(One) and
+tt(Two), each having a default constructor, a constructor expecting an tt(int)
+and a copy constructor, then objects could be constructed by the factory as
+follows:
+        verb(
+    One one(factory<One>());
+    Two two(factory<Two>(3));
+    Two second(factory<Two>(two));
+        )
+    Here a default tt(One) object, a tt(Two) object using tt(Two)'s constructor
+expecting and tt(int) and a tt(Two) object using tt(Two)'s copy constructor 
+are constructed.
+
+COMMENT(
+Question: What is that forward function in our solution?
+
+Like move, forward is a simple standard library function used to express our
+intent directly and explicitly, rather than through potentially cryptic uses
+of references. We want to forward the argument a1, so we simply say so.
+
+Here, forward preserves the lvalue/rvalue-ness of the argument that was passed
+to factory. If an rvalue is passed to factory, then an rvalue will be passed
+to T's constructor with the help of the forward function. Similarly, if an
+lvalue is passed to factory, it is forwarded to T's constructor as an lvalue.
+
+The definition of forward looks like this:
+
+template <class T>
+struct identity
+{
+    typedef T type;
+};
+
+template <class T>
+T&& forward(typename identity<T>::type&& a)
+{
+    return a;
+}
+
+template <class T, class A1>
+std::shared_ptr<T>
+factory(A1&& a1)
+{
+    return std::shared_ptr<T>( new T( forward<A1>(a1) )  );
+}
+END)
+
+COMMENT(
+Variadic templates are unaware of the intention of programmers with respect to
+the nature of provided arguments, and sometimes they need a little
+help. Consider the following code snippet:
+        verb(
+    void calledFunction(ostream &out)
+    {
+        out << "hello";
+    }
+
+    template <typename ... Args>
+    void caller(Args &&... args)
+    {
+        calledFunction(std::forward<Args>(args) ...);
+    }
+        )
+END)
