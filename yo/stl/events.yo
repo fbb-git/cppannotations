@@ -1,0 +1,155 @@
+Consider a classic producer-consumer case: the producer generates items
+which are consumed by a consumer. The producer can only produce so many items
+before  its storage capacity has filled up and the client cannot consume more
+items than the producer has produced. 
+
+At some point the producer will therefore have to wait until the client has
+consumed enough and there's space available in the producer's
+storage. Similarly, the client will have to wait until the producer has
+produced some more items.
+
+Locking and polling the amount of available items/storage at fixed time
+intervals usually isn't a good option as it is in principle a wasteful scheme:
+threads continue to wait during the full interval even though the condition to
+continue may already have been met; reducing the interval, on the other hand,
+isn't an attractive option either as it results in a relative increase of the
+overhead associated with handling the associated mutexes.
+
+Condition variables hi(std::condition_variable) may be used to solve these
+kinds of problems. A thread simply sleeps until it is notified by another
+thread. In general terms this may be accomplished as follows:
+    verb(
+    producer loop:
+        - produce the next item
+        - wait until there's room to store the item, 
+            then reduce the available room
+        - store the item
+        - increment the number of items in store
+
+    consumer loop:
+        - wait until there's an item in store, 
+            then reduce the number of items in store
+        - remove the item from the store
+        - increment the number of available storage locations
+        - do something with the retrieved item
+    )
+    
+It is important that the two storage administrative tasks (registering the
+number of available items and available storage locations) are either
+performed by the client or by the producer. `Waiting' in this case means:
+    itemization(
+    it() Get a lock on the variable containing the actual count
+    it() As long as the count is zero: wait, relase the lock until
+        another thread has increased the count, re-acquire the lock.
+    it() Reduce the count
+    it() Release the lock.
+    )
+    To implement this a tt(condition_variable) is used. The variable
+containing the actual count is called tt(semaphore); and it can be protected
+by a tt(mutex sem_mutex). In addition a tt(condition_variable condition) is
+defined. The waiting process is defined in the following function tt(down)
+implemented as follows:
+        verb(
+    void down()
+    {
+        unique_lock<mutex> lk(sem_mutex);   // get the lock
+        while (semaphore == 0)
+            condition.wait(lk);             // see 1, below.
+        --semaphore;                        // dec. semaphore count
+    }                                       // the lock is released
+        )
+    At 1 the condition variable's ti(wait())
+        hi(wait(): condition_variable) member internally releases the
+lock, wait for a notification to continue, and re-acquires the lock just
+before returning. Consequently, the tt(down)'s code always has complete and
+unique control over tt(semaphore).
+
+    What about notifying the condition variable? This is handled by the
+`increment the number ...' parts in the abovementioned produced and consumer
+loops. These parts are defined by the following tt(up()) function, implemented
+as follows:
+        verb(
+    void up()
+    {
+        lock_guard<std::mutex> lk(sem_mutex);   // get the lock
+        if (semaphore++ == 0)
+            condition.notify_one();             // see 2, below
+    }                                           // the lock is released
+        )
+    At 2 tt(semaphore) is always incremented. However, by using a postfix
+increment it can be tested for being zero at the same time and if it was zero,
+initially then tt(semaphore) is now one. Consequently, the thread waiting for
+tt(semaphore) being unequal to zero may now
+continue. tt(Condition.notify_one())hi(notify_one()) will notify a waiting
+thread (see tt(down)'s implementation above). If situations where multiple
+threads are waiting `ti(notify_all())' can be used.
+
+    Handling tt(semaphore) can very well be implemented in a class
+tt(Semaphore), offering members tt(down()) and tt(up()). For a more extensive
+discussion of semaphores see i(Tanenbaum, A.S.) (2006) 
+    i(Structured Computer Organization), Pearson Prentice-Hall.
+
+    Using the semaphore facilities, embedded in a class tt(Semaphore) whose
+constructor expects an initial value of its tt(semaphore) data member, the
+classic producer and consumer case can now easily be implemented in the
+following multi-threaded program+footnote(A more elaborate example of the
+producer-consumer program is found in the tt(yo/stl/examples/events.cc) file
+in the bf(C++) Annotations's source archive):
+        verb(
+    Semaphore available(10);
+    Semaphore filled(0);
+    std::queue itemQueue;
+
+    void producer()
+    {
+        size_t item = 0;
+        while (true)
+        {
+            ++item;
+            available.down();
+            itemQueue.push(item);
+            filled.up();
+        }
+    }
+    void client()
+    {
+        while (true)
+        {
+            filled.down();
+            size_t item = itemQueue.front();
+            itemQueue.pop();
+            available.up();
+            process(item);      // not implemented here
+        }
+    }
+
+    int main()
+    {
+        thread produce(producer);
+        thread consume(consumer);
+
+        produce.join();
+        return 0;
+    }
+        )
+
+COMMENT(
+
+You still need to check that the data is ready though, since condition
+variables can suffer from what are called spurious wakes: The call to wait()
+may return even though it wasn't notified by another thread. If you're worried
+about getting this wrong, you can pass that responsibility off to the standard
+library too, if you tell it what you're waiting for with a predicate. The new
+C++0x lambda facility makes this really easy:
+    void foo()
+    {
+        std::unique_lock<std::mutex> lk(m);
+        cond.wait(lk,[]{return data_ready;});
+        process_data();
+    }
+END)
+
+To use tt(condition_variable) objects the header file
+    ti(condition_variable)hi(#include <condition_variable>) must be included.
+    Event handing using tt(condition_variable) objects becomes available in
+tt(g++ 4.4).
