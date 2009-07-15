@@ -1,5 +1,5 @@
 In bf(C++), temporary (rvalue) values are indistinguishable from tt(const &)
-types. the i(C++0x standard) adds a new reference type called an 
+types. the i(C++0x standard) adds a new reference type called an
     emi(rvalue reference), defined as
     ti(typename &&).
 
@@ -7,9 +7,9 @@ The name em(rvalue) reference is derived from assignment statements, where the
 variable to the left of the assignment operator is called an emi(lvalue) and
 the expression to the right of the assignment operator is called an
 emi(rvalue). Rvalues are often temporary values, like values returned by
-functions. 
+functions.
 
-In this parlance the bf(C++) reference should be considered an 
+In this parlance the bf(C++) reference should be considered an
     emi(lvalue reference) (which uses the tt(typename &) notation). In
 contrast, the em(rvalue reference) uses the tt(typename &&) notation which can
 be used to refer to temporaries. When the term reference is used, it refers to
@@ -17,15 +17,15 @@ both kinds of reference: lvalue reference and rvalue reference. Here is an
 example:
         verb(
     int &ir = int(3);       // fails: int(3) is a temporary
-    int const &ic = int(3)  // OK: immutable temporary 
+    int const &ic = int(3)  // OK: immutable temporary
 
     int &&irr = int(3);     // OK: rvalue reference
     ++irr;                  // OK: now the temp. value equals 4
         )
 
 The above clearly is a rather complex way to define a variable. However, the
-concept allows the implementation of emi(move semantics) and 
-    emi(perfect forwarding). 
+concept allows the implementation of emi(move semantics) and
+    emi(perfect forwarding).
 
 At this point in the Annotations the concept of emi(move semantics) cannot yet
 fully be discussed (but see section ref(MOVE) for a more thorough
@@ -79,11 +79,11 @@ tt(copy()) two releated and unpleasant consequences are observed:
 existence is to pass its data on to tt(d3). But instead tt(d3) copies the
 temporary's data with clearly is somewhat overdone.
         it() The temporary tt(Data) object is lost following the call to
-tt(copy()). Unfortunately, so is its dynamically allocated data: resulting in 
+tt(copy()). Unfortunately, so is its dynamically allocated data: resulting in
 a memory leak.
         )
     In cases like these the em(rvalue reference) comes in handy. By
-overloading the tt(copy) member with a tt(copy(Data &&other) member the
+overloading the tt(copy) member with a tt(copy(Data &&other)) member the
 compiler is given a chance to distinguish situations (1) and (2), and to call
 the original tt(copy()) member in situation (1) and to call the overloaded
 tt(copy()) member in situation (2):
@@ -117,4 +117,3 @@ memory anymore the memory leak is prevented.
 
 No development for rvalue references for tt(*this) and initialization of class
 objects by rvalues is currently forseen in tt(g++) up to version 4.4.
-

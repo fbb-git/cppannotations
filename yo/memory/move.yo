@@ -19,7 +19,7 @@ and the statement
     will have to call the class's copy constructor to initialize
 tt(intArray). Following the copy constructor's call the temporary will have to
 be destroyed. Consequently, a full copy construction is required to merely
-pass over the temporary's values to the final destination object. 
+pass over the temporary's values to the final destination object.
 
 Enter the emi(move constructor). The move constructor is a constructor defining
 an i(rvalue reference) to an object of its own class as parameter. Move
@@ -29,14 +29,14 @@ just copied pointer data members accessed through the rvalue reference.
 
 Constructing the class tt(IntArray) along these lines the following class
 interface is obtained (the move constructor's implementation is shown below
-the class interface; the remaining members are constructed 
+the class interface; the remaining members are constructed
     standard)hi(move operator=()):
         verbinclude(memory/examples/intarraymove.cc)
 
 When implementing the move constructor make sure that the class's destructor
 inspects its  pointer data member: if it's zero tt(d_capacity) should of
-course not be used to destroy that number of objects. While this is probably 
-of no concern for tt(IntArray) one could conceive of a class using, e.g., a 
+course not be used to destroy that number of objects. While this is probably
+of no concern for tt(IntArray) one could conceive of a class using, e.g., a
 tt(string **) data member and a naive destructor implementation like
         verb(
     for (string **iter = d_data + d_capacity; iter-- != d_data; )
@@ -54,10 +54,10 @@ is of course invalid and the implementation could be changed into:
 To ensure the use of the move constructor functions returning temporaries
 should not return objects by value but objects by rvalue reference. The
 function tt(loadArray) used earlier should therefore have the following
-signature: 
+signature:
         verb(
     IntArray &&loadIntArray(std::istream &in);
-        ) 
+        )
 
 Rvalue references are often used in combination with temporary values. The
 move constructor, however, will never be used when the source (rvalue) object
@@ -86,7 +86,7 @@ using functionality offered by tt(type_traits) (cf. section ref(TRAITSCPPX)):
     The tt(std::move) function should be used when implementing the move
 constructor to move the information in base classes or composed objects to
 their new destination object. E.g. (only showing the move
-constructor/operator=): 
+constructor/operator=):
         verb(
     class Derived: public Base
     {
@@ -94,19 +94,19 @@ constructor/operator=):
 
         public:
             Derived(Derived&& tmp)    // move constructor
-            : 
-                Base(std::move(tmp)), 
-                d_name(std::move(tmp.d_name)) 
+            :
+                Base(std::move(tmp)),
+                d_name(std::move(tmp.d_name))
             {}
 
             Derived &operator=(Derived &&tmp);
     };
         )
     The implementation of the em(move operator=) is left as an exercise to
-the reader. 
+the reader.
 
     Classes not using composition, inheritance or pointer members pointing to
-memory owned by its objects do not benefit from defining move members. 
+memory owned by its objects do not benefit from defining move members.
 Their trivial copy constructors and overloaded assignment operators can be
 used instead.
 

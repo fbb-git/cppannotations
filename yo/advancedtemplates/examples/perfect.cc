@@ -17,7 +17,7 @@ struct Forwarder
     :
         d_cl("1234567890")
     {}
-    template<typename ...Args> 
+    template<typename ...Args>
     string substr(Args&&... args)
     {
         return d_cl.substr(std::forward<Args>(args)...);
@@ -33,9 +33,9 @@ struct Forwarder
 ////                    *static_cast<Client *>(0)
 ////                    ))
 //
-//    
+//
 ////        decltype(s_r)
-//    
+//
 //// Niet met .*       decltype ((d_cl.*member)(arg))
 //
 //    {
@@ -43,7 +43,7 @@ struct Forwarder
 //    }
 ////////////////////////////////////////////////////////////////
 
-//    template <typename Ret, typename Member, typename ...Args> 
+//    template <typename Ret, typename Member, typename ...Args>
 //    Ret fwd(Member member, Args&&... args)
 //    {
 //        return (d_cl.*member)(std::forward<Args>(args)...);
@@ -58,7 +58,7 @@ struct X
     {
         typedef void type;
     };
-    
+
     void operator()(int x)
     {
         cout << "int\n";
@@ -79,11 +79,11 @@ struct X
 
 struct One
 {
-    One() 
+    One()
     {
         cout << "One()\n";
     }
-    One(int) 
+    One(int)
     {
         cout << "One(int)\n";
     }
@@ -91,7 +91,7 @@ struct One
 
 struct Two
 {
-    Two() 
+    Two()
     {
         cout << "Two()\n";
     }
@@ -154,10 +154,3 @@ int main()
 //    double d;
 //    thread t(x, ref(cout), ref(d), "hi");
 }
-
-
-
-
-
-
-

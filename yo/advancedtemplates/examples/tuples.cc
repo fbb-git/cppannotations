@@ -9,7 +9,7 @@ using namespace std;
 int main()
 {
     typedef std::tuple<int, double &, std::string, char const *> tuple_idsc;
-    
+
     double pi = 3.14;
     tuple_idsc idsc(59, pi, "hello", "fixed");
     tuple_idsc empty;

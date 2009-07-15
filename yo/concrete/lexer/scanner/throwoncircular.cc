@@ -13,4 +13,3 @@
         if (it != d_fileInfo.end())
             throw circularInclusion;
     }
-

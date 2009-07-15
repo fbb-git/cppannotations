@@ -1,23 +1,23 @@
     The emi(unpack operator) can be used to obtain template arguments in
 many situations. No mechanism other than recursion (as shown in the previous
 section) is available to obtain the individual types or values of a variadic
-template. 
+template.
 
     The unpack operator can also be used to define a template class that is
 derived from any number of base classes. Here is an example:
         verb(
-    template <typename... BaseClasses> 
+    template <typename... BaseClasses>
     class ClassName: public BaseClasses ...
     {
         public:
             ClassName(BaseClasses && ... baseClasses)
             :
-                BaseClasses(baseClasses) ... 
+                BaseClasses(baseClasses) ...
             {}
     };
-    
+
         // Define a class derived from a vector, a complex and a string:
-    ClassName<std::vector<std::string>>, std::complex, std::string> 
+    ClassName<std::vector<std::string>>, std::complex, std::string>
         object({"one", "two", "three"}, {3, 2.5}, "hello world");
         )
     In this example the unpack operator appears as the ellipses trailing
@@ -33,24 +33,24 @@ allows the template to forward the variadic parameters. When rvalue references
 are used in this case  perfect forwarding (cf. section
 ref(PERFECT)) can be used. Here is an example:
         verb(
-    template<typename Type> 
+    template<typename Type>
     struct Allocator
     {
-        template<typename ... Args> 
-        std::shared_ptr<Type> factory(Args && ... params) 
+        template<typename ... Args>
+        std::shared_ptr<Type> factory(Args && ... params)
         {
             return std::shared_ptr<Type>(
-                            new Type(std::forward<Args>(params) ...)); 
+                            new Type(std::forward<Args>(params) ...));
         }
     }
         )
     This example has the following characteristics:
     itemization(
     it() The argument list of the member function template tt(factory) is
-unpacked into tt(Type)'s constructor. 
+unpacked into tt(Type)'s constructor.
     it() The tt(std::forward<Args>(params))
 syntax ensures that an  argument is forwared to tt(Type)'s constructor using
-its actual type (and a matching tt(Type) constructor must be available). 
+its actual type (and a matching tt(Type) constructor must be available).
     it() In addition to this (i.e., to using tt(forward)) the
 unpack operator (activated by the ellipses trailing the tt(std::forward)
 call) ensures that the forwarding is applied to each argument in turn.

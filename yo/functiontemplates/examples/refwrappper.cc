@@ -27,7 +27,7 @@ using namespace std;
         arg = sqrt(arg);
     }
 
-    template<typename Fun, typename Arg>    
+    template<typename Fun, typename Arg>
     void call(Fun fun, Arg arg)
     {
         fun(arg);
@@ -41,7 +41,7 @@ using namespace std;
         double value = 3;
         call(sqrtArg, value);
         cout << "Passed value, returns: " << value << endl;
-    
+
         call(sqrtArg, ref(value));
         cout << "Passed ref(value), returns: " << value << endl;
     }

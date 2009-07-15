@@ -1,5 +1,5 @@
     // variadic function template
-    template<typename ... Params> 
+    template<typename ... Params>
     void fun(Params ... parameters)
     {}
 
@@ -16,7 +16,7 @@
     template <typename T>
     struct Demo
     {
-        template<typename ... Params> 
+        template<typename ... Params>
         void mem(Params ... parameters)
         {}
     };
@@ -30,14 +30,14 @@
     void (Demo<char>::*mp)(int) = &Demo<char>::mem;
     void (Demo<char>::*mp2)(int, double) = &Demo<char>::mem;
 
-    
+
     // explicitly obtain the address of the Demo::mem member expecting an int:
-    void (Demo<char>::*mp1)(int) = 
+    void (Demo<char>::*mp1)(int) =
                     //&Demo<char>::mem(int);
         // error meesage: expected primary-expression before 'int'
                     &Demo<char>::mem<int>;
         // OK
-    
+
 
     // a template class using perfect forwarding:
     template<typename T>
@@ -51,8 +51,8 @@
     // instantiation declaration:
     template
         // void Demo2<char>::mem<int>(int v);
-        // error: template-id 'mem<int>' for 'void Demo2<char>::mem(int)' does 
-        //        not match any template declaration 
+        // error: template-id 'mem<int>' for 'void Demo2<char>::mem(int)' does
+        //        not match any template declaration
         // void Demo2<char>::mem<typename ... Args>(Args && ... args);
         // error: using 'typename' outside of template
         //        expected parameter pack before '...'
@@ -62,14 +62,7 @@
         //        expected `;' before '(' token
     void Demo2<char>::mem<int &&>(int &&);
         // or:  void Demo2<char>::mem(int &&);
-        
+
     // pointers to Demo2::mem:
 //OK    void (Demo2<char>::*mpd2)(int &&) = &Demo2<char>::mem;
     void (Demo2<char>::*mpd2)(int &&) = &Demo2<char>::mem<int>; // ook OK
-
-
-
-
-
-
-

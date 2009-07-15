@@ -15,28 +15,28 @@
         std::mutex d_mutex;
         std::condition_variable d_condition;
         size_t d_semaphore;
-        
+
         public:
             Semaphore(size_t semaphore)
             :
                 d_semaphore(semaphore)
             {}
-    
+
             void down()
             {
                 std::unique_lock<std::mutex> lk(d_mutex);   // get the lock
                 while (d_semaphore == 0)
-                    d_condition.wait(lk);   // internally releases the lock 
-                                            // and waits, on exit 
+                    d_condition.wait(lk);   // internally releases the lock
+                                            // and waits, on exit
                                             // acquires the lock again
                 --d_semaphore;              // dec. semaphore
             }   // releases the lock
-    
+
             void up()
             {
                 std::lock_guard<std::mutex> lk(d_mutex);    // get the lock
                 if (d_semaphore++ == 0)
-                    d_condition.notify_one();   // notifies one other 
+                    d_condition.notify_one();   // notifies one other
                                                 // (notify_all is also available)
             }   // releases the lock
     };
@@ -95,7 +95,7 @@
                 size_t d_item = g_queue.front();
                 g_queue.pop();
                 g_available.up();
-    
+
                 size_t msec;
                 g_rand >> msec;
                 g_selector.setAlarm(0, msec);
@@ -126,6 +126,3 @@
 
         return 0;
     }
-
- 
-

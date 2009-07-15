@@ -8,10 +8,10 @@ int main()
     vectorUser();
 }
 
-// this part is never called. It is added to make sure all required 
+// this part is never called. It is added to make sure all required
 // features of declared templates will also be instantiated.
 
-namespace 
+namespace
 {
     void instantiator()
     {

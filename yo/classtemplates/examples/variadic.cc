@@ -16,7 +16,7 @@ namespace FBB
         }
     }
 
-    template<typename T, typename ... Args>                 // 1      
+    template<typename T, typename ... Args>                 // 1
     void printf(const char* s, T value, Args ... args)      // 2
     {
         while (*s)
@@ -24,7 +24,7 @@ namespace FBB
             if (*s == '%' && *(++s) != '%')                 // 6
             {
                 std::cout << value;                         // 8
-                printf(*s ? ++s : s, args...);              // 9 
+                printf(*s ? ++s : s, args...);              // 9
                 return;
             }
             std::cout << *s++;
@@ -48,8 +48,3 @@ catch (std::runtime_error err)
     std::cout << err.what() << std::endl;
     return 1;
 }
-
-
-
-
-

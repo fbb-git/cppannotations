@@ -14,7 +14,7 @@
     struct HashCp
     {
         size_t operator()(char const *str) const
-        { 
+        {
             return hash<std::string const &>()(str);
         }
     };

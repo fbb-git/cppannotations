@@ -15,7 +15,7 @@
             IntArray &operator=(IntArray const &other);
             IntArray &operator=(IntArray &&other);  // Note: move operator=()
     };
-        
+
     IntArray::IntArray(IntArray &&other)
     {
         d_data = other.d_data;
@@ -23,6 +23,3 @@
         d_capacity = other.d_capacity;
         d_nUsed = other.d_nUsed;
     }
-
-
-

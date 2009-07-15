@@ -17,7 +17,7 @@ class Scanner: public yyFlexLexer
     {
         std::string d_name;
         std::ifstream    *d_in;
-        
+
         FileInfo(std::string name)
         :
             d_name(name),

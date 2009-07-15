@@ -33,5 +33,3 @@
         std::thread t1(zero, value);
         std::thread t2(hello);
     };
-
-

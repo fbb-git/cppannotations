@@ -7,7 +7,7 @@ As we've seen the generic algorithms often accept an argument which can either
 be a function object or a plain function. Examples are the tt(sort) and
 tt(find_if) generic algorithms. When the function called by the generic
 algorithm must remember its state a function object is appropriate, otherwise
-a plain function will do. 
+a plain function will do.
 
 The function or function object is usually not readily available. Often it
 must be defined in or near the function using the generic algorithm.  Often
@@ -20,11 +20,11 @@ class), in complex code (to make available software elements that aren't
 native to the called function (object)), and -at the level of the source file-
 code that is irrelevant at the current level of specification. Nested classes
 don't solve these problems and, moreover, nested classes can't be used in
-templates. 
+templates.
 
 Solutions to the above problems exist. In section ref(STLWRAPPERS) a general
 approach is discussed allowing the use of members and/or local variables in
-the context of a function or function object called from generic algorithms. 
+the context of a function or function object called from generic algorithms.
 
 However, the solutions given in section ref(STLWRAPPERS) are in fact makeshift
 solutions that need to be used as long as the language doesn't offer lambda
@@ -34,9 +34,9 @@ will exist only during the lifetime of the statement of which it is a part.
 
 Here is an example of the definition of a lambda function:
         verb(
-    [](int x, int y) 
-    { 
-        return x * y; 
+    [](int x, int y)
+    {
+        return x * y;
     }
         )
     This particular function expects two tt(int) arguments and returns their
@@ -47,39 +47,39 @@ vector:
     cout << accumulate(vi.begin(), vi.end(), 1,
                 [](int x, int y) { return x * y; });
         )
-    The above lambda function will use the implicit return 
-        ih(return type: implicit) 
+    The above lambda function will use the implicit return
+        ih(return type: implicit)
     type tt(decltype(x * y)). An implicit return type can
 only be used if the lambda function has a single statement of the form
     tt(return expression;).
 
-    Alternatively, the return type can be explicitly specified using a 
+    Alternatively, the return type can be explicitly specified using a
         i(late-specified return type), (cf. section ref(AUTO)):
         verb(
-    [](int x, int y) -> int 
-    { 
-        int z = x + y; 
-        return z + x; 
+    [](int x, int y) -> int
+    {
+        int z = x + y;
+        return z + x;
     }
         )
     A lambda function not returning a value (i.e., a void-function) does not
 have to specify a return type at all.
 
     Variables having the same scope as the lambda function can be accessed
-from the lambda function using references. This allows passing the 
-    i(local context) to a lambda function. Such variables are 
+from the lambda function using references. This allows passing the
+    i(local context) to a lambda function. Such variables are
 called a emi(closure). Here is an example:
         verb(
     void showSum(vector<int> &vi)
     {
-        int total = 0; 
+        int total = 0;
         for_each(
-            vi.begin(), vi.end(), 
-            [&total](int x) 
+            vi.begin(), vi.end(),
+            [&total](int x)
             {
                 total += x;
             }
-        ); 
+        );
         std::cout << total;
     }
         )
@@ -89,7 +89,7 @@ list merely defines an tt(int x), which is initialized in turn by each of the
 values stored in tt(vi). Once the generic algorithm has completed
 tt(showSum)'s variable tt(total) has received a value equal to the sum of all
 the vector's values. It has outlived the lambda function and its value is
-displayed. 
+displayed.
 
     If a closure variable is defined without the reference symbol it becomes a
 simple value which is initialized by the local variable when the lambda
@@ -100,16 +100,16 @@ the notation ti([&]) can be used (to pass the full closure by value use
         verb(
     void show(vector<int> &vi)
     {
-        int sum = 0; 
+        int sum = 0;
         int prod = 1;
         for_each(
-            vi.begin(), vi.end(), 
-            [&](int x) 
+            vi.begin(), vi.end(),
+            [&](int x)
             {
                 sum += x;
                 prod *= x;
             }
-        ); 
+        );
         std::cout << sum << ' ' << prod;
     }
         )
@@ -121,10 +121,10 @@ created in, rather than individual references to stack variables.
 
     Combinations of variables passed by value, but some by reference or
 passed by reference but some by value is possible. In that case the default is
-followed by a list of variables passed differently. E.g., 
+followed by a list of variables passed differently. E.g.,
         verb(
-    [&, value](int x) 
-    { 
+    [&, value](int x)
+    {
         total +=  x * value;
     };
         )
@@ -142,7 +142,7 @@ other words, it is defined as a friend of the class. For example:
             void show() const;
             {
                 int count = 0;
-                std::for_each(d_names.begin(), d_end(), 
+                std::for_each(d_names.begin(), d_end(),
                     [this, &count](std::string const &name)
                     {
                         std::cout << ++count <<
@@ -168,14 +168,14 @@ lambda function could have been defined as:
         )
     When lambda functions are compared to, e.g., the function wrappers
 discussed in section ref(STLWRAPPERS) it probably won't come as a surprise
-that 
-lambda functions are function objects. It is possible to assign a 
+that
+lambda functions are function objects. It is possible to assign a
     lambda function to a variable. An example of such an assignment (using
 tt(auto) to define the type of the variable) is:
         verb(
-    auto lambdaFun = [this]() 
-                     { 
-                        this->member(); 
+    auto lambdaFun = [this]()
+                     {
+                        this->member();
                      };
         )
 

@@ -17,6 +17,6 @@
     }
     /*
         Produced output:
-        
+
         Hello world
     */

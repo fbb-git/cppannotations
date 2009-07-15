@@ -24,7 +24,7 @@ struct rng
         d_oldmin(rg.min()),
         d_slope((d_max - static_cast<double>(d_min)) / (rg.max() - d_oldmin))
     {
-//        cout << d_min << " " << d_max << " " << d_oldmin << " " << d_slope << 
+//        cout << d_min << " " << d_max << " " << d_oldmin << " " << d_slope <<
 //                " " << rg.max() << endl << endl;
     }
 
@@ -55,5 +55,3 @@ int main()
         cout << bd(rg) << (idx + 1 == 10 ? '\n' : ' ');
     cout << endl;
 }
-
- 

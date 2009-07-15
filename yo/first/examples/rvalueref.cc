@@ -3,11 +3,11 @@
 
 using namespace std;
 
-template <class T> 
+template <class T>
 void mswap(T& a, T& b)
 {
     T tmp(std::move(a));
-    a = std::move(b);   
+    a = std::move(b);
     b = std::move(tmp);
 }
 
@@ -46,7 +46,7 @@ class X
 
         X &operator=(X const &other) { cout << "std op=\n"; return *this; };
         X &operator=(X &&other) { cout << "rref op=\n"; return *this; };
-        
+
 };
 
 
@@ -77,4 +77,3 @@ cout << "sep 2\n";
 cout << "sep 3\n";
     mswap(xr, x);
 }
-

@@ -2,12 +2,12 @@
 data. Apart from the tt(std::mutex) class a emi(std::recursive_mutex) is
 offered: when called multiple times by the same thread it will increase its
 lock-count. Before other threads may access the protected data the recursive
-mutex must be unlocked again that number of times. In addition 
+mutex must be unlocked again that number of times. In addition
 ti(std::timed_mutex) and ti(recursive_timed_mutex) is offered: their locks
 will time out after a preset amount of time.
 
     In many situations locks will be released at the end of some action
-block. To simplify locking additional template classes 
+block. To simplify locking additional template classes
 ti(std::unique_lock<>) and ti(std::lock_guard<>) are provided. As their
 constructor locks the data and their destructor unlocks the data they can be
 defined as local variables, unlocking their data once their scope terminates.
@@ -31,7 +31,7 @@ considered as well:
 
     void safeProcess()
     {
-        std::unique_lock<std::timed_mutex> 
+        std::unique_lock<std::timed_mutex>
             guard(dataMutex, std::chrono::milliseconds(3));
         if (guard)
             process(data);
@@ -74,10 +74,10 @@ members can both be safely processed by tt(calledByThread).
 Another problematic issue with threads involves initialization. If multiple
 threads are running and only the first thread encountering the initialization
 code should perform the initialization then this problem should not be solved
-by mutexes. Although the synchronization is accomplished, it will needlessly 
+by mutexes. Although the synchronization is accomplished, it will needlessly
 be accomplished time and again once the initialization phase has been
 completed. The C++0x standard offers several ways to perform a proper
-initialization: 
+initialization:
     itemization(
     it() First, a emi(constexpr) em(constructor) may be defined. Constexpr
 constructors are currently not yet supported by the tt(g++) compiler and its
@@ -116,7 +116,7 @@ class my_class
         END)
 
     it() Second, a static variable defined within a compound statement may be
-used (e.g., a static local variable within a function body). 
+used (e.g., a static local variable within a function body).
         hi(static local variables)
         hi(compound stmnt: static variables within)
     block scope may be used.  In C++ static variables defined within a compund
