@@ -40,7 +40,7 @@ using namespace std;
 
         return 0;
     }
-    /* 
+    /*
         Output with g++ 4.3.3:
             cons 1
             move 134514832 to 134514832
@@ -51,4 +51,3 @@ using namespace std;
             move 1 to 1
             1
     */
-
