@@ -1,6 +1,8 @@
     #include "child.h"
     #include <iostream>
     #include <string>
+    #include <cstdlib>
+
     using namespace std;
 
 //CHILD

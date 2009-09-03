@@ -16,8 +16,6 @@
         int status = 0;
         while( waitpid( it.second->pid(), &status, WNOHANG) > -1)
         {};
-
-        return result;
     }
 //=
 //EXIT

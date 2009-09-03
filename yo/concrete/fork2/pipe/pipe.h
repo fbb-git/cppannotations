@@ -1,6 +1,8 @@
 #ifndef INCLUDED_PIPE_H_
 #define INCLUDED_PIPE_H_
 
+#include <cstddef>
+
 namespace FBB
 {
     class Pipe
