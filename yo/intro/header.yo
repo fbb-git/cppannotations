@@ -1,4 +1,4 @@
-The combination of the predefined symbol ti(__cplusplus) and of the
+The combination of the predefined symbol ti(__cplusplus) and the
 possibility to define ti(extern "C") functions offers the ability to
 create header files for both bf(C) and bf(C++). Such a header file might,
 e.g., declare a group of functions which are to be used in both bf(C) and
@@ -10,6 +10,7 @@ The setup of such a header file is as follows:
     extern "C"
     {
     #endif
+
         /* declaration of C-data and functions are inserted here. E.g., */
         void *xmalloc(size_t size);
 
@@ -17,16 +18,16 @@ The setup of such a header file is as follows:
     }
     #endif
         )
-    Using this setup, a normal bf(C) header file is enclosed by
-    tt(extern "C") tt({) which occurs at the start of the file and by tt(}),
-which occurs at the end of the file. The ti(#ifdef) directives test for the
-type of the compilation: bf(C) or bf(C++). The `standard' bf(C) header files,
-such as ti(stdio.h), are built in this manner and are therefore usable for
-both bf(C) and bf(C++).
+ Using this setup, a normal bf(C) header file is enclosed by tt(extern "C")
+tt({) which occurs near the top of the file and by tt(}), which occurs near
+the bottom of the file. The ti(#ifdef) directives test for the type of the
+compilation: bf(C) or bf(C++). The `standard' bf(C) header files, such as
+ti(stdio.h), are built in this manner and are therefore usable for both bf(C)
+and bf(C++).
 
-In addition to this, bf(C++) headers should support emi(include guard)em(s).
+In addition bf(C++) headers should support emi(include guard)em(s).
 In bf(C++) it is usually undesirable to include the same header file twice in
-the same source file. Such i(multiple inclusions) can easily be avoided by
+the same source file. Such multiple inclusions can easily be avoided by
 including an ti(#ifndef) directive in the header file.  For example:
         verb(
     #ifndef MYHEADER_H_
@@ -35,12 +36,11 @@ including an ti(#ifndef) directive in the header file.  For example:
         // using #ifdef __cplusplus etc. directives
     #endif
         )
-    When this file is scanned for the first time by the preprocessor, the
-symbol tt(MYHEADER_H_) is not yet defined. The tt(#ifndef) condition
-succeeds and all declarations are scanned. In addition, the symbol
-tt(MYHEADER_H_) is defined.
+ When this file is initially scanned by the preprocessor, the symbol
+tt(MYHEADER_H_) is not yet defined. The tt(#ifndef) condition succeeds and all
+declarations are scanned. In addition, the symbol tt(MYHEADER_H_) is defined.
 
-    When this file is scanned for a second time during the same compilation,
+    When this file is scanned next while compiling the same source file,
 the symbol tt(MYHEADER_H_) has been defined and consequently all information
 between the tt(#ifndef) and tt(#endif) directives is skipped by the compiler.
 
@@ -52,10 +52,8 @@ purpose, in capitals, with an underscore character instead of a dot.
 extension ti(.h), and to give tt(C++) header files em(no) extension. For
 example, the standard em(iostreams) tt(cin, cout) and tt(cerr) are available
 after including the preprocessor directive ti(#include <iostream>), rather
-than tt(#include <iostream.h>) in a source. In the Annotations this convention
-is used with the standard bf(C++) header files, but not everywhere else
-(Frankly, we tend not to follow this convention: our bf(C++) header files
-still have the tt(.h) extension, and apparently nobody cares...).
+than tt(#include <iostream.h>). In the Annotations this convention is used
+with the standard bf(C++) header files, but not necessarily everywhere else.
 
-There is more to be said about header files. In section ref(CLASSHEADER) the
-preferred organization of bf(C++) header files is discussed.
+There is more to be said about header files. Section ref(CLASSHEADER) provides
+an in-depth discussion of the preferred organization of bf(C++) header files.

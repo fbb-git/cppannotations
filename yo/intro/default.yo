@@ -15,9 +15,10 @@ specified by the programmer. For example:
     }
         )
     The possibility to omit arguments in situations where default arguments
-are defined is just a nice touch: the compiler will supply the missing
-argument unless explicitly specified in the call. The code of the program
-becomes by no means shorter or more efficient.
+are defined is just a nice touch: it is the compiler who supplies the lacking
+argument unless it is explicitly specified at the call. The code of the
+program will neither be shorter nor more efficient when default arguments are
+used.
 
 Functions may be defined with more than one default argument:
         verb(
@@ -30,14 +31,14 @@ Functions may be defined with more than one default argument:
         two_ints(20, 5);       // arguments: 20, 5
     }
         )
-    When the function tt(two_ints()) is called, the compiler supplies one or
-two arguments when necessary. A statement as tt(two_ints(,6)) is however not
-allowed: when arguments are omitted they must be on the right-hand side.
+    When the function tt(two_ints) is called, the compiler supplies one or two
+arguments whenever necessary. A statement like tt(two_ints(,6)) is, however,
+not allowed: when arguments are omitted they must be on the right-hand side.
 
-Default arguments must be known at i(compile-time), since at that moment
-arguments are supplied to functions. Therefore,  the
-default arguments must be mentioned in the function's em(declaration),
-rather than in its em(implementation):
+Default arguments must be known at i(compile-time) since at that moment
+arguments are supplied to functions. Therefore, the default arguments must be
+mentioned at the function's em(declaration), rather than at its
+em(implementation):
         verb(
     // sample header file
     extern void two_ints(int a = 1, int b = 4);
@@ -48,9 +49,8 @@ rather than in its em(implementation):
         ...
     }
         )
-    Note that supplying the default arguments in function definitions instead
-of in function declarations in header files is incorrect: when the function is
-used in other sources the compiler will read the header file and not the
-function definition. Consequently, in those cases the compiler has no way to
-determine the values of default function arguments. Current compilers may
-generate errors when detecting default arguments in function definitions.
+    It is an error to supply default arguments in function definitions. When
+the function is used by other sources the compiler reads the header file
+rather than the function definition. Consequently the compiler has no way to
+determine the values of default function arguments. Current compilers generate
+compile-time errors when detecting default arguments in function definitions.
