@@ -1,11 +1,11 @@
 Earlier it was mentioned that functions can be part of tt(struct)s (see
 section ref(FunctionInStruct)).  Such functions are called
-    emi(member functions) or emi(methods).
-This section discusses how to define such functions.
+    emi(member functions).
+This section briefly discusses how to define such functions.
 
-The code fragment below illustrates a tt(struct) having data fields for a
-name and an address. A function tt(print()) is included in the
-tt(struct) definition:
+The code fragment below shows a tt(struct) having data fields for a person's
+name and address. A function tt(print) is included in the
+tt(struct)'s definition:
         verb(
     struct Person
     {
@@ -15,32 +15,31 @@ tt(struct) definition:
         void print();
     };
         )
-    The member function tt(print()) is defined using the structure name
-(tt(Person)) and the scope resolution operator (tt(::)):
+    When defining the member function tt(print) the structure's name
+(tt(Person)) and the scope resolution operator (tt(::)) are used:
         verb(
     void Person::print()
     {
-        cout << "Name:      " << name << endl
-                "Address:   " << address<< endl;
+        cout << "Name:      " << name << "\n"
+                "Address:   " << address << '\n';
     }
         )
-    In the definition of this member function, the function name is preceded
-by the tt(struct) name followed by tt(::). The code of the function shows how
-the fields of the tt(struct) can be addressed without using the type name: in
-this example the function tt(print()) prints a variable tt(name). Since
-tt(print()) is a part of the tt(struct) tt(person), the variable tt(name)
-implicitly refers to the same type.
+    The implementation of tt(Person::print) shows how the fields of the
+tt(struct) can be accessed without using the structure's type name. Here the
+function tt(Person::print) prints a variable tt(name). Since tt(Person::print)
+is itself a part of tt(struct) tt(person), the variable tt(name) implicitly
+refers to the same type.
 
-This tt(struct) could be used as follows:
+This tt(struct Person) could be used as follows:
         verb(
-    Person p;
+    Person person;
 
-    strcpy(p.name, "Karel");
-    strcpy(p.address, "Rietveldlaan 37");
+    strcpy(person.name, "Karel");
+    strcpy(p.address, "Marskramerstraat 33");
     p.print();
         )
-    The advantage of member functions lies in the fact that the called
-function can automatically address the data fields of the structure for which
-it was invoked. As such, in the statement tt(p.print()) the structure tt(p) is
-the `substrate': the variables tt(name) and tt(address) which are used in the
-code of tt(print()) refer to the same tt(struct p).
+    The advantage of member functions is that the called function
+automatically accesses the data fields of the structure for which it was
+invoked. In the statement tt(person.print()) the object tt(person) is the
+`substrate': the variables tt(name) and tt(address) that are used in the code
+of tt(print) refer to the data stored in the tt(person) object.
