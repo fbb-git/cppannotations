@@ -3,8 +3,8 @@ allowing the compiler to determine the type of a variable automatically rather
 than requiring the software engineer to define a variable's type explicitly.
 
 In parallel, the use of tt(auto) as a storage class specifier is no longer
-supported in the C++0x standard. In that standard a variable definition
-like tt(auto int var) results in a compilation error.
+supported in the C++0x standard. According to that standard a variable
+definition like tt(auto int var) results in a compilation error.
 
 This can be very useful in situations where it is very hard to determine the
 variable's type in advance. These situations occur, e.g., in the contect of
@@ -13,38 +13,41 @@ em(templates), topics covered in chapters ref(STL) until ref(ADVANCEDTEMPL).
 At this point in the Annotations only simple examples can be given, and some
 hints will be provided about more general uses of the tt(auto) keyword.
 
-A simple example is the following. When defining and initializing a variable
-tt(int variable = 5) the type of the initializing expression is well known:
-it's an tt(int), and unless the programmer's intentions are different this
-relationship can be exploited by automatically defining tt(variable)'s type:
+When defining and initializing a variable tt(int variable = 5) the type of the
+initializing expression is well known: it's an tt(int), and unless the
+programmer's intentions are different this could be used to define
+tt(variable)'s type (although it shouldn't in normal circumstances as it
+reduces rather than improves the clarity of the code):
         verb(
     auto variable = 5;
         )
-    In practice tt(auto) shouldn't be used like that but there are situations
-in which this feature becomes very useful. In chapter ref(String) the concept
-of emi(iterator) is introduced which is further exploited in later chapters
-(e.g., in chapters ref(CONTAINERS) and ref(STL)). Iterators sometimes have
-long type definitions, like
+
+    Here are some examples where using tt(auto) em(is) useful. 
+In chapter ref(String) the emi(iterator) concept is introduced (see also
+chapters ref(CONTAINERS) and ref(STL)). Iterators sometimes have long type
+definitions, like
         verb(
     std::vector<std::string>::const_reverse_iterator
         )
-    Functions may return such types, which will be perfectly known by the
-compiler. Assuming that a function tt(begin()) is declared as follows:
+    Functions may return types like this. Since the compiler knows the
+types returned by functions we may exploit this knowledge using
+tt(auto). Assuming that a function tt(begin()) is declared as follows:
         verb(
     std::vector<std::string>::const_reverse_iterator begin();
         )
-    Rather than writing the following verbose variable definition (at tt(//
-1)) a much shorter definition (at tt(// 2)) could be used.
+    Rather than writing the verbose variable definition (at tt(//
+1)) a much shorter definition (at tt(// 2)) may be used:
         verb(
     std::vector<std::string>::const_reverse_iterator iter = begin();    // 1
     auto iter = begin();                                                // 2
         )
-    More variables of this type can easily be defined. When initializing those
-variables using tt(iter) the tt(auto) keyword can be used again:
+    It's easy to define additional variables of this type. When initializing
+those variables using tt(iter) the tt(auto) keyword can be used again:
         verb(
     auto start = iter;
         )
-    But if tt(start) can't be initialized immediately using an existing
+
+    If tt(start) can't be initialized immediately using an existing
 variable the type of a well known variable of function can be used in
 combination with the ti(decltype) keyword, as in:
         verb(
@@ -54,14 +57,11 @@ combination with the ti(decltype) keyword, as in:
     The keyword tt(decltype) may also receive an expression as its
 argument. This feature is already available in the C++0x standard
 implementation in g++ 4.3. E.g., tt(decltype(3 + 5)) represents an int,
-tt(decltype(3 / double(3))) represents tt(double). This latter form can be
-used in an even simpler form (merely mentioning types in an expression) in
-i(templates) (see the example below) to determine, e.g., the type of a
-function template's return type.
+tt(decltype(3 / double(3))) represents tt(double). 
 
-Furthermore, the tt(auto) keyword can be used to postpone the return type in a
-function declaration. The declaration of a function tt(intArrPtr) returning a
-pointer to an array of 10 tt(int)s looks like this:
+The tt(auto) keyword can also be used to postpone the definition of a
+function's return type. The declaration of a function tt(intArrPtr) returning
+a pointer to an array of 10 tt(int)s looks like this:
         verb(
     int (*intArrPtr())[10];
         )
@@ -71,23 +71,12 @@ in combination with the function's parameter list. In situations like these
 the specification of the return type can be postponed using the tt(auto)
 return type, followed by the specification of the function's return type after
 any other specification the function might receive (e.g., as a const member
-(cf. section ref(ConstFunctions)) or after its exception throw list
-(cf. section ref(THROWLIST))). Using tt(auto) to declare the above function,
-the declaration becomes:
+(cf. section ref(ConstFunctions)) or following its exception throw list
+(cf. section ref(THROWLIST))). 
+
+    Using tt(auto) to declare the above function, the declaration becomes:
         verb(
     auto intArrPtr() -> int (*)[10];
         )
     A return type specification using tt(auto) is called a
-        emi(late-specified return type). It can also fruitfully be used when
-defining templates. As a prelude to chapter ref(TEMPLATES): instead of
-constructing
-        verb(
-    template <class T, class U>
-    decltype((*(T*)0)+(*(U*)0)) add(T t, U u);
-        )
-    the following can be used:
-        verb(
-    template <class T, class U>
-    auto add(T t, U u) -> decltype(t+u);
-        )
-    which is arguably easier to read.
+        emi(late-specified return type). 
