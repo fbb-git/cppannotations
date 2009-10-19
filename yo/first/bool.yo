@@ -1,59 +1,54 @@
-In bf(C) the following basic data types are available: tt(void, char, int,
-float) and tt(double). bf(C++) extends these five basic types with several
-extra types. In this section the type ti(bool) is introduced.
-
-The type tt(bool) represents boolean (logical) values, for which the (now
-reserved) values ti(true) and ti(false) may be used. Apart from these reserved
-values, integral values may also be assigned to variables of type tt(bool),
-which are then implicitly converted to tt(true) and tt(false) according to the
-following i(conversion rules) (assume tt(intValue) is an tt(int)-variable, and
-tt(boolValue) is a tt(bool)-variable):
+    The type tt(bool) represents boolean (logical) values, for which the (now
+reserved) constants ti(true) and ti(false) may be used. Except for these
+reserved values, integral values may also be assigned to variables of type
+tt(bool), which are then implicitly converted to tt(true) and tt(false)
+according to the following i(conversion rules) (assume tt(intValue) is an
+tt(int)-variable, and tt(boolValue) is a tt(bool)-variable):
         verb(
         // from int to bool:
     boolValue = intValue ? true : false;
 
         // from bool to int:
-
     intValue = boolValue ? 1 : 0;
         )
-    Furthermore, when tt(bool) values are inserted into, e.g., tt(cout), then
-tt(1) is written for tt(true) values, and tt(0) is written for tt(false)
-values. Consider the following example:
+    Furthermore, when tt(bool) values are inserted into streams then tt(true)
+is represented by tt(1), and tt(false) is represented by tt(0). Consider the
+following example:
         verb(
-    cout << "A true value: "  << true << endl
-         << "A false value: " << false << endl;
+    cout << "A true value: "  << true << "\n"
+            "A false value: " << false << '\n';
         )
     The tt(bool) data type is found in other programming languages as
-well. bf(Pascal) has its type tt(Boolean), and bf(Java) has a tt(boolean)
+well. bf(Pascal) has its type tt(Boolean); bf(Java) has a tt(boolean)
 type. Different from these languages, bf(C++)'s type tt(bool) acts like a kind
-of tt(int) type: it's primarily a documentation-improving type, having just
+of tt(int) type. It is primarily a documentation-improving type, having just
 two values tt(true) and tt(false). Actually, these values can be interpreted
-as tt(enum) values for tt(1) and tt(0). Doing so would neglect the philosophy
+as tt(enum) values for tt(1) and tt(0). Doing so would ignore the philosophy
 behind the tt(bool) data type, but nevertheless: assigning tt(true) to an
 tt(int) variable neither produces warnings nor errors.
 
-Using the tt(bool)-type is generally more intuitively clear than using
+Using the tt(bool)-type is usually clearer than using
 tt(int). Consider the following prototypes:
         verb(
     bool exists(char const *fileName);  // (1)
     int  exists(char const *fileName);  // (2)
     )
-    For the first prototype tt((1)), most people will expect the function to
+    For the first prototype, readers will expect the function to
 return tt(true) if the given filename is the name of an existing
 file. However, using the second prototype some ambiguity arises: intuitively
-the return value 1 is appealing, as it leads to constructions like
+the return value 1 is appealing, as it allows constructions like
         verb(
     if (exists("myfile"))
         cout << "myfile exists";
         )
-    On the other hand, many functions (like ti(access()), ti(stat()), etc.)
-return tt(0) to indicate a successful operation, reserving other values to
-indicate various types of errors.
+    On the other hand, many system functions (like bi(access)(2), bi(stat)(2),
+and many other) return 0 to indicate a successful operation, reserving other
+values to indicate various types of errors.
 
-    As a rule of thumb I suggest the following: if a function should
-inform its caller about the success or failure of its task, let the function
-return a tt(bool) value. If the function should return success or various
-types of errors, let the function return em(enum) values, documenting the
-situation when the function returns. Only when the function returns a
+    As a rule of thumb I suggest the following: if a function should inform
+its caller about the success or failure of its task, let the function return a
+tt(bool) value. If the function should return success or various types of
+errors, let the function return em(enum) values, documenting the situation by
+its various symbolic constants. Only when the function returns a conceptually
 meaningful integral value (like the sum of two tt(int) values), let the
 function return an tt(int) value.
