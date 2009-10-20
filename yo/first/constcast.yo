@@ -1,30 +1,17 @@
-    it() There is a special cast to do away with the tt(const)
-type-modification:
+The tt(const) keyword has been given a special place in casting. Normally
+anything tt(const) is tt(const) for a good reason. Nonetheless situations
+may be encountered where the tt(const) can be ignored. For these special
+situations the tt(const_cast) should be used. Its syntax is:
                      centt(const_cast<type>(expression))
-    it() A third cast is used to change the em(interpretation) of information:
-                   centt(reinterpret_cast<type>(expression))
-    it() And, finally, there is a cast form which is used in combination with
-polymorphism (see chapter ref(POLYMORPHISM)). The
-                    centt(dynamic_cast<type>(expression))
-    is performed run-time to convert, e.g., a pointer to an object of a
-certain class to a pointer to an object further down its so-called em(class
-hierarchy). At this point in the em(Annotations) it is a bit premature to
-discuss the tt(dynamic_cast), but we will return to this topic in section
-ref(DYNAMICCAST).
-    )
+ A ti(const_cast<type>(expression)) expression is used to undo the
+tt(const) attribute of a (pointer) type. 
 
-
-
-
-    The ti(const_cast<type>(expression)) operator is used to undo the
-tt(const)-ness of a (pointer) type. Assume that a function
-    tt(fun(char *s)) is available, which performs some operation on its
-tt(char *s) parameter. Furthermore, assume that it's em(known) that the
-function does not actually alter the string it receives as its argument. How
-can we use the function with a string like tt(char const hello[] = "Hello
-world")?
-
-Passing tt(hello) to tt(fun()) produces the warning
-    centt(passing `const char *' as argument 1 of `fun(char *)' discards const)
-        which can be prevented using the call
-                    centt(fun(const_cast<char *>(hello));)
+    The need for a tt(const_cast) may occur in combination with functions from
+the standard bf(C) library which traditionally weren't always as const-aware
+as they should. A function tt(strfun(char *s)) might be available, performing
+some operation on its tt(char *s) parameter without actually modifying the
+characters pointed to by tt(s). Passing tt(char const hello[] = "hello";) to
+tt(strfun) will produce the warning
+   centt(passing `const char *' as argument 1 of `fun(char *)' discards const)
+ A tt(const_cast) is the appropriate way to prevent the warning:
+                 centt(strfun(const_cast<char *>(hello));)
