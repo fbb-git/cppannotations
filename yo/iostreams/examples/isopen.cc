@@ -7,11 +7,11 @@
     {
         ofstream of;
 
-        cout << "of's open state: " << boolalpha << of.is_open() << endl;
+        cout << "of's open state: " << boolalpha << of.is_open() << '\n';
 
         of.open("/dev/null");       // on Unix systems
 
-        cout << "of's open state: " << of.is_open() << endl;
+        cout << "of's open state: " << of.is_open() << '\n';
     }
     /*
         Generated output:

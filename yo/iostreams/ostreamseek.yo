@@ -1,39 +1,38 @@
 Although not every tt(ostream) object supports i(repositioning), they usually
 do. This means that it is possible to rewrite a section of the stream which
-was written earlier. Repositioning is frequently used in
-    emi(database applications) where it must be possible to access the
-information in the database randomly.
+was written earlier. Repositioning is frequently used in database applications
+where it must be possible to access the information in the database at random.
 
-The following members are available:
+The current position can be obtained and modified using the following members:
     itemization(
-        itht(ostream::tellp())(pos_type ostream::tellp()):
-            quote(this function returns the current (absolute) position where
-the next write-operation to the stream will take place. For all practical
-purposes a ti(pos_type) can be considered to be an tt(unsigned long).)
-        itht(ostream::seekp())
-        (ostream &ostream::seekp(off_type step, ios::seekdir org)):
-            quote(This member function can be used to reposition the
-stream. The function expects an ti(off_type) tt(step), the stepsize in bytes
-to go from tt(org). For all practical purposes an tt(off_type) can be
-considered to be a tt(long).
-    The origin of the step, tt(org) is an ti(ios::seekdir) value. Possible
-values are:
+    ithtq(tellp)(ios::pos_type ostream::tellp()):
+        (the current (absolute) position in the file where the next
+write-operation to the stream will take place is returned.)
+    ithtq(seekp)
+        (ostream &ostream::seekp(ios::off_type step, ios::seekdir org))
+        (modifies a stream's actual position. The function expects an
+ti(off_type) tt(step) representing the number of bytes the current stream
+position is moved with respect to tt(org). The tt(step) value 
+may be negative, zero or positive.
+    The origin of the step, tt(org) is a value in the
+hi(seekdir)tt(ios::seekdir) enumeration. Its values are:
         itemization(
-        iti(ios::beg):
-            quote(tt(org) is interpreted as the stepsize relative to the
-beginning of the stream. If tt(org) is not specified, tt(ios::beg) is
-used. )
-        iti(ios::cur):
-            quote(tt(org) is interpreted as the stepsize relative to the
-current position (as returned by tt(tellp()) of the stream).)
-        iti(ios::end):
-            quote(tt(org) is interpreted as the stepsize relative to the
-current end position of the the stream.)
+        ithtq(beg)(ios::beg)
+            (the stepsize is computed relative to the beginning of the
+stream. This value is used by default. 
+            )
+        ithtq(cur)(ios::cur)
+            (the stepsize is computed relative to the current position of the
+stream (as returned by tt(tellp)).
+            )
+        itttq(end)(ios::end)
+            (the stepsize is interpreted relative to the current end position
+of the the stream.)
     )
-    It is OK to i(seek beyond end of file)hi(write beyond end of file).
-Writing bytes to a location beyond endOfFile() will pad the intermediate bytes
-with i(ASCII-Z) values: i(null-bytes). It is em(not) allowed to
-    i(seek before the begining of a file).
-    Seeking before tt(ios::beg) will cause the ti(ios::fail) flag to be set.
+    It is OK to 
+ hi(write beyond end of file)hi(seek beyond file boundaries) seek or write
+beyond the last file position.  Writing bytes to a location beyond endOfFile()
+will pad the intermediate bytes with i(ASCII-Z) values: i(null-bytes).
+    Seeking before tt(ios::beg) raises the hi(fail)tt(ios::fail) flag.
         )
     )

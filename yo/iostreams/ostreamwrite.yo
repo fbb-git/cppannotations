@@ -1,13 +1,13 @@
 The class ti(ostream) supports both formatted and emi(binary output).
 
-The emi(insertion operator) (lshift()) may be used to insert values in
-a i(type safe) way into tt(ostream) objects.  This is called
+The emi(insertion operator) (lshift()) is used to insert values in
+a type safe way into tt(ostream) objects.  This is called
     i(formatted output), as binary values which are stored in the computer's
 memory are converted to human-readable i(ASCII) characters according to
 certain formatting rules.
 
-Note that the insertion operator points to the tt(ostream )object wherein the
-information must be inserted.  The normal associativity of lshift()
+Note that the insertion operator points to the tt(ostream) object to
+receive the information.  The normal associativity of lshift()
 remains unaltered, so when a statement like
         verb(
     cout << "hello " << "world";
@@ -23,38 +23,40 @@ same tt(cout) object, is returned. Now, the statement is reduced to
 The lshift() operator has a lot of (overloaded) variants, so many types of
 variables can be inserted into tt(ostream) objects. There is an overloaded
 lshift()-operator expecting an tt(int), a tt(double), a pointer, etc. etc..
-For every part of the information that is inserted into the stream the operator
-returns the tt(ostream) object into which the information so far was inserted,
-and the next part of the information to be inserted is processed.
+Each operator will return the tt(ostream) object into which the information so
+far has been inserted, followed by the next insertion.
 
-    Streams do not have facilities for formatted output like bf(C)'s
-ti(printf()) and ti(vprintf()) functions. Although it is not difficult to
-implement these facilities in the world of streams, tt(printf())-like
+    Streams lack facilities for formatted output like bf(C)'s
+ti(printf) and ti(vprintf) functions. Although it is not difficult to
+implement these facilities in the world of streams, tt(printf)-like
 functionality is hardly ever required in bf(C++) programs. Furthermore, as it
 is potentially type-em(unsafe), it might be better to avoid this functionality
 completely.
 
     When hi(binary files) binary files must be written, normally no
 text-formatting is used or required: an tt(int) value should be written as a
-series of unaltered bytes, not as a series of i(ASCII) numeric characters 0 to
+series of raw bytes, not as a series of i(ASCII) numeric characters 0 to
 9. The following member functions of tt(ostream) objects may be used to
 write `binary files':
     itemization(
-        it() hi(ostream::put()) tt(ostream& ostream::put(char c)):
-            quote(This member function writes a single character to the output
-stream. Since a character is a byte, this member function could also be used
-for writing a single character to a hi(text files) text-file.)
-        it() hi(ostream::write())
-            tt(ostream& ostream::write(char const *buffer, int length)):
-            quote(This member function writes at most tt(length) bytes, stored
-in the tt(char const *buffer) to the tt(ostream) object. The bytes are written
-as they are stored in the buffer, no formatting is done whatsoever. Note that
-the first argument is a tt(char const *): a em(type_cast) is required to write
-any other type. For example, to write an tt(int) as an unformatted series of
-byte-values:
+    ithtq(put)(ostream& ostream::put(char c))
+        (to write a single character to the output stream. Since a character
+is a byte, this member function could also be used for writing a single
+character to a text-file.
+     ithtq(write)(ostream& ostream::write(char const *buffer, int length))
+        (to write at most tt(length) bytes, stored in the tt(char const
+*buffer) to the tt(ostream) object. Bytes are written as they are stored
+in the buffer, no formatting is done whatsoever. Note that the first argument
+is a tt(char const *): a em(type cast) is required to write any other
+type. For example, to write an tt(int) as an unformatted series of
+byte-values use:
         verb(
     int x;
     out.write(reinterpret_cast<char const *>(&x), sizeof(int));
             )
         )
+    Also note that the bytes written by the above tt(write) call will be
+written in an order depending on the emi(endian)em(-ness) of the underlying
+hardware. Big-endian computers will write the most significant byte first,
+little-endian computers will first write the least significant byte.
     )
