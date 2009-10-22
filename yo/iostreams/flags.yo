@@ -1,137 +1,282 @@
 Most emi(formatting flags) are related to outputting information. Information
-can be written to output streams in basically two ways: emi(binary output)
-will write information directly to the output stream, without conversion to
-some i(human-readable) format. E.g., an tt(int) value is written as a set of
-four bytes. Alternatively, emi(formatted output) will convert the values that
-are stored in bytes in the computer's memory to i(ASCII)-characters, in order
-to create a human-readable form.
+can be written to output streams in basically two ways: using emi(binary
+output) information is written directly to an output stream, without
+converting it first to some i(human-readable) format and using emi(formatted
+output) by which values stored in the computer's memory are converted to
+human-readable text first. Formatting flags are used to define the way this
+conversion takes place. In this section all formatting flags are
+covered. Formatting flags may be (un)set using member functions, but often
+manipulators having the same effect may also be used. For each of the flags
+it is shown how they can be controlled by a member function or -if available-
+a manipulator.
 
-Formatting flags can be used to define the way this conversion takes place, to
-control, e.g., the number of characters that are written to the output
-stream.
-
-Remembering that the member function tt(setf(fmtflags flags, fmtflags mask))
-requires the use of the directive tt(#include <iomanip>) (cf. section
-ref(IOHDRS)) the following formatting flags are available (see also sections
-ref(FORMATMEMBERS) and ref(MANIPULATORS)). If only the formatting flags
-themselves must be available then include ti(#include <ios>).
+bf(To display information in wide fields):
 
     itemization(
-        iti(ios::adjustfield):
-            quote(emi(mask value) used in combination with a flag setting
-defining the way values are adjusted in wide fields (tt(ios::left),
-tt(ios::right), tt(ios::internal)). Example, setting the value 10 left-aligned
-in a field of 10 character positions:
-                verb(
-    cout.setf(ios::left, ios::adjustfield);
-    cout << "'" << setw(10) << 10 << "'" << endl;
-                )
-            )
-        iti(ios::basefield):
-            quote(emi(mask value) used in combination with a flag setting the
-radix of integral values to output (tt(ios::dec), tt(ios::hex) or
-tt(ios::oct)). Example, printing the value 57005 as a hexadecimal number:
-                verb(
-    cout.setf(ios::hex, ios::basefield);
-    cout << 57005 << endl;
-        // or using the manipulator:
-    cout << hex << 57005 << endl;
-                )
-        )
-        iti(ios::boolalpha):
-            quote(to display boolean values as text using the text
-`tt(true)' for the tt(true) logicalvalue, and the string `tt(false)' for
-the tt(false) logicalvalue. By default this flag is not set. Corresponding
-manipulators: tt(boolalpha) and ti(noboolalpha). Example, printing the
-boolean value `true' instead of 1:
-                verb(
-    cout << boolalpha << (1 == 1) << endl;
-                )
-)
-        iti(ios::dec):
-            quote(to read and display integral values as decimal (i.e.,
-i(radix) 10) values. This is the default.
-    With tt(setf()) the mask value ti(ios::basefield) must be provided.
-    Corresponding manipulator: ti(dec).)
-        iti(ios::fixed):
-            quote(to display real values in a fixed notation (e.g.,
-            12.25), as opposed to displaying values in a scientific
-notation. If just a change of notation is requested the  mask value
-ti(ios::floatfield) must be provided when tt(setf()) is used. Example:
-see tt(ios::scientific) below. Corresponding manipulator: tt(fixed).
+    it() hi(internal)hi(adjustfield)tt(ios::internal):
+        quote(to add i(fill characters) (blanks by default) between the minus
+sign of negative numbers and the value itself. Other values and data types are
+right-adjusted. Manipulator: tt(std::internal). Example:
+        verb(
+    cout.setf(ios::internal, ios::adjustfield);
+    cout << internal;       // same, using the manipulator
 
-    Another use of tt(ios::fixed) is to set a fixed number of digits behind
-the decimal point when floating or double values are to be printed. See
-tt(ios::precision) in section ref(FORMATMEMBERS).
-            )
-        iti(ios::floatfield):
-            quote(mask value used in combination with a flag setting the
-way real numbers are displayed (tt(ios::fixed) or
-tt(ios::scientific)). Example:
-                verb(
-    cout.setf(ios::fixed, ios::floatfield);
-                )
-            )
-        iti(ios::hex):
-            quote(to read and display integral values as hexadecimal values
-(i.e., radix 16) values.
-    With tt(setf()) the mask value ti(ios::basefield) must be provided.
-    Corresponding manipulator: ti(hex).)
-        iti(ios::internal):
-            quote(to add i(fill characters) (blanks by default) between the
-minus sign of negative numbers and the value itself.
-    With tt(setf()) the mask value ti(adjustfield) must be provided.
-    Corresponding manipulator: ti(internal).)
-        iti(ios::left):
-            quote( to left-adjust (integral) values in fields that are wider
-than needed to display the values.  By default values are right-adjusted (see
-below).
-    With tt(setf()) the mask value ti(adjustfield) must be provided.
-    Corresponding manipulator: ti(left).)
-        iti(ios::oct):
-            quote( to display integral values as octal values (i.e., radix 8)
-values.
-    With tt(setf()) the mask value ti(ios::basefield) must be provided.
-    Corresponding manipulator: ti(oct).)
-        iti(ios::right):
-            quote( to right-adjust (integral) values in fields that
-are wider than needed to display the values.  This is the default adjustment.
-    With tt(setf()) the mask value ti(adjustfield) must be provided.
-    Corresponding manipulator: ti(right).)
-        iti(ios::scientific):
-            quote( to display real values in emi(scientific notation) (e.g.,
-1.24e+03).
-    With tt(setf()) the mask value ti(ios::floatfield) must be provided.
-    Corresponding manipulator: tt(scientific).)
-        iti(ios::showbase):
-            quote( to display the numeric base of integral
-values. With hexadecimal values the tt(0x) prefix is used, with octal values
-the prefix tt(0). For the (default) decimal value no particular prefix is
-used. Corresponding manipulators: tt(showbase) and ti(noshowbase))
-        iti(ios::showpoint):
-            quote( display a trailing decimal point and trailing
-decimal zeros when real numbers are displayed. When this flag is set, an
-insertion like:
-        centt(cout << 16.0 << ", " << 16.1 << ", " << 16 << endl;)
-    could result in:
-        centt(16.0000, 16.1000, 16)
-    Note that the last tt(16) is an integral rather than a real number, and is
-not given a decimal point: tt(ios::showpoint) has no effect here.
-    If tt(ios::showpoint) is not used, then trailing zeros are discarded. If
-the decimal part is zero, then the decimal point is discarded as well.
-    Corresponding manipulator: ti(showpoint).)
-        iti(ios::showpos):
-            quote(display a tt(+) character with positive
-values. Corresponding manipulator: ti(showpos).)
-        iti(ios::skipws):
-            quote(used for extracting information from
-streams. When this flag is set (which is the default) leading i(white space)
-characters (blanks, tabs, newlines, etc.) are skipped when a value is
-extracted from a stream. If the flag is not set, leading white space
-characters are not skipped.)
-        iti(ios::unitbuf):
-            quote(flush the stream after each output operation.)
-        iti(ios::uppercase):
-            quote(use capital letters in the representation of
-(hexadecimal or scientifically formatted) values.)
+    cout << '\'' << setw(5) << -5 << "'\n";  // displays '-   5'
+        )
+        )
+    ithtqt(left)(ios::left)
+        (to left-adjust values in fields that are wider than needed to display
+the values.  Manipulator: tt(std::left). Example:
+        verb(
+    cout.setf(ios::left, ios::adjustfield);
+    cout << left;           // same, using the manipulator
+
+    cout << '\'' << setw(5) << "hi" << "'\n";  // displays 'hi   '
+        )
+        )
+    ithtqt(right)(ios::right)
+        (to right-adjust values in fields that are wider than needed to
+display the values.  Manipulator: tt(std::right). This is the default.
+Example:
+        verb(
+    cout.setf(ios::right, ios::adjustfield);
+    cout << right;          // same, using the manipulator
+
+    cout << '\'' << setw(5) << "hi" << "'\n";  // displays 'hi   '
+        )
+        )
     )
+
+bf(Using various number representations):
+
+    itemization(
+    ithtq(dec)(ios::dec)
+        (to display integral values as decimal numbers. Manipulator:
+tt(std::dec). This is the default. Example:
+        verb(
+    cout.setf(ios::dec, ios::basefield);
+    cout << dec;            // same, using the manipulator
+    cout << 0x10;           // displays 16
+        )
+        )
+    ithtq(hex)(ios::hex)
+        (to display integral values as hexadecimal numbers. Manipulator:
+tt(std::hex). Example:
+        verb(
+    cout.setf(ios::hex, ios::basefield);
+    cout << hex;            // same, using the manipulator
+    cout << 16;             // displays 10
+        )
+        )
+    ithtq(oct)(ios::oct)
+        (to display integral values as octal numbers. Manipulator:
+tt(std::oct). Example:
+        verb(
+    cout.setf(ios::oct, ios::basefield);
+    cout << oct;            // same, using the manipulator
+    cout << 16;             // displays 20
+        )
+        )
+    ithtq(setbase)(std::setbase(int radix))
+        (This is a manipulator that can be used to change the number
+representation to decimal, hexadecimal or octal. Example:
+        verb(
+    cout << setbase(8);     // octal numbers, use 10 for 
+                            // decimal, 16 for hexadecimal
+    cout << 16;             // displays 20
+        )
+        )
+    )
+
+bf(Fine-tuning displaying values):
+
+    itemization(
+    ithtq(boolalpha)(ios::boolalpha):
+            quote(logical values may be displayed as text using the text
+`tt(true)' for the tt(true) logical value, and `tt(false)' for the tt(false)
+logical value using tt(boolalpha).  By default this flag is not
+set. Complementary flag: tt(ios::noboolalpha). Manipulators: tt(boolalpha) and
+hi(noboolalpha)(tt(std::noboolalpha).  Example:
+        verb(
+    cout.setf(ios::boolalpha);
+    cout << boolalpha;      // same, using the manipulator
+    cout << (1 == 1);       // displays true
+        )
+        )
+    ithtq(showbase)(ios::showbase)
+        (to display the numeric base of integral values. With hexadecimal
+values the tt(0x) prefix is used, with octal values the prefix tt(0). For the
+(default) decimal value no particular prefix is used. Complementary flag:
+tt(ios::noshowbase). Manipulators: tt(std::showbase) and
+hi(noshowbase)tt(std::noshowbase). Example:
+        verb(
+    cout.setf(ios::showbase);
+    cout << showbase;       // same, using the manipulator
+    cout << hex << 16;      // displays 0x10
+        )
+        )
+    ithtq(showpos)(ios::showpos)
+        (to display the tt(+) sign with positive decimal (only)
+values. Complementary flag: tt(ios::noshowpos).  Manipulators:
+tt(std::showpos) and hi(noshowpos)tt(std::noshowpos). Example:
+        verb(
+    cout.setf(ios::showpos);
+    cout << showpos;            // same, using the manipulator
+    cout << 16;                 // displays +16
+    cout.unsetf(ios::showpos);  // Undo showpos
+    cout << 16;                 // displays 16
+        )
+        )
+    ithtq(uppercase)(ios::uppercase)
+        (to display letters in hexadecimal values using capital
+letters. Complementary flag: tt(ios::nouppercase).  Manipulators:
+tt(std::uppercase) and hi(nouppercase)tt(std::nouppercase).  By default lower
+case letters are used. Example:
+        verb(
+    cout.setf(ios::uppercase);
+    cout << uppercase;            // same, using the manipulator
+    cout << hex << showbase << 
+            3735928559;           // displays 0XDEADBEEF
+        )
+        )
+    )
+
+bf(Displaying floating point numbers)
+
+    itemization(
+    it()hi(fixed)hi(floatfield)hi(display floating point numbers)
+        tt(ios::fixed):
+        quote(to display real values using a fixed decimal point (e.g., 12.25
+rather than 1.225e+01), the tt(fixed) formatting flag is used. It can be used
+to set a fixed number of digits behind the decimal point. Manipulator:
+tt(fixed). Example:
+            verb(
+    cout.setf(ios::fixed, ios::floatfield); 
+    cout.precision(3);          // 3 digits behind the .
+
+        // Alternatively:
+    cout << setiosflags(ios::fixed) << setprecision(3);
+
+    cout << 3.0 << " " << 3.01 << " " << 3.001 << '\n';
+         << 3.0004 << " " << 3.0005 << " " << 3.0006 << '\n'
+        // Results in:
+        // 3.000 3.010 3.001
+        // 3.000 3.001 3.001
+            )
+    The example shows that 3.0005 is rounded away from zero, becoming
+3.001 (likewise -3.0005 becomes -3.001). First setting precision and than
+tt(fixed) has the same effect.
+        )
+    ithtq(scientific)(ios::scientific)
+        (to display real values in emi(scientific notation) (e.g., 1.24e+03).
+Manipulator: tt(scientific).  Example:
+        verb(
+    cout.setf(ios::scientific, ios::floatfield);
+    cout << scientific;         // same, using the manipulator
+    cout << 12.25;              // displays 1.22500e+01
+        )
+        )
+    ithtq(showpoint)(ios::showpoint)
+        (to display a trailing decimal point em(and) trailing decimal zeros
+when real numbers are displayed. Complementary flag:
+tt(ios::noshowpoint). Manipulators: tt(std::showpoint),
+ hi(noshowpoint)tt(std::noshowpoint). Example:
+        verb(
+    cout << fixed << setprecision(3);   // 3 digits behind .
+
+    cout.setf(ios::showpoint);      // set the flag
+    cout << showpoint;              // same, using the manipulator
+
+    cout << 16.0 << ", " << 16.1 << ", " << 16;
+    // displays: 16.0000, 16.1000, 16
+        )
+    Note that the final 16 is an integral rather than a floating point number,
+so it has no decimal point. So tt(showpoint) has no effect.
+    If tt(ios::showpoint) is not active trailing zeros are discarded. If
+the faction is zero the decimal point is discarded as well. Example:
+        verb(
+    cout.unsetf(ios::fixed, ios::showpoint);    // unset the flags
+
+    cout << 16.0 << ", " << 16.1;
+    // displays: 16, 16.1
+        )
+    )
+    )
+
+bf(Handling white space and flushing streams)
+
+    itemization(
+    ithtq(endl)(std::endl)
+        (manipulator inserting a newline character and flushing the
+stream. Often flushing the stream is not required and doing so would
+needlessly slow down I/O processing. Consequently, using tt(endl) should be
+avoided (in favor of inserting tt('\n')) unless flusing the stream is
+explicitly intended. Note that streams are automatically flushed when the
+program terminates or when a stream is `tied' to another stream (cf. tt(tie)
+in section ref(IOS)). Example:
+        verb(
+    cout << "hello" << endl;    // prefer: << '\n';
+        )
+        )
+    ithtq(ends)(std::ends)
+        (manipulator inserting a 0-byte into a stream. It is usually used in
+combination with memory-streams (cf. section ref(OSTRINGSTREAM)).
+        )
+    ithtq(flush)(std::flush)
+        (manipulator flushing the stream. Often flushing the stream is not
+required and doing so would needlessly slow down I/O processing. Consequently,
+using tt(flush) should be avoided unless it is explicitly required to do
+so. Note that streams are automatically flushed when the program terminates or
+when a stream is `tied' to another stream (cf. tt(tie) in section
+ref(IOS)). Example:
+        verb(
+    cout << "hello" << flush;    // avoid if possible.
+        )
+        )
+    ithtq(skipws)(ios::skipws)
+        (leading i(white space) characters (blanks, tabs, newlines, etc.) are
+skipped when a value is extracted from a stream. This is the default.  If the
+flag is not set, leading white space characters are not skipped. Complementary
+flag: tt(ios::noskipws). Manipulators: tt(std::skipws),
+hi(noskipws)tt(std::noskipws). Example:
+        verb(
+    cin.setw(ios::skipws);  
+    cin >> skipws;      // same, using the manipulator
+    int value;
+    cin >> value;       // skips initial blanks
+        )
+        )
+    ithtq(unitbuf)(ios::unitbuf)
+        (the stream for which this flag is set will flush its buffer after
+every output operation Often flushing a stream is not required and doing so
+would needlessly slow down I/O processing. Consequently, setting tt(unitbuf)
+should be avoided unless flusing the stream is explicitly intended. Note that
+streams are automatically flushed when the program terminates or when a stream
+is `tied' to another stream (cf. tt(tie) in section ref(IOS)).  Complementary
+flag: tt(ios::nounitbuf). Manipulators: tt(std::unitbuf),
+hi(nounitbuf)tt(std::nounitbuf). Example:
+        verb(
+    cout.setf(ios::unitbuf);
+    cout << unitbuf;            // same, using the manipulator
+
+    cout.write("xyz", 3);       // flush follows write.
+        )
+        )
+    ithtq(ws)(std::ws)
+        (manipulator removing all i(white space) characters 
+(blanks, tabs, newlines, etc.) at the current file position. White space are
+removed if present even if the flag tt(ios::noskipws) has been set.
+Example (assume the input contains 4 blank characters followed by the
+character tt(X)):
+        verb(
+    cin >> ws;      // skip white space
+    cin.get();      // returns 'X'
+        )
+        )
+    )
+
+
+
+
+
+
