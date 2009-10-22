@@ -1,46 +1,43 @@
-The following i(file modes) or i(file flags) are defined for constructing or
-opening tt(ofstream) (or tt(istream), see section ref(IFSTREAM)) objects. The
-values are of type ti(ios::openmode):
+The following i(file modes) or i(file flags) are available when constructing
+or opening tt(ofstream) (or tt(istream), see section ref(IFSTREAM))
+objects. The values are of type hi(openmode)tt(ios::openmode). Flags may be
+combined using the tt(bitor) operator.
         itemization(
-        iti(ios::app):
-            quote( reposition to the end of the file before every output
-command. The existing contents of the file are kept.)
-        iti(ios::ate):
-            quote(Start initially at the end of the file.  The existing
-contents of the file are kept.nl()
-    Note that the original contents are em(only) kept if some other flag tells
-the object to do so. For example tt(ofstream out("gone", ios::ate)) will
-    hi(ios::ate: file rewritten)
+        ithtq(app)(ios::app)
+            (reposition the stream to its end before every output command. The
+file is created if it doesn't yet exist. When opening a stream in this mode
+any existing contents of the file are kept.)
+        ithtq(ate)(ios::ate)
+            (start initially at the end of the file.  Note that any existing
+contents are em(only) kept if some other flag tells the object to do so. For
+example tt(ofstream out("gone", ios::ate)) will
     em(rewrite) the file tt(gone), because the implied tt(ios::out) will cause
 the rewriting. If rewriting of an existing file should be prevented, the
-tt(ios::in) hi(ios::in: and std::ofstream) mode should be specified too. Note
-that in this case the construction only succeeds if the file already exists.)
-        iti(ios::binary):
-            quote(open a i(binary file) (used on systems which make a
-distinction between text- and binary files, like i(MS-DOS) or i(MS-Windows)).)
-        iti(ios::in):
-            quote( open the file for reading. The file must exist.)
-        iti(ios::out):
-            quote( open the file. Create it if it doesn't yet exist. If it
-exists, the i(file is rewritten).)
-        iti(ios::trunc):
-            quote(Start initially with an empty file.  Any existing contents
-of the file are lost.)
+tt(ios::in) hi(in)hi(file rewriting: preventing) mode should be specified
+too. However, when tt(ios::in) is specified the file must already exist.)
+        ithtq(binary)(ios::binary)
+            (open a file in hi(file: binary mode)binary mode (used on systems
+distinguishing text- and binary files, like i(MS-Windows)).
+        )
+        ithtq(in)(ios::in)
+            (open the file for reading. The file must exist.)
+        ithtq(out)(ios::out)
+            (open the file for writing. Create it if it doesn't yet exist. If
+it exists, the i(file is rewritten).)
+        ithtq(trunc)(ios::trunc)
+        (start initially with an empty file.  Any existing contents of the
+file are lost.)
         )
     The following combinations of file flags have special meanings:
         verb(
-    out | app:          The file is created if non-existing,
-                        information is always added to the end of the
-                        stream;
-    out | trunc:        The file is (re)created empty to be written;
     in | out:           The stream may be read and written. However, the
                         file must exist.
     in | out | trunc:   The stream may be read and written. It is
                         (re)created empty first.
         )
-    An interesting subtlety is that the tt(open()) members of the tt(ifstream,
-ofstream) and tt(fstream) classes show tt(ios::openmode) as
-the type of their second parameter. In contrast to this, the tt(bitor)
-operator returns an tt(int) when applied to two enum-values. The question why
-the tt(bitor) operator is accepted here will be answered in a later chapter
-(chapter ref(OperatorOverloading), section ref(EnumOverload)).
+    An interesting subtlety is that the tt(open) members of the tt(ifstream,
+ofstream) and tt(fstream) classes have a second parameter of type
+tt(ios::openmode). In contrast to this, the tt(bitor) operator returns an
+tt(int) when applied to two enum-values. The question why the tt(bitor)
+operator may nevertheless be used here is answered in a later chapter
+(cf. section ref(EnumOverload)).

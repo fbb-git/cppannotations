@@ -1,48 +1,39 @@
-In order to hi(write to memory) write information to memory using the
-tt(stream) facilities, ti(ostringstream) objects can be used. These objects
-are derived from tt(ostream) objects. The following constructors and members
-are available:
+In order to hi(streams: writing to memory) write information to memory using
+tt(stream) facilities, hi(ostringstream)tt(std::ostringstream) objects should
+be used.  As the class tt(ostringstream) is derived from the class tt(ostream)
+all tt(ostream)'s facilities are available to tt(ostringstream) objects as
+well.  In addition the class tt(ostringstream) offers the following
+constructors and members:
     itemization(
-        ithtq(ostringstream constructors)
-            (ostringstream ostr(string const &s, ios::openmode mode))
-            (When using this constructor, the last or both arguments may be
-omitted. There is also a constructor requiring only an ti(openmode)
-parameter. If tt(string s) is specified and tt(openmode) is tt(ios::ate), the
-tt(ostringstream) object is initialized with the tt(string s) and remaining
-insertions are appended to the contents of the tt(ostringstream) object.  If
-tt(string s) is provided, it will not be altered, as any information inserted
-into the object is stored in dynamically allocated memory which is deleted
-when the tt(ostringstream) object goes out of scope.)
-        itht(ostringstream::str())(string ostringstream::str() const):
-            quote(This member function will return the string that is stored
-inside the tt(ostringstream) object.)
-        itht(ostringstream::str(string))(ostringstream::str(string)):
-            quote(This member function will re-initialize the
-tt(ostringstream) object with new initial contents.)
+        ithtq(ostringstream)
+        (ostringstream ostr(string const &init, 
+                ios::openmode mode = ios::out))
+            (the argument may be omitted.  If tt(string init) was specified
+and tt(openmode) is tt(ios::ate), the tt(ostringstream) object is initialized
+by the tt(string init) and remaining insertions are appended to the contents
+of the tt(ostringstream) object.
+        )
+        itt(ostringstream ostr(ios::openmode mode = ios::out))
+        (this constructor can also be used as default
+constructor. Alternatively it allows, e.g., forced additions at the end of the
+information stored in the object so far (using tt(ios::app)). Example:
+        verb(
+    std::ostringstream out;
+        )
+        )
+        ithtq(str)(std::string ostringstream::str() const)
+            (a copy of the string that is stored inside the tt(ostringstream)
+object is returned.)
+        itt(void ostringstream::str(std::string const &str))
+        (the current object is reinitialized with new initial contents.)
     )
-    Before the tt(stringstream) class was available the class ti(ostrstream)
-was commonly used for doing output to memory. This latter class suffered from
-the fact that, once its contents were retrieved using its tt(str()) member
-function, these contents were `frozen', meaning that its dynamically allocated
-memory was not released when the object went out of scope.  Although this
-situation could be prevented (using the tt(ostrstream) member call
-ti(freeze(0))), this implementation could easily lead to hi(memory leak)
-em(memory leaks). The tt(stringstream) class does not suffer from these
-risks. Therefore, the use of the class tt(ostrstream) is now deprecated in
-favor of tt(ostringstream).
-
     The following example illustrates the use of the tt(ostringstream) class:
-several values are inserted into the object. Then, the stored text is stored
-in a string, whose length and contents are thereupon printed.  Such
-    tt(ostringstream) objects are most often used for doing `type to string'
-    i(conversions), like converting tt(int) to tt(string). Formatting commands
-can be used with tt(stringstreams) as well, as they are available in
-    tt(ostream) objects.
-    COMMENT(
-        It should also be possible to perform em(seek)
-operations with tt(ostringstream) objects, but the current i(Gnu) i(g++)
-(version 3.0) implementation apparently does not support them.
-    END)
-    Here is an
-example showing the use of an tt(ostringstream) object:
+several values are inserted into the object. Then, the text contained by the
+tt(ostringstream) object is stored in a tt(std::string), whose length and
+contents are thereupon printed.  Such tt(ostringstream) objects are most often
+used for doing `type to string'hi(conversions: binary to text) conversions,
+like converting tt(int) values to text. Formatting flags can be used with
+tt(ostringstreams) as well, as they are part of tt(ostream) objects.
+
+    Here is an example showing an tt(ostringstream) object being used:
     verbinclude(iostreams/examples/ostringstream.cc)
