@@ -1,45 +1,43 @@
-Usually, files are copied hi(copy files) either by reading a source file
-character by character or line by line. The basic em(mold) for
-    i(processing files) is as follows:
+Usually, files are copied hi(file: copying) either by reading a source file
+character by character or line by line. The basic em(mold) to process streams
+ hi(stream: processing) is as follows:
         itemization(
-            it() Looping forever:
+            it() Continuous loop:
             enumeration(
-                it() read a character
-                it() if reading did not succeed (i.e., tt(fail()) returns
-                        true), tt(break) from the loop
-                it() process the character
+                eit() read from the stream
+                eit() if reading did not succeed (i.e., tt(fail) returns
+                        tt(true)), tt(break) from the loop
+                eit() process the information that was read
             )
         )
-    It is important to note that the reading must em(precede) the testing, as
-it is only possible to know after the actual attempt to read from a file
+    Note that reading must em(precede) testing, as
+it is only possible to know after actually attempting to read from a file
 whether the reading succeeded or not. Of course, variations are possible:
 tt(getline(istream &, string &)) (see section ref(ISTREAMREAD)) returns an
-tt(istream &) itself, so here reading and testing may be implemented in one
+tt(istream &), so here reading and testing may be contracted using one
 expression. Nevertheless, the above mold represents the general case. So,
-the following program could be used to copy tt(cin) to tt(cout):
+the following program may be used to copy tt(cin) to tt(cout):
         verbinclude(iostreams/examples/copycincout.cc)
 
-    By combining the tt(get()) with the tt(if)-statement a construction
-comparable to tt(getline()) could be used:
+    Contraction is possible here by combining tt(get) with the
+tt(if)-statement, resulting in:
         verb(
     if (!cin.get(c))
         break;
         )
-Note, however, that this would still follow the basic rule:
-    `i(read first, test later)'.
+    Even so, this would still follow the basic rule:
+ `i(read first, test later)'.
 
-    This simple copying of a file, however, isn't required very often. More
-often, a situation is encountered where a file is processed up to a certain
-point, whereafter the remainder of the file can be copied unaltered. The
-following program illustrates this situation: the tt(ignore()) call is used to
-skip the first line (for the sake of the example it is assumed that the first
-line is at most 80 characters long), the second statement uses a special
-overloaded version of the lshift()-operator, in which a ti(streambuf) pointer
-hi(insert streambuf *) is inserted into another stream. As the member
-tt(rdbuf()) returns a tt(streambuf *), it can thereupon be inserted into
-tt(cout). This immediately copies the remainder of tt(cin) to tt(cout):
+    Simply copying a file isn't required very often. More often a situation is
+encountered where a file is processed up to a certain point, followed by plain
+copying the file's remaining information. The next program illustrates
+this. Using tt(ignore) to skip the first line (for the sake of the example it
+is assumed that the first line is at most 80 characters long), the second
+statement uses yet another overloaded version of the lshift()-operator, in
+which a ti(streambuf) pointer hi(inserting streambuf *) is inserted into
+a stream. As the member tt(rdbuf) returns a stream's tt(streambuf *), we have
+a simple means of inserting a stream's contents into an tt(ostream):
         verbinclude(iostreams/examples/copystreambuf.cc)
-    Note that this method assumes a tt(streambuf) object, so it will work for
-all specializations of tt(streambuf). Consequently, if the tt(class streambuf)
-is specialized for a particular i(device) it can be inserted into any other
-stream using the above method.
+    This way of copying streams only assumes the existence of a tt(streambuf)
+object. Consequently it can be used with all specializations of the
+tt(streambuf) class. 

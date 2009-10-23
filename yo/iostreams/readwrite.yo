@@ -1,38 +1,33 @@
-In order to both i(read and write to a stream) an ti(fstream) object
-must be created.  As with tt(ifstream) and tt(ofstream) objects, its
-constructor receives the name of the file to be opened:
+In order to both read and write to a stream 
+    hi(stream: read and write) an hi(fstream)tt(std::fstream) object must be
+created.  As with tt(ifstream) and tt(ofstream) objects, its constructor
+receives the name of the file to be opened:
         centt(fstream inout("iofile", ios::in | ios::out);)
-    Note the use of the ti(ios) constants ti(ios::in) and ti(ios::out),
+    Note the use of the constants hi(in)tt(ios::in) and hi(out)tt(ios::out),
 indicating that the file must be opened for both reading and writing. Multiple
-mode indicators may be used, concatenated by the binary or operator tt('|').
-Alternatively, instead of tt(ios::out), ti(ios::app) could have been used, in
-which case writing will always be done at the end of the file.
+mode indicators may be used, concatenated by the tt(bitor) operator.
+Alternatively, instead of tt(ios::out), hi(app)tt(ios::app) could have been
+used and mere writing would become appending (at the end of the file).
 
-    Somehow reading and writing to a file is a bit awkward: what to do when
-the file may or may not exist yet, but if it already exists it should not be
-rewritten? hi(fstream: reading and writing)
-    hi(reading and writing fstreams)
-    I have been fighting with this problem for some time, and now I use
+    Reading and writing to the same file is always a bit awkward: what to do
+when the file may not yet exist, but if it already exists it should not
+be rewritten? Having fought with this problem for some time I now use
 the following approach:
     verbinclude(iostreams/examples/existingreadwrite.cc)
-    In the above example, the constructor fails when tt(fname) doesn't exist
-yet. However, in that case the tt(open()) member will normally succeed since
-the file is created due to the tt(ios::trunc) flag. If the file already
-existed, the constructor will succeed. If the ti(ios::ate) flag would have
-been specified as well with tt(rw)'s initial construction, the first
-read/write action would by default have take place at endOfFile(). However,
-tt(ios::ate) is not ti(ios::app), so it would then still have been possible to
-reposition tt(rw) using tt(seekg()) or tt(seekp()).
+    Under this approach if the first construction attempt fails tt(fname)
+doesn't exist yet. But then tt(open) can be attempted using the
+hi(trunc)tt(ios::trunc) flag. If the file already existed, the construction
+would have succeeded. By specifying hi(ate)tt(ios::ate) when defining tt(rw),
+the initial read/write action would by default have taken place at
+endOfFile(). 
 
-Under hi(MS-DOS) hi(MS-WINDOWS) hi(DOS) hi(WINDOWS) bf(DOS)-like operating
-systems, using the multiple character tt(\r\n) sentinels to separate lines in
-i(text files) the flag ti(ios::binary) is required for processing
-        i(binary files)
-    to ensure that tt(\r\n) combinations are processed as two
-characters. In general, tt(ios::binary) should be used when binary (non-text)
-files are to be processed. Text files are assumed when tt(ios::binary) is not
-specified. This will leave the proper handling of line-endings to the run-time
-support system.
+Under hi(MS-WINDOWS) hi(DOS) bf(DOS)-like operating systems that use the
+multiple character sequence tt(\r\n) to separate lines in i(text files) the
+flag hi(binary)tt(ios::binary) is required to process i(binary files) ensuring
+that tt(\r\n) combinations are processed as two characters. In general,
+tt(ios::binary) should be specified when binary (non-text) files are to be
+processed. By default files are opened as text files. i(Unix) operating
+systems do not distinguish text files from binary files.
 
 With tt(fstream) objects, combinations of file flags are used to make sure
 that a stream is or is not (re)created empty when opened. See section
@@ -42,40 +37,38 @@ ref(OUTPUTMODES) for details.
 can be used to insert information into the file, while the rshift() operator
 may be used to extract information from the file. These operations may be
 performed in any order, but a tt(seekg()) or tt(seekp()) operation is required
-when switching between insertions and extractions.  The following fragment
-will read a blank-delimited word from the file, and will then write a string
-to the file, just beyond the point where the string just read terminated,
-followed by the reading of yet another string just beyond the location where
-the string just written ended (assuming that the file tt(filename) contains
-enough information for the extractions to succeed):
+when switching between insertions and extractions.  The example shows a white
+space delimited word being read from a file, writing another string to the
+file, just beyond the point where the just read word terminated. Finally yet
+another string is read which is found just beyond the location where the just
+written strings ended:
         verb(
     fstream f("filename", ios::in | ios::out);
     string  str;
 
     f >> str;       // read the first word
-                    // write a well known text
 
+                    // write a well known text
     f.seekg(0, ios::cur);
     f << "hello world";
 
     f.seekp(0, ios::cur);
     f >> str;       // and read again
         )
-    Since a em(seek) or em(clear) operation is required between alternating
-read and write (extraction and insertion) operations on the same file it is
-not possible to execute a series of lshift() and rshift() operations in one
-expression statement.
+    Since a em(seek) or em(clear) operation is required when alternating
+between read and write (extraction and insertion) operations on the same file
+it is not possible to execute a series of lshift() and rshift() operations in
+one expression statement.
 
 Of course, random insertions and extractions are hardly ever used. Generally,
-insertions and extractions take place at specific locations in the file.  In
-those cases, the position where the insertion or extraction must take place
-can be controlled and monitored by the ti(seekg()), ti(seekp()), ti(tellg())
-and ti(tellp()) member functions (see sections ref(OSTREAMPOS) and
-ref(ISTREAMPOS)).
+insertions and extractions occur at well-known locations in a file.  In those
+cases, the position where insertions or extractions are required can be
+controlled and monitored by the tt(seekg), tt(seekp, tellg) and tt(tellp)
+members (see sections ref(OSTREAMPOS) and ref(ISTREAMPOS)).
 
 Error conditions (see section ref(IOSTATES)) occurring due to, e.g., reading
 beyond end of file, reaching end of file, or positioning before begin of file,
-can be cleared using the ti(clear()) member function.  Following tt(clear())
+can be cleared by the tt(clear) member function.  Following tt(clear)
 processing may continue. E.g.,
         verb(
     fstream f("filename", ios::in | ios::out);
@@ -86,53 +79,52 @@ processing may continue. E.g.,
 
     f >> str;       // read the first word
         )
-    A common situation in which files are both read and written occurs in
-    emi(database) applications, where files consists of records of fixed
-size, and where the location and size of pieces of information is well
-known. For example, the following program may be used to add lines of text to
-a (possibly existing) file, and to retrieve a certain line, based on its
-order-number from the file. Note the use of the emi(binary file) tt(index) to
-retrieve the location of the first byte of a line.
+    A situation where files are both read and written is seen in
+    em(database) applications, using files consisting of records having fixed
+sizes, and where locations and sizes of pieces of information are known. For
+example, the following program adds text lines to a (possibly existing)
+file. It can also be used to retrieve a particular line, given its
+order-number in the file. A emi(binary file) tt(index) allows for the quick
+retrieval of the location of lines.
         verbinclude(iostreams/examples/readwrite.cc)
-    As another example of reading and writing files, consider the following
-program, which also serves as an illustration of reading an i(ASCII-Z)
-delimited string:
+    Another example showing reading em(and) writing of files is provided by
+the next program. It also illustrates the processing of i(ASCII-Z) delimited
+strings:
         verbinclude(iostreams/examples/asciiz.cc)
 
-    A completely different way to both read and write to streams can be
-implemented using the ti(streambuf) members of stream objects. All
-considerations mentioned so far remain valid: before a read operation
-following a write operation tt(seekg()) must be used, and before a write
-operation following a read operation tt(seekp()) must be used. When the
-stream's tt(streambuf) objects are used, either an tt(istream) is associated
-with the tt(streambuf) object of another tt(ostream) object, or em(vice
-versa), an tt(ostream) object is associated with the tt(streambuf) object of
-another tt(istream) object. Here is the same program as before, now using
+    A completely different way to read and write streams may be implemented
+using tt(streambuf) members. All considerations mentioned so far remain valid
+(e.g., before a read operation following a write operation tt(seekg) must be
+used). When  tt(streambuf) objects are used, either an
+tt(istream) is associated with the tt(streambuf) object of another tt(ostream)
+object, or an tt(ostream) object is associated with the
+tt(streambuf) object of another tt(istream) object. Here is the previous
+program again, now using
     hi(streams: associating) em(associated streams):
         verbinclude(iostreams/examples/readwrite2.cc)
-    Please note:
+    In this example
     itemization(
-    it() The streams to associate with the tt(streambuf) objects of
-existing streams are not ti(ifstream) or ti(ofstream) objects (or, for that
-matter, tt(istringstream) or tt(ostringstream) objects), but basic
-ti(istream) and ti(ostream) objects.
-    it() The tt(streambuf) object does not have to be defined in an
-tt(ifstream) or ti(ofstream) object: it can be defined outside of the streams,
-using constructions like:
+    it() the streams associated with the tt(streambuf) objects of existing
+streams are not ti(ifstream) or ti(ofstream) objects but basic ti(istream) and
+ti(ostream) objects.
+    it() The tt(streambuf) object is not defined by an tt(ifstream) or
+tt(ofstream) object. Instead it is defined outside of the streams, using
+a tt(filebuf) (cf. section ref(FILEBUF)) and constructions like:
         verb(
     filebuf fb("index", ios::in | ios::out | ios::trunc);
     istream index_in(&fb);
     ostream index_out(&fb);
         )
-    it() Note that an tt(ifstream) object can be constructed using stream
-modes normally used for writing to files. Conversely, tt(ofstream) objects can
-be constructed using stream modes normally used for reading from files.
-    it() If tt(istream) and tt(ostreams) are associated through a common
-tt(streambuf), then the read and write pointers (should) point to the same
-locations: they are tightly coupled.
-    it() The advantage of using a separate tt(streambuf) over a predefined
-tt(fstream) object is (of course) that it opens the possibility of using
-tt(stream) objects with specialized tt(streambuf) objects. These tt(streambuf)
-objects may then specifically be constructed to interface particular
-devices. Elaborating this is left as an i(exercise) to the reader.
+    it() An tt(ifstream) object can be constructed using stream modes normally
+used with tt(ofstream) objects. Conversely, an tt(ofstream) objects can be
+constructed using stream modes normally used with tt(ifstream) objects.
+    it() If tt(istream) and tt(ostreams) share a tt(streambuf), then their
+read and write pointers (should) point to the shared buffer: they are tightly
+coupled.
+    it() The advantage of using an external (separate) tt(streambuf) over a
+predefined tt(fstream) object is (of course) that it opens the possibility of
+using tt(stream) objects with specialized tt(streambuf) objects. These
+tt(streambuf) objects may specifically be constructed to control and interface
+particular devices. Elaborating this (see also section ref(STREAMBUF)) is left
+as an exercise to the reader.
     )

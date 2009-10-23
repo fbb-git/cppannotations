@@ -1,5 +1,4 @@
 #include <iostream>
-
 using namespace::std;
 
 int main()
@@ -13,5 +12,4 @@ int main()
             break;
         cout << c;
     }
-    return 0;
 }

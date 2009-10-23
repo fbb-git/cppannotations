@@ -3,34 +3,38 @@ means that it is possible to read the same section of a stream
 repeatedly. Repositioning is frequently used in emi(database applications)
 where it must be possible to access the information in the database randomly.
 
-The following members are available:
+The current position can be obtained and modified using the following members:
     itemization(
-        itht(ios::pos_type istream::tellg())(pos_type istream::tellg()):
-            quote(this function returns the current (absolute) position where
-the next read-operation to the stream will take place. For all practical
-purposes a ti(pos_type) can be considered to be an tt(unsigned long).)
-        ithtq(istream::seekg())
+    ithtq(tellg)(ios::pos_type istream::tellg())
+        (the current (absolute) position in the file where the next
+read-operation to the stream will take place is returned.)
+    ithtq(seekg)
         (istream &istream::seekg(ios::off_type step, ios::seekdir org))
-            (This member function can be used to reposition the stream. The
-function expects an tt(ios::)ti(off_type) tt(step), the stepsize in bytes to
-go from tt(org). For all practical purposes a tt(pos_type) can be considered
-to be a tt(long).
-    The origin of the step, tt(org) is a ti(ios::seekdir) value. Possible
-values are:
+        (modifies a stream's actual position. The function expects an
+ti(off_type) tt(step) representing the number of bytes the current stream
+position is moved with respect to tt(org). The tt(step) value 
+may be negative, zero or positive.
+
+    The origin of the step, tt(org) is a value in the
+hi(seekdir)tt(ios::seekdir) enumeration. 
+
+
+    The origin of the step, tt(org) is a value in the
+hi(seekdir)tt(ios::seekdir) enumeration. Its values are:
         itemization(
-        iti(ios::beg):
-            quote(tt(step) is interpreted as the stepsize relative to the
-beginning of the stream. If tt(org) is not specified, tt(ios::beg) is
-used. )
-        iti(ios::cur):
-            quote(tt(step) is interpreted as the stepsize relative to the
-current position (as returned by tt(tellg()) of the stream).)
-        iti(ios::end):
-            quote(tt(step) is interpreted as the stepsize relative to the
-current end position of the the stream.)
+        ithtq(beg)(ios::beg)
+            (the stepsize is computed relative to the beginning of the
+stream. This value is used by default. 
+            )
+        ithtq(cur)(ios::cur)
+            (the stepsize is computed relative to the current position of the
+stream (as returned by tt(tellp)).
+            )
+        itttq(end)(ios::end)
+            (the stepsize is interpreted relative to the current end position
+of the the stream.)
     )
-    While it is OK to i(seek beyond end of file), reading at that point
-will of course fail.  It is em(not) allowed to i(seek before begin of file).
-Seeking before tt(ios::beg) will cause the ti(ios::fail) flag to be set.
+    It is OK to hi(seek beyond file boundaries) seek beyond the last file
+position.  Seeking before tt(ios::beg) raises the hi(fail)tt(ios::fail) flag.
         )
     )

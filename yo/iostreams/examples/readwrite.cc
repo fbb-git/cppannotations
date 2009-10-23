@@ -5,14 +5,12 @@
 
     void err(char const *msg)
     {
-        cout << msg << endl;
-        return;
+        cout << msg << '\n';
     }
 
     void err(char const *msg, long value)
     {
-        cout << msg << value << endl;
-        return;
+        cout << msg << value << '\n';
     }
 
     void read(fstream &index, fstream &strings)
@@ -44,7 +42,7 @@
         if (!getline(strings, line))                // read the line
             return err("no line at ", offset);
 
-        cout << "Got line: " << line << endl;       // show the line
+        cout << "Got line: " << line << '\n';       // show the line
     }
 
     void write(fstream &index, fstream &strings)
@@ -69,10 +67,10 @@
         )
             return err("Writing failed to index: ", offset);
 
-        if (!(strings << line << endl))           // write the line itself
+        if (!(strings << line << '\n'))           // write the line itself
             return err("Writing to `strings' failed");
                                                   // confirm writing the line
-        cout << "Write at offset " << offset << " line: " << line << endl;
+        cout << "Write at offset " << offset << " line: " << line << '\n';
     }
 
     int main()
@@ -92,7 +90,6 @@
             strings.clear();
 
             string cmd;
-
             cin >> cmd;                             // read cmd
 
             if (cmd == "q")                         // process the cmd.
@@ -103,6 +100,6 @@
             else if (cmd == "w")
                 write(index, strings);
             else
-                cout << "Unknown command: " << cmd << endl;
+                cout << "Unknown command: " << cmd << '\n';
         }
     }

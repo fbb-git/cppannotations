@@ -7,24 +7,31 @@
     int main()
     {
         fstream rw("fname", ios::out | ios::in);
-        if (!rw)
+
+        if (!rw)            // file didn't exist yet
         {
-            rw.clear();
+            rw.clear();     // try again, creating it using ios::trunc
             rw.open("fname", ios::out | ios::trunc | ios::in);
         }
-        if (!rw)
+
+        if (!rw)            // can't even create it: bail out
         {
-            cerr << "Opening `fname' failed miserably" << endl;
+            cerr << "Opening `fname' failed miserably" << '\n';
             return 1;
         }
 
-        cerr << rw.tellp() << endl;
+        cerr << "We're at: " << rw.tellp() << '\n';
 
-        rw << "Hello world" << endl;
-        rw.seekg(0);
+                            // write something
+        rw << "Hello world" << '\n';
+
+        rw.seekg(0);        // go back and read what's written
 
         string s;
         getline(rw, s);
 
-        cout << "Read: " << s << endl;
+        cout << "Read: " << s << '\n';
     }
+
+
+

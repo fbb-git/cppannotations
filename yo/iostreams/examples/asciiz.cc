@@ -6,7 +6,7 @@
     {                                       // r/w the file
         fstream f("hello", ios::in | ios::out | ios::trunc);
 
-        f.write("hello", 6);                // write 2 ascii-z
+        f.write("hello", 6);                // write 2 ascii-z strings
         f.write("hello", 6);
 
         f.seekg(0, ios::beg);               // reset to begin of file

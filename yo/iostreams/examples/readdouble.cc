@@ -3,9 +3,9 @@
 
     int main(int argc, char **argv)
     {
-        ifstream f(argv[1]);
-        double   d;
+        ifstream in(argv[1]);
+        double   value;
 
-        // reads double in binary form.
-        f.read(reinterpret_cast<char *>(&d), sizeof(double));
+        // reads double in raw, binary form from file.
+        in.read(reinterpret_cast<char *>(&value), sizeof(double));
     }
