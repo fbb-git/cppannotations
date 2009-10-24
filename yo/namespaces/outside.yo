@@ -1,25 +1,21 @@
-It is not strictly necessary to i(define members of namespaces) within a
-namespace region. By prefixing the member by its namespace or namespaces a
-member can be defined outside of a namespace region. This may be done at the
-global level, or at intermediate levels in the case of nested namespaces. So
-while it is not possible to define a member of namespace tt(A) within the
-region of namespace tt(C), it is possible to define a member of namespace
-tt(A::B) within the region of namespace tt(A).
+It is not strictly necessary to i(define members of namespaces) inside a
+namespace region. But before an entity is defined em(outside) of a namespace
+it must have been declared em(inside) its namespace.
 
-    Note, however, that when a member of a namespace is defined outside of a
-namespace region, it must em(still be declared within) the region.
+To define an entity outside of its namespace its name must be em(fully
+qualified) by prefixing the member by its namespaces. The definition may be
+provided at the global level or at intermediate levels in the case of nested
+namespaces. This allows us to define an entity belonging to namespace tt(A::B)
+within the region of namespace tt(A).
 
-    Assume the type tt(int INT8[8]) is defined in the
-tt(CppAnnotations::Virtual) namespace.
+Assume the type tt(int INT8[8]) is defined in the tt(CppAnnotations::Virtual)
+namespace. Furthermore assume that is is our intent to define a function
+tt(squares), inside the namespace tt(CppAnnotations::Virtual) that returns a
+pointer to tt(CppAnnotations::Virtual::INT8). 
 
-    Now suppose we want to define a member function tt(funny), inside the
-namespace tt(CppAnnotations::Virtual), returning a pointer to
-tt(CppAnnotations::Virtual::INT8). After first defining everything
-inside the tt(CppAnnotations::)tt(Virtual) namespace, such a function could be
-defined as follows (the examples below use the memory allocation operator
-tt(new[]) which will formally be introduced in chapter ref(MEMORY)). At this
-point it can be assumed to behave somewhat like bf(C)'s memory allocation
-function tt(malloc()):
+Having defined the prerequisites within the tt(CppAnnotations::)tt(Virtual)
+namespace, our function could be defined as follows (cf. chapter ref(MEMORY)
+for coverage of the memory allocation operator tt(new[])):
         verb(
     namespace CppAnnotations
     {
@@ -29,11 +25,11 @@ function tt(malloc()):
 
             typedef int INT8[8];
 
-            INT8 *funny()
+            INT8 *squares()
             {
                 INT8 *ip = new INT8[1];
 
-                for (int idx = 0; idx < sizeof(INT8) / sizeof(int); ++idx)
+                for (size_t idx = 0; idx != sizeof(INT8) / sizeof(int); ++idx)
                     (*ip)[idx] = (idx + 1) * (idx + 1);
 
                 return ip;
@@ -41,12 +37,12 @@ function tt(malloc()):
         }
     }
         )
-    The function tt(funny()) defines an array of one tt(INT8) vector, and
+    The function tt(squares) defines an array of one tt(INT8) vector, and
 returns its address after initializing the vector by the squares of the first
 eight natural numbers.
 
-    Now the function tt(funny()) can be defined outside of the
-tt(CppAnnotations::)tt(Virtual) namespace as follows:
+    Now the function tt(squares) can be defined outside of the
+tt(CppAnnotations::)tt(Virtual) namespace:
         verb(
     namespace CppAnnotations
     {
@@ -56,34 +52,34 @@ tt(CppAnnotations::)tt(Virtual) namespace as follows:
 
             typedef int INT8[8];
 
-            INT8 *funny();
+            INT8 *squares();
         }
     }
 
-    CppAnnotations::Virtual::INT8 *CppAnnotations::Virtual::funny()
+    CppAnnotations::Virtual::INT8 *CppAnnotations::Virtual::squares()
     {
         INT8 *ip = new INT8[1];
 
-        for (int idx = 0; idx < sizeof(INT8) / sizeof(int); ++idx)
+        for (size_t idx = 0; idx != sizeof(INT8) / sizeof(int); ++idx)
             (*ip)[idx] = (idx + 1) * (idx + 1);
 
         return ip;
     }
         )
-    In the final code fragment note the following:
+    In the above code fragment note the following:
     itemization(
-    itt(funny()) is declared inside of the tt(CppAnnotations::Virtual)
+    itt(squares) is declared inside of the tt(CppAnnotations::Virtual)
 namespace.
     itt() The definition outside of the namespace region requires us to use
 the fully qualified name of the function em(and) of its return type.
-    itt() em(Inside) the block of the function tt(funny) we are within the
+    itt() em(Inside) the body of the function tt(squares) we are within the
 tt(CppAnnotations::)tt(Virtual) namespace, so inside the function fully
 qualified names (e.g., for tt(INT8)) are not required any more.
     )
 
     Finally, note that the function could also have been defined in the
 tt(CppAnnotations) region. In that case the tt(Virtual) namespace would have
-been required when defining tt(funny()) and when specifying its return type,
+been required when defining tt(squares()) and when specifying its return type,
 while the internals of the function would remain the same:
         verb(
     namespace CppAnnotations
@@ -94,14 +90,14 @@ while the internals of the function would remain the same:
 
             typedef int INT8[8];
 
-            INT8 *funny();
+            INT8 *squares();
         }
 
-        Virtual::INT8 *Virtual::funny()
+        Virtual::INT8 *Virtual::squares()
         {
             INT8 *ip = new INT8[1];
 
-            for (int idx = 0; idx < sizeof(INT8) / sizeof(int); ++idx)
+            for (size_t idx = 0; idx != sizeof(INT8) / sizeof(int); ++idx)
                 (*ip)[idx] = (idx + 1) * (idx + 1);
 
             return ip;

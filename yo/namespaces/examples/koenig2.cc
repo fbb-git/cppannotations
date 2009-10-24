@@ -4,13 +4,12 @@
     {
         enum Value        // defines FBB::Value
         {
-            first,
-            second,
+            FIRST
         };
 
         void fun(Value x)
         {
-            std::cout << "FBB::fun() called for " << x << std::endl;
+            std::cout << "FBB::fun() called for " << x << '\n';
         }
     }
 
@@ -18,13 +17,13 @@
     {
         void fun(FBB::Value x)
         {
-            std::cout << "ES::fun() called for " << x << std::endl;
+            std::cout << "ES::fun() called for " << x << '\n';
         }
     }
 
     int main()
     {
-        fun(FBB::first);    // No ambiguity: argument determines
+        fun(FBB::FIRST);    // No ambiguity: argument determines
                             // the namespace
     }
     /*

@@ -4,8 +4,7 @@
     {
         enum Value        // defines ES::Value
         {
-            first,
-            second,
+            FIRST
         };
     }
 
@@ -13,8 +12,7 @@
     {
         enum Value        // defines FBB::Value
         {
-            first,
-            second,
+            FIRST
         };
 
         void fun(Value x, ES::Value y)
@@ -33,12 +31,10 @@
 
     int main()
     {
-        /*
-            fun(FBB::first, ES::first); // ambiguity: must be resolved
-                                        // by explicitly mentioning
-                                        // the namespace
-        */
-        ES::fun(FBB::first, ES::first);
+        //  fun(FBB::FIRST, ES::FIRST); ambiguity: resolved by 
+        //                              explicitly mentioning 
+        //                              the namespace
+        ES::fun(FBB::FIRST, ES::FIRST);
     }
     /*
         generated output:

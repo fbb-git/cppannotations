@@ -4,20 +4,19 @@
     {
         enum Value        // defines FBB::Value
         {
-            first,
-            second,
+            FIRST
         };
 
         void fun(Value x)
         {
-            std::cout << "fun called for " << x << std::endl;
+            std::cout << "fun called for " << x << '\n';
         }
     }
 
     int main()
     {
-        fun(FBB::first);    // Koenig lookup: no namespace
-                            // for fun()
+        fun(FBB::FIRST);    // Koenig lookup: no namespace
+                            // for fun() specified
     }
     /*
         generated output:

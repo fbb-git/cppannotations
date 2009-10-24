@@ -1,56 +1,53 @@
-Given a namespace and entities that are defined or declared in it, the
-    i(scope resolution operator) can be used to refer to the entities that are
-defined in that namespace. For example, to use the function tt(cos()) defined
-in the tt(CppAnnotations) namespace the following code could be used:
+Given a namespace and its entities, the i(scope resolution operator) can be
+used to refer to its entities. For example, the function tt(cos())
+defined in the tt(CppAnnotations) namespace may be used as follows:
         verb(
-    // assume the CppAnnotations namespace is declared in the
-    // next header file:
-    #include <CppAnnotations>
+    // assume CppAnnotations namespace is declared in the
+    // following header file:
+    #include <cppannotations>
 
     int main()
     {
         cout << "The cosine of 60 degrees is: " <<
-                CppAnnotations::cos(60) << endl;
+                CppAnnotations::cos(60) << '\n';
     }
         )
     This is a rather cumbersome way to refer to the tt(cos()) function in the
 tt(CppAnnotations) namespace, especially so if the function is frequently
-used.
-
-    However, in these cases an em(abbreviated) form (just tt(cos())) can be
-used by specifying a emi(using-declaration). Following
+used. In cases like these an em(abbreviated) form can be
+used after specifying a emi(using declaration). Following
         verb(
     using CppAnnotations::cos;  // note: no function prototype,
                                 // just the name of the entity
                                 // is required.
         )
-    the function tt(cos()) will refer to the tt(cos()) function in the
-tt(CppAnnotations) namespace. This implies that the standard tt(cos())
-function, accepting radians, cannot be used automatically anymore. The plain
-scope resolution operator can be used to reach the generic tt(cos()) function:
+    calling tt(cos) will call the tt(cos) function defined in the
+tt(CppAnnotations) namespace. This implies that the standard tt(cos)
+function, accepting radians, is not automatically called anymore. To call that
+latter tt(cos) function the plain
+scope resolution operator should be used:
         verb(
     int main()
     {
         using CppAnnotations::cos;
         ...
-        cout << cos(60)         // uses CppAnnotations::cos()
-            << ::cos(1.5)       // uses the standard cos() function
-            << endl;
+        cout << cos(60)         // calls CppAnnotations::cos()
+            << ::cos(1.5)       // call the standard cos() function
+            << '\n';
     }
         )
-    Note that a tt(using)-declaration can be used inside a block. The
-tt(using) declaration prevents the definition of entities having the same
-name as the one used in the tt(using) declaration: it is not possible to
-use a tt(using) declaration for a variable tt(value) in the tt(CppAnnotations)
-namespace, and to define (or declare) an identically named object in the
-block in which the tt(using) declaration was placed:
+    A tt(using) declaration can have restricted scope. It can be used inside a
+block. The tt(using) declaration prevents the definition of entities having
+the same name as the one used in the tt(using) declaration. It is not possible
+to specify a tt(using) declaration for a variable tt(value) in some namespace,
+and to define (or declare) an identically named object in a block also
+containing a tt(using) declaration. Example:
         verb(
     int main()
     {
         using CppAnnotations::value;
         ...
-        cout << value << endl;  // this uses CppAnnotations::value
-
-        int value;              // error: value already defined.
+        cout << value << '\n';  // uses CppAnnotations::value
+        int value;              // error: value already declared.
     }
         )
