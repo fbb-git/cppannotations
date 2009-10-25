@@ -9,8 +9,10 @@ indicated otherwise.  The contents of an tt(argument) never is modified by the
 operation processing the tt(argument);
     it() tt(opos) refers to an offset into an tt(object) string;
     it() tt(apos) refers to an offset into an tt(argument);
-    it() tt(on) represents a number of characters in an tt(object);
-    it() tt(an) represents a number of characters in an tt(argument).
+    it() tt(on) represents a number of characters in an tt(object) (starting
+at tt(opos));
+    it() tt(an) represents a number of characters in an tt(argument) (starting
+at tt(apos)).
     )
 
 Both tt(opos) and tt(apos) must refer to existing offsets, or an exception
@@ -23,35 +25,26 @@ declare default values for tt(opos). Default offset values are 0, the default
 values of tt(on) and tt(an) is tt(string::npos), which can be interpreted as
 `the required number of characters to reach the end of the string'.
 
-COMMENT(>>>>>>>> NEXT <<<<<<<<<<<<<)
+With members starting their operations at the end of the string object's
+contents proceeding backwards, the default value of tt(opos) is the index of
+the object's em(last) character, with tt(on) by default equal to tt(opos + 1),
+representing the length of the substring em(ending) at tt(opos).
 
-With members starting their operations at the end of the string object
-proceeding backwards, the default value of tt(opos) becomes the index of the
-object's em(last) character, while tt(on) refers to the
-length of the substring em(ending) at the character at tt(opos).
+In the overview of member functions presented below it may be assumed that all
+these parameters accept default values unless indicated otherwise.  Of course,
+the default argument values cannot be used if a function requires additional
+arguments beyond the ones otherwise accepting default values.
 
-In the overview of member functions presented below it can be assumed that all
-these parameters accept default values unless indicated otherwise.
+Some members have overloaded versions expecting an initial argument of type
+tt(char const *). But even if that is not the case the first argument can
+em(always) be of type tt(char const *) where a parameter of tt(std::string) is
+defined.
 
-Of course, no defaults are accepted if a function requires additional
-arguments beyond the ones normally offering default values.
+Several member functions accept em(iterators). Section ref(ITERATORS) covers
+the technical aspects of em(iterators), but these may be ignored at this point
+without loss of continuity.  Like tt(apos) and tt(opos), iterators must refer
+to existing positions and/or to an existing range of characters within the
+string object's contents.
 
-Some members have specific overloaded versions for an initial argument of type
-tt(char const *). However, note that the first argument can em(always) be of
-type tt(char const *), using em(promotions) to convert the tt(char const *) to
-a tt(std::string const &).
-
-When streams are involved, tt(istr) indicates a stream from which information
-is extracted, tt(ostr) indicates a stream into which information is inserted.
-
-Several member functions accept em(iterators). At this point in the
-Annotations it's a bit premature to discuss iterators, but for referential
-purposes they nevertheless have to be mentioned. So, a forward reference is
-used here: see section ref(ITERATORS) for a more detailed discussion of
-em(iterators). Like tt(apos) and tt(opos), iterators must refer to
-existing characters, or to a defined range of characters within the string
-to which they refer.
-
-Finally, note that all tt(string)-member functions returning indices in
-tt(object) return the predefined constant ti(string::npos) if no
-suitable index could be found.
+Finally, all tt(string)-member functions computing indices return the
+predefined constant tt(string::npos) on failure.

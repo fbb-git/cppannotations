@@ -1,632 +1,331 @@
-COMMENT(
-    it() hi(string assignment) Assignment: String objects can be assigned to
-each other. For this the assignment operator (i.e., the tt(=) operator) can be
-used, which accepts both a tt(string) object and a bf(C)-style character
-string as its right-hand argument:
-        verbinclude(string/cc/stringassign.cc)
+The tt(std::string) class offers many member function as well as additional
+non-member functions that should be considered part of the string class.
+All these functions are listed below in alphabetic order. 
 
-    it() hi(string to ASCII-Z conversion) String to ASCII-Z conversion: In the
-previous example a standard bf(C)-string (an ASCII-Z string) was implicitly
-converted to a tt(string)-object. The reverse conversion (converting a
-tt(string) object to a standard bf(C)-string) is not performed
-automatically. In order to obtain the tt(C)-string that is stored within the
-tt(string) object itself, the member function tt(c_str()), which returns a
-tt(char const *), can be used:
-        verbinclude(string/cc/stringcstr.cc)
+The symbolic value tt(string::npos) is defined by the string class. It
+represents `index-not-found' when returned by member functions returning
+string offset positions. Example: when calling `tt(object.find('x'))' (see
+below) on a string object not containing the character tt('x'), tt(npos)
+is returned, as the requested position does not exist.
 
-    it() hi(string elements) String elements: The individual elements of a
-string object can be accessed for reading or writing. For this operation the
-subscript operator (tt([])) is available, but there is em(no)
-    i(string pointer dereferencing operator) (tt(*)). The subscript operator
-does not perform range-checking. hi(string range checking) If range
-checking is required the ti(string::at()) member function should be used:
-        verbinclude(string/cc/stringsubscript.cc)
-    When an illegal index is passed to the tt(at()) member function, the
-program aborts (actually, an em(exception) is generated, which could be
-caught. Exceptions are covered in chapter ref(EXCEPTIONS)).
+The final 0-byte used in bf(C) strings to indicate the end of an ASCII-Z
+string is em(not) considered part of a bf(C++) string, and so the member
+function will return tt(npos), rather than tt(length()) when looking for 0 in
+a string object containing the characters of a bf(C) string.
 
-    it() hi(string comparisons) Comparisons: Two strings can be compared for
-(in)equality or ordering using the tt(==, !=, <, <=, >) and tt(>=) operators
-or the ti(string::compare()) member function. The tt(compare()) member
-function comes in several flavors (see section ref(STRINGMEMBERS) for
-details). E.g.:
-        itemization(
-        itt(int string::compare(string const &other)): this variant offers
-a bit more information than the comparison-operators do.  The return value of
-the tt(string::compare()) member function may be used for
-    i(lexicographic ordering): a negative value is returned if the string
-stored in the string object using the tt(compare()) member function (in the
-example: tt(stringOne)) is located earlier in the
-    emi(ASCII collating sequence) than the string stored in the string
-object passed as argument.
-        verbinclude(string/cc/stringcompare.cc)
-    Note that there is no member function to perform a
-        i(case insensitive comparison of strings).
-        itt(int string::compare(string::size_type pos, size_t n, string
-const &other)): the first argument indicates the position in the current
-string that should be compared; the second argument indicates the number of
-characters that should be compared (if this value exceeds the number of
-characters that are actually available, only the available characters are
-compared); the third argument indicates the string which is compared to the
-current string.
-
-        it() More variants of tt(string::compare()) are available. As stated,
-refer to section ref(STRINGMEMBERS) for details.
-        )
-    The following example illustrates the tt(compare()) function:
-        verbinclude(string/cc/stringcompare2.cc)
-
-        it() hi(string appends) Appending: A tt(string) can be appended to
-another string. For this the tt(+=) operator can be used, as well as the
-tt(string &string::append()) member function.
-
-    Like the tt(compare()) function, the tt(append()) member function may have
-extra arguments. The first argument is the string to be appended, the
-second argument specifies the index position of the first character that will
-be appended. The third argument specifies the number of characters that will
-be appended.  If the first argument is of type tt(char const *), only a second
-argument may be specified. In that case, the second argument specifies the
-number of characters of the first argument that are appended to the tt(string)
-object.  Furthermore, the tt(+) operator can be used to append two strings
-within an expression:
-        verbinclude(string/cc/stringappend.cc)
-    The tt(+) operator can be used in cases where at least one term of the
-tt(+) operator is a tt(string) object (the other term can be a tt(string, char
-const *) or tt(char)).
-
-When neither operand of the tt(+) operator is a tt(string), at least one
-operand must be converted to a tt(string) object first. An easy way
-to do this is to use an emi(anonymous string) object:
-        centt(string("hello") + " world";)
-
-        it() hi(string insertions) Insertions: The tt(string &string::insert()) member
-function to insert (parts of) a tt(string) has at least two, and at most four
-arguments:
-        itemization(
-        it() The first argument is the offset in the current tt(string) object
-    where another string should be inserted.
-        it() The second argument is the string to be inserted.
-        it() The third argument specifies the index position of the
-    first character in the provided tt(string)-argument that will be inserted.
-        it() The fourth argument specifies the number of characters that will
-            be inserted.
-        )
-    If the first argument, however, is of type tt(char const *), the fourth
-argument is not available. In that case, the third argument indicates the
-number of characters of the provided tt(char const *) value that will be
-inserted.
-        verbinclude(string/cc/stringinsert.cc)
-    Several variants of tt(string::insert()) are available. See section
-ref(STRINGOVERVIEW) for details.
-
-        it() hi(string replacements) Replacements: At times, the contents of
-tt(string) objects must be replaced by other information. To replace parts of
-the contents of a tt(string) object by another string the member function
-tt(string &string::)tt(replace()) can be used.
-    The member function has at least three and possibly five arguments, having
-the following meanings
-(see section ref(STRINGOVERVIEW) for overloaded versions of
-tt(replace()) using different types of arguments):
+Here are the standard functions that operate on objects of the class
+string. When a parameter of tt(size_t) is mentioned it may be interpreted as a
+parameter of type tt(string::size_type), but without defining a default
+argument value. The type tt(size_type) should be read as
+tt(string::size_type). With tt(size_type) the default argument values
+mentioned in section ref(STRINGOVERVIEW) apply. All quoted functions are
+member functions of the class tt(std::string), except where indicated
+otherwise. 
     itemization(
-    it() The first argument indicates the position of the first character that
-must be replaced
-    it() The second argument gives the number of characters that
-must be replaced.
-    it() The third argument defines the replacement text (a
-tt(string) or tt(char const *)).
-    it() The fourth argument specifies the index position of
-the first character in the provided tt(string)-argument that will be inserted.
-    it() The fifth argument can be used to specify the number of
-characters that will be inserted.
-    )
-    If the third argument is of type tt(char const *), the fifth argument is
-not available. In that case, the fourth argument indicates the number of
-characters of the provided tt(char const *) value that will be inserted.
-
-The following example shows a very simple em(file changer): it reads lines
-from tt(cin), and replaces occurrences of a `searchstring' by a
-`replacestring'. Simple tests for the correct number of arguments and the
-contents of the provided strings (they should be unequal) are applied as well.
-label(REPLACECC)
-        verbinclude(string/cc/stringreplace.cc)
-
-        it() hi(string swapping)  Swapping: The member function
-        tt(string &string::swap(string &other))
-    swaps the contents of two tt(string)-objects. For example:
-        verbinclude(string/cc/stringswap.cc)
-
-        it() hi(string erasing)  Erasing: The member function tt(string
-&string::erase()) removes characters from a tt(string). The standard form has
-two optional arguments:
-        itemization(
-        it() If no arguments are specified, the stored string is erased
-    completely: it becomes the empty string (tt(string()) or tt(string(""))).
-        it() The first argument may be used to specify the offset of the first
-    character that must be erased.
-        it() The second argument may be used to specify the number of
-            characters that are to be erased.
-        )
-    See section ref(STRINGOVERVIEW) for overloaded versions of tt(erase()). An
-example of the use of tt(erase()) is given below:
-        verbinclude(string/cc/stringerase.cc)
-
-        it() hi(string searches) Searching: To find i(substrings) in a
-tt(string) the member function tt(string::size_type)linebreak()
-    tt(string::find()) can be used. This function looks for the string that is
-provided as its first argument in the tt(string) object calling tt(find()) and
-returns the index of the first character of the substring if found. If the
-string is not found tt(string::npos) is returned. The member function
-tt(rfind()) looks for the substring from the end of the tt(string) object back
-to its beginning. An example using tt(find()) was given
-link(earlier.)(REPLACECC)
-
-        it() i(Substrings): To extract a substring from a tt(string) object,
-the member function linebreak()tt(string::substr()) is
-available. The returned tt(string) object contains a copy of the substring in
-the tt(string)-object calling tt(substr()) The tt(substr()) member function
-has two optional arguments:
-        itemization(
-        it() Without arguments, a copy of the tt(string) itself is returned.
-        it() The first argument may be used to specify the offset of the first
-            character to be returned.
-        it() The second argument may be used to specify the number of
-            characters that are to be returned.
-        )
-    For example:
-        verbinclude(string/cc/stringsubstr.cc)
-
-        it() i(Character set searches): Whereas tt(find()) is used to find a
-substring, the functions tt(find_first_of(), find_first_not_of(),
-find_last_of()) and tt(find_last_not_of()) can be used to find em(sets) of
-characters (unfortunately, regular expressions are not supported here). The
-following program reads a line of text from the standard input stream, and
-displays the substrings starting at the first vowel, starting at the last
-vowel, and starting at the first non-digit:
-        verbinclude(string/cc/stringfindfirst.cc)
-
-        it() hi(string size) String size: The number of characters that are
-stored in a string are obtained by the tt(size()) member function, which, like
-the standard bf(C) function ti(strlen()) does not include the terminating
-ASCII-Z character. For example:
-     verbinclude(string/cc/stringsize.cc)
-
-        it() hi(empty strings) Empty strings: The tt(size()) member function
-can be used to determine whether a string holds no characters. Alternatively,
-the ti(string::empty()) member function can be used:
-         verbinclude(string/cc/stringempty.cc)
-
-        it() hi(resizing strings) Resizing strings: If the size of a string is
-not enough (or if it is too large), the member function tt(void
-string::resize()) can be used to make it longer or shorter. Note that
-operators like tt(+=) automatically resize a tt(string) when needed.
-
-    it() hi(reading a string) Reading a line from a stream into a string: The
-function
+    ithtq(at)(char &at(size_t opos)) 
+       (a reference to the character at the indicated position is
+        returned. When called with tt(string const) objects a tt(char const &)
+        is returned. The member function performs range-checking, raising an
+        exception (that by default aborts the program) if an invalid index is
+        passed.)
+    ithtq(append)
+        (string &append(InputIterator begin, InputIterator end))
+        (the characters in the range defined by tt(begin) and tt(end) are
+        appended to the current string object.)
+    ittq(string &append(string const &argument, size_type apos,
+        size_type an))
+        (tt(argument) (or a substring) is appended to the current string
+        object.)
+    ittq(string &append(char const *argument, size_type an))
+       (the first tt(an) characters of tt(argument) are appended to the
+        string object.)
+    ittq(string &append(size_type n, char c))
+       (tt(n) characters tt(c) are appended to the current string object.)
+    ithtq(assign)(string &assign(string const &argument, size_type
+        apos, size_type an))
+       (tt(argument) (or a substring) is assigned to the string object.
+        If tt(argument) is of type tt(char const *) and one additional
+        argument is provided the second argument is interpreted as a value
+        initializing tt(an), using 0 to initialize tt(apos).)
+    ittq(string &assign(size_type n, char c))
+       (tt(n) characters tt(c) are assigned to the current string object.)
+    ithtq(capacity)(size_type capacity() const)
+       (the number of characters that can currently be stored in the string
+        object without needing to resize it is returned.)
+    ithtq(compare)(int compare(string const &argument) const)
+       (the text stored in the current string object and the text stored in
+        tt(argument) is compared using a lexicographical comparison using the
+        ASCII character collating sequence. zero is returned if the two
+        strings have identical contents, a negative value is returned if the
+        text in the current object should be ordered em(before) the text in
+        tt(argument); a positive value is returned if the text in the current
+        object should be ordered em(beyond) the text in tt(argument).)
+    ittq(int compare(size_t opos, size_t on, string const &argument) const)
+       (a substring of the text stored in the current string object is
+        compared to the text stored in tt(argument). At most tt(on) characters
+        starting at offset tt(opos) are compared to the text in tt(argument).)
+    itt(int compare+OPENPARsize_t opos, size_t on, string const &argument,)
+        linebreak() 
+       tt(size_type apos, size_type an+CLOSEPAR)
+       quote(a substring of the text stored in the current string object is
+        compared to a substring of the text stored in tt(argument). At most
+        tt(on) characters of the current string object, starting at offset
+        tt(opos), are compared to at most tt(an) characters of tt(argument),
+        starting at offset tt(apos). In this case tt(argument) em(must) be a
+        string object.)
+    ittq(int compare(size_t opos, size_t on, char const *argument, size_t an))
+       (a substring of the text stored in the current string object is
+        compared to a substring of the text stored in tt(argument). At most
+        tt(on) characters of the current string object starting at offset
+        tt(opos) are compared to at most tt(an) characters of
+        tt(argument). tt(Argument) must have at least tt(an) characters. The
+        characters may have arbitrary values: the ASCII-Z value has no special
+        meaning.)
+    ithtq(copy)(size_t copy(char *argument, size_t on, size_type opos) const):
+       (the contents of the current string object are (partially) copied into
+        tt(argument). The actual number of characters copied is returned.  The
+        second argument, specifying the number of characters to copy, from the
+        current string object is required. No ti(ASCII-Z) is appended to the
+        copied string but can be appended to the copied text using an 
+        idiom like the following: 
         verb(
-    istream &getline(istream &istr, string &target, char delimiter)
+    argument[object.copy(argument, string::npos)] = 0;
         )
-may be used to read a line of text (up to the first delimiter or the
-end of the stream) from tt(istr). Some notes: tt(getline()) is not a
-em(member) function of the class tt(string); streams can be interpreted as
-tt(bool) values as well (cf. section ref(IOSTATES)).
-
-The delimiter's default value is tt('\n'). It is removed from tt(istr),
-but it is em(not) stored in tt(target). If the delimiter is not found,
-tt(istr.eof()) returns tt(true) (see section ref(IOSTATES)).  The function
-tt(getline()) was used in several earlier examples (e.g., with the
-link(replace())(REPLACECC) member function).
-
-    it() hi(extracting a string) A tt(string) variables may be extracted from
-a stream. Using the construction
-            verb(
-    istr >> str;
-            )
-    where tt(istr) is an tt(istream) object, and tt(str) is a tt(string), the
-next consecutive series of non-blank characters will be assigned to
-tt(str). Note that by default the extraction operation will skip any
-blanks that precede the characters that are extracted from the stream.
-
-END COMMENT)
-
-Below string member functions are listed in alphabetic order. The member name,
-prefixed by the tt(string)-class is given first. Then the full prototype and a
-description are given. Values of the type ti(string::size_type) represent
-index positions within a tt(string). For all practical purposes, these values
-may be interpreted as tt(unsigned).
-
-The special value ti(string::npos), defined by the string class, represents a
-non-existing index. This value is returned by all members returning indices
-when they could not perform their requested tasks. Note that the string's
-em(length) is not returned as a valid index. E.g., when calling a member
-`tt(find_first_not_of(" "))' (see below) on a tt(string) object holding 10
-blank space characters, tt(npos) is returned, as the string only contains
-blanks.  The final 0-byte that is used in bf(C) to indicate the end of a
-tt(ASCII-Z) string is em(not) considered part of a bf(C++) string, and so the
-member function will return tt(npos), rather than tt(length()).
-
-In the following overview, `tt(size_type)' should be read as
-`ti(string::size_type)'.
-        itemization(
-        it() hi(string::at()) tt(char &string::at(size_type opos)):
-            quote(the character (reference) at the indicated position is
-returned (it may be reassigned). The member function performs range-checking,
-raising an exception (by default aborting the program) if an invalid index is
-passed. No default value for tt(opos).)
-
-        it() hi(string::append())
-            tt(string &string::append(InputIterator begin, InputIterator end)):
-            quote(using this member function the characters, in the range
-implied by the tt(begin) and tt(end InputIterators) are appended to the
-tt(string) object.)
-
-       itt(string &string::append(string argument, size_type apos, size_type
-an)):
-            quote(
-            tt(argument) (or a substring) is appended to the tt(string)
-                object.
-            )
-
-       itt(string &string::append(char const *argument, size_type an)):
-            quote(the first tt(an) characters of tt(argument) are appended to
-            the tt(string) object.
-            )
-
-        itt(string &string::append(size_type n, char c)):
-        quote(using this member function, tt(n) characters tt(c) are
-appended to the tt(string) object.
-            )
-
-        it() hi(string::assign())
-        tt(string &string::assign(string argument, size_type apos,
-size_type an)):
-            quote(
-            itemization(
-            it() tt(argument) (or a substring) is assigned to the tt(string)
-                object.
-            it() if tt(argument) is of type tt(char const *) and one
-                additional argument is provided the second argument is
-                interpreted as a value initializing tt(an), using tt(0) to
-                initialize tt(apos).
-            ))
-
-        itt(string &string::assign(size_type n, char c)):
-        quote(
-            using this member function, tt(n) characters tt(c) can be assigned
-to the tt(string) object.)
-
-        it() hi(string::capacity())
-            tt(size_type string::capacity()):
-            quote(returns the number of characters that can currently be
-stored in the tt(string) object. Its return value is at least tt(size())'s
-return value)
-
-        it() hi(string::compare())
-        tt(int string::compare(string argument)):
-            quote(this member function is used to compare (according to
-the ASCII-character set) the text stored in the tt(string) object and in
-tt(argument). The tt(argument) may also be a (non-0) tt(char const *). 0 is
-returned if the characters in the tt(string) object and in tt(argument) are
-the same; a negative value is returned if the text in tt(string) is
-    hi(lexicographic comparison) lexicographically em(before) the text in
-tt(argument); a positive value is returned if the text in tt(string) is
-lexicographically em(beyond) the text in tt(argument).)
-
-        itt(int string::compare(size_type opos, size_type on, string
-argument)):
-    quote(this member function is used to compare a substring of the text
-stored in the tt(string) object with the text stored in tt(argument). At most
-tt(on) characters, starting at offset tt(opos), are compared with the text in
-tt(argument). The tt(argument) may also be a (non-0) tt(char const *).)
-
-        itt(int string::compare+OPENPARsize_type opos, size_type on, string
-argument,) linebreak() tt(size_type apos, size_type an+CLOSEPAR):
-    quote(this member function is used to compare a substring of the text
-stored in the tt(string) object with a substring of the text stored in
-tt(argument). At most tt(on) characters of the tt(string) object, starting at
-offset tt(opos), are compared with at most tt(an) characters of tt(argument),
-starting at offset tt(apos).  Note that tt(argument) em(must) also be a
-tt(string) object.)
-
-        itt(int string::compare+OPENPARsize_type opos, size_type on,
-char const *argument,) linebreak() tt(size_type an+CLOSEPAR):
-    quote(this member function is used to compare a substring of the text
-stored in the tt(string) object with a substring of the text stored in
-tt(argument). At most tt(on) characters of the tt(string) object, starting at
-offset tt(opos), are compared with at most tt(an) characters of
-tt(argument). tt(Argument) must have at least tt(an) characters. However, the
-characters may have arbitrary values: the ASCII-Z value has no special
-meaning.)
-
-        it() hi(string::copy())
-   tt(size_type string::copy(char *argument, size_type objn, size_type opos)):
-            quote(the contents of the tt(string) object are (partially) copied
-            to tt(argument). The actual number of characters that were copied
-is returned.  Note that
-    itemization(
-    it() the second argument, specifying the number of characters to copy, is
-required;
-    it() the characters of the object for which  this member is called will be
-copied em(into) tt(argument);
-    it() em(following the copy operation no ti(ASCII-Z) is appended to the
-copied string). A final ASCII-Z character can be appended to the copied text
-using the following construction:
-        verb(
-    buffer[s.copy(buffer)] = 0;
+       Of course, the programmer should make sure that tt(argument)'s size is
+        large enough to accomodate the additional 0-byte.)
+    ithtq(c_str)(char const *c_str() const)
+       (the contents of the current string object as an ASCII-Z terminated
+        bf(C)-string.)
+    ithtq(data)(char const *data() const)
+       (the raw contents of the current string object are returned. Since this
+        member does not return an ASCII-Z terminated bf(C) string (as
+        tt(c_str) does), it can be used to retrieve any kind of information
+        stored inside the current string object including, e.g., series of
+        0-bytes:
+       verb(
+    string s(2, 0);     
+    cout << static_cast<int>(s.data()[1]) << '\n';
         )
-    )
-
-        it() hi(string::c_str()) tt(char const *string::c_str()):
-            quote(the member function returns the contents of the tt(string)
-object as an tt(ASCII-Z) bf(C)-string.)
-
-        it() hi(string::data()) tt(char const *string::data()):
-            quote(returns the raw text stored in the tt(string) object. Since
-this member does not return an ascii-Z string (as tt(c_str()) does), it can be
-used to store and retrieve any kind of information, including, e.g., series of
-0-bytes:
-        verb(
-        string s;
-        s.resize(2);
-        cout << static_cast<int>(s.data()[1]) << endl;
         )
-            )
-
-        it() hi(string::empty()) tt(bool string::empty()):
-            quote(returns tt(true) if the tt(string) object contains no data.)
-
-        it() hi(string::erase())
-            tt(string &string::erase(size_type opos, size_type on)):
-            quote(this member function is used to erase (a sub)string of
-the tt(string) object.)
-
-        itt(iterator string::erase(iterator obegin, iterator oend)):
-            quote(
-        itemization(
-        it() if only tt(obegin) is provided, the tt(string) object's character
-at iterator position tt(obegin) is erased.
-        it() if tt(oend) is provided as well the characters of the tt(string)
-object, in the range implied by the tt(iterators obegin) and tt(oend), are
-erased.
-        )
-        The iterator tt(obegin) is returned, pointing to the character
-immediately following the last erased character.)
-
-        it() hi(string::find())
-            tt(size_type string::find(string argument, size_type opos)):
-            quote(returns the index in the tt(string) object where
-tt(argument) is found.)
-
-        itt(size_type string::find(char const *argument, size_type opos,
-                                    size_type an)):
-            quote(returns the index in the tt(string) object where
-tt(argument) is found. Note: when three arguments are specified the first
-argument em(cannot) be a tt(std::string const &).)
-
-        itt(size_type string::find(char c, size_type opos)):
-            quote( returns the index in the tt(string) object where tt(c) is
-            found.)
-
-        it() hi(string::find_first_of())
-            tt(size_type string::find_first_of(string argument,
-                                               size_type opos)):
-            quote(returns the index in the tt(string) object where any
-character in tt(argument) is found.)
-
-        itt(size_type string::find_first_of+OPENPARchar const *argument,
-size_type opos,) linebreak() tt(size_type an+CLOSEPAR):
-            quote(returns the index in the tt(string) object where a character
-of tt(argument) is found, no matter which character.
-        itemization(
-        it() If tt(opos) is provided it refers to the index in the tt(string)
-object where the search for tt(argument) should start. If omitted, the
-tt(string) object is scanned completely.
-        it() If tt(an) is provided it indicates the number of characters of
-the tt(char const *) argument that should be used in the search: it defines a
-partial string starting at the beginning of the tt(char const *) argument. If
-omitted, all of tt(argument)'s characters are used.
-        ))
-
-        itt(size_type string::find_first_of(char c, size_type opos)):
-            quote(returns the index in the tt(string) object where character
-tt(c) is found.)
-
-        it() hi(string::find_first_not_of())
-        tt(size_type string::find_first_not_of(string argument,
-                                                size_type opos)):
-            quote(returns the index in the tt(string) object where a character
-not appearing in tt(argument) is found.)
-
-        itt(size_type string::find_first_not_of(char const *argument,
-size_type opos, size_type an)):
-            quote(returns the index in the tt(string) object where any
-character em(not) appearing in tt(argument) is found.)
-
-        itt(size_type string::find_first_not_of(char c, size_type opos)):
-            quote(returns the index in the tt(string) object where another
-character than tt(c) is found.)
-
-        it() hi(string::find_last_of())
-          tt(size_type string::find_last_of(string argument, size_type opos)):
-            quote(returns the em(last) index in the tt(string) object where
-one of tt(argument)'s characters is found.)
-
-        itt(size_type string::find_last_of+OPENPARchar const* argument,
-size_type opos,) linebreak() tt(size_type an+CLOSEPAR):
-            quote(returns the last index in the tt(string) object where one of
-tt(argument)'s characters is found.)
-
-        itt(size_type string::find_last_of(char c, size_type opos)):
-            quote(returns the last index in the tt(string) object where
-character tt(c) is found.)
-
-        it() hi(string::find_last_not_of())
-        tt(size_type string::find_last_not_of(string argument,
-size_type opos)):
-            quote(returns the last index in the tt(string) object where any
-character not appearing in tt(argument) is found.)
-
-        itt(size_type string::find_last_not_of+OPENPARchar const *argument,
-            size_type) linebreak() tt(opos, size_type an+CLOSEPAR):
-            quote(returns the last index in the tt(string) object where any
-character not appearing in tt(argument) is found.)
-
-        itt(size_type string::find_last_not_of(char c, size_type opos)):
-            quote(returns the last index in the tt(string) object where
-another character than tt(c) is found.)
-
-        it() hi(string::getline()) hi(getline())
-            tt(istream &getline(istream &istr, string object, char delimiter)):
-            quote(this function (note that it's not a em(member) function of
-the class tt(string)) is used to read a line of text from tt(istr). All
-characters until tt(delimiter) (or the end of the stream, whichever comes
-first) are read from tt(istr) and are stored in tt(object). The delimiter,
-when present, is removed from the stream, but is not stored in tt(line).  The
-delimiter's default value is tt('\n').nl()
-    If the delimiter is not found, tt(istr.eof()) returns tt(true) (see
-section ref(IOSTATES)).  The function returns a reference to tt(istr). Since
-streams may be interpreted as tt(bool) values (cf. section ref(IOSTATES)) a
-commonly encountered idiom to read all lines from a stream (into tt(string
-line)) looks like this:
-        verb(
+    ithtq(empty)(bool empty() const)
+       (tt(true) is returned if the current string object contains no data.)
+    ithtq(erase)(string &erase(size_type opos, size_type on))
+       (a (sub)string of the information stored in the current string object
+        is erased.)
+    ittq(string::iterator erase(string::iterator begin, string::iterator end))
+       (the parameter tt(end) is optional. If omitted the value returned by
+        the current object's tt(end) member is used. The characters defined by
+        the tt(begin) and tt(end) iterators are erased. The iterator tt(begin)
+        is returned, which is then referring to the position immediately
+        following the last erased character.)
+    ithtq(find)(size_t find(string const &argument, size_type opos) const)
+       (the first index in the current string object where tt(argument) is
+        found is returned.)
+    ittq(size_t find(char const *argument, size_type opos, size_type an) const)
+       (the first index in the current string object where tt(argument) is
+        found is returned. When all three arguments are specified the first
+        argument em(must) be a tt(char const *).)
+    ittq(size_t find(char c, size_type opos) const)
+       (the first index in the current string object where tt(c) is found is
+        returned.)
+    ithtq(find_first_of)(size_t find_first_of(string const &argument,
+                                               size_type opos) const)
+       (the first index in the current string object where any character in
+        tt(argument) is found is returned.)
+    itt(size_type find_first_of+OPENPARchar const *argument, size_type opos,)
+        linebreak() 
+        tt(size_type an+CLOSEPAR const)
+       (the first index in the current string object where any character in
+        tt(argument) is found is returned. If tt(opos) is provided it refers
+        to the first index in the current string object where the search for
+        tt(argument) should start. If omitted, the string object is scanned
+        completely.  If tt(an) is provided it indicates the number of
+        characters of the tt(char const *) argument that should be used in the
+        search. It defines a substring starting at the beginning of
+        tt(argument). If omitted, all of tt(argument)'s characters are used.)
+    ittq(size_type find_first_of(char c, size_type opos))
+       (the first index in the current string object where character tt(c) is
+        found is returned.)
+    ittq(size_t find_first_not_of(char c, size_type opos) const)
+       (the first index in the current string object where another
+        character than tt(c) is found is returned.)
+    ithtq(find_last_of)(size_t find_last_of(string const &argument,
+                                               size_type opos) const)
+       (the last index in the current string object where any character in
+        tt(argument) is found is returned.)
+    itt(size_type find_last_of+OPENPARchar const *argument, size_type opos,)
+        linebreak() 
+        tt(size_type an+CLOSEPAR const)
+       (the last index in the current string object where any character in
+        tt(argument) is found is returned. If tt(opos) is provided it refers
+        to the last index in the current string object where the search for
+        tt(argument) should start. If omitted, the string object is scanned
+        completely.  If tt(an) is provided it indicates the number of
+        characters of the tt(char const *) argument that should be used in the
+        search. It defines a substring starting at the beginning of
+        tt(argument). If omitted, all of tt(argument)'s characters are used.)
+    ittq(size_type find_last_of(char c, size_type opos))
+       (the last index in the current string object where character tt(c) is
+        found is returned.)
+    ithtq(find_last_not_of)(size_t find_last_not_of(string const &argument,
+                                                size_type opos) const)
+       (the last index in the current string object where any character em(not)
+        appearing in tt(argument) is found is returned.)
+    ithtq(getline)(istream &std::getline(istream &istr, string &object, 
+            char delimiter = '\n'))
+       (Note: this is em(not) a member function of the class tt(string).nl() 
+       A line of text is read from tt(istr). All characters until
+        tt(delimiter) (or the end of the stream, whichever comes first) are
+        read from tt(istr) and are stored in tt(object). If the delimiter is
+        encountered it is removed from the stream, but is not stored in
+        tt(line).nl() 
+       If the delimiter is not found, tt(istr.eof) returns tt(true) (see
+        section ref(IOSTATES)). Since streams may be interpreted as tt(bool)
+        values (cf. section ref(IOSTATES)) a commonly encountered idiom to
+        read all lines from a stream successively into a string object
+        tt(line) looks like this:
+       verb(
     while (getline(istr, line))
         process(line);
         )
-    Note that the contents of the last line, whether or not it was terminated
-by a delimiter, will always be assigned to tt(object).nl()
-        )
-
-        it() hi(string::insert())
-            tt(string &string::insert+OPENPARsize_type opos, string argument,
-size_type) linebreak() tt(apos, size_type an+CLOSEPAR):
-            quote(this member function is used to insert (a sub)string of
-tt(argument) into the tt(string) object, em(at) the tt(string) object's index
-position tt(opos). Arguments for tt(apos) and tt(an) must either both be
-specified or they must both be omitted.)
-
-        itt(string &string::insert(size_type opos, char const *argument,
+       The contents of the last line, whether or not it was terminated
+        by a delimiter, is eventually also assigned to tt(object).)
+    ithtq(insert)(string &insert+OPENPARsize_t opos, string const &argument,
+        size_type) linebreak() tt(apos, size_type an+CLOSEPAR) 
+       (a (sub)string of tt(argument) is inserted into the current string
+        object at the current string object's index position
+        tt(opos). Arguments for tt(apos) and tt(an) must either both be
+        provided or they must both be omitted.)
+    ittq(string &insert(size_t opos, char const *argument,
                 size_type an)):
-            quote(if tt(argument) is of type tt(char const *), tt(apos) is not
-            available.)
+       (tt(argument) (of type tt(char const *)) is inserted at index tt(opos)
+        into the current string object.)
+    ittq(string &insert(size_t opos, size_t count, char ch)):
+       (tt(Count) characters tt(ch) are inserted at index tt(opos) into the
+        current string object.)
+    ittq(string::iterator insert(string::iterator begin, char ch))
+       (the character tt(c) is inserted at the current object's position
+        referred to by tt(begin). tt(Begin) is returned.)
+    ittq(string::iterator insert(string::iterator begin, size_t count, 
+        char ch))
+       (tt(Count) characters tt(ch) are inserted at the current object's
+        position referred to by tt(begin). tt(Begin) is returned.)
+    itt(string::iterator insert+OPENPARstring::iterator begin, InputIterator
+        abegin,) linebreak()
+       tt(InputIterator aend+CLOSEPAR):
+       (the characters in the range defined by the tt(InputIterators abegin)
+        and tt(aend) are inserted at the current object's position
+        referred to by tt(begin). tt(Begin) is returned.)
+    ithtq(length)(size_t length() const)
+       (the number of characters stored in the current string object is
+        returned.)
+    ithtq(max_size)(size_t max_size() const)
+       (the maximum number of characters that can be stored in the current
+        string object is returned.)
+    itt(replace)(string &replace+OPENPARsize_t opos, size_t on, string const
+        &)linebreak()
+       tt(argument, size_type apos, size_type an+CLOSEPAR):
+       (a (sub)string of characters in tt(object) are replaced by the (subset
+        of) characters of tt(argument).  If tt(on) is specified as 0
+        tt(argument) is inserted into tt(object) at offset tt(opos).)
+    itt(string &replace+OPENPARsize_t opos, size_t on,)linebreak()
+       tt(char const *argument, size_type an+CLOSEPAR):
+       (a series of characters in tt(object) are be replaced by the first
+        tt(an) characters of tt(char const *) argument.)
+    itt(string &replace+OPENPARsize_t opos, size_t on, size_type count,)
+        linebreak()
+       tt(char ch+CLOSEPAR):
+       (tt(on) characters of the current string object, starting at index
+        position tt(opos), are replaced by tt(count) characters tt(ch).)
+    itt(string &replace+OPENPARstring::iterator begin, string::iterator end,
+        string const &)linebreak()
+       tt(argument+CLOSEPAR):
+       (the series of characters in the current string object defined by the
+        iterators tt(begin) and tt(end) are replaced by tt(argument). If
+        tt(argument) is a tt(char const *), an additional argument tt(an) may
+        be used, specifying the number of characters of tt(argument) that are
+        used in the replacement.)
+    itt(string &replace(string::iterator begin, string::iterator end,
+        size_type count, char ch)):
+       (the series of characters in the current string object defined by the
+        iterators tt(begin) and tt(end) are replaced by tt(count) characters
+        having values tt(ch).)
+    itt(string &replace(string::iterator begin, string::iterator end,
+        InputIterator abegin, InputIterator aend)):
+       (the series of characters in the current string object defined by the
+        iterators tt(begin) and tt(end) are replaced by the characters in the
+        range defined by the tt(InputIterators abegin) and tt(aend).)
+    ithtq(reserve)(void reserve(size_t request))
+       (the current string object's capacity is changed to at least
+        tt(request). After calling this member, tt(capacity)'s return value
+        will be at least tt(request). A request for a smaller size than the
+        value returned by tt(capacity) is ignored. A
+        hi(length_error)tt(std::length_error) exception is thrown if
+        tt(request) exceeds the value returned by tt(max_size)
+        (tt(std::length_error) is defined in the ti(stdexcept)
+        header). Calling tt(reserve()) has the effect of redefining a string's
+        capacity, not of actually making available the memory to the
+        program. This is illustrated by the exception thrown by the string's
+        tt(at()) member when trying to access an element exceeding the
+        string's tt(size) but not the string's tt(capacity).)
 
-        itt(string &string::insert(size_type opos, size_type n, char c)):
-        quote(using this member function, tt(n) characters tt(c) can be
-inserted to the tt(string) object.)
-
-        itt(iterator string::insert(iterator obegin, char c)):
-            quote(the character tt(c) is inserted at the (iterator) position
-tt(obegin) in the tt(string) object. The iterator tt(obegin) is returned.)
-
-        itt(iterator string::insert(iterator obegin, size_type n, char c)):
-            quote(at the (iterator) position tt(obegin) of tt(object), tt(n)
-characters tt(c) are inserted. The iterator tt(obegin) is returned.)
-
-        itt(iterator string::insert+OPENPARiterator obegin,
-InputIterator abegin,) linebreak()tt(InputIterator aend+CLOSEPAR):
-            quote(the characters in the range implied by the tt(InputIterators
-abegin) and tt(aend) are inserted at the (iterator) position tt(obegin) in
-tt(object). The iterator tt(obegin) is returned.)
-
-        it() hi(string::length()) tt(size_type string::length()):
-            quote(returns the number of characters stored in the tt(string)
-object.)
-
-        it() hi(string::max_size()) tt(size_type string::max_size()):
-            quote(returns the maximum number of characters that can be stored
-in the tt(string) object.)
-
-        it() hi(string::replace())
-        tt(string &string::replace+OPENPARsize_type opos, size_type on,
-string)linebreak() tt(argument, size_type apos, size_type an+CLOSEPAR):
-            quote(the specified substring of characters in tt(object) are
-replaced by the specified subset of characters of tt(argument).
-If tt(on) is specified as 0, the member function em(inserts)
-tt(argument) into tt(object) at offset tt(opos).)
-
-        itt(string &string::replace+OPENPARsize_type opos, size_type
-on,)linebreak() tt(char const *argument, size_type an+CLOSEPAR):
-            quote(the indicated range of characters in tt(object) will be
-replaced by an em(initial subset) of tt(an) characters of the provided tt(char
-const *) argument.)
-
-        itt(string &string::replace+OPENPARsize_type opos, size_type on,
-            size_type n,) linebreak() tt(char c+CLOSEPAR):
-            quote(tt(on) characters of the tt(string) object, starting at
-index position tt(opos), are replaced by tt(n) characters having values
-tt(c).)
-
-        itt(string &string::replace+OPENPARiterator obegin, iterator oend,
-string)linebreak()tt(argument+CLOSEPAR):
-            quote(here, the string implied by the iterators tt(obegin) and
-tt(oend) is replaced by tt(argument). If tt(argument) is a tt(char const *),
-an extra argument tt(an) may be used, specifying the number of characters of
-tt(argument) that are used in the replacement.)
-
-        itt(string &string::replace(iterator obegin, iterator oend,
-size_type n, char c)):
-            quote(the characters of the tt(string) object, in the range
-implied by the tt(iterators obegin) and tt(oend) are replaced by tt(n)
-characters having values tt(c).)
-
-        itt(string &string::replace(iterator obegin, iterator oend,
-InputIterator abegin, InputIterator aend)):
-            quote(here the characters in the range implied by the iterators
-tt(obegin) and tt(oend) are replaced by the characters in the range implied by
-the tt(InputIterators abegin) and tt(aend).)
-
-        it() hi(string::reserve())tt(void string::reserve(size_type request)):
-            quote(this member can be used to request the string to change its
-capacity. After it is called, the return value of tt(capacity()) will be at
-least tt(request) or the value returned by tt(size()) if tt(request) is
-specified as a smaller value than the value returned by the string's
-tt(capacity()) member. A ti(std::length_error) exception is thrown if
-tt(request) exceeds the value returned by tt(max_size()) (the
-tt(std::length_error) is defined in the ti(stdexcept) header). Calling
-tt(reserve()) has the effect of redefining a string's capacity, not of
-actually making available the memory to the program. This is illustrated by
-the exception thrown by the string's tt(at()) member when trying to access an
-element exceeding the string's tt(size()) but not the string's
-tt(capacity()).)
-
-        it() hi(string::resize()) tt(void string::resize(size_type n, char c)):
-            quote(the string stored in the tt(string) object is resized to
+        it() hi(resize()) tt(void resize(size_type n, char c)):
+            quote(the string stored in the current string object is resized to
 tt(n) characters. The second argument is optional, in which case the value
 tt(c = 0) is used. If provided and the string is enlarged, the extra
 characters are initialized to tt(c).)
 
-        it() hi(string::rfind())
-            tt(size_type string::rfind(string argument, size_type opos)):
-            quote(returns the index in the tt(string) object where
+        it() hi(rfind())
+            tt(size_type rfind(string argument, size_type opos)):
+            quote(returns the index in the current string object where
 tt(argument) is found. Searching proceeds either from the end of the
-tt(string) object or from its offset tt(opos) back to the beginning.)
+string object or from its offset tt(opos) back to the beginning.)
 
-        itt(size_type string::rfind(char const *argument, size_type opos,
+        itt(size_type rfind(char const *argument, size_type opos,
 size_type an)):
-            quote(returns the index in the tt(string) object where
+            quote(returns the index in the current string object where
 tt(argument) is found. Searching proceeds either from the end of the
-tt(string) object or from offset tt(opos) back to the beginning.  The
+string object or from offset tt(opos) back to the beginning.  The
 parameter tt(an) specifies the number of characters of  tt(argument)
 starting at its beginning.)
 
-        itt(size_type string::rfind(char c, size_type opos)):
-            quote( returns the index in the tt(string) object where tt(c) is
-found. Searching proceeds either from the end of the tt(string) object (or
+        itt(size_type rfind(char c, size_type opos)):
+            quote( returns the index in the current string object where tt(c) is
+found. Searching proceeds either from the end of the current string object (or
 from offset tt(opos), if specified) back to the beginning.)
 
-        it() hi(string::size()) tt(size_type string::size()):
-            quote(returns the number of characters stored in the tt(string)
-object. This member is a synonym of tt(string::length()).)
+        it() hi(size()) tt(size_type size()):
+            quote(returns the number of characters stored in the string
+object. This member is a synonym of tt(length()).)
 
-        it() hi(string::substr())
-            tt(string string::substr(size_type opos, size_type on)):
+        it() hi(substr())
+            tt(string substr(size_type opos, size_type on)):
             quote(returns (using a em(value) return type) a substring of the
-tt(string) object. The string tt(object) itself is not modified by
+string object. The string tt(object) itself is not modified by
 tt(substr()).)
 
-        it() hi(string::swap())
-            tt(size_type string::swap(string argument)):
-            quote(swaps the contents of the tt(string) object and
-tt(argument). In this case, tt(argument) must be a tt(string) and cannot be a
+        it() hi(swap())
+            tt(size_type swap(string argument)):
+            quote(swaps the contents of the current string object and
+tt(argument). In this case, tt(argument) must be a string and cannot be a
 tt(char const *). Of course, both strings (tt(object) and tt(argument)) are
 modified by this member function.)
             )
         )
+COMMENT(
+        verbinclude(string/examples/stringassign.cc)
+        verbinclude(string/examples/stringcstr.cc)
+        verbinclude(string/examples/stringsubscript.cc)
+        verbinclude(string/examples/stringcompare.cc)
+        verbinclude(string/examples/stringcompare2.cc)
+        verbinclude(string/examples/stringappend.cc)
+        verbinclude(string/examples/stringinsert.cc)
+        verbinclude(string/examples/stringreplace.cc)
+        verbinclude(string/examples/stringswap.cc)
+        verbinclude(string/examples/stringerase.cc)
+        verbinclude(string/examples/stringsubstr.cc)
+        verbinclude(string/examples/stringfindfirst.cc)
+         verbinclude(string/examples/stringsize.cc)
+         verbinclude(string/examples/stringempty.cc)
+END COMMENT)
+
