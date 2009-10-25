@@ -78,7 +78,7 @@ union STYPE__
 
     public:
         void setDebug(bool mode);
-}; 
+};
 
 inline bool ParserBase::debug() const
 {
@@ -112,5 +112,3 @@ inline void ParserBase::ERROR() const
 
 
 #endif
-
-

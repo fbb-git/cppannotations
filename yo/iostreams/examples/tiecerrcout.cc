@@ -17,6 +17,6 @@
         Generated output:
 
         first (unbuffered) line to cerr
-        first (buffered) line to cout 
+        first (buffered) line to cout
         second (buffered) line to cout second (unbuffered) line to cerr
     */

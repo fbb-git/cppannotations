@@ -31,8 +31,8 @@
 
     int main()
     {
-        //  fun(FBB::FIRST, ES::FIRST); ambiguity: resolved by 
-        //                              explicitly mentioning 
+        //  fun(FBB::FIRST, ES::FIRST); ambiguity: resolved by
+        //                              explicitly mentioning
         //                              the namespace
         ES::fun(FBB::FIRST, ES::FIRST);
     }

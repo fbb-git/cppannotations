@@ -37,13 +37,13 @@
 // removed during the state-definition phase.
 
 // So:
-//      s_x[] = 
+//      s_x[] =
 //      {
 //                  [_field_1_]         [_field_2_]
 //
 // First element:   {state-type,        idx of last element},
 // Other elements:  {required token,    action to perform},
-//                                      ( < 0: reduce, 
+//                                      ( < 0: reduce,
 //                                          0: ACCEPT,
 //                                        > 0: next state)
 // Last element:    {set to d_token__,    action to perform}
@@ -58,7 +58,7 @@ namespace // anonymous
 {
     char const author[] = "Frank B. Brokken (f.b.brokken@rug.nl)";
 
-    enum 
+    enum
     {
         STACK_EXPANSION = 5     // size to expand the state-stack with when
                                 // full
@@ -81,19 +81,19 @@ namespace // anonymous
         ERR_DEF,    // ERR_ITEM | DEF_RED
         REQ_DEF,    // REQ_TOKEN | DEF_RED
         ERR_REQ_DEF // ERR_ITEM | REQ_TOKEN | DEF_RED
-    };    
+    };
     struct PI__     // Production Info
     {
         size_t d_nonTerm; // identification number of this production's
-                            // non-terminal 
-        size_t d_size;    // number of elements in this production 
+                            // non-terminal
+        size_t d_size;    // number of elements in this production
     };
 
     struct SR__     // Shift Reduce info, see its description above
     {
         union
         {
-            int _field_1_;      // initializer, allowing initializations 
+            int _field_1_;      // initializer, allowing initializations
                                 // of the SR s_[] arrays
             int d_type;
             int d_token;
@@ -103,16 +103,16 @@ namespace // anonymous
             int _field_2_;
 
             int d_lastIdx;          // if negative, the state uses SHIFT
-            int d_action;           // may be negative (reduce), 
+            int d_action;           // may be negative (reduce),
                                     // postive (shift), or 0 (accept)
             size_t d_errorState;    // used with Error states
         };
     };
 
     // $insert staticdata
-    
+
 // Productions Info Records:
-PI__ const s_productionInfo[] = 
+PI__ const s_productionInfo[] =
 {
      {0, 0}, // not used: reduction values are negative
      {262, 2}, // 1: lines ->  lines line
@@ -143,273 +143,273 @@ PI__ const s_productionInfo[] =
 
 SR__ s_0[] =
 {
-    { { ERR_REQ}, { 11} },              
-    { {     262}, {  1} }, // lines     
-    { {     263}, {  2} }, // line      
-    { {     264}, {  3} }, // intExpr   
+    { { ERR_REQ}, { 11} },
+    { {     262}, {  1} }, // lines
+    { {     263}, {  2} }, // line
+    { {     264}, {  3} }, // intExpr
     { {     265}, {  4} }, // doubleExpr
-    { {      10}, {  5} }, // '\x0a'    
-    { { _error_}, {  6} }, // _error_   
-    { {      40}, {  7} }, // '('       
-    { {      45}, {  8} }, // '-'       
-    { {     257}, {  9} }, // INT       
-    { {     258}, { 10} }, // DOUBLE    
-    { {       0}, {  0} },              
+    { {      10}, {  5} }, // '\x0a'
+    { { _error_}, {  6} }, // _error_
+    { {      40}, {  7} }, // '('
+    { {      45}, {  8} }, // '-'
+    { {     257}, {  9} }, // INT
+    { {     258}, { 10} }, // DOUBLE
+    { {       0}, {  0} },
 };
 
 SR__ s_1[] =
 {
-    { { ERR_REQ}, {           11} },              
-    { {     263}, {           11} }, // line      
-    { {     264}, {            3} }, // intExpr   
+    { { ERR_REQ}, {           11} },
+    { {     263}, {           11} }, // line
+    { {     264}, {            3} }, // intExpr
     { {     265}, {            4} }, // doubleExpr
-    { {      10}, {            5} }, // '\x0a'    
-    { { _error_}, {            6} }, // _error_   
-    { {      40}, {            7} }, // '('       
-    { {      45}, {            8} }, // '-'       
-    { {     257}, {            9} }, // INT       
-    { {     258}, {           10} }, // DOUBLE    
-    { {   _EOF_}, { PARSE_ACCEPT} },              
-    { {       0}, {            0} },              
+    { {      10}, {            5} }, // '\x0a'
+    { { _error_}, {            6} }, // _error_
+    { {      40}, {            7} }, // '('
+    { {      45}, {            8} }, // '-'
+    { {     257}, {            9} }, // INT
+    { {     258}, {           10} }, // DOUBLE
+    { {   _EOF_}, { PARSE_ACCEPT} },
+    { {       0}, {            0} },
 };
 
 SR__ s_2[] =
 {
-    { { DEF_RED}, {  1} }, 
-    { {       0}, { -2} }, 
+    { { DEF_RED}, {  1} },
+    { {       0}, { -2} },
 };
 
 SR__ s_3[] =
 {
-    { { REQ_TOKEN}, {  4} },          
+    { { REQ_TOKEN}, {  4} },
     { {        10}, { 12} }, // '\x0a'
-    { {        42}, { 13} }, // '*'   
-    { {        43}, { 14} }, // '+'   
-    { {         0}, {  0} },          
+    { {        42}, { 13} }, // '*'
+    { {        43}, { 14} }, // '+'
+    { {         0}, {  0} },
 };
 
 SR__ s_4[] =
 {
-    { { REQ_TOKEN}, {  4} },          
+    { { REQ_TOKEN}, {  4} },
     { {        10}, { 15} }, // '\x0a'
-    { {        42}, { 16} }, // '*'   
-    { {        43}, { 17} }, // '+'   
-    { {         0}, {  0} },          
+    { {        42}, { 16} }, // '*'
+    { {        43}, { 17} }, // '+'
+    { {         0}, {  0} },
 };
 
 SR__ s_5[] =
 {
-    { { DEF_RED}, {  1} }, 
-    { {       0}, { -5} }, 
+    { { DEF_RED}, {  1} },
+    { {       0}, { -5} },
 };
 
 SR__ s_6[] =
 {
-    { { REQ_TOKEN}, {  2} },          
+    { { REQ_TOKEN}, {  2} },
     { {        10}, { 18} }, // '\x0a'
-    { {         0}, {  0} },          
+    { {         0}, {  0} },
 };
 
 SR__ s_7[] =
 {
-    { { REQ_TOKEN}, {  7} },              
-    { {       264}, { 19} }, // intExpr   
+    { { REQ_TOKEN}, {  7} },
+    { {       264}, { 19} }, // intExpr
     { {       265}, { 20} }, // doubleExpr
-    { {        40}, {  7} }, // '('       
-    { {        45}, {  8} }, // '-'       
-    { {       257}, {  9} }, // INT       
-    { {       258}, { 10} }, // DOUBLE    
-    { {         0}, {  0} },              
+    { {        40}, {  7} }, // '('
+    { {        45}, {  8} }, // '-'
+    { {       257}, {  9} }, // INT
+    { {       258}, { 10} }, // DOUBLE
+    { {         0}, {  0} },
 };
 
 SR__ s_8[] =
 {
-    { { REQ_TOKEN}, {  7} },              
-    { {       264}, { 21} }, // intExpr   
+    { { REQ_TOKEN}, {  7} },
+    { {       264}, { 21} }, // intExpr
     { {       265}, { 22} }, // doubleExpr
-    { {        40}, {  7} }, // '('       
-    { {        45}, {  8} }, // '-'       
-    { {       257}, {  9} }, // INT       
-    { {       258}, { 10} }, // DOUBLE    
-    { {         0}, {  0} },              
+    { {        40}, {  7} }, // '('
+    { {        45}, {  8} }, // '-'
+    { {       257}, {  9} }, // INT
+    { {       258}, { 10} }, // DOUBLE
+    { {         0}, {  0} },
 };
 
 SR__ s_9[] =
 {
-    { { DEF_RED}, {   1} }, 
-    { {       0}, { -11} }, 
+    { { DEF_RED}, {   1} },
+    { {       0}, { -11} },
 };
 
 SR__ s_10[] =
 {
-    { { DEF_RED}, {   1} }, 
-    { {       0}, { -20} }, 
+    { { DEF_RED}, {   1} },
+    { {       0}, { -20} },
 };
 
 SR__ s_11[] =
 {
-    { { DEF_RED}, {  1} }, 
-    { {       0}, { -1} }, 
+    { { DEF_RED}, {  1} },
+    { {       0}, { -1} },
 };
 
 SR__ s_12[] =
 {
-    { { DEF_RED}, {  1} }, 
-    { {       0}, { -3} }, 
+    { { DEF_RED}, {  1} },
+    { {       0}, { -3} },
 };
 
 SR__ s_13[] =
 {
-    { { REQ_TOKEN}, {  7} },              
-    { {       264}, { 23} }, // intExpr   
+    { { REQ_TOKEN}, {  7} },
+    { {       264}, { 23} }, // intExpr
     { {       265}, { 24} }, // doubleExpr
-    { {        40}, {  7} }, // '('       
-    { {        45}, {  8} }, // '-'       
-    { {       257}, {  9} }, // INT       
-    { {       258}, { 10} }, // DOUBLE    
-    { {         0}, {  0} },              
+    { {        40}, {  7} }, // '('
+    { {        45}, {  8} }, // '-'
+    { {       257}, {  9} }, // INT
+    { {       258}, { 10} }, // DOUBLE
+    { {         0}, {  0} },
 };
 
 SR__ s_14[] =
 {
-    { { REQ_TOKEN}, {  7} },              
-    { {       264}, { 25} }, // intExpr   
+    { { REQ_TOKEN}, {  7} },
+    { {       264}, { 25} }, // intExpr
     { {       265}, { 26} }, // doubleExpr
-    { {        40}, {  7} }, // '('       
-    { {        45}, {  8} }, // '-'       
-    { {       257}, {  9} }, // INT       
-    { {       258}, { 10} }, // DOUBLE    
-    { {         0}, {  0} },              
+    { {        40}, {  7} }, // '('
+    { {        45}, {  8} }, // '-'
+    { {       257}, {  9} }, // INT
+    { {       258}, { 10} }, // DOUBLE
+    { {         0}, {  0} },
 };
 
 SR__ s_15[] =
 {
-    { { DEF_RED}, {  1} }, 
-    { {       0}, { -4} }, 
+    { { DEF_RED}, {  1} },
+    { {       0}, { -4} },
 };
 
 SR__ s_16[] =
 {
-    { { REQ_TOKEN}, {  7} },              
+    { { REQ_TOKEN}, {  7} },
     { {       265}, { 27} }, // doubleExpr
-    { {       264}, { 28} }, // intExpr   
-    { {        40}, {  7} }, // '('       
-    { {        45}, {  8} }, // '-'       
-    { {       258}, { 10} }, // DOUBLE    
-    { {       257}, {  9} }, // INT       
-    { {         0}, {  0} },              
+    { {       264}, { 28} }, // intExpr
+    { {        40}, {  7} }, // '('
+    { {        45}, {  8} }, // '-'
+    { {       258}, { 10} }, // DOUBLE
+    { {       257}, {  9} }, // INT
+    { {         0}, {  0} },
 };
 
 SR__ s_17[] =
 {
-    { { REQ_TOKEN}, {  7} },              
+    { { REQ_TOKEN}, {  7} },
     { {       265}, { 29} }, // doubleExpr
-    { {       264}, { 30} }, // intExpr   
-    { {        40}, {  7} }, // '('       
-    { {        45}, {  8} }, // '-'       
-    { {       258}, { 10} }, // DOUBLE    
-    { {       257}, {  9} }, // INT       
-    { {         0}, {  0} },              
+    { {       264}, { 30} }, // intExpr
+    { {        40}, {  7} }, // '('
+    { {        45}, {  8} }, // '-'
+    { {       258}, { 10} }, // DOUBLE
+    { {       257}, {  9} }, // INT
+    { {         0}, {  0} },
 };
 
 SR__ s_18[] =
 {
-    { { DEF_RED}, {  1} }, 
-    { {       0}, { -6} }, 
+    { { DEF_RED}, {  1} },
+    { {       0}, { -6} },
 };
 
 SR__ s_19[] =
 {
-    { { REQ_TOKEN}, {  4} },       
+    { { REQ_TOKEN}, {  4} },
     { {        41}, { 31} }, // ')'
     { {        42}, { 13} }, // '*'
     { {        43}, { 14} }, // '+'
-    { {         0}, {  0} },       
+    { {         0}, {  0} },
 };
 
 SR__ s_20[] =
 {
-    { { REQ_TOKEN}, {  4} },       
+    { { REQ_TOKEN}, {  4} },
     { {        41}, { 32} }, // ')'
     { {        42}, { 16} }, // '*'
     { {        43}, { 17} }, // '+'
-    { {         0}, {  0} },       
+    { {         0}, {  0} },
 };
 
 SR__ s_21[] =
 {
-    { { REQ_DEF}, {   1} }, 
-    { {       0}, { -10} }, 
+    { { REQ_DEF}, {   1} },
+    { {       0}, { -10} },
 };
 
 SR__ s_22[] =
 {
-    { { REQ_DEF}, {   1} }, 
-    { {       0}, { -19} }, 
+    { { REQ_DEF}, {   1} },
+    { {       0}, { -19} },
 };
 
 SR__ s_23[] =
 {
-    { { REQ_DEF}, {  1} }, 
-    { {       0}, { -7} }, 
+    { { REQ_DEF}, {  1} },
+    { {       0}, { -7} },
 };
 
 SR__ s_24[] =
 {
-    { { REQ_DEF}, {   1} }, 
-    { {       0}, { -14} }, 
+    { { REQ_DEF}, {   1} },
+    { {       0}, { -14} },
 };
 
 SR__ s_25[] =
 {
-    { { REQ_DEF}, {  2} },       
+    { { REQ_DEF}, {  2} },
     { {      42}, { 13} }, // '*'
-    { {       0}, { -8} },       
+    { {       0}, { -8} },
 };
 
 SR__ s_26[] =
 {
-    { { REQ_DEF}, {   2} },       
+    { { REQ_DEF}, {   2} },
     { {      42}, {  16} }, // '*'
-    { {       0}, { -17} },       
+    { {       0}, { -17} },
 };
 
 SR__ s_27[] =
 {
-    { { REQ_DEF}, {   1} }, 
-    { {       0}, { -12} }, 
+    { { REQ_DEF}, {   1} },
+    { {       0}, { -12} },
 };
 
 SR__ s_28[] =
 {
-    { { REQ_DEF}, {   1} }, 
-    { {       0}, { -13} }, 
+    { { REQ_DEF}, {   1} },
+    { {       0}, { -13} },
 };
 
 SR__ s_29[] =
 {
-    { { REQ_DEF}, {   2} },       
+    { { REQ_DEF}, {   2} },
     { {      42}, {  16} }, // '*'
-    { {       0}, { -15} },       
+    { {       0}, { -15} },
 };
 
 SR__ s_30[] =
 {
-    { { REQ_DEF}, {   2} },       
+    { { REQ_DEF}, {   2} },
     { {      42}, {  13} }, // '*'
-    { {       0}, { -16} },       
+    { {       0}, { -16} },
 };
 
 SR__ s_31[] =
 {
-    { { DEF_RED}, {  1} }, 
-    { {       0}, { -9} }, 
+    { { DEF_RED}, {  1} },
+    { {       0}, { -9} },
 };
 
 SR__ s_32[] =
 {
-    { { DEF_RED}, {   1} }, 
-    { {       0}, { -18} }, 
+    { { DEF_RED}, {   1} },
+    { {       0}, { -18} },
 };
 
 
@@ -473,14 +473,14 @@ void ParserBase::popToken__()
 
     d_nextToken__ = _UNDETERMINED_;
 }
-     
+
 void ParserBase::pushToken__(int token)
 {
     d_nextToken__ = d_token__;
     d_nextVal__ = d_val__;
     d_token__ = token;
 }
-     
+
 void ParserBase::pop__(size_t count)
 {
     if (d_stackIdx__ < static_cast<int>(count))
@@ -510,7 +510,7 @@ void Parser::executeAction(int production)
     switch (production)
     {
         // $insert actioncases
-        
+
         case 3:
 #line 33 "grammar"
         {
@@ -690,7 +690,7 @@ int Parser::lookup(bool recovery)
     {
         if (elementPtr->d_action < 0)   // default reduction
         {
-            return elementPtr->d_action;                
+            return elementPtr->d_action;
         }
 
         // No default reduction, so token not found, so error.
@@ -708,7 +708,7 @@ int Parser::lookup(bool recovery)
 
     // When an error has occurred, pop elements off the stack until the top
     // state has an error-item. If none is found, the default recovery
-    // mode (which is to abort) is activated. 
+    // mode (which is to abort) is activated.
     //
     // If EOF is encountered without being appropriate for the current state,
     // then the error recovery will fall back to the default recovery mode.
@@ -717,7 +717,7 @@ void Parser::errorRecovery()
 try
 {
     if (d_acceptedTokens__ >= d_requiredTokens__)// only generate an error-
-    {                                           // message if enough tokens 
+    {                                           // message if enough tokens
         ++d_nErrors__;                          // were accepted. Otherwise
         error("Syntax error");                  // simply skip input
 
@@ -733,7 +733,7 @@ try
     // In the error state, lookup a token allowing us to proceed.
     // Continuation may be possible following multiple reductions,
     // but eventuall a shift will be used, requiring the retrieval of
-    // a terminal token. If a retrieved token doesn't match, the catch below 
+    // a terminal token. If a retrieved token doesn't match, the catch below
     // will ensure the next token is requested in the while(true) block
     // implemented below:
 
@@ -759,7 +759,7 @@ try
                 gotToken = d_token__ == _UNDETERMINED_;
                 nextToken();                    // obtain next token
             }
-            
+
             int action = lookup(true);
 
             if (action > 0)                 // push a new state
@@ -776,13 +776,13 @@ try
             }
             else if (action < 0)
             {
-                // no actions executed on recovery but save an already 
+                // no actions executed on recovery but save an already
                 // available token:
                 if (d_token__ != _UNDETERMINED_)
                     pushToken__(d_token__);
- 
+
                                             // next token is the rule's LHS
-                reduce__(s_productionInfo[-action]); 
+                reduce__(s_productionInfo[-action]);
             }
             else
                 ABORT();                    // abort when accepting during
@@ -792,7 +792,7 @@ try
         {
             if (d_token__ == _EOF_)
                 ABORT();                    // saw inappropriate _EOF_
-                      
+
             popToken__();                   // failing token now skipped
         }
     }
@@ -804,19 +804,19 @@ catch (ErrorRecovery__)       // This is: DEFAULT_RECOVERY_MODE
 
     // The parsing algorithm:
     // Initially, state 0 is pushed on the stack, and d_token__ as well as
-    // d_nextToken__ are initialized to _UNDETERMINED_. 
+    // d_nextToken__ are initialized to _UNDETERMINED_.
     //
     // Then, in an eternal loop:
     //
     //  1. If a state does not have REQ_TOKEN no token is assigned to
     //     d_token__. If the state has REQ_TOKEN, nextToken() is called to
     //      determine d_nextToken__ and d_token__ is set to
-    //     d_nextToken__. nextToken() will not call lex() unless d_nextToken__ is 
-    //     _UNDETERMINED_. 
+    //     d_nextToken__. nextToken() will not call lex() unless d_nextToken__ is
+    //     _UNDETERMINED_.
     //
-    //  2. lookup() is called: 
+    //  2. lookup() is called:
     //     d_token__ is stored in the final element's d_token field of the
-    //     state's SR_ array. 
+    //     state's SR_ array.
     //
     //  3. The current token is looked up in the state's SR_ array
     //
@@ -831,7 +831,7 @@ catch (ErrorRecovery__)       // This is: DEFAULT_RECOVERY_MODE
     //     file.
 
 int Parser::parse()
-try 
+try
 {
     push__(0);                              // initial state
     clearin();                              // clear the tokens.
@@ -855,9 +855,9 @@ try
             {
                 executeAction(-action);
                                             // next token is the rule's LHS
-                reduce__(s_productionInfo[-action]); 
+                reduce__(s_productionInfo[-action]);
             }
-            else 
+            else
                 ACCEPT();
         }
         catch (ErrorRecovery__)
@@ -870,4 +870,3 @@ catch (Return__ retValue)
 {
     return retValue;
 }
-
