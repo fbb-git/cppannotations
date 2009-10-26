@@ -1,87 +1,85 @@
-In this chapter classes are formally introduced. Two special member
+In this chapter classes are introduced. Two special member
 functions, the constructor and the destructor, are presented.
 
 In steps we will construct a class tt(Person), which could be used in a
 database application to store a person's name, address and phone number.
 
-label(PERSON) Let's start by creating the declaration of a tt(class Person)
-right away. The class declaration is normally contained in the em(header file)
-of the class, e.g., tt(person.h). A class declaration is generally not called
-a em(declaration), though. Rather, these days the common name for class
-declarations is emi(class interface), to be distinguished from the definitions
-of the function members, called the
-    emi(class implementation). The term `interface' nicely avoids the
-confusion `declaration' might present, since `declaration' is traditionally
-used with `variable declaration' and `function declaration'.
+label(PERSON) Let's start by creating a tt(class Person) right away. From the
+onset, it is important to make the distinction between the class
+emi(interface) and its emi(implementation). A class may loosely be defined as
+`a set of data and all the functions operating on those data'. This definition
+will be refined later but for now it is sufficient to get us started. 
 
-    Thus, the em(interface) of the tt(class Person) is:
-    verbinclude(classes/examples/person.h)
-    Note, however, that this terminology is frequently loosely applied.
-Sometimes, em(class definition) is used to indicate the class interface. While
-the class em(definition) (so, the em(interface)) contains the em(declarations)
-of its members, the actual em(implementation) of these members is also
-referred to as the em(definition) of these members. As long as the concept of
-the class em(interface) and the class em(implementation) is well
-distinguished, it should be clear from the context what is meant by a
-`definition'.
+    A class interface is a definition, defining the organization of objects of
+that class. Normally a definition results in memory reservation. E.g., when
+defining tt(int variable) the compiler will make sure that some memory will be
+reserved in the final program storing tt(variable)'s values.  Although it is a
+definition no memory is set aside by the compiler once it has processed the
+class definition. But a class definition follows the emi(one definition rule):
+in bf(C++) entities may be defined only once. As a em(class definition) does
+not imply that memory is being reserved the term em(class interface) is
+preferred instead. 
 
-    The data fields in this class are tt(d_name, d_address, d_phone) and
-tt(d_weight). All fields except tt(d_weight) are tt(string) objects. As the
-data fields are not given a specific emi(access modifier), they are
-ti(private), which means that they can only be accessed by the functions
-of the class tt(Person). Alternatively, the label `tt(private:)' might have
-been used at the beginning of a private section of the class definition.
+Class interfaces are normally contained in a class em(header file), e.g.,
+tt(person.h). We'll start our tt(class Person) interface here:
+        verbinclude(classes/examples/person.h)
+ The member functions that are em(declared) in the interface must still be
+implemented. The implementation of these members is properly called their
+definition.
 
-The data are manipulated by interface functions which take care of all
-communication with code outside of the class. Either to set the data fields
-to a given value (e.g., tt(setName())) or to inspect the data (e.g.,
-tt(name())). Functions merely returning values stored inside the object, not
+In addition to the member function a class defines the data manipulated by the
+member functions. These data are called the emi(data members). In tt(Person)
+they are tt(d_name, d_address, d_phone) and tt(d_weight). Data members should
+be given private i(access rights). Since the class uses private access rights
+by default they may simply be listed at the top of the interface.  
+
+All communication between the outer world and the class data is routed through
+the class's member functions. Data members may receive new values (e.g., using
+tt(setName)) or they may be retrieved for inspection (e.g., using
+tt(name)). Functions merely returning values stored inside the object, not
 allowing the caller to modify these internally stored values, are called
-emi(accessor functions).
+ hi(accessor)em(accessors).
 
-Note once again how similar the tt(class) is to the ti(struct). The em(only)
-    hi(struct vs class: differences)
-    hi(class vs struct: differences) formal difference between a tt(class) and
-a tt(struct) is the fact that by default classes have em(private) members,
-whereas structs have emi(public) members. In practice structs are used in the
-way they are used in bf(C): to aggregate data, which are all freely
-accessible, whereas classes usually hide their data from access by the outside
-world, and feature emi(member functions) defining the actions class-objects
-may perform.
+Syntactically there is only a marginal difference between a class and a
+struct. Classes by default define em(private) members, structs define
+em(public) members. Conceptually, though, there are difference.  In bf(C++)
+structs are used in the way they are used in bf(C): to aggregate data, which
+are all freely accessible. Classes, on the other hand, hide their data from
+access by the outside world (which is aptly called emi(data hiding)) 
+and offer member functions to define the communication between the outer world
+and the class's data members. 
 
-A few remarks concerning em(style). Following em(Lakos) (Lakos, J., 2001)
-    hi(Lakos, J.) bf(Large-Scale C++ Software Design) (Addison-Wesley). I
+Following em(Lakos) (Lakos, J., 2001)
+    hi(Lakos, J.) bf(Large-Scale C++ Software Design) (Addison-Wesley) I
 suggest the following setup of class interfaces:
     itemization(
-    it() All data members should have em(private access rights), and should be
-placed at the head of the interface.
-    it() All data members start with tt(d_), followed by a name suggesting the
-meaning of the variable (In chapter ref(StaticDataFun) we'll also
+    it() All data members have em(private access rights), and are 
+placed at the top of the interface.
+    it() All data members start with tt(d_), followed by a name suggesting
+their meaning (in chapter ref(StaticDataFun) we'll also
 encounter data members starting with tt(s_)).
     it() Non-private data members em(do) exist, but one should be hesitant to
-use non-private access rights for data members (see also chapter
+define non-private access rights for data members (see also chapter
 ref(INHERITANCE)).
-    it() Two broad classes of member functions are emi(manipulators) and
-emi(accessor functions). em(Manipulators) allow the users of objects to
-actually modify the internal data of the objects. By convention, manipulators
-start with tt(set). E.g., tt(setName()).
-    it() With em(accessors), often a tt(get)-prefix is encountered, e.g.,
-tt(getName()). However, following the conventions used in the
-bi(Qt) emi(Graphical User Interface Toolkit) (see
-ti(http://www.trolltech.com)), the tt(get)-prefix is em(dropped). So, rather
-than defining the member tt(getAddress()), the function will simply be defined
-as tt(address()).
-    it() In normal situations (exceptions exist) the public member functions
-of a class should appear first as they are the important elements of the
-interface from the class's users point of view as these public members define
-the features that the class offers to its users. It's a matter of convention
-to place them high up in the interface, immediately following the data members.
-Consequently, the keyword tt(private) is needed to switch back from public
-members to the (default) private situation which thus nicely separates the
-members that may be used `by the general public' from the class's own support
-members.
+    it() Two broad categories of member functions are emi(manipulators) and
+em(accessors). em(Manipulators) allow the users of objects to
+modify the internal data of the objects. By convention, manipulators
+start with tt(set). E.g., tt(setName).
+    it() With em(accessors), a tt(get)-prefix is still frequently encountered,
+e.g., tt(getName). However, following the conventions promoted by the bi(Qt)
+emi(Graphical User Interface Toolkit) (see ti(http://www.trolltech.com)), the
+tt(get)-prefix is now deprecated. So, rather than defining the member
+tt(getAddress), it should simply be named tt(address).
+    it() Normally (exceptions exist) the public member functions of a class
+are listed first, immediately following the class's data members, They are the
+important elements of the interface as they define the features the class is
+offering to its users. It's a matter of convention to list them high up in the
+interface.  The keyword tt(private) is needed beyond the public members to
+switch back from public members to private access rights which 
+nicely separates the members that may be used `by the general public' from the
+class's own support members.
     )
     Style conventions usually take a long time to develop. There is nothing
-obligatory about them, however. I suggest that readers who have compelling
+obligatory about them, though. I suggest that readers who have compelling
 reasons em(not) to follow the above style conventions use their own. All
 others are strongly advised to adopt the above style conventions.
