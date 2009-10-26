@@ -25,7 +25,6 @@
         Test first("main first");
         func();
         Test second("main second");
-        return 0;
     }
 /*
     Generated output:

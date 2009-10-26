@@ -1,68 +1,12 @@
-Composition of objects has an important consequence for the
-constructor functions of the `composed' (embedded) object. Unless explicitly
-instructed otherwise, the compiler generates code to call the
-    hi(default constructor) default constructors of all composed classes in
-the constructor of the composing class.
+Unless specified otherwise object data members of classes are initialized by
+their default constructors. Using the default constructor might not always be
+the optimal way to intialize an object and it might not even be possible: a
+class might simply not define a default constructor.
 
-    Often it is desirable to initialize a composed object from a specific
-constructor of the composing class. This is illustrated below for the
-class tt(Person). In this fragment it assumed that a constructor
-for a tt(Person) should be defined expecting four arguments: the name, address
-and phone number plus the person's weight:
+Earlier we've encountered the following constructor of the tt(Person):
         verb(
-    Person::Person(char const *name, char const *address,
-                    char const *phone, size_t weight)
-    :
-        d_name(name),
-        d_address(address),
-        d_phone(phone),
-        d_weight(weight)
-    {}
-        )
-    Following the argument list of the constructor tt(Person::Person()), the
-constructors of the tt(string) data members are explicitly called, e.g.,
-tt(d_name(name)). The initialization takes place bf(before) the code block of
-tt(Person::Person()) (now empty) is executed. This construction, where member
-initialization takes place before the code block itself is executed is called
-emi(member initialization). Member initialization can be made explicit in the
-em(member initializer list), that may appear after the parameter list, between
-a colon (announcing the start of the member initializer list) and the opening
-curly brace of the code block of the constructor.
-
-Member initialization em(always) occurs when objects are composed in classes:
-if em(no) constructors are mentioned in the member initializer list the
-default constructors of the objects are called. Note that this only holds true
-for em(objects). Data members of primitive data types are em(not) initialized
-automatically.
-
-Member initialization can, however, also be used for primitive data members,
-like tt(int) and tt(double). The above example shows the initialization of the
-data member tt(d_weight) from the parameter tt(weight). Note that with member
-initializers the data member could even have the same name as the constructor
-parameter (although this is deprecated): with member initialization there is
-no ambiguity and the first (left) identifier in, e.g., tt(weight(weight)) is
-interpreted as the data member to be initialized, whereas the identifier
-between parentheses is interpreted as the parameter.
-
-When a class has multiple composed data members, all members can be
-initialized using a `member initializer list': this list consists of the
-constructors of all composed objects, separated by commas. The em(order) in
-hi(member initialization order) which the objects are initialized is defined
-by the order in which the members are defined in the class interface. If the
-order of the initialization in the constructor differs from the order in the
-class interface, the compiler complains, and reorders the initialization so as
-to match the order of the class interface.
-
-Member initializers should be used as often as possible: it can be downright
-necessary to use them, and em(not) using member initializers can result in
-inefficient code: with objects always at least the default constructor is
-called. So, in the following example, first the tt(string) members are
-initialized to empty strings, whereafter these values are immediately
-redefined to their intended values. Of course, the immediate initialization to
-the intended values would have been more efficent.
-        verb(
-    Person::Person(char const *name, char const *address,
-                    char const *phone, size_t weight)
+    Person::Person(string const &name, string const &address,
+                   string const &phone, size_t weight)
     {
         d_name = name;
         d_address = address;
@@ -70,31 +14,69 @@ the intended values would have been more efficent.
         d_weight = weight;
     }
         )
-    This method is not only inefficient, but even more: it may not work when
-the composed object hi(composed const object) is declared as a tt(const)
-object.  A data field like tt(birthday) is a good candidate for being
-tt(const), since a person's birthday usually doesn't change too much.
+        )
+ Think briefly about what is going on in this constructor. In the
+constructor's body we encounter assignments to string objects. Since
+assignments are used in the constructor's body their left-hand side objects
+must exist. But when objects are coming into existence constructors em(must)
+have been called. The initialization of those objects is thereupon immediately
+undone by the body of tt(Person)'s constructor. That is 
+not only inefficient but sometimes downright impossible. Assume that the class
+interface mentions a tt(string const) data member: a data member whose value
+is not supposed to change at all (like a birthday, which usually  doesn't
+change very much and is therefore a good candidate for a tt(string const) data
+member). Constructing a birthday object and providing it with an initial value
+is OK, but changing the initial value isn't.
 
-    This means that when the definition of a tt(Person) is altered so as to
-contain a tt(string const birthday) member, the implementation of the
-constructor tt(Person::Person()) in which also the birthday must be
-initialized, a member initializer em(must) be used for tt(birthday). Direct
-assignment of the birthday would be illegal, since tt(birthday) is a tt(const)
-data member. The next example illustrates the tt(const) data member
-hi(const data member initialization) initialization:
+The body of a constructor allows assignments to data members. The
+em(initialization) of data members happens before that. bf(C++) defines the 
+ emi(member initializer) syntax allowing us to specify the way data members
+are initialized at construction time. Member initializers are specified as a
+list of constructor specifications between  a colon following a constructor's
+parameter list and the opening curly brace of a constructor's body, as
+follows: 
         verb(
-    Person::Person(char const *name, char const *address,
-                    char const *phone, char const *birthday,
-                    size_t weight)
+    Person::Person(string const &name, string const &address,
+                   string const &phone, size_t weight)
     :
         d_name(name),
         d_address(address),
         d_phone(phone),
-        d_birthday(birthday),       // assume: string const d_birthday
         d_weight(weight)
     {}
         )
-    Concluding, the rule of thumb is the following: when composition of
-objects is used, the member initializer method is preferred to explicit
-initialization of composed objects. This not only results in more efficient
-code, but it also allows composed objects to be declared as tt(const) objects.
+ Member initialization em(always) occurs when objects are composed in
+classes: if em(no) constructors are mentioned in the member initializer list
+the default constructors of the objects are called. Note that this only holds
+true for em(objects). Data members of primitive data types are em(not)
+initialized automatically.
+
+Member initialization can, however, also be used for primitive data members,
+like tt(int) and tt(double). The above example shows the initialization of the
+data member tt(d_weight) from the parameter tt(weight). When member
+initializers are used the data member could even have the same name as the
+constructor's parameter (although this is deprecated) as there is no ambiguity
+and the first (left) identifier used in a member initializer is always a data
+member that is initialized whereas the identifier between parentheses is
+interpreted as the parameter.
+
+The em(order) in which class type data members are initialized is defined by
+the order in which those members are defined in the composing class
+interface. If the order of the initialization in the constructor differs from
+the order in the class interface, the compiler complains, and reorders the
+initialization so as to match the order of the class interface.
+
+Member initializers should be used as often as possible. As shown it may be
+required to use them (e.g., to initialize const data members, or to initialize
+objects of classes lacking default constructors) but em(not) using member
+initializers also results in inefficient code as the default constructor of
+a data member is always automatically called unless an explicit member
+initializer is specified. Reassignment in the constructor's body following
+default construction is than clearly inefficient. Of course, sometimes it is
+fine to use the default constructor, but in those cases
+the explicit member initializer can be omitted. 
+
+As a i(rule of thumb): if a value is assigned to a data member in the
+constructor's body then try to avoid that assignment in favor of using a
+member initializer.
+

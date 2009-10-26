@@ -3,10 +3,10 @@
 
     void printperson(Person const &p)
     {
-        cout << "Name    : " << p.name()     << endl <<
-                "Address : " << p.address()  << endl <<
-                "Phone   : " << p.phone()    << endl <<
-                "Weight  : " << p.weight()   << endl;
+        cout << "Name    : " << p.name()     << "\n"
+                "Address : " << p.address()  << "\n"
+                "Phone   : " << p.phone()    << "\n"
+                "Weight  : " << p.weight()   << '\n';
     }
 
     int main()
@@ -19,7 +19,6 @@
         p.setWeight(75);           // kg.
 
         printperson(p);
-        return 0;
     }
 /*
     Produced output:
