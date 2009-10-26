@@ -2,15 +2,14 @@ Apart from using member initializers to initialize composed objects (be they
 tt(const) objects or not), there is another situation where member
 initializers must be used. Consider the following situation.
 
-A program uses an object of the class tt(Configfile), defined in tt(main())
+A program uses an object of the class tt(Configfile), defined in tt(main)
 to access the information in a configuration file. The configuration file
 contains parameters of the program which may be set by changing the values in
 the configuration file, rather than by supplying command line arguments.
 
-Assume that another object that is used in the function tt(main()) is an
-object of the class tt(Process), doing `all the work'. What possibilities do
-we have to tell the object of the class tt(Process) that an object of the
-class tt(Configfile) exists?
+Assume another object used in tt(main) is an object of the class tt(Process),
+doing `all the work'. What possibilities do we have to tell the object of the
+class tt(Process) that an object of the class tt(Configfile) exists?
     itemization(
     it() The objects could have been declared as em(global) objects. This
 em(is) a possibility, but not a very good one, since all the advantages of
@@ -37,43 +36,40 @@ the tt(Configfile) objects are used, as in:
         )
     This construction as such is OK, but forces us to use the `tt(->)' field
 selector operator, rather than the `tt(.)' operator, which is (disputably)
-awkward: conceptually one tends to think of the tt(Configfile) object as an
+awkward. Conceptually one tends to think of the tt(Configfile) object as an
 object, and not as a pointer to an object. In bf(C) this would probably have
 been the preferred method, but in bf(C++) we can do better.
     it() Rather than using value or pointer parameters, the tt(Configfile)
-parameter could be defined as a emi(reference parameter) to the tt(Process)
-constructor. Next, we can define a tt(Config) reference data member in the
-tt(class Process). Using the reference variable effectively uses a pointer,
-disguised as a variable.
+parameter could be defined as a emi(reference parameter) of tt(Process)'s
+constructor. Next, use a tt(Config) reference data member in the
+tt(class Process). 
     )
-    However, the following construction will em(not) result in the
-initialization of the tt(Configfile &d_conf) reference data member:
+    But a reference variable cannot be initialized using an assignment, and so
+the following is incorrect:
         verb(
     Process::Process(Configfile &conf)
     {
         d_conf = conf;        // wrong: no assignment
     }
         )
-    The statement tt(d_conf = conf) fails, because the compiler won't see
-this as an initialization, but considers this an assignment of one
-tt(Configfile) object (i.e., tt(conf)), to another (tt(d_conf)).  It does
-so, because that's the normal interpretation: an assignment to a reference
-variable is actually an assignment to the variable the reference variable
-refers to. But to what variable does tt(d_conf) refer? To no variable, since
-we haven't initialized tt(d_conf).  After all, the whole purpose of the
-statement tt(d_conf = conf) was to initialize tt(d_conf)....
+    The statement tt(d_conf = conf) fails, because it is not an
+initialization, but an assignment of one tt(Configfile) object (i.e.,
+tt(conf)), to another (tt(d_conf)). An assignment to a reference variable is
+actually an assignment to the variable the reference variable refers to. But
+to what variable does tt(d_conf) refer? To no variable at all, since we
+haven't initialized tt(d_conf).  After all, the whole purpose of the statement
+tt(d_conf = conf) was to initialize tt(d_conf)....
 
-    So, how do we proceed when tt(d_conf) must be initialized? In this
-situation we once again use the member initializer syntax. The following
-example shows the correct way to initialize tt(d_conf):
+    How to initialize tt(d_conf)? We once again use the member initializer
+syntax. Here is the correct way to  initialize tt(d_conf):
         verb(
     Process::Process(Configfile &conf)
     :
         d_conf(conf)      // initializing reference member
     {}
         )
-    Note that this syntax must be used in all cases where reference data
-members are used. If tt(d_ir) would be an tt(int) reference data member, a
+    The above syntax must be used in all cases where reference data members
+are used. E.g., if tt(d_ir) would be an tt(int) reference data member, a
 construction like
         verb(
     Process::Process(int &ir)
@@ -81,4 +77,4 @@ construction like
         d_ir(ir)
     {}
         )
-    would have been called for.
+    would have been required.
