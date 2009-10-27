@@ -1,84 +1,71 @@
-Situations exist where objects are used because they offer a certain
-functionality. They only exist because of the functionality they offer, and
-nothing in the objects themselves is ever changed. This situation resembles
-the well-known situation in the bf(C) programming language where a function
-pointer is passed to another function, to allow run-time configuration of the
-behavior of the latter function.
-
-For example, the class tt(Print) may offer a facility to print a string,
-prefixing it with a configurable prefix, and affixing a configurable affix to
-it. Such a class em(could) be given the following prototype:
-
+Sometimes objects are used because they offer a certain functionality. The
+objects only exist because of their functionality, and nothing in the objects
+themselves is ever changed. The following class tt(Print) offers a facility to
+print a string, using a configurable prefix and suffix. A partial class
+interface could be:
         verb(
     class Print
     {
         public:
-            printout(std::string const &prefix, std::string const &text,
-                     std::string const &affix) const;
+            Print(ostream &out);
+            print(std::string const &prefix, std::string const &text,
+                     std::string const &suffix) const;
     };
         )
     An interface like this would allow us to do things like:
         verb(
-    Print print;
+    Print print(cout);
     for (int idx = 0; idx < argc; ++idx)
-        print.printout("arg: ", argv[idx], "\n");
+        print.print("arg: ", argv[idx], "\n");
         )
-    This would work well, but can greatly be improved if we could pass
-tt(printout)'s invariant arguments to tt(Print)'s constructors: this way we
-would not only simplify tt(printout)'s prototype (only one argument would need
-to be passed rather than three, allowing us to make faster calls to
-tt(printout)) but we could also capture the above code in a function expecting
-a tt(Print) object:
+    This works fine, but it could greatly be improved if we could pass
+tt(print)'s invariant arguments to tt(Print)'s constructor.  This would
+simplify tt(print)'s prototype (only one argument would need to be passed
+rather than three) and we could wrap the above code in a function
+expecting a tt(Print) object:
         verb(
-    void printText(Print const &print, int argc, char *argv[])
+    void allArgs(Print const &print, int argc, char *argv[])
     {
         for (int idx = 0; idx < argc; ++idx)
-            print.printout(argv[idx]);
+            print.print(argv[idx]);
     }
         )
-    Now we have a fairly generic piece of code, at least as far as tt(Print)
-is concerned. If we would provide tt(Print)'s interface with the following
-constructors we would be able to configure our output stream as well:
+    The above is a fairly generic piece of code, at least it is with respect
+to tt(Print). Since tt(prefix) and tt(suffix) don't change they can be passed
+to the constructor which could be given  the prototype:
         verb(
-    Print(char const *prefix, char const *affix);
-    Print(ostream &out, char const *prefix, char const *affix);
+    Print(ostream &out, string const &prefix = "", string const &suffix = "");
         )
-    Now tt(printText) could be used as follows:
+    Now tt(allArgs) may be used as follows:
         verb(
-    Print p1("arg: ", "\n");            // prints to cout
+    Print p1(cout, "arg: ", "\n");      // prints to cout
     Print p2(cerr, "err: --", "--\n");  // prints to cerr
 
-    printText(p1, argc, argv);          // prints to cout
-    printText(p2, argc, argv);          // prints to cerr
+    allArgs(p1, argc, argv);            // prints to cout
+    allArgs(p2, argc, argv);            // prints to cerr
         )
-    However, when looking closely at this example, it should be clear that
-both tt(p1) and tt(p2) are only used inside the tt(printText)
-function. Furthermore, as we can see from tt(printText)'s prototype,
-tt(printText) won't modify the internal data of the tt(Print) object it is
+    But now we note that tt(p1) and tt(p2) are only used inside the
+tt(allArgs) function. Furthermore, as we can see from tt(print)'s prototype,
+tt(print) doesn't modify the internal data of the tt(Print) object it is
 using.
 
-    In situations like these it is not necessary to define objects before they
-are used. Instead em(anonymous objects)hi(anonymous object) should be
-used.hi(object: anonymous) Using anonymous objects is indicated when:
+    In such situations it is actually not necessary to define objects before
+they are used. Instead emi(anonymous objects)hi(object: anonymous) may be
+used. Anonymous objects can be used:
     itemization(
-    it() A function parameter defines a tt(const) reference to an object;
-    it() The object is em(only) needed inside the function call.
+    it() to initialize a function parameter which is a tt(const) reference to
+an object; 
+    it() if the object is em(only) used inside the function call.
     )
 
-    Anonymous objects are defined by calling a constructor without providing a
-name for the constructed object. In the above example anonymous objects can be
-used as follows:
+    Anonymous objects are defined when a constructor is used without providing
+a name for the constructed object. Here is the corresponding example:
         verb(
-    printText(Print("arg: ", "\n"), argc, argv);          // prints to cout
-    printText(Print(cerr, "err: --", "--\n"), argc, argv);// prints to cerr
+    allArgs(Print(cout, "arg: ", "\n"), argc, argv);    // prints to cout
+    allArgs(Print(cerr, "err: --", "--\n"), argc, argv);// prints to cerr
         )
     In this situation the tt(Print) objects are constructed and immediately
 passed as first arguments to the tt(printText) functions, where they are
-accessible as the function's tt(print) parameter. While the tt(printText)
+accessible as the function's tt(print) parameter. While the tt(allArgs)
 function is executing they can be used, but once the function has completed,
-the tt(Print) objects are no longer accessible.
-
-    Anonymous objects hi(destruction: anonymous objects) cease to
-exist when the function for which they were created has terminated. In this
-respect they differ from ordinary local variables whose lifetimes end by the
-time the function block in which they were defined is closed.
+the anonymous tt(Print) objects are no longer accessible. 

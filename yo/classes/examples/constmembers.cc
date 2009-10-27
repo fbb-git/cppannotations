@@ -1,29 +1,29 @@
     #include <iostream>
     using namespace std;
 
-    class X
+    class Members
     {
         public:
-            X();
+            Members();
             void member();
             void member() const;
     };
 
-    X::X()
+    Members::Members()
     {}
-    void X::member()
+    void Members::member()
     {
         cout << "non const member\n";
     }
-    void X::member() const
+    void Members::member() const
     {
         cout << "const member\n";
     }
 
     int main()
     {
-        X const constObject;
-        X       nonConstObject;
+        Members const constObject;
+        Members       nonConstObject;
 
         constObject.member();
         nonConstObject.member();
