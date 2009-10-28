@@ -30,10 +30,8 @@ int main(int argc, char *argv[])
                 cout << "hello world\n";
             }
     };
-
     Local::hello();             // call Local static member
-
     Local loc(argc);            // define object of a local class.
-
-    return 0;
 }
+
+
