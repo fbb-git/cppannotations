@@ -1,6 +1,5 @@
 Inline functions may be implemented em(in the class interface itself). For the
-class tt(Person) this results in the following implementation of
-tt(name()):
+class tt(Person) this results in the following implementation of tt(name):
         verb(
     class Person
     {
@@ -11,30 +10,34 @@ tt(name()):
             }
     };
         )
-    Note that the i(inline code) of the function tt(name()) now literally
+    Note that the i(inline) code of the function tt(name) now literally
 occurs inline in the interface of the class tt(Person). The keyword tt(const)
-occurs after the function declaration, and before the code block.
+is again added to the function's header.
 
-    Although members can be defined inside the class interface itself, it
-should be considered bad practice because of the following considerations:
+    Although members can be defined hi(members: in-class) em(in-class) (i.e.,
+inside the class interface itself), it is considered bad practice
+for the following reasons:
     itemization(
-    it() Defining functions inside the interface confuses the interface with
-the implementation. The interface should merely document what functionality
-the class offers. Mixing member declarations with implementation detail
-complicates understanding the interface. Readers will have to skip over
-implementation details which takes time and makes it hard to grab the `broad
-picture', and thus to understand at a glance what functionality
-the class's objects are offering.
+    it() Defining members inside the interface contaminates the interface with
+implementations. The interface's purpose is to document what functionality the
+class offers. Mixing member declarations and implementation details
+complicates understanding the interface. Readers need to skip implementation
+details which takes time and makes it hard to grab the `broad picture', and
+thus to understand at a glance what functionality the class's objects are
+offering.
+    it() In-class implementations of private member functions may usually be
+avoided altogether (as they are private members). They should be moved to the
+internal header file (em(unless) inline public members use such inline private
+members).
     it() Although members that are eligible for inline-coding should remain
-inline, situations do exist where members migrate from an inline to a
-non-inline definition. The in-class inline definition still needs editing
-(sometimes considerable editing) before a non-inline definition is ready to be
-compiled. This additional editing is undesirable.
+inline, situations do exist where such inline members migrate from an inline
+to a non-inline definition. In-class inline definitions still need editing
+(sometimes considerable editing) before they can be compiled. This additional
+editing is undesirable.
     )
     Because of the above considerations inline members should not be defined
-within the class interface. Rather, they should be defined em(below) the class
-interface. The  tt(name()) member of the tt(Person)
-class is therefore preferably defined as follows:
+in-class. Rather, they should be defined following the class interface. The
+tt(Person::name) member is therefore preferably defined as follows:
         verb(
     class Person
     {
@@ -47,27 +50,24 @@ class is therefore preferably defined as follows:
         return d_name;
     }
         )
-    This version of the tt(Person) class clearly shows that:
-    itemization(
-    it() the class interface itself only contains a declaration
-    it() the inline implementation can easily be redefined as  a non-inline
-implementation by removing the tt(inline) keyword and including the
-appropriate class-header file. E.g.,
+
+    If it is ever necessary to cancel tt(Person::name)'s inline
+implementation, then this becomes it non-inline implementation:
         verb(
-    #include "person.h"
+    #include "person.ih"
 
     std::string const &Person::name() const
     {
         return d_name;
     }
         )
-    )
-Defining members inline has the following effect: Whenever an inline function
-is called in a program statement, the compiler may em(insert the function's
-body) at the location of the function call. The function itself
-may never actually be called. Consequently, the function call is prevented,
-but the function's body appears as often in the final program as the inline
-function is actually called.
+    Only the tt(inline) keyword needs to be removed to obtain the correct
+non-inline implementation. 
+
+Defining members inline has the following effect: whenever an inline-defined
+function is called, the compiler may em(insert the function's body) at the
+location of the function call. It may be that the function itself is never
+actually called.
 
 This construction, where the function code itself is inserted rather than a
 call to the function, is called an i(inline function).  Note that using inline
@@ -75,10 +75,7 @@ functions may result in multiple occurrences of the code of those functions in
 a program: one copy for each invocation of the inline function. This is
 probably OK if the function is a small one, and needs to be executed
 fast. It's not so desirable if the code of the function is extensive. The
-compiler knows this too, and considers the
-    i(use of inline functions) a em(request) rather than a em(command): if the
-compiler considers the function too long, it will not grant the request, but
-will, instead, treat the function as a normal function. As a
-    i(rule of thumb): members should only be defined inline if they are small
-(containing a single, small statement) and if it is highly unlikely that their
-definition will ever change.
+compiler knows this too, and handles the use of inline functions as a
+em(request) rather than a em(command). If the compiler considers the function
+too long, it will not grant the request. Instead it will treat the function as
+a normal function.
