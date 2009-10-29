@@ -1,55 +1,61 @@
-Operator ti(new[]) is used to i(allocate arrays). The generic i(notation)
-tt(new[]) is an abbreviation used in the Annotations. Actually, the number of
-elements to be allocated is specified as an expression between the square
-brackets, which are em(prefixed) by the type of the values or class of the
-objects that must be allocated:
-        centt(int *intarr = new int[20];   // allocates 20 ints)
-    Note well that ti(operator new) is a different operator than tt(operator
-new[]).  In section ref(NEWDELETEARRAY) redefining tt(operator new[]) is
-covered.
+Operator ti(new[]) is used to i(allocate arrays). The generic notation
+tt(new[]) is used in the annotations(). Actually, the number of elements to be
+allocated must be specified between the square brackets and it must, in turn,
+be em(prefixed) by the type of the entities that must be allocated. Example:
+        verb(
+    int *intarr = new int[20];          // allocates 20 ints
+    string *stringarr = new string[10]; // allocates 10 strings.
+        )
+    Operator tt(new) is a different operator than operator tt(new[]). A
+consequence of this difference is discussed in the next section
+(ref(DELETEARRAY)). 
 
-    Arrays allocated by tt(operator new[]) are called emi(dynamic arrays).
-They are constructed during the execution of a program, and their lifetime may
-exceed the lifetime of the function in which they were created. Dynamically
-allocated arrays may last for as long as the program runs.
+    Arrays allocated by operator tt(new[]) are called 
+ hi(array: dynamic)emi(dynamic arrays).  They are constructed during the
+execution of a program, and their lifetime may exceed the lifetime of the
+function in which they were created. Dynamically allocated arrays may last for
+as long as the program runs.
 
     When tt(new[]) is used to allocate an array of primitive values or an
-        hi(new[]: memory initialization) array of objects, tt(new[]) must be
-specified with a type and an (unsigned) expression between square
-brackets. The type and expression together are used by the compiler to
-determine the required size of the block of memory to make available. With the
-array allocation, all elements are stored consecutively in memory. The
-    i(array index notation) can be used to access the individual elements:
-tt(intarr[0]) will be the very first tt(int) value, immediately followed by
-tt(intarr[1]), and so on until the last element: tt(intarr[19]). With
-non-class types (primitive types, tt(struct) types without constructors,
-pointer types) the returned allocated block of memory is em(not) guaranteed to
-be initialized to 0.
+array of objects, tt(new[]) must be specified with a type and an (unsigned)
+expression between its square brackets. The type and expression together are
+used by the compiler to determine the required size of the block of memory to
+make available. When tt(new[]) is used the array's elements are stored
+consecutively in memory. An array index expression may thereafter be used to
+access the array's individual elements: tt(intarr[0]) represents the first
+tt(int) value, immediately followed by tt(intarr[1]), and so on until the last
+element (tt(intarr[19])). 
+ hi(memory: initialization)With non-class types (primitive types, tt(struct)
+types without constructors) the block of memory returned by operator tt(new[])
+is em(not) guaranteed to be initialized to 0.
 
-    To i(allocate arrays of objects), the tt(new[])-bracket notation is used
-as well. For example, to allocate an array of 20 tt(string) objects the
-following construction is used:
-        centt(string *strarr = new string[20];   // allocates 20 strings)
-    Note here that, since em(objects) are allocated, constructors are
-automatically used. So, whereas tt(new int[20]) results in a block of 20
-em(uninitialized) tt(int) values, tt(new string[20]) results in a block of 20
-em(initialized) tt(string) objects. With arrays of objects the
-    emi(default constructor) is used for the initialization. Unfortunately it
-is not possible to use a constructor having arguments when arrays of objects
-are allocated.  However, it is possible to em(overload) operator ti(new[]) and
-provide it with arguments which may be used for a non-default initialization
-of arrays of objects. Overloading operator tt(new[]) is discussed in section
-ref(NEWDELETEARRAY).
+    When operator tt(new[]) is used to allocate arrays of objects their
+constructors are automatically used. Consequently tt(new string[20]) results
+in a block of 20 em(initialized) tt(string) objects. When allocating arrays of
+objects the class's 
+  emi(default constructor) is used to initialize each individual object in
+turn. A non-default constructor cannot be called, but often it is possible to
+work around that as discussed in section ref(NONDEFINIT).
 
-    Similar to bf(C), and without resorting to the operator tt(new[]), arrays
-of variable size can also be constructed as emi(local arrays) within
-functions. Such arrays are not dynamic arrays, but emi(local arrays), and
-their lifetime is restricted to the lifetime of the block in which they were
+    The expression between brackets of operator tt(new[]) represents the
+number of elements of the array to allocate. The bf(C++) standard allows
+allocation of hi(array: 0-sized) 0-sized arrays. The statement 
+ hi(new Type[0])tt(new int[0]) is correct bf(C++). However, it is also
+pointless and confusing and should be avoided. It is pointless as it doesn't
+refer to any element at all, it is confusing as the returned pointer has a
+useless non-0 value. A pointer intending to point to an array of values should
+be initialized (like any pointer that isn't yet pointing to memory) to 0,
+allowing for expressions like tt(if (ptr) ...)
+
+    Without using operator tt(new[]), arrays of variable sizes can also be
+constructed as
+ hi(array: local)emi(local arrays). Such arrays are not dynamic arrays and
+their lifetimes are restricted to the lifetime of the block in which they were
 defined.
     quote(
-    Once allocated, all arrays are hi(arrays of fixed size)
+    Once allocated, all arrays are hi(array: fixed size)
     i(fixed size arrays). There is no simple way to enlarge or
-    i(shrink arrays): there is no ti(renew operator). In section
-    ref(ENLARGEARRAY) an example is given showing how to
-    i(enlarge an array).
+    shrink arrays. bf(C++) has no operator `ti(renew)'. Section
+    ref(ENLARGEARRAY) illustrates how an hi(array: enlarge) 
+    array can be enlarged.
     )
