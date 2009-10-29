@@ -33,5 +33,3 @@ int main(int argc, char *argv[])
     Local::hello();             // call Local static member
     Local loc(argc);            // define object of a local class.
 }
-
-
