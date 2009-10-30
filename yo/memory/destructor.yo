@@ -1,0 +1,83 @@
+Comparable to the constructor, classes may define a emi(destructor).  This
+function is the constructor's counterpart in the sense that it is invoked when
+an object ceases to exist. A destructor is usually called automatically, but
+that's not always true. The destructors of dynamically allocated objects are
+not automatically activated, but in addition to that: when a program is
+interrupted by an hi(exit: avoid)tt(exit) call, only the destructors of
+already initialized global objects are called.  In that situation destructors
+of objects defined em(locally) by functions are also em(not) called. This is
+one (good) reason for avoiding tt(exit) in bf(C++) programs.
+
+Destructors obey the following syntactical requirements:
+    itemization(
+    it() a destructor's name is equal to its class name prefixed by a tilde;
+    it() a destructor has no arguments;
+    it() a destructor has no return value.
+    )
+    Destructors are declared in their class interfaces. Example:
+        verb(
+    class StringStore
+    {
+        public:
+            StringStore();
+            ~StringStore();     // the destructor
+    };
+        )
+    By convention the constructors are declared first. The destructor is
+declared next, to be followed by other member functions.
+
+    A destructor's hi(destructor: main task) main task is to ensure that
+memory allocated by an object is properly returned when the object ceases to
+exist. Consider the following interface of the class tt(StringStore):
+        verbinsert(memory/examples/stringstore.h)(STRINGSTORE)
+
+The constructor's task is to initialize the data fields of the object. E.g,
+its constructors are defined as follows:
+        verbinsert(memory/examples/stringstore.cc)(CONS)
+    As objects of the class tt(StringStore) allocate memory a destructor is
+clearly required. Destructors may or may not be called automatically. Here are
+the rules:
+    itemization(
+    it() A destructor is em(never) called unless its constructor completed
+successfully. The remaining rules only apply when this rule holds true;
+    it() Destructors of local non-static objects are called automatically when
+the execution flow leaves the block in which they were defined; the
+destructors of objects defined somewhere in the outer block of a function are
+called just before the function terminates.  
+    it() Destructors of static or global objects are called when the program
+itself terminates.
+    it() The destructor of a dynamically allocated object is called by
+tt(delete) using the object's address as its operand;
+    it() The destructors of a dynamically allocated array of objects are
+called by tt(delete[]) using the address of the array's first element as its
+operand;
+    it() The destructor of an object initialized by placement tt(new) is
+activated  by explicitly calling the object's destructor.
+    )
+    The destructor's task is to ensure that all memory that is 
+dynamically allocated and controlled only by the object
+itself is returned. The task of the tt(StringStore)'s
+destructor would therefore be to delete the memory to which tt(d_string)
+points. Its implementation is:
+        verbinsert(memory/examples/stringstore.cc)(DESTR)
+
+COMMENT(<<<<<<<<<<<<< HERE >>>>>>>>>>>>>>>>>)
+    The next example shows tt(StringStore) at work. A tt(StringStore store)
+object is created, and its data are displayed.
+
+After this the function
+tt(process) stops and tt(store)'s memory is returned. A second tt(StringStore)
+object is then dynamically created, returned by tt(display) and that object as
+well as its memory is returned by tt(main). Finally, a third object is defined
+using an 
+
+        verbinclude(memory/examples/personexample.cc)
+    The memory occupied by the object tt(karel) is deleted automatically when
+tt(showPerson()) terminates: the bf(C++) compiler makes sure that the
+destructor is called. Note, however, that the object pointed to by tt(frank)
+is handled differently. The variable tt(frank) is a pointer, and a pointer
+variable is itself no tt(Person). Therefore, before tt(main()) terminates, the
+memory occupied by the object pointed to by tt(frank) should be em(explicitly)
+deleted; hence the statement tt(delete) tt(frank). The operator tt(delete)
+will make sure that the destructor is called, thereby deleting the three
+tt(char *) strings of the object.

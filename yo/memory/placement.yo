@@ -1,75 +1,83 @@
-Although normally there should be an tt(operator delete) call for every call
-to tt(operator new), there is a noticeable exception to that rule. It is
-called the emi(placement new) hi(new: placement) operator.
-
-In this variant of tt(operator new) the operator accepts a block of memory and
-initializes it using a constructor of choice. The block of memory should of
-course be large enough to contain the object, but apart from that no other
-requirements exist.
+A remarkable form of operator tt(new) is called the emi(placement new)
+ hi(new: placement) operator. Here operator tt(new) is provided with an
+existing block of memory in which an object or value is initialized.  The
+block of memory should of course be large enough to contain the object, but
+apart from that no other requirements exist. It is easy to determine how much
+memory is used by en entity (object or variable) of type tt(Type): the
+ ti(sizeof) operator returns the number of bytes required by an tt(Type)
+entity. Entities may of course dynamically allocate memory for their own use.
+Dynamically allocated memory, however, is not part of the entity's memory
+`footprint' but it is always made available externally to the entity
+itself. This is why tt(sizeof) returns the same value when applied to
+different tt(string) objects returning different length and capacity values.
 
 The placement tt(new) operator uses the following syntax (using tt(Type) to
-indicate the data type that is used):
-
+indicate the used data type):
         verb(
     Type *new(void *memory) Type(arguments);
         )
     Here, tt(memory) is block of memory of at least tt(sizeof(Type)) bytes
-large (usually tt(memory) will point to an array of characters), and
-tt(Type(arguments)) is any constructor of the class tt(Type).
+large and tt(Type(arguments)) is any constructor of the class tt(Type).
 
-    The placement tt(new) operator comes in handy when the memory to contain
-one or more objects is already available or when its size is known
-beforehand. The memory could have been statically or dynamically allocated;
-when allocated dynamically the appropriate destructor must
-eventually be called to destroy the objects and the block of memory. When
-allocated statically the memory on which the placement tt(new) operator will
-operate will eventually be returned automatically.
+    The placement tt(new) operator is useful in situations where classes set
+aside memory to be used later. This is used, e.g., by tt(std::string) to
+change its capacity. Calling tt(string::reserve) may enlarge that capacity
+without making memory beyond the string's length immediately available. But
+the object itself may access its additional memory and so when information
+is added to a tt(string) object it can draw memory from its capacity rather
+than having to perform a reallocation for each single addition of information.
 
-    The memory that is made available to the placement tt(new) operator will
-normally be memory containing primitive types.
-
-The question of how to call the destructors of objects initialized using
-    hi(delete: and placement new)
-the placement tt(new) operator is an interesting one:
-
+    Let's apply that philosophy to a class tt(Strings) storing tt(std::string)
+objects. The class defines a tt(char *d_memory) accessing the memory holding
+its tt(d_size) string objects as well as tt(d_capacity - d_size) reserved
+memory. Assuming that a default constructor initializes tt(d_capacity) to 1,
+doubling tt(d_capacity) whenever an additional tt(string) must be stored, the
+class must support the following essential operations:
     itemization(
-    it() When one object was initialized in memory not allocated dynamically,
-tt(delete) can of course not be called to free the statically allocated memory.
-    it() However, when tt(delete) is called to free the memory pointed to by
-the pointer returned by the dynamically allocated memory is properly returned
-to the common pool.
+    it() doubling its capacity when all its reserve memory has been consumed;
+    it() adding another tt(string) object
+    it() properly deleting the installed strings and memory when a
+tt(Strings) object ceases to exist.
     )
-    Assuming that tt(buffer) is an array the size of a tt(std::string) the
-tt(string)'s destructor is called in both situations:
-        verb(
-    delete   new(buffer) string("hello world");
-        )
-    In this case tt(delete) performs two actions:
-    itemization(
-    it() First, the object's destructor is called;
-    it() Next, the memory occupied by the object whose destructor has just
-been called is assumed to have been dynamically allocated and is returned to
-the common pool.
-    )
-    Of course, the second step will fail when the buffer hasn't been allocated
-dynamically as in the following example:
-        verb(
-    char buffer[sizeof(string)];
-    delete new(buffer) string("hello world");
-        )
-    Consequently, when the placement tt(new) operator is used to initialize a
-em(statically) allocated block of memory tt(delete) cannot be called. This
-immediately raises the question of how to activate the destructor of the
-object initialized in tt(buffer). The answer may come as a surprising: it
-must be called hi(destructor: called explicitly) explicitly. Here is an
-example:
-        verbinclude(memory/examples/placement.cc)
+    To double the capacity new memory is allocated, old memory is copied into
+the newly allocated memory, and the old memory is deleted. This is implemented
+by the member tt(void Strings::reserve), assuming tt(d_capacity) has already
+been given its proper value:
+    verbinsert(memory/examples/strings.cc)(RESERVE)
+ The raw memory is made available by tt(operator new(sizeInBytes)). This
+should not be interpreted as an  array of any kind, so a plain tt(delete
+d_memory) is used to return the previously allocated block of raw memory.
 
-    Using the placement tt(new) operator is clearly dangerous: depending on
-the nature of the used buffer (dynamically allocated or statically allocated)
-tt(delete) will either succeed or fail and it's the responsibility of the
-software engineer to make sure that either tt(delete) is called or the
-object's destructor is explicitly called.
+    The member tt(append) adds another tt(string) object to a tt(Strings)
+object. A (public) member tt(reserve(request)) ensures that the tt(String)
+object's capacity is sufficient. Then the placement tt(new) operator is used
+to install the next string into the raw memory's appropriate location:
+    verbinsert(memory/examples/strings.cc)(APPEND)
+
+    At the end of the tt(String) object's lifetime all its dynamically
+allocated memory must be returned. This is the responsibility of the
+destructor, as explained in link(the next section)(DESTRUCTOR). The
+destructor's full definition is postponed to that section, but its actions
+when placement tt(new) is involved can be discussed here. 
+
+    With placement tt(new) an interesting situation is encountered. Objects,
+possibly themselves allocating memory, are installed in memory that may or may
+not have been allocated dynamically, but that is definitely not
+completely filled with such objects. So a simple tt(delete[]) can't be used,
+but a tt(delete) for each of the objects that em(are) available can't be used
+either, since that would also delete the memory of the objects themselves,
+which wasn't dynamically allocated.
+
+    This peculiar situation is solved in a peculiar way, only
+encountered in cases where the placement tt(new) operator has been used:
+memory allocated by objects initialized using placement tt(new) is returned by
+ hi(destructor: explicit call)em(explicitly) calling the object's destructor.
+The destructor is declared as a member having the class preceded by a tilde as
+its name, not using any arguments. So, tt(std::string)'s destructor is named
+tt(~string). The memory allocated by our class
+tt(Strings) is therefore properly destroyed as follows (in the example
+assume that tt(using namespace std) was specfied):
+    verbinsert(memory/examples/strings.cc)(DESTROY)
 
     So far, so good. All is well as long as we're using but one object. What
 about allocating an array of objects? Initialization is performed as usual.
@@ -80,7 +88,3 @@ buffer all the objects' destructors must be called explicitly, as in the
 following example:
         verbinsert(memory/examples/placement2.cc)(CODE)
 
-    The placement new operator nicely illustrates what actually happens
-when an object is allocated dynamically. Using the placement new operator
-we're `playing memory allocator' ourselves, see also sections
-ref(OVERLOADNEW), ref(OVERLOADDELETE) and ref(NEWDELETEARRAY).
