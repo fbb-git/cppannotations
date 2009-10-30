@@ -62,22 +62,15 @@ points. Its implementation is:
         verbinsert(memory/examples/stringstore.cc)(DESTR)
 
 COMMENT(<<<<<<<<<<<<< HERE >>>>>>>>>>>>>>>>>)
-    The next example shows tt(StringStore) at work. A tt(StringStore store)
-object is created, and its data are displayed.
+    The next example shows tt(StringStore) at work. In tt(process)
+a tt(StringStore store) is created, and its data are displayed. It returns a
+dynamically allocated tt(StringStore) object to tt(main). A
+tt(StringStore *) receives the address of the allocated object and deletes the
+object again. Another tt(StringStore) object is then created in a block of
+memory made available locally in tt(main), and an explicit call to
+tt(~StringStore) is required to return the memory allocated by that object. In
+the example only once  a tt(StringStore) object is automatically destroyed:
+the local tt(StringStore) object defined by tt(display). The other two
+tt(StringStore) objects require explicit actions to prevent memory leaks.
+        verbinclude(memory/examples/stringstoreexample.cc)
 
-After this the function
-tt(process) stops and tt(store)'s memory is returned. A second tt(StringStore)
-object is then dynamically created, returned by tt(display) and that object as
-well as its memory is returned by tt(main). Finally, a third object is defined
-using an 
-
-        verbinclude(memory/examples/personexample.cc)
-    The memory occupied by the object tt(karel) is deleted automatically when
-tt(showPerson()) terminates: the bf(C++) compiler makes sure that the
-destructor is called. Note, however, that the object pointed to by tt(frank)
-is handled differently. The variable tt(frank) is a pointer, and a pointer
-variable is itself no tt(Person). Therefore, before tt(main()) terminates, the
-memory occupied by the object pointed to by tt(frank) should be em(explicitly)
-deleted; hence the statement tt(delete) tt(frank). The operator tt(delete)
-will make sure that the destructor is called, thereby deleting the three
-tt(char *) strings of the object.

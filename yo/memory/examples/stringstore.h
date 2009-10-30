@@ -8,9 +8,10 @@
 
         public:
             StringStore();
-            StringStore(std::string const *strings, size_t n);
+            StringStore(char const *const *cStrings, size_t n);
             ~StringStore();
 
-            std::string const &at() const;
+            std::string const &at(size_t idx) const;
+            size_t size() const;
     };
 //=
