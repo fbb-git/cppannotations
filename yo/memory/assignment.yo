@@ -1,54 +1,70 @@
-Variables which are ti(struct)s or tt(classes) can be directly assigned in
-bf(C++) in the same way that tt(struct)s can be assigned in bf(C). The default
+In bf(C++) struct and class type objects  can be directly assigned new values 
+in the same way as this is possible in bf(C).  The default
 action of such an assignment for non-class type data members is a straight
-i(byte-by-byte copy) from one data member to another.  Now consider the
-consequences of this default action in a function such as the following:
+byte-by-byte copy from one data member to another.  For now we'll use the
+following simple class tt(Person):
         verb(
-    void printperson(Person const &p)
+    class Person
+    {
+        char *d_name;
+        char *d_address;
+        char *d_phone;
+
+        public:
+            Person();
+            Person(char const *name, char const *addr, char const *phone);
+            ~Person();
+        private:
+            char *strdupnew(char const *src);   // returns a copy of src.
+    };
+        )
+    tt(Person)'s data members are initialized to zeroes or to copies of the
+ASCII-Z strings passed to tt(Person)'s constructor, using some variant of
+ti(strdup). Its destructor will return the allocated memory again.
+    
+Now consider the consequences of using tt(Person) objects in the following
+example:
+        verb(
+    void tmpPerson(Person const &person)
     {
         Person tmp;
-
-        tmp = p;
-        cout << "Name:     " << tmp.name()       << endl <<
-                "Address:  " << tmp.address()    << endl <<
-                "Phone:    " << tmp.phone()      << endl;
+        tmp = person;
     }
         )
-    We shall follow the execution of this function step by step.
+    Here's what happens when tt(tmpPerson) is called:
     itemization(
-    it() The function tt(printperson()) expects a reference to a tt(Person) as
-its parameter tt(p). So far, nothing extraordinary is happening.
-    it() The function defines a local object tt(tmp). This means that the
-default constructor of tt(Person) is called, which -if defined properly-
-resets the pointer fields tt(name), tt(address) and tt(phone) of the tt(tmp)
-object to zero.
-    it() Next, the object referenced by tt(p) is copied to tt(tmp). By default
-this means that tt(sizeof(Person)) bytes from tt(p) are copied to tt(tmp).
-
-    Now a potentially dangerous situation has arisen. Note that the actual
-values in tt(p) are em(pointers), pointing to allocated memory.  Following the
-assignment this memory is addressed by two objects: tt(p) em(and) tt(tmp).
+    it() it expects a reference to a tt(Person) as its parameter tt(person).
+    it() it defines a local object tt(tmp), whose data members are initialized
+to zeroes.
+    it() the object referenced by tt(person) is copied to tt(tmp):
+tt(sizeof(Person)) number of bytes are copied from tt(person) to tt(tmp).
+    )
+    Now a potentially dangerous situation has been created.  The actual values
+in tt(person) are em(pointers), pointing to allocated memory.  After the
+assignment this memory is addressed by two objects: tt(person) em(and)
+tt(tmp).
+    itemization(
     it() The potentially dangerous situation develops into an acutely
-dangerous situation when the function tt(printperson()) terminates: the object
-tt(tmp) is destroyed. The destructor of the class tt(Person) releases the
-memory pointed to by the fields tt(name), tt(address) and tt(phone):
-unfortunately, this memory is also in use by tt(p)....
-    The incorrect assignment is illustrated in fig(badassign).
+dangerous situation once the function tt(tmpPerson) terminates: tt(tmp) is
+destroyed. The destructor of the class tt(Person) releases the memory pointed
+to by the fields tt(d_name), tt(d_address) and tt(d_phone): unfortunately,
+this memory is also pointed at by tt(person)....
+    )
+    This problematic assignment is illustrated in fig(badassign).
 
     figure(memory/badassign)
     (Private data and public interface functions of the class Person,
     using byte-by-byte assignment)
     (badassign)
     )
-    Having executed tt(printperson()), the object which was referenced by
-tt(p) now contains i(pointers to deleted memory).
+    Having executed tt(tmpPerson), the object referenced by
+tt(person) now contains i(pointers to deleted memory).
 
-    This situation is undoubtedly not a desired effect of a function like the
-above. The deleted memory will likely become occupied during subsequent
-allocations: the pointer members of tt(p) have effectively become
-    hi(wild pointer) em(wild pointers), as they don't point to allocated
+    This is undoubtedly not a desired effect of using a function like
+tt(tmpPerson).  The deleted memory will likely be reused by subsequent
+allocations. The pointer members of tt(person) have effectively become
+ hi(wild pointer)em(wild pointers), as they don't point to allocated
 memory anymore. In general it can be concluded that
     center(em(every class containing pointer data members is a potential
         candidate for trouble).)
-    Fortunately, it is possible to prevent these troubles, as discussed in the
-next section.
+    Fortunately, it is possible to prevent these troubles, as discussed next.

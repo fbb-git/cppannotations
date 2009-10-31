@@ -1,83 +1,79 @@
 Obviously, the right way to assign one tt(Person) object to another, is
 bf(not) to copy the contents of the object bytewise. A better way is to
-make an equivalent object: one with its own allocated  memory, but which
-contains the same strings.
+make an equivalent object. One having its own allocated  memory containing
+copies of the original strings.
 
-The `right' way to hi(object duplication) hi(copy objects) duplicate a
-tt(Person) object is illustrated in
-    fig(rightass).
+The way to hi(object: assign) assign a tt(Person) object to another is
+illustrated in fig(rightass).
     figure(memory/rightass)
     (Private data and public interface functions of the class Person,
      using the `correct' assignment.)
     (rightass)
-    There are several ways to duplicate a tt(Person) object.  One way would be
-to define a special member function to handle assignments of objects of the
-class tt(Person). The purpose of this member function would be to create a
-copy of an object, but one with its own tt(name), tt(address) and tt(phone)
-strings.  Such a member function might be:
+    There are several ways to assign a tt(Person) object to another.  One way
+would be to define a special member function to handle the assignment. The
+purpose of this member function would be to create a copy of an object having
+its own tt(name), tt(address) and tt(phone) strings.  Such a member function
+could be:
         verb(
     void Person::assign(Person const &other)
     {
-        // delete our own previously used memory
+            // delete our own previously used memory
         delete d_name;
         delete d_address;
         delete d_phone;
 
-        // now copy the other Person's data
-        d_name = strdupnew(other.d_name);
+            // copy the other Person's data
+        d_name    = strdupnew(other.d_name);
         d_address = strdupnew(other.d_address);
-        d_phone = strdupnew(other.d_phone);
+        d_phone   = strdupnew(other.d_phone);
     }
         )
-    Using this tool we could rewrite the offending function tt(printperson()):
+    Using tt(assign) we could rewrite the offending function tt(tmpPerson):
         verb(
-    void printperson(Person const &p)
+    void tmpPerson(Person const &person)
     {
         Person tmp;
 
-        // make tmp a copy of p, but with its own allocated memory
-        tmp.assign(p);
+            // tmp (having its own memory) holds a copy of person 
+        tmp.assign(person);
 
-        cout << "Name:     " << tmp.name()       << endl <<
-                "Address:  " << tmp.address()    << endl <<
-                "Phone:    " << tmp.phone()      << endl;
-
-        // now it doesn't matter that tmp gets destroyed..
+            // now it doesn't matter that tmp is destroyed..
     }
         )
-    By itself this solution is valid, although it is a purely symptomatic
-solution.  This solution requires the programmer to use a specific member
-function instead of the operator tt(=). The basic problem, however, remains if
-this rule is not strictly adhered to. Since it is very hard to `strictly
-adhere to a rule' it is higly preferable to have a solution that is solving
-the problem for us (rather than putting the burden of avoiding the problem on
-our shoulders).
+    This solution is valid, although it only solves a symptom solution.  It
+requires the programmer to use a specific member function instead of the
+assignment operator. The original problem (assignment produces wild pointers)
+is still not solved. Since it is hard to `strictly adhere to a rule' a way to
+solve the original problem is of course preferred.
 
-    The problem of the assignment operator is solved using em(operator
-overloading): the syntactic possibility bf(C++) offers to redefine the actions
-of an operator in a given context. Operator overloading was mentioned earlier,
-when the operators lshift() and rshift() were redefined to be used with
-streams (like tt(cin), tt(cout) and tt(cerr)), see section ref(CoutCinCerr).
+    Fortunately a solution exists using em(operator overloading): the
+possibility bf(C++) offers to redefine the actions of an operator in a given
+context. Operator overloading was briefly mentioned earlier, when the
+operators lshift() and rshift() were redefined to be used with streams (like
+tt(cin), tt(cout) and tt(cerr)), see section ref(CoutCinCerr).
 
     Overloading the assignment operator is probably the most common form of
-operator overloading. However, a word of warning is appropriate: the fact that
-bf(C++) allows i(operator overloading) does not mean that this feature should
-be used at all times. A few rules are:
+operator overloading in bf(C++). A word of warning is appropriate, though.
+The fact that bf(C++) allows i(operator overloading) does not mean that this
+feature should indiscriminately be used. Here's what you should keep in mind:
     itemization(
-    it() Operator overloading should be used in situations where an operator
-has a defined action, but when this action is not desired as it has negative
-side effects. A typical example is the above assignment operator in the
+    it() operator overloading should be used in situations where an operator
+has a defined action, but this default action has undesired side effects in a
+given context. A clear example is the above assignment operator in the
 context of the class tt(Person).
-    it() Operator overloading can be used in situations where the use of the
-operator is common and when no i(ambiguity) in the meaning of the operator is
-introduced by redefining it. An example may be the redefinition of the
-operator tt(+) for a class which represents a complex number. The meaning of a
-tt(+) between two complex numbers is quite clear and unambiguous.
-    it() In all other cases it is preferable to define a member function,
-instead of redefining an operator.
+    it() operator overloading can be used in situations where the operator is
+commonly applied and no surprise is introduced when it's redefined. An example
+where operator overloading is appropriately used is found in the class
+tt(std::string): assiging one string object to another provides the
+destination string with a copy of the contents of the source string. No
+surprises here.
+    it() in all other cases a member function shold be defined instead of
+redefining an operator.
         )
-    Using these rules, operator overloading is minimized which helps keep
-source files readable. An operator simply does what it is designed to
-do. Therefore, I consider overloading the insertion (lshift()) and extraction
-(rshift()) operators in the context of streams ill-chosen: the stream
-operations do not have anything in common with the bitwise shift operations.
+    An operator should simply do what it is designed to do. The phrase that's
+often encountered in the context of operator overloading is em(do as the
+tt(int)s do). The way operators behave when applied to tt(int)s is what is
+expected, all other implementations probably cause surprises and confusion.
+Therefore, overloading the insertion (lshift()) and extraction (rshift())
+operators in the context of streams is probably ill-chosen: the stream
+operations have nothing in common with bitwise shift operations.

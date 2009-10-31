@@ -4,7 +4,7 @@
 
     void outOfMemory()
     {
-        cout << "Memory exhausted. Program terminates." << endl;
+        cout << "Memory exhausted. Program terminates." << '\n';
         exit(1);
     }
 

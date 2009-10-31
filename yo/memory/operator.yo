@@ -1,20 +1,21 @@
-To achieve operator overloading in the context of a class, the class is simply
-expanded with a (usually em(public)) member function naming the particular
-operator. That member function is thereupon defined.
+To add operator overloading to  a class, the class interface is simply
+provided  with a (usually em(public)) member function naming the particular
+operator. That member function is thereupon implemented.
 
-For example, to overload the assignment operator tt(=), a function
-tt(operator=()) must be defined. Note that the function name consists of two
-parts: the keyword ti(operator), followed by the operator itself.  When we
-augment a class interface with a member function tt(operator=()), then that
+To overload the assignment operator tt(=), a member tt(operator=(Class const
+&rhs)) is added to the class interface.  Note that the function name consists
+of two parts: the keyword ti(operator), followed by the operator itself.  When
+we augment a class interface with a member function tt(operator=), then that
 operator is em(redefined) for the class, which prevents the default operator
-from being used. Previously (in section ref(OVERLOADASSIGN)) the function
-tt(assign()) was offered to solve the memory-problems resulting from using the
-default assignment operator. However, instead of using an ordinary member
-function it is much more common in bf(C++) to define a dedicated em(operator)
-for these special cases. So, the earlier tt(assign()) member may be redefined
-as follows (note that the member tt(operator=()) presented below is a first,
-rather unsophisticated, version of the overloaded assignment operator.  It
-will be improved shortly):
+from being used. In the link(previous section)(OVERLOADASSIGN) the function
+tt(assign) was provided to solve the problems resulting from using the
+default assignment operator. Rather than using an ordinary member
+function bf(C++) commonly uses a dedicated operator generalizing the
+operator's default behavior to the class in which it is defined.
+
+The tt(assign) member mentioned before may be redefined as follows (the member
+tt(operator=) presented below is a first, rather unsophisticated, version of
+the overloaded assignment operator.  It will shortly be improved):
         verb(
     class Person
     {
@@ -23,7 +24,7 @@ will be improved shortly):
             void operator=(Person const &other);
     };
         )
-    and its implementation could be
+    Its implementation could be
         verb(
     void Person::operator=(Person const &other)
     {
@@ -36,17 +37,30 @@ will be improved shortly):
         d_phone = strdupnew(other.d_phone);
     }
         )
-    The actions of this member function are similar to those of the previously
-proposed function tt(assign()), but now its em(name) ensures that this
-function is also activated when the assignment operator tt(=) is used. There
-are actually two ways to i(call overloaded operators):
+    This member's actions are similar to those of the previously mentioned
+member tt(assign), but this member is automatically called when the assignment
+operator tt(=) is used. Actually there are em(two) ways to 
+call overloaded operators as shown in the next example:
         verb(
-    Person pers("Frank", "Oostumerweg", "403 2223");
-    Person copy;
+    void tmpPerson(Person const &person)
+    {
+        Person tmp;
 
-    copy = pers;                // first possibility
-    copy.operator=(pers);       // second possibility
+        tmp = person;       
+        tmp.operator=(person);  // the same thing
+    }
         )
-    Actually, the second possibility, explicitly calling tt(operator=()), is
-not used very often. However, the code fragment em(does) illustrate two
-ways to call the same overloaded operator member function.
+    Overloaded operators are seldom called explicitly, but an explicit call is
+required when the overloaded operator must be called from a pointer to an
+object:
+        verb(
+    void tmpPerson(Person const &person)
+    {
+        Person *tmp = new Person;
+
+        tmp->operator=(person);
+        *tmp = person;          // yes, also possible...
+
+        delete tmp;
+    }
+        )

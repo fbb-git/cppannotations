@@ -1,49 +1,43 @@
-    According to bf(C++)'s syntax, the assignment operator associates from
-right to left. I.e., in statements like:
+    bf(C++)'s syntax allows for hi(assignment: sequential) sequential
+assignments, with the assignment operator associating from right to left. In
+statements like:
         verb(
     a = b = c;
         )
-    the expression tt(b = c) is evaluated first, and the result is assigned to
-tt(a).
+    the expression tt(b = c) is evaluated first, and its result in turn is
+assigned to tt(a).
 
-    So far, the implementation of the overloaded assignment operator does not
-permit such constructions, as an assignment using the member function returns
-nothing (tt(void)). We can therefore conclude that the previous implementation
-does solve an allocation problem, but concatenated assignments are still not
-allowed.
+    The implementation of the overloaded assignment operator we've encountered
+thus far does not permit such constructions, as it returns tt(void).
 
-    The problem can be illustrated as follows. When we rewrite the expression
-tt(a = b = c) to the form which explicitly mentions the overloaded assignment
-member functions, we get:
-        centt(a.operator=(b.operator=(c));)
-    This variant is syntactically wrong, since the sub-expression
-tt(b.operator=(c)) yields tt(void). However, the class tt(Person) contains no
-member functions with the prototype tt(operator=(void)).
+    This imperfection can easily be remedied using the tt(this) pointer. The
+overloaded assignment operator expects a reference to an object of its
+class. It can also em(return) a reference to an object of its class. This
+reference can then be used as an argument in sequential assignments.
 
-    This problem too can be remedied using the ti(this) pointer. The
-i(overloaded assignment) function expects as its argument a reference to a
-tt(Person) object. It can also em(return) a reference to such an
-object. This reference can then be used as an argument in a
-    i(concatenated assignment).
-
-It is customary to let the overloaded assignment return a
-    i(reference to the current object) (i.e., tt(*this)).  The (final) version
-of the overloaded assignment operator for the class tt(Person) thus becomes:
+    The overloaded assignment operator commonly returns a reference to the
+current object (i.e., tt(*this)).  The next version of the overloaded
+assignment operator for the class tt(Person) thus becomes:
         verb(
     Person &Person::operator=(Person const &other)
     {
-        if (this != &other)
-        {
-            delete d_address;
-            delete d_name;
-            delete d_phone;
+        delete d_address;
+        delete d_name;
+        delete d_phone;
 
-            d_address = strdupnew(other.d_address);
-            d_name = strdupnew(other.d_name);
-            d_phone = strdupnew(other.d_phone);
-        }
-        // return current object. The compiler will make sure
-        // that a reference is returned
+        d_address = strdupnew(other.d_address);
+        d_name = strdupnew(other.d_name);
+        d_phone = strdupnew(other.d_phone);
+
+        // return current object as a reference
         return *this;
     }
         )
+    Overloaded operators may themselves be overloaded. Consider the tt(string)
+class, having overloaded assignment operators tt(operator=(std::string const
+&rhs), operator=(char const *rhs)), and several more overloaded
+versions. These additional overloaded versions are there to handle different
+situations which are, as usual, recognized by their argument types. These
+overloaded versions all follow the same mold: when necessary dynamically
+allocated memory controlled by the object is deleted; new values are assigned
+using the overloaded operator's parameter values and tt(*this) is returned.
