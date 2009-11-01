@@ -1,111 +1,140 @@
-In bf(C++) before the definition of the C++0x standard there were
-basically two ways to assign a pointer data member of a temporary object to an
-em(lvalue) object: either a copy constructor or reference counting had to be
-used. The C++0x standard adds emi(move semantics) to these two, allowing the
-direct transfer of a temporary's pointer data to its destination.
+Before the advent of the C++0x standard bf(C++) offered basically two ways to
+assign the information pointed to by a data member of a temporary object to an
+em(lvalue) object. Either a copy constructor or reference counting had to be
+used. The C++0x standard adds emi(move semantics) to these two, allowing
+em(transfer) of the data pointed to by a temporary object to its destination.
 
-Assume tt(class IntArray) has a data member tt(int *d_data) (as well as
-other members, e.g., a data member tt(size_t d_capacity) holding the number of
-tt(int) values tt(d_data) points to). As we've seen tt(IntArray) should define
-a copy constructor, a destructor and an overloaded assignment operator, due to
-the fact that it defines a data member which is a pointer to data managed by
-the tt(IntArray) objects themselves. So, a function
-tt(loadIntArray(std::istream &in)) extracting the values of an tt(IntArray)
-from tt(in) must use a temporary tt(IntArray) to store the extracted values
-and the statement
+Our class tt(Strings) has, among other members a data member tt(string
+*d_string). Clearly, tt(Strings) should define a copy constructor, a
+destructor and an overloaded assignment operator. 
+
+Now design a function tt(loadStrings(std::istream &in)) extracting the strings
+of a tt(Strings) object from tt(in). As the tt(Strings) object doesn't exit
+yet, the tt(String) object filled by tt(loadStrings) is returned by value. The
+function tt(loadStrings) returns a temporary object, which is then used to
+initialize an external tt(Strings) object:
         verb(
-    IntArray intArray(loadIntArray(cin));
+    Strings loadStrings(std::istream &in)
+    {
+        Strings ret;
+        // load the strings into 'ret'
+        return ret;
+    }
+    // usage:
+    Strings store(loadStrings(cin));
         )
-    will have to call the class's copy constructor to initialize
-tt(intArray). Following the copy constructor's call the temporary will have to
-be destroyed. Consequently, a full copy construction is required to merely
-pass over the temporary's values to the final destination object.
+    In this example two full copies of a tt(Strings) object are required:
+    itemization(
+    it() initializing tt(loadString)'s value return type from its local
+tt(Strings ret) object;
+    it() initializing tt(store) from tt(loadString)'s return value
+    )
+    
+The em(rvalue reference) concept allows us to improve this procedure. An
+em(rvalue reference) binds to an anonymous temporary (r)value and the compiler
+is required to do so whenever possible. We, as programmers, must inform the
+compiler in what situations rvalue references can be handled. We do this by
+providing overloaded members defining rvalue reference parameters.
 
-Enter the emi(move constructor). The move constructor is a constructor defining
-an i(rvalue reference) to an object of its own class as parameter. Move
-constructors are allowed to simply copy the values of pointer data members to
-the final destination (not requiring any copy at all) followed by zeroing the
-just copied pointer data members accessed through the rvalue reference.
-
-Constructing the class tt(IntArray) along these lines the following class
-interface is obtained (the move constructor's implementation is shown below
-the class interface; the remaining members are constructed
-    standard)hi(move operator=()):
+One such overloaded member is the emi(move constructor). The move constructor
+is a constructor defining an i(rvalue reference) to an object of its own class
+as parameter. Here is the declaration of the tt(Strings) class 
+move constructor:
+        verb(
+    Strings(Strings &&tmp);
+        )
+    Move constructors are allowed to simply assign the values of pointer data
+members to their own pointer data members without requiring them to make a
+copy of the source's data first. Having done so the temporary's pointer value
+is set to zero to prevent its destructor from destroying data now owned by the
+just constructed object. The move constructor has em(grabbed) or 
+ hi(resource: stealing) em(stolen) the data from the temporary object. This is
+OK as the temporary cannot be referred to again (as it is anonymous, it cannot
+be accessed by other code) and ceases to exist shortly after the constructor's
+call anyway. Here is the implementation of tt(Strings) move constructor:
         verbinclude(memory/examples/intarraymove.cc)
 
-When implementing the move constructor make sure that the class's destructor
-inspects its  pointer data member: if it's zero tt(d_capacity) should of
-course not be used to destroy that number of objects. While this is probably
-of no concern for tt(IntArray) one could conceive of a class using, e.g., a
-tt(string **) data member and a naive destructor implementation like
+    Once a class becomes a emi(move-aware) class this awareness must extend to
+its destructor as well. With tt(Strings) this is not an issue as its
+destructor only executes  tt(delete[] d_string), but it becomes an issue in
+classes using, e.g., pointers to pointer data members. Their destructors
+must visit each of the array's pointers to delete the objects pointed to by
+the array's elements. Assuming that tt(Strings d_string) data member was
+defined as tt(string **d_string) the implementation of tt(String)'s move
+constructor may remain as-is, but the destructor must now inspect tt(d_string)
+to prevent the destruction loop from executing when it is zero:
         verb(
-    for (string **iter = d_data + d_capacity; iter-- != d_data; )
-        delete *iter;
-    delete d_data;
-        )
-    In this case, following the move constructor's action, the for-statement
-is of course invalid and the implementation could be changed into:
-        verb(
-    if (d_data == 0)
-        return;
-    // copy the implementation given above to here
-        )
-
-To ensure the use of the move constructor functions returning temporaries
-should not return objects by value but objects by rvalue reference. The
-function tt(loadArray) used earlier should therefore have the following
-signature:
-        verb(
-    IntArray &&loadIntArray(std::istream &in);
-        )
-
-Rvalue references are often used in combination with temporary values. The
-move constructor, however, will never be used when the source (rvalue) object
-is a defined (named) object. In the occasional situation where using an object
-as rvalue reference is considered appropriate the standard library function
-ti(std::move) (expecting as its argument a named object and returning the
-object as an rvalue reference, defined, e.g., in the tt(utility)
-    hi(#include <utility>) header file) should be used. E.g.,
-        verb(
-    Object &&mover(Object tmp)
+    Strings::~Strings()
     {
-        // code to, e.g., manipulate tmp
-
-        return std::move(tmp);  // can't directly return tmp
-    }                           // as it's a named object
-        )
-    The tt(std::move) function performs no magic. Here is its implementation,
-using functionality offered by tt(type_traits) (cf. section ref(TRAITSCPPX)):
-        verb(
-    template <class T>
-    typename std::remove_reference<T>::type &&move(T &&a)
-    {
-        return a;
+        if (d_string == 0)
+            return;
+        for (string **end = d_string + d_size; end-- != d_string; )
+            delete *end;
+        delete[] d_string;
     }
         )
-    The tt(std::move) function should be used when implementing the move
-constructor to move the information in base classes or composed objects to
-their new destination object. E.g. (only showing the move
-constructor/operator=):
+
+    In addition to the move constructor other members defining tt(Class const
+&) parameters may also be overloaded with members expecting tt(Class &&)
+parameters. Here too the compiler will select these latter overloads if an
+anonymous temporary argument is provided. Let's consider the implications for
+a minute using the next example, assuming tt(Class) offers a move constructor
+and a copy constructor:
         verb(
-    class Derived: public Base
+    Class factory();
+
+    void fun(Class const &other);   // a
+    void fun(Class &&tmp);          // b
+
+    vold callee(Class &&tmp);
     {
-        std::string d_name;
+        Class object(factory());    // 1
+        Class object2(object);      // 2
+        fun(object);                // 3
+        fun(factory());             // 4
+        fun(tmp);                   // 5
+    }
 
-        public:
-            Derived(Derived&& tmp)    // move constructor
-            :
-                Base(std::move(tmp)),
-                d_name(std::move(tmp.d_name))
-            {}
-
-            Derived &operator=(Derived &&tmp);
-    };
+    int main()
+    {
+        callee(factory());
+    }
         )
-    The implementation of the em(move operator=) is left as an exercise to
-the reader.
+    itemization(
+    it() At 1 the move constructor is called. Object is initialized by an
+anonymous temporary tt(Class) object;
+    it() At 2 the copy constructor is called. The constructor's argument is an
+existing local object;
+    it() At 3 function a is called: tt(fun)'s argument is an existing local
+object; 
+    it() At 4 function b is called: tt(fun)'s argument is an anonymous
+temporary object;
+    it() At 5 function a is called. At first sight this might be surprising,
+but tt(fun)'s argument is not an em(anonymous) temporary object but a
+em(named) temporary object. Overloads expecting rvalue references are em(only)
+selected when passed em(anonymous) temporary objects.
+    )
+    Realizing that tt(fun(tmp)) might be called twice the compiler's choice is
+understandable. If tt(tmp)'s data would have been grabbed at the first call,
+the second call would receive tt(tmp) without any data. But at the last call
+we might know that  tt(tmp) is never used again and so we might like to ensure
+that tt(fun(Class &&)) is called. This can be realized by the following cast:
+        verb(
+    fun(reinterpret_cast<Class &&>(tmp)); // last call!
+        )
+    More often, though the shorthand hi(move) tt(fun(std::move(tmp))) is used,
+already performing the required cast for us.
 
-    Classes not using composition, inheritance or pointer members pointing to
-memory owned by its objects do not benefit from defining move members.
-Their trivial copy constructors and overloaded assignment operators can be
-used instead.
+    It is pointless to provide a function with an rvalue reference return
+type. The compiler decides whether or not to use an overloaded member
+expecting an rvalue reference on the basis of the provided argument: if it is
+an anonymous temporary it will call the overloaded member defining the rvalue
+refeerence parameter. 
+
+    Classes not using pointer members pointing to memory controlled by its
+objects (and not having base classes doing so, see chapter ref(INHERITANCE))
+do not benefit from overloaded members expecting rvalue references.
+
+    The compiler, when selecting a function to call applies a fairly simple
+algorithm, and also considers copy elision. This is covered shortly (section
+ref(RVO)).

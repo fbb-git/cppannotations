@@ -1,3 +1,30 @@
+COMMENT( MOVE CONSTRUCTOR AND DERIVED CLASSES
+
+    The tt(std::move) function should be used when implementing the move
+constructor to move the information in base classes or composed objects to
+their new destination object. E.g. (only showing the move
+constructor/operator=):
+        verb(
+    class Derived: public Base
+    {
+        std::string d_name;
+
+        public:
+            Derived(Derived&& tmp)    // move constructor
+            :
+                Base(std::move(tmp)),
+                d_name(std::move(tmp.d_name))
+            {}
+
+            Derived &operator=(Derived &&tmp);
+    };
+        )
+    The implementation of the em(move operator=) is left as an exercise to
+the reader.
+
+END)
+
+
 As mentioned earlier, a derived class inherits the functionality from its
 i(base class). In this section we shall describe the effects
     i(inheritance) has on the constructor of a derived class.
