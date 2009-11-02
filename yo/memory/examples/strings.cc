@@ -8,6 +8,7 @@ class Strings
     size_t d_capacity;
     
     public:
+        Strings(Strings &&tmp);
         ~Strings();
         void reserve(size_t request);
         void append(std::string const &next);
