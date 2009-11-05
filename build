@@ -14,6 +14,7 @@ string
 #include "icmake/programs"
 #include "icmake/man"
 #include "icmake/docs"
+#include "icmake/pre"
 #include "icmake/install"
 #include "icmake/svnclean"
 
@@ -33,12 +34,16 @@ void main(int argc, list argv, list envp)
 
     if (option == "programs")
     {
-        programs();
+        programs(0);
+        programs(1);
         exit(0);
     }
 
     if (option == "svnclean")
         svnclean();
+
+    if (option == "pre")
+        pre();
 
     if (option == "docs")
         docs();
@@ -55,7 +60,7 @@ void main(int argc, list argv, list envp)
     if (option == "cinstall")
         install(1, element(2, argv));
 
-    printf("Usage: build what\n"
+    printf("Usage: build what [x]\n"
         "Where `what' is one of:\n"
         "   clean           - clean up remnants of previous compilations\n"
         "   cinstall <base> - to install the C++ Annotations in the "
@@ -68,9 +73,12 @@ void main(int argc, list argv, list envp)
         "                     defined in the INSTALL.im file, optionally\n"
         "                     below <base>\n"
         "   man             - build the manual page (requires Yodl)\n"
+        "   pre             - prepare files for independent `docs' call\n"
         "   programs        - build support programs\n"
         "   svnclean        - clean remnants of locally run ./bin/ scripts\n"
         "\n"
     );
     exit(1);
 }
+
+
