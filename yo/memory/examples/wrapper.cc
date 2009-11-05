@@ -4,7 +4,7 @@
     class StringStore   // partially implemented
     {
         public:
-            ~StringStore(); 
+            ~StringStore();
     };
 
     inline StringStore::~StringStore()
@@ -44,4 +44,3 @@
     destructor called
     destructor called
     */
-

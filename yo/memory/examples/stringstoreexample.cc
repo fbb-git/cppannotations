@@ -1,6 +1,6 @@
     #include "stringstore.h"
     #include <iostream>
-    
+
     using namespace std;;
 
     void display(StringStore const &store)
@@ -25,5 +25,3 @@
         sp = new (buffer) StringStore(argv, argc);
         sp->~StringStore();
     }
-
-        

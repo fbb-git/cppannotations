@@ -6,7 +6,7 @@ class Strings
     char *d_memory;
     size_t d_size;
     size_t d_capacity;
-    
+
     public:
         Strings(Strings &&tmp);
         ~Strings();
@@ -20,10 +20,10 @@ class Strings
 //RESERVE
 void Strings::reserve()
 {
-    char *newMemory = 
+    char *newMemory =
         static_cast<char *>(memcpy(
-                                operator new(d_capacity), 
-                                d_memory, 
+                                operator new(d_capacity),
+                                d_memory,
                                 d_size * sizeof(std::string)
                             ));
 
@@ -49,7 +49,7 @@ Strings::~Strings()
     using std::string;
 
 //DESTROY
-    for 
+    for
     (
         string *sp = reinterpret_cast<string *>(d_memory) + d_size;
             sp-- != reinterpret_cast<string *>(d_memory);
@@ -59,6 +59,3 @@ Strings::~Strings()
     delete d_memory;
 //=
 }
-
-    
-
