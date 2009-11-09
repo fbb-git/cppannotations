@@ -1,32 +1,26 @@
-In bf(C++) em(exceptions) are the best alternative to
-    hi(setjmp(): alternative to) tt(setjmp()) and
-    hi(longjmp(): alternative to) tt(longjmp()). In this section an example
-using exceptions is presented. Again, the program is derived from the basic
-program, given in section ref(BASICEXCEPTION):
+Exceptions are bf(C++)'s answer to the problems caused by tt(setjmp) and
+tt(longjmp). Here is an example using exceptions. The program is once again
+derived from the basic program of section ref(BASICEXCEPTION):
         verbinclude(exceptions/examples/exception.cc)
-    In this program an emi(exception) is thrown, where a tt(longjmp()) was
-used in the program in section ref(EXCEPTIONJMP). The comparable construct for
-the tt(setjmp()) call in that program is represented here by the ti(try) and
-ti(catch) blocks. The tt(try) block surrounds statements (including function
-calls) in which exceptions are thrown, the tt(catch) block may contain
-statements to be executed just after throwing an exception.
+    tt(Inner::fun) now throws an tt(int) exception where a tt(longjmp) was
+previously used. Since tt(in.fun) is called by tt(out.fun), the exception is
+generated within the tt(try) block surrounding the tt(out.fun) call. As an
+tt(int) value was thrown this value will reappear in 
+the tt(catch) clause beyond the tt(try) block.
 
-    So, comparably to the example given in section ref(EXCEPTIONJMP), the
-function tt(Inner::fun()) terminates, albeit with an exception rather than by
-a call to tt(longjmp()). The exception is caught in tt(main()), and the
-program terminates. When the output from the current program is inspected, we
-notice that the destructor of the tt(Inner) object, created in
-tt(Outer::fun()) is now correctly called. Also notice that the execution of
-the function tt(Inner::fun()) really terminates at the tt(throw) statement:
-the insertion of the text into tt(cout), just beyond the tt(throw) statement,
-doesn't take place.
+    Now tt(Inner::fun) terminates by throwing an exception instead of calling
+tt(longjmp). The exception is caught in tt(main), and the program
+terminates. Now we see that tt(inner)'s destructor is properly called.  It is
+interesting to note that tt(Inner::fun)'s execution really terminates at the
+tt(throw) statement: The tt(cout) statement, placed just beyond the tt(throw)
+statement, isn't executed.
 
-    Hopefully this has raised your appetite for exceptions, since it was shown
-that:
+    What did this example teach us?
     itemization(
-    it() Exceptions provide a means to break out of the normal flow control
-without having to use a cascade of tt(return)-statements, and without the need
-to terminate the program.
-    it() Exceptions do not disrupt the activation of destructors, and are
-therefore strongly preferred over the use of ti(setjmp()) and ti(longjmp()).
+    it() Exceptions provide a means to break a function's (and program's)
+normal flow without having to use a cascade of tt(return)-statements, and
+without the need to terminate the program using blunt tools like bi(exit)(3).
+    it() Exceptions do not disrupt the proper activation of destructors. Since
+tt(setjmp) and tt(longjmp) em(do) distrupt the proper activation of
+destructors their use is strongly deprecated in bf(C++).
     )
