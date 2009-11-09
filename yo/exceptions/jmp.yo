@@ -1,32 +1,32 @@
-In order to use ti(setjmp()) and ti(longjmp()) the basic program from section
-ref(BASICEXCEPTION) is slightly modified to contain a variable
-    tt(jmp_buf jmpBuf). The function tt(Inner::fun()) now calls tt(longjmp),
-simulating a i(disastrous event), to be handled at the end of the function
-tt(main()). In tt(main()) we see the standard code defining the target
-location of the long jump using the function tt(setjmp()). A zero return
-value indicates the initialization of the tt(jmp_buf) variable, upon which the
-tt(Outer::fun()) function is called. This situation represents the `normal
-flow'.
+The basic program from the previous section is slightly modified to contain a
+variable 
+ hi(jmp_buf) tt(jmp_buf jmpBuf) used by ti(setjmp) and ti(longjmp). 
 
-To complete the simulation, the return value of the program is zero em(only) if
-the program is able to return from the function tt(Outer::fun())
-normally. However, as we know, this won't happen: tt(Inner::fun()) calls
-tt(longjmp()), returning to the tt(setjmp()) function, which (at this time)
-will em(not) return a zero return value. Hence, after calling tt(Inner::fun())
-from tt(Outer::fun()) the program proceeds beyond the tt(if)-statement in the
-tt(main()) function, and the program terminates with the return value 1.  Now
-try to follow these steps by studying the following program source, modified
-after the basic program given in section ref(BASICEXCEPTION):
+    The function tt(Inner::fun) calls tt(longjmp), simulating a disastrous
+event, to be handled near tt(main)'s end. In tt(main) a target location for
+the long jump is defined through the function tt(setjmp). tt(Setjmp)'s zero
+return indicates the initialization of the tt(jmp_buf) variable, in which case
+tt(Outer::fun) is called. This situation represents the `normal flow'.
+
+The program's return value is em(only) zero if tt(Outer::fun) terminates
+normally. The program, however, is designed in such a way that this won't
+happen: tt(Inner::fun) calls tt(longjmp). As a result the execution flow
+returns to the tt(setjmp) function. Now it will em(not) return a zero return
+value. Consequently, after calling tt(Inner::fun) from tt(Outer::fun)
+tt(main)'s tt(if)-statement is entered and the program terminates with return
+value 1.  Try to follow these steps when studying the following program
+source, which is a direct modification of the basic program given in section
+ref(BASICEXCEPTION):
         verbinclude(exceptions/examples/jmp.cc)
-    The output produced by this program clearly shows that the destructor
-of the class tt(Inner) is not executed. This is a direct result of the
-non-local characteristic of the call to tt(longjmp()): processing proceeds
-immediately from the tt(longjmp()) call in the member function
-tt(Inner::fun()) to the function tt(setjmp()) in tt(main()). There, its return
-value is zero, so the program terminates with return value 1. What is
-important here is that the call to the destructor tt(Inner::~Inner()), waiting
-to be executed at the end of tt(Outer::fun()), is never reached.
+    This program's output clearly shows that tt(inner)'s destructor is not
+called. This is a direct consequence of the non-local jump performed by
+tt(longjmp). Processing proceeds immediately from the tt(longjmp) call inside
+tt(Inner::fun) to tt(setjmp) in tt(main). There, its return value is unequal
+zero, and the program terminates with return value 1. Because of the non-local
+jump tt(Inner::~Inner) is never executed: upon return to tt(main)'s tt(setjmp)
+the existing stack is simply broken down disregarding any destructors waiting
+to be called.
 
-As this example shows that the destructors of objects can easily be skipped
-when hi(longjmp(): avoid) tt(longjmp()) and hi(setjmp(): avoid) tt(setjmp())
-are used, these function should be em(avoided) completely in bf(C++) programs.
+This example illustrates that the destructors of objects can easily be skipped
+when tt(longjmp) and tt(setjmp) are used and bf(C++) programs should therefore
+avoid those functions like the plague.
