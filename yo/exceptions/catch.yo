@@ -61,55 +61,43 @@ tt(int)-catchers. Here is a little example illustrating that the order of the
 catchers is not important for types not having any hierarchal relationship to
 each other (i.e., tt(int) is not derived from tt(double); tt(string) is not
 derived from ASCII-Z):
-COMMENT(>>>>>>>>>>>>> NEXT <<<<<<<<<<<<<)
         verbinclude(exceptions/examples/catchers.cc)
-    As an alternative to constructing different types of exception handlers
-for different types of exceptions, a specific class can be designed whose
-objects contain information about the exception. Such an approach was
-mentioned earlier, in section ref(EMPTYTHROW). Using this approach, there's
-only one handler required, since we em(know) we won't throw other types of
-exceptions:
+    Rather than defining specific exception handlers a specific class can be
+designed whose objects contain information about the exception. Such an
+approach was mentioned earlier, in section ref(EMPTYTHROW). Using this
+approach, there's only one handler required, since we em(know) we don't throw
+other types of exceptions:
         verb(
     try
     {
         // code throws only Exception pointers
     }
-    catch (Exception *e)
+    catch (Exception &ex)
     {
-        e->process();
-        delete e;
+        ex.handle();
     }
         )
-    The tt(delete e) statement in the above code  indicates
-that the tt(Exception) object was created dynamically.
 
 When the code of an exception handler has been processed, execution continues
-beyond the last exception handler directly following that tt(try)-block
-(assuming the handler doesn't itself use flow control statements (like
-tt(return) or tt(throw)) to break the default flow of execution). From this,
-we distinguish the following hi(exception: cases) cases:
+beyond the last exception handler directly following the matching
+tt(try)-block (assuming the handler doesn't itself use flow control statements
+(like tt(return) or tt(throw)) to break the default flow of execution). From
+this, we distinguish the following hi(exception: cases) cases:
     itemization(
     it() If em(no) exception was thrown within the tt(try)-block no exception
-handler is activated, and the execution continues from the last statement in
+handler is activated, and execution continues from the last statement in
 the tt(try)-block to the first statement beyond the last tt(catch)-block.
     it() If an exception em(was) thrown within the tt(try)-block but neither
 the current level nor an other level contains an appropriate exception
-handler, the program's i(default exception handler) is called, usually
+handler, the program's default exception handler is called,
 aborting the program.
     it() If an exception was thrown from the tt(try)-block and an appropriate
 exception handler is available, then the code of that exception handler is
-executed. Following the execution of the code of the exception handler, the
-execution of the program continues at the first statement beyond the last
-tt(catch)-block.
+executed. Following that, the program's execution continues at the first
+statement beyond the last tt(catch)-block.
     )
-    All statements in a tt(try) block appearing below an executed
-tt(throw)-statement will be hi(try block: ignoring statements)
-ignored. However, destructors hi(try block: destructors in) of objects defined
-locally in the tt(try)-block em(are) called, and they are called before any
-exception handler's code is executed.
+    All statements in a tt(try) block following an executed
+tt(throw)-statement are ignored. However, objects that were successfully
+constructed within the tt(try) block before executing the tt(throw) statement
+em(are) called before any exception handler's code is executed.
 
-The actual hi(exception: construction of) computation or construction of an
-exception may be implemented using various degrees of sophistication. For
-example, it's possible to use the operator tt(new); to use static member
-functions of a class; to return a pointer to an object; or to use objects of
-classes derived from a class, possibly involving polymorphism.

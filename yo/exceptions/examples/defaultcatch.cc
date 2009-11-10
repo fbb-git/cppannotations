@@ -9,10 +9,6 @@
             {
                 throw 12.25;    // no specific handler for doubles
             }
-            catch (char const *message)
-            {
-                cout << "Inner level: caught char const *\n";
-            }
             catch (int value)
             {
                 cout << "Inner level: caught int\n";
@@ -25,11 +21,11 @@
         }
         catch(double d)
         {
-            cout << "Outer level still knows the double: " << d << endl;
+            cout << "Outer level may use the thrown double: " << d << '\n';
         }
     }
     /*
         Generated output:
     Inner level: generic handling of exceptions
-    Outer level still knows the double: 12.25
+    Outer level may use the thrown the double: 12.25
     */
