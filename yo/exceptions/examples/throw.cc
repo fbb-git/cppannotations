@@ -1,3 +1,4 @@
+//PROG
     #include <iostream>
     #include <string>
     using namespace std;
@@ -11,7 +12,7 @@
             :
                 d_name(name)
             {
-                cout << "Object constructor of " << d_name << "\n";
+                cout << "Constructor of " << d_name << "\n";
             }
             Object(Object const &other)
             :
@@ -21,13 +22,12 @@
             }
             ~Object()
             {
-                cout << "Object destructor of " << d_name << "\n";
+                cout << "Destructor of " << d_name << "\n";
             }
             void fun()
             {
                 Object toThrow("'local object'");
-
-                cout << "Object fun() of " << d_name << "\n";
+                cout << "Calling fun of " << d_name << "\n";
                 throw toThrow;
             }
             void hello()
@@ -39,7 +39,6 @@
     int main()
     {
         Object out("'main object'");
-
         try
         {
             out.fun();
@@ -50,17 +49,18 @@
             o.hello();
         }
     }
+//=
     /*
         Generated output:
-Object constructor of 'main object'
-Object constructor of 'local object'
-Object fun() of 'main object'
+Constructor of 'main object'
+Constructor of 'local object'
+Calling fun of 'main object'
 Copy constructor for 'local object' (copy)
-Object destructor of 'local object'
+Destructor of 'local object'
 Copy constructor for 'local object' (copy) (copy)
 Caught exception
 Hello by 'local object' (copy) (copy)
-Object destructor of 'local object' (copy) (copy)
-Object destructor of 'local object' (copy)
-Object destructor of 'main object'
+Destructor of 'local object' (copy) (copy)
+Destructor of 'local object' (copy)
+Destructor of 'main object'
     */

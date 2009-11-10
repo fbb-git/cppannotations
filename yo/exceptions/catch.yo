@@ -1,55 +1,67 @@
-The ti(catch) block contains code that is executed when an exception is
-thrown. Since em(expressions) are thrown, the tt(catch)-block must know what
-kind of exceptions it should be able to handle. Therefore, the keyword
-tt(catch) is followed by a parameter list consisting of but one parameter,
-which is the type of the exception handled by the tt(catch)
-block.  So, an exception handler for tt(char const *) exceptions will have the
-following form:
+A ti(catch) clause consists of the keyword tt(catch) followed by a parameter
+list defining one parameter specifying type and (parameter) name of the
+exception the tt(catch) handler will catch. This name may then be used as a
+variable in the compound statement following the tt(catch) clause.
+Example:
         verb(
-    catch (char const *message)
+    catch (string &message)
     {
         // code to handle the message
     }
         )
-    Earlier (section ref(THROW)) we've seen that such a message doesn't have
-to be thrown as a static string. It's also possible for a function to return a
-string, which is then thrown as an exception. If such a function
-creates the string that is thrown as an exception em(dynamically), the
-exception handler will normally have to delete the allocated memory to prevent
-a i(memory leak).
+    Primitive types and objects may be thrown as exceptions. It's a
+bad idea to throw a pointer or reference to a local object, but a pointer to a
+em(dynamically) allocated object may be thrown as the exception handler will
+be able to delete the allocated memory thus preventing a i(memory
+leak). Throwing such a pointer is still dangerous as the exception handler
+will not be able to distinguish dynamically allocated memory and
+non-dynamically allocated memory, as illustrated by the next example:
+        verb(
+    try
+    {
+        int x;
+        int *xp = &x;
 
-Close attention should be paid to the nature of the parameter of the
-exception handler, to make sure that
-    hi(exception: dynamically generated)
-dynamically generated exceptions are deleted once the handler has processed
-them. Of course, when an exception is passed on to an outer level
-exception handler, the received exception should em(not) be deleted by the
-inner level handler.
+        if (condition1)
+            throw &xp;
 
-Different kinds of exceptions may be thrown: tt(char *)s, tt(int)s, pointers
-or references to objects, etc.: all these different types may be used in
-throwing and catching exceptions. So, various types of exceptions may come out
-of a tt(try)-block. In order to i(catch all expressions) that may emerge from
-a tt(try)-block, multiple exception handlers (i.e., tt(catch)-blocks) may
-follow the tt(try)-block.
+        xp = new int(0);
+        if (condition2)
+            throw xp;
+    }
+    catch (int *ptr)
+    {
+        // delete ptr or not?
+    }
+        )
+    Close attention should be paid to the nature of the parameter of the
+exception handler, to make sure that when pointers to dynamically allocated
+memory are thrown the memory is returned  once the handler has processed
+the pointer. In general pointers should not be thrown as exceptions. If
+dynamically allocated memory must be passed to a exception handler then the
+pointer should be wrapped in a smart pointer, like tt(unique_ptr) or
+tt(shared_ptr) (cf. sections ref(UNIQUEPTR) and ref(SHAREDPTR)).
 
-To some extent the em(order) hi(exception handler: order) of the exception
-handlers is important. When an exception is thrown, the first exception
-handler matching the type of the thrown exception is used and remaining
-exception handlers are ignored. So only one exception handler following a
-tt(try)-block will be executed. Normally this is no problem: the thrown
-exception is of a certain type, and the correspondingly typed catch-handler
-will catch it. For example, if exception handlers are defined for
-tt(char *)s and ti(void *)s then ASCII-Z strings will be caught by the latter
-handler. Note that a tt(char *) can also be considered a  tt(void *), but even
-so, an ASCII-Z string will be handled by a tt(char *) handler, and not by a
-tt(void *) handler. This is true in general: handlers should be designed very
-type specific to catch the correspondingly typed exception. For example,
-tt(int)-exceptions are not caught by tt(double)-catchers, tt(char)-exceptions
-are not caught by tt(int)-catchers. Here is a little example illustrating that
-the order of the catchers is not important for types not having any
-hierarchal relation to each other (i.e., tt(int) is not derived from
-tt(double); tt(string) is not derived from ASCII-Z):
+    Multiple tt(catch) handlers may follow a tt(try) block, each handler
+defining its own exception type.  The em(order) hi(exception handler: order)
+of the exception handlers is important. When an exception is thrown, the first
+exception handler matching the type of the thrown exception is used and
+remaining exception handlers are ignored. Eventually at most one exception
+handler following a tt(try)-block will be used. Normally this is of no
+concern as each exception has its own unique type. 
+
+    Example: if exception handlers are defined for tt(char *)s and ti(void *)s
+then ASCII-Z strings will be caught by the former handler. Note that a tt(char
+*) can also be considered a tt(void *), but the exception type matching
+procedure is smart enough to use the tt(char *) handler with the thrown
+ASCII-Z string. Handlers should be designed very type specific to catch the
+correspondingly typed exception. For example, tt(int)-exceptions are not
+caught by tt(double)-catchers, tt(char)-exceptions are not caught by
+tt(int)-catchers. Here is a little example illustrating that the order of the
+catchers is not important for types not having any hierarchal relationship to
+each other (i.e., tt(int) is not derived from tt(double); tt(string) is not
+derived from ASCII-Z):
+COMMENT(>>>>>>>>>>>>> NEXT <<<<<<<<<<<<<)
         verbinclude(exceptions/examples/catchers.cc)
     As an alternative to constructing different types of exception handlers
 for different types of exceptions, a specific class can be designed whose
