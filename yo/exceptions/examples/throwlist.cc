@@ -1,7 +1,7 @@
     #include <iostream>
     using namespace std;
 
-    void charPintThrower() throw(char const *, int);    // declarations
+    void charPintThrower() throw(char const *, int);
 
     class Thrower
     {
@@ -9,7 +9,7 @@
             void intThrower(int) const throw(int);
     };
 
-    void Thrower::intThrower(int x) const throw(int)    // definitions
+    void Thrower::intThrower(int x) const throw(int)
     {
         if (x)
             throw x;
@@ -47,7 +47,7 @@
         }
         try
         {
-            cerr << "Up to the run-time error\n";
+            cerr << "Generating a run-time error\n";
             runTimeError();
         }
         catch(...)

@@ -1,73 +1,79 @@
-Functions defined elsewhere may be linked to code using these
+Functions defined elsewhere may be linked to code that uses these
 functions. Such functions are normally declared in header files, either as
-i(stand alone functions) or as i(member functions) of a class.
+stand alone functions or as class member functions.
 
-These external functions may of course throw exceptions. Declarations of
-such functions may contain a emi(function throw list) or
-    emi(exception specification list), in which the types of the exceptions
-that can be thrown by the function are specified. For example, a function that
-could throw `tt(char *)' and `tt(int)' exceptions can be declared as
+Those functions may of course throw exceptions. Declarations of such functions
+may contain a hi(throw list) emi(function throw list) or
+    emi(exception specification list) specifying the types of the exceptions
+that can be thrown by the function. For example, a function that may throw
+`tt(char *)' and `tt(int)' exceptions can be declared as
         verb(
     void exceptionThrower() throw(char *, int);
         )
-    If specified, a function throw list appears immediately beyond the
-function header (and also beyond a possible tt(const) specifier), and,
-noting that throw lists may be empty, it has the following generic form:
-        ti(throw([type1 [, type2, type3, ...]]))
+    A function throw list immediately follows the function header (and it also
+follows a possible tt(const) specifier).  Throw lists may be empty. It has the
+following general form:
+        verb(
+    throw([type1 [, type2, type3, ...]])
+        )
 
-    If a function em(doesn't) throw exceptions an i(empty function throw list)
-may be used. E.g.,
+    If a function is guaranteed not to throw exceptions an 
+ i(empty function throw list) may be used. E.g.,
         verb(
     void noExceptions() throw ();
         )
     In all cases, the function header used in the function definition must
-exactly match the function header that is used in the declaration, e.g.,
-including a possible empty function throw list.
+exactly match the function header used in the declaration, including a
+possibly empty function throw list.
 
-    A function for which a function throw list is specified may not throw
-other types of exceptions. A emi(run-time error) occurs if it tries to throw
-other types of exceptions than those mentioned in the function throw list.
-
-    For example, consider the declarations and definitions in the following
-program:
+    A function for which a function throw list is specified may only throw
+exceptions of the types mentioned in its throw list. A emi(run-time error)
+occurs if it does.  other types of exceptions than those mentioned in the
+function throw list. Example: the function tt(charPintThrower) shown below
+clearly throws a tt(char const *) exception. Since tt(intThrower) may
+throw an tt(int) exception, the function throw list of tt(charPintThrower)
+must em(also) contain tt(int).
         verbinclude(exceptions/examples/throwlist.cc)
-    In the function tt(charPintThrower()) the tt(throw) statement clearly
-throws a tt(char const *). However, since tt(intThrower()) may throw an
-tt(int) exception, the function throw list of tt(charPintThrower()) must
-em(also) contain tt(int).
 
-If the function throw list is not used, the function may either throw
-exceptions (of any kind) or not throw exceptions at all. Without a function
-throw list the responsibility of providing the correct handlers is in the
-hands of the program's designer.
+    A function without a throw list may throw any kind of exception.  Without
+a function throw list the program's designer is responsible for providing the
+correct handlers.
 
-Declaring exception throwers is for various reason a questionable
+For various reason declaring exception throwers is a questionable
 activity. Declaring exception throwers does not mean that the compiler will
 check whether an improper exception is thrown. Rather, the function will be
 surrounded by additional code in which the actual exception that is thrown is
-processed. So, instead of compile time checks one gets run-time overhead as
-well as extra code added to the function's code. The prototypical
-implementation of a function having an exception throw list (e.g., tt(throw
-(int))) is:
+processed. Instead of compile time checks one gets run-time overhead,
+resulting in additional code (and execution time) thay is added to the
+function's code. One could write, e.g.,
         verb(
-    function fun() throw (int)
-    try                         // this code resulting from throw(int)
+    void fun() throw (int)
     {
-        // code of this function, throwing all kinds of exceptions
+        // code of this function, throwing exceptions
     }
-    catch (int)                 // remaining code resulting from throw(int)
+        )
+    but the function would be compiled to something like the following (cf.
+section ref(FUNTRY) for the use of tt(try) immediately following the
+function's header and section ref(STDEXC) for a description of
+ ti(bad_exception)):
+        verb(
+    void fun()  
+    try         // this code resulting from throw(int)
+    {
+                // the function's code, throwing all kinds of exceptions
+    }
+    catch (int) // remaining code resulting from throw(int)
     {
         throw;  // rethrow the exception, so it can be caught by the
                 // `intended' handler
     }
-    catch (...) // catch all other exceptions
+    catch (...) // catch any other exception
     {
         throw bad_exception;
     }
         )
-    (see section ref(STDEXC) for a description of ti(bad_exception)). The
-run-time overhead is caused by doubling the number of thrown and caught
+    Run-time overhead is caused by doubling the number of thrown and caught
 exceptions. Without a throw list a thrown tt(int) is simply caught by its
 intended handler; with a throw list the tt(int) is em(first) caught by the
-`safeguarding' handler added to the function. Inside that handler it is now
-em(rethrown) to be caught only thereafter by the intended handler.
+`safeguarding' handler added to the function. In there it is em(rethrown) to
+be caught by its intended handler next.

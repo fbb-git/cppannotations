@@ -1,18 +1,16 @@
     #include <iostream>
+    #include <climits>
     using namespace::std;
 
     int main()
     {
-        cin.exceptions(ios::failbit);
-
+        cin.exceptions(ios::failbit);   // throw exception on fail
         while (true)
         {
             try
             {
                 cout << "enter a number: ";
-
                 int value;
-
                 cin >> value;
                 cout << "you entered " << value << endl;
             }
@@ -20,8 +18,7 @@
             {
                 cout << problem.what() << endl;
                 cin.clear();
-                string s;
-                getline(cin, s);
+                cin.ignore(INT_MAX, '\n');  // ignore the faulty line
             }
         }
     }
