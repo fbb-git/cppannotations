@@ -1,0 +1,24 @@
+The emi(strong guarantee) dicates that an object's state should not change in
+the face of exceptions. This is realized by performing all operations that
+might throw on a separate copy of the data. If all this succeeds then the
+current object and its (now successfully modified) copy are swapped. An
+example of this approach can be observed in the canonical overloaded
+assignment operator:
+        verb(
+    Class &operator=(Class const &other)
+    {
+        Class tmp(other);
+        swap(other);
+        return *this;
+    }
+        )
+    The copy construction might throw an exception, but this keeps the current
+object's state intact. If the copy construction succeeds tt(swap) swaps the
+current object's contents with tt(tmp)'s contents and returns a reference to
+the current object. For this to succeed it must be guaranteed that tt(swap)
+won't throw an exception. Returning a reference (or a value of a primitive
+data type) is also guaranteed not to throw exceptions. The canonical form of
+the overloaded assignment operator therefore meets the requirements of the
+strong guarantee.
+
+

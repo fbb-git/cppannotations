@@ -54,7 +54,7 @@ at that many situations?
 
 Exceptions may be generated in a great many situations, but serious 
 problems will be prevented when we're able to provide at least one of the
-following exception guarantees:
+following i(exception guarantees):
     itemization(
     it() The em(basic guarantee): no resources are leaked. In practice this
 means: all allocated memory is properly returned when exceptions are thrown.
@@ -65,38 +65,3 @@ assignment operator provides this guarantee)
 proven that no exception will be thrown from it.
     )
 
-    The basic guarantee dicates that functions that fail to complete their
-work properly must return all allocated resources, usually memory, before
-returning. Since practically all functions and operators may throw exceptions
-and since a function may repeatedly allocate resources a try block
-is used to catch all exceptions that might be thrown. The catch handler may
-then return all allocated resources and retrow the exception. If all's well 
-        verb(
-    void allocator(/* parameters, if any */)
-    {
-        
-        X *xp = 0;      // non-throwing preamble
-        Y *yp = 0;
-        Z *zp = 0;
-
-        try             // this part might throw
-        {
-            xp = allocateX(/* arguments */);
-            yp = allocateY(/* arguments */);
-            zp = allocateZ(/* arguments */);
-
-            thisMightThrowToo();
-        }
-        catch(...)
-        {
-            delete zp;
-            delete yp;
-            delete xp;
-            throw;
-        }
-        
-        xDest = xp;     // non-throwing postamble
-        yDest = yp;
-        zDest = zp;
-    }
-        )
