@@ -1,20 +1,21 @@
     #include "intarray.ih"
 
-    IntArray::IntArray(unsigned size)
+    IntArray::IntArray(size_t size)
     :
         d_size(size)
     {
         if (d_size < 1)
-        {
-            cerr << "IntArray: size of array must be >= 1\n";
-            exit(1);
-        }
+            throw string("IntArray: size of array must be >= 1");
+
         d_data = new int[d_size];
     }
 
     IntArray::IntArray(IntArray const &other)
+    :
+        d_size(other.d_size);
+        d_data(new int[d_size]);
     {
-        copy(other);
+        memcpy(d_data, other.d_data, d_size * sizeof(int));
     }
 
     IntArray::~IntArray()
@@ -24,43 +25,35 @@
 
     IntArray const &IntArray::operator=(IntArray const &other)
     {
-        if (this != &other)
-        {
-            delete[] d_data;
-            copy(other);
-        }
+        IntArray tmp(other);
+        swap(other);
         return *this;
     }
 
-    void IntArray::copy(IntArray const &other)
-    {
-        d_size = other.d_size;
-        d_data = new int[d_size];
-        memcpy(d_data, other.d_data, d_size * sizeof(int));
-    }
-
-    int &IntArray::operatorIndex(unsigned index) const
+    int &IntArray::operatorIndex(size_t index) const
     {
         boundary(index);
         return d_data[index];
     }
 
-    int &IntArray::operator[](unsigned index)
+    int &IntArray::operator[](size_t index)
     {
         return operatorIndex(index);
     }
 
-    int const &IntArray::operator[](unsigned index) const
+    int const &IntArray::operator[](size_t index) const
     {
         return operatorIndex(index);
     }
 
-    void IntArray::boundary(unsigned index) const
+    void IntArray::boundary(size_t index) const
     {
-        if (index >= d_size)
-        {
-            cerr << "IntArray: boundary overflow, index = " <<
-                    index << ", should range from 0 to " << d_size - 1 << endl;
-            exit(1);
-        }
+        if (index < d_size)
+            return;
+        ostringstream out;
+        out  << "IntArray: boundary overflow, index = " <<
+                index << ", should be < " << d_size << '\n';
+        throw out.str();
     }
+
+
