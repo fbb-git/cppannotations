@@ -28,11 +28,21 @@ ostream) hi(operator<<(): and manipulators) has an overloaded oplshift()
 accepting a i(pointer to a function) expecting an tt(ostream &) and returning
 an tt(ostream &). Its definition is:
         verb(
-    ostream& operator<<(ostream & (*func)(ostream &str))
+    ostream& operator<<(ostream ostream &(*func)(ostream &str))
     {
         return (*func)(*this);
     }
         )
+        In addition to the above overloaded oplshift() another one is defined
+        verb(
+    ostream &operator<<(ios_base &(*func)(ios_base &base))
+    {
+        (*func)(*this);
+        return *this;
+    }
+        )
+    This latter function is used when inserting, e.g., tt(hex) or
+tt(internal).
 
     The above procedure does not work for i(manipulators requiring arguments):
 it is of course possible to overload oplshift() to accept an

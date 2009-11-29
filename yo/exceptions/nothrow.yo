@@ -1,0 +1,43 @@
+Exception safety can only be realized if some functions and operations are
+guaranteed em(not) to throw exceptions. This is called the 
+ emi(nothrow guarantee). An example of a function that must offer the nothrow
+guarantee is the tt(swap) function. Consider once again the canonical
+overloaded assignment operator:
+        verb(
+    Class &operator=(Class const &other)
+    {
+        Class tmp(other);
+        swap(other);
+        return *this;
+    }
+        )
+    If tt(swap) would be allowed to throw exceptions then it would 
+most likely leave the current object in a partially swapped state. As a result
+the current object's state would most likely have been changed. As tt(tmp)
+will have been destroyed by the time a catch handler receives the thrown
+exception it will be very difficult (as in: impossible) to retrieve the
+object's original state. Losing the strong guarantee as a consequence.
+
+    The ti(swap) function must therefore offer the nothrow guarantee. It must
+have been designed as if using the following prototype (don't do this: see
+also section ref(THROWLIST)):
+        verb(
+    void Class::swap(Class &other) throw();
+        )
+
+    Likewise, tt(operator delete) and tt(operator delete[]) offer the nothrow
+guarantee, and according to the bf(C++) standard destructors may themselves
+not throw exceptions (if they do their behavior is formally undefined, see
+also section ref(CONSEXCEPTIONS) below).
+
+    Since the bf(C) programming language does not define the exception concept
+functions from the standard bf(C) library offer the nothrow guarantee 
+by implication. This allowed us to define the generic tt(swap) function in
+section ref(CopyDestroy) using bf(memcpy)(3). 
+
+    Operations on primitive types offer the nothrow guarantee. Pointers may be
+reassigned, references may be returned etc. etc. without having to worry about
+exceptions that might be thrown.
+
+
+    

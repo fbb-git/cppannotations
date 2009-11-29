@@ -21,4 +21,114 @@ data type) is also guaranteed not to throw exceptions. The canonical form of
 the overloaded assignment operator therefore meets the requirements of the
 strong guarantee.
 
+Some hi(rule of thumb) rules of thumb were formulated that relate to the
+strong guarantee
+ (cf. i(Sutter, H.), emi(Exceptional C++), Addison-Wesley, 2000). E.g.,
+    itemization(
+    it() All the code that might throw an exception affecting the current
+state of an object should perform its tasks separately from the data
+controlled by the object. Once this code has performed its tasks without
+throwing an exception replace the object's data by the new data.
+    it() Member functions modifying their object's data should not return
+original (contained) objects by value.
+    )
+
+    The canonical assignment operator is a good example of the first rule of
+thumb. Another example is found in classes storing objects. Consider a class
+tt(PersonDb) storing multiple tt(Person) objects. Such a class might offer a
+member tt(void add(Person const &next)). A plain implementation of this
+function (merely intended to show the application of the first rule of thumb,
+but otherwise completely disregarding efficiency considerations) might be:
+        verb(
+    void PersonDb::newAppend(Person const &next)
+    {
+        Person *tmp = 0;
+        try
+        {
+            tmp = new Person[d_size + 1];
+            for (size_t idx = 0; idx < d_size; ++idx)
+                tmp[idx] = d_data[idx];
+            tmp[d_size] = next;
+        }
+        catch (...)
+        {
+            delete[] tmp;
+            throw;
+        }
+        return tmp;
+    }
+
+    void PersonDb::add(Person const &next)
+    {
+        Person *tmp = newAppend(next);
+        delete[] d_data;
+        d_data = tmp;
+        ++d_size;
+    }
+        )
+    The (private) tt(newAppend) member's task is to create a copy of the
+currently allocated tt(Person) objects, including the data of the next
+tt(Person) object. Its tt(catch) handler catches any exception that might be
+thrown during the allocation or copy process and will return all memory
+allocated so far, rethrowing the exception. The function is 
+ emi(exception neutral) as it propagates all its exceptions to its caller. The
+function also doesn't modify the tt(PersonDb) object's data, so it meets the
+strong exception guarantee. Returning from tt(newAppend) tt(addPerson) may now
+modify its data. Its existing data are returned and its tt(d_data) pointer is
+made to point to the newly created array of tt(Person) objects. Finally its
+tt(d_size) is incremented. As these three steps don't throw exceptions tt(add)
+too meets the strong guarantee.
+
+    The second rule of thumb (member functions modifying their object's data
+should not return original (contained) objects by value) may be illustrated
+using a member tt(PersonDb::erase(size_t idx)). Here is an implementation 
+attempting to return the original tt(d_data[idx]) object:
+        verb(
+    Person PersonData::erase(size_t idx)
+    {
+        if (idx >= d_size)
+            throw string("Array bounds exceeded");
+        Person ret(d_data[idx]);
+        Person *tmp = copyAllBut(idx);
+        delete[] d_data;
+        d_data = tmp;
+        --d_size;
+        return ret;
+    }
+        )
+    Although copy elision will usually prevent the copy constructor from being
+used when returning tt(ret), this is not guaranteed to happen and a copy
+constructor em(may) throw an exception. If that happens the function has
+irrevocably mutated the tt(PersonDb)'s data, thus losing the strong guarantee.
+
+    Rather than returning tt(d_data[idx]) by value it might be assigned to an
+external tt(Person) object befor mutating tt(PersonDb)'s data:
+        verb(
+    void PersonData::erase(Person *dest, size_t idx)
+    {
+        if (idx >= d_size)
+            throw string("Array bounds exceeded");
+        *dest = d_data[idx];
+        Person *tmp = copyAllBut(idx);
+        delete[] d_data;
+        d_data = tmp;
+        --d_size;
+    }
+        )
+    This modification works, but changes the original assignment of creating a
+member returning the original object. However, both functions suffer from a
+task overload as they modify tt(PersonDb)'s data and also return an original
+object. In situations like these the em(one-function-one-responsibility)
+i(rule of thumb) should be kept in mind: a function should have a single, well
+defined responsibility. 
+
+The preferred approach therefore is to retrieve tt(PersonDb)'s objects using a
+member like tt(Person const &at(size_t idx) const) and to erase an object
+using a separate member like tt(void PersonData::erase(size_t idx)).
+
+
+
+
+
+
 
