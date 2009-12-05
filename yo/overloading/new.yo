@@ -79,138 +79,143 @@ catch (...)
 END COMMENT)
 
 
-When ti(operator new) is overloaded, it must have a ti(void *) return type,
-and at least an argument of type ti(size_t). The tt(size_t) type is defined in
-the header file hi(#include <cstddef>) tt(cstddef), which must therefore be
-included when the operator ti(new) is overloaded.
+When ti(operator new)hi(new) is overloaded, it must define a ti(void *) return
+type, and its first parameter must be of type ti(size_t). The default
+tt(operator new) defines only one parameter, but overloaded versions may
+define multiple parameters the first of not explicitly specified but is
+deducted from the size of the object of the class for which tt(operator new)
+is overloaded. In this section overloading tt(operator new) is discussed.
+Overloading ti(new[]) is discussed in section ref(NEWDELETEARRAY).
 
-It is also possible to define multiple versions of the tt(operator new), as
-long as each version has its own unique set of arguments. The global tt(new)
-operator can still be used, through the ti(::)-operator. If a class tt(X)
-overloads the operator tt(new), then the system-provided operator tt(new) is
-activated by
-                        centt(X *x = ::new X();)
-    Overloading ti(new[]) is discussed in section ref(NEWDELETEARRAY).
-The following example shows an overloaded version of tt(operator new):
+It is possible to define multiple versions of the tt(operator new), as long as
+each version defines its own unique set of arguments. When overloaded
+tt(operator new) members must dynamically allocate memory they can do so using
+the global tt(operator new) using the scope resolution operator tt(::). In the
+next example the overloaded tt(operator new) of the class tt(String) will
+initialize the substrate of dynamically allocated tt(String) objects to
+0-bytes:
         verb(
     #include <cstddef>
+    #include <iosfwd>
 
-    void *X::operator new(size_t sizeofX)
+    class String
     {
-        void *p = new char[sizeofX];
+        std::string *d_data;
 
-        return memset(p, 0, sizeof(X));
-    }
-        )
-    Now, let's see what happens when tt(operator new) is overloaded for the
-tt(class X). Assume that class is defined as
-    follows+footnote(For the sake of simplicity we have violated the principle
-of i(encapsulation) here. The principle of encapsulation, however, is
-immaterial to the discussion of the workings of the operator tt(new).):
-        verb(
-    class X
-    {
         public:
-            void *operator new(size_t sizeofX);
-
-            int d_x;
-            int d_y;
+            void *operator new(size_t size)
+            {
+                return memset(::operator new(size), 0, size);
+            }
+            bool empty() const
+            {
+                return d_data == 0;
+            }
     };
         )
-    Now, consider the following program fragment:
+    The above tt(operator new) is used in the following program, illustrating
+that even though tt(String)'s default constructor does nothing the object's
+data are initialized to zeroes:
         verb(
-    #include "x.h"  // class X interface
+    #include "string.h"  
     #include <iostream>
     using namespace std;
 
     int main()
     {
-        X *x = new X();
+        String *sp = new String;
 
-        cout << x->d_x << ", " << x->d_y << endl;
+        cout << boolalpha << sp->empty() << '\n';   // shows: true
     }
         )
-This small program produces the following output:
-        centt(0, 0)
-    At the call of tt(new X()), our little program performed the following
-actions:
+    At tt(new String) the following took place:
     itemization(
-    it() First, tt(operator new) was called, which allocated and initialized
-        a block of memory, the size of an tt(X) object.
+    it() First, tt(String::operator new) was called, allocating and
+initializing a block of memory, the size of a tt(String) object.
     it() Next, a pointer to this block of memory was passed to the
-        (default) tt(X()) constructor. Since no constructor was defined,
+        (default) tt(String) constructor. Since no constructor was defined,
         the constructor itself didn't do anything at all.
     )
-    Due to the initialization of the block of memory by tt(operator new)
-the allocated tt(X) object was already initialized to zeros when the
-constructor was called.
+    As tt(String::operator new) initialized the allocated memory to zero bytes
+the allocated tt(String) object's tt(d_data) member had already been
+initialized to a 0-pointer by the time it started to exist.
 
-    Non-static member functions are passed a (hidden) pointer to the object on
-which they should operate. This i(hidden pointer) becomes the ti(this) pointer
-in i(non-static member functions). This procedure is also followed for
-constructors.  In the next pieces of pseudo bf(C++) code, the pointer is made
-visible. In the first part an tt(X) object tt(x) is defined directly, in the
-second part of the example the (overloaded) tt(operator new) is used:
+    All member functions (including constructors and destructors) we've
+encountered so far define a (hidden) pointer to the object on which they
+should operate. This hidden pointer becomes the function's ti(this) pointer.
+
+In the next example of em(pseudo) bf(C++) em(code), the pointer is explicitly
+shown to illustrate what's happening when tt(operator new) is used. In the
+first part an tt(String) object tt(str) is defined directly, in the second
+part of the example the (overloaded) tt(operator new) is used:
         verb(
-    X::X(&x);                       // x's address is passed to the
-                                    // constructor
-    void *ptr = X::operator new();  // new allocates the memory
+    String::String(String *const this);     // real prototype of the default
+                                            // constructor 
 
-    X::X(ptr);                      // next the constructor operates on the
-                                    // memory returned by 'operator new'
+    String *sp = new String;                // This statement is implemented
+                                            // as follows:
+
+        String *sp = reinterpret_cast<String *>(            // allocation
+                        String::operator new(sizeof(String))
+                     );
+        String::String(sp);                                 // initialization
         )
-    Notice that in the pseudo tt(C++) fragment the member functions were
-treated as static member function of the class tt(X). Actually, tt(operator
-new) em(is) a i(static member function) of its class: it cannot reach data
-members of its object, since it's normally the task of the tt(operator new)
-to create room for that object. It can do that by allocating enough
-memory, and by initializing the area as required. Next, the memory is passed
-(as the tt(this) pointer) to the constructor for further processing. The
-fact that an overloaded operator tt(new) is actually a static function, not
-requiring an object of its class, can be illustrated in the following (frowned
-upon in normal situations!) program fragment, which can be compiled without
-problems (assume tt(class X) has been defined and is available as before):
-        verb(
-    int main()
-    {
-        X x;
+    In the above fragment the member functions were treated as 
+ an em(object-less) member function of the class tt(String). Such members are
+called em(static member functions) that are covered in chapter
+ref(StaticDataFun). Actually, tt(operator new) em(is) such a static member
+function. Since it has no tt(this) pointer it cannot reach data members of the
+object for which it is expected to make memory available. It can only allocate
+and initialize the allocated memory, but cannot reach the object's data
+members by name as there is as yet no data object layout defined.
 
-        X::operator new(sizeof x);
+    Following the allocation, the memory is passed (as the tt(this) pointer)
+to the constructor for further processing. 
+
+    tt(Operator new) can have multiple parameters. The first parameter is
+initialized as an implicit argument and is always a tt(size_t)
+parameter. Additional overloaded operators may defined additional
+parameters. An interesting additional tt(operator new) is the 
+    hi(new: placement)emi(placement new) operator. With the placement new
+operator a block of memory has already been set aside and one of the class's
+constructors will be used to initialize that memory. Overloading placement new
+requires an tt(operator new) having two parameters: tt(size_t) and tt(char *),
+pointing to the memory that was already available. The tt(size_t)
+parameter is implicitly initialized, but the remaining parameters must
+explicitly be initialized using arguments to tt(operator new). Hence we reach
+the familiar syntactical form of the placement new operator in use:
+        verb(
+    char buffer[sizeof(String)];        // predefined memory
+    String *sp = new(buffer) String;    // placement new call
+        )
+    The declaration of the placement new operator in our class tt(String)
+looks like this:
+        verb(
+    void *operator new(size_t size, char *memory);
+        )
+    It could be implemented like this (also initializing the tt(String)'s
+memory to 0-bytes):
+        verb(
+    void *String::operator new(size_t size, char *memory)
+    {
+        return memset(memory, 0, size);
     }
         )
-The call to tt(X::operator new()) returns a tt(void *) to an initialized block
-of memory, the size of an tt(X) object.
-
-    The tt(operator new) can have multiple parameters. The first parameter is
-initialized by an i(implicit argument) and is always the ti(size_t) parameter,
-other parameters are initialized by i(explicit arguments) that are specified
-when tt(operator new) is used. For example:
+    Any other overloaded version of tt(operator new) could also be
+defined. Here is an example showing the use and definition of an overloaded
+tt(operator new) storing the object's address immediately in an existing array
+of pointers to tt(String) objects (assuming the array is large enough):
         verb(
-    class X
+        // use:
+    String *next(String **pointers, size_t *idx)
     {
-        public:
-            void *operator new(size_t p1, size_t p2);
-            void *operator new(size_t p1, char const *fmt, ...);
-    };
-
-    int main()
+        return new(pointers, (*idx)++) String;
+    }
+    
+        // implementation:
+    void *String::operator new(size_t size, char **pointers, size_t idx)
     {
-        X
-            *p1 = new(12) X(),
-            *p2 = new("%d %d", 12, 13) X(),
-            *p3 = new("%d", 12) X();
+        return pointers[idx] = ::operator new(size);
     }
         )
-    The pointer tt(p1) is a pointer to an tt(X) object for which the memory
-has been allocated by the call to the first overloaded tt(operator new),
-followed by the call of the constructor tt(X()) for that block of memory.  The
-pointer tt(p2) is a pointer to an tt(X) object for which the memory has been
-allocated by the call to the second overloaded tt(operator new), followed
-again by a call of the constructor tt(X()) for its block of memory.  Notice
-that pointer tt(p3) also uses the second overloaded tt(operator new()), as
-that i(overloaded operator) accepts a i(variable number of arguments), the
-first of which is a tt(char const *).
 
-    Finally note that no explicit argument is passed for tt(new)'s first
-parameter, as this argument is implicitly provided by the type specification
-that's required for operator tt(new).

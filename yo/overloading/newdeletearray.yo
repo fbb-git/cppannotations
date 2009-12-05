@@ -1,35 +1,33 @@
 In sections ref(NEWARRAY), ref(DELETEARRAY) and ref(DELETEPTRS)
-    ti(operator new[]) and ti(operator delete[]) were introduced.  Like
-ti(operator new) and ti(operator delete) the
-operators tt(new[]) and tt(delete[]) may be overloaded.  Because it is
-possible to overload tt(new[]) and tt(delete[]) as well as tt(operator new)
-and tt(operator delete), one should be careful in selecting the appropriate
-set of operators. The following i(rule of thumb) should be followed:
+    tt(operator new[]) and tt(operator delete[]) were introduced.  Like
+tt(operator new) and tt(operator delete) the
+operators tt(new[]) and tt(delete[]) may be overloaded.  
+
+    As it is possible to overload tt(new[]) and tt(delete[]) as well as
+tt(operator new) and tt(operator delete), one should be careful in selecting
+the appropriate set of operators. The following i(rule of thumb) should always
+be applied:
     quote(If tt(new) is used to i(allocate memory), tt(delete) should be used
         to i(deallocate memory). If tt(new[]) is used to allocate memory,
         tt(delete[]) should be used to deallocate memory.)
 
-    The i(default) way these operators act is as follows:
+    By default these operators act as follows:
     itemization(
     itt(operator new) is used to allocate a single object or
-        i(primitive value). With an object, the object's i(constructor) is
-called. itt(operator delete) is used to return the memory allocated by
-tt(operator new). Again, with an object, the i(destructor) of its class is
-called. itt(operator new[]) is used to allocate a series of primitive values
-or objects. Note that if a series of objects is allocated, the class's
-    i(default constructor) is called to initialize each individual
-object. itt(operator delete[]) is used to delete the memory previously
-allocated by tt(new[]). em(If) objects were previously allocated, then the
-destructor will be called for each individual object. However, if
-    emi(pointers to objects) were allocated, em(no destructor is called), as a
-pointer is considered a primitive type, and certainly not an object.
+        primitive value. With an object, the object's constructor is
+called. 
+    itt(operator delete) is used to return the memory allocated by tt(operator
+new). Again, with class-type objects, the class's destructor is
+called. 
+    itt(operator new[]) is used to allocate a series of primitive values or
+objects. If a series of objects is allocated, the class's default constructor
+is called to initialize each object individually. 
+    itt(operator delete[]) is used to delete the memory previously allocated
+by tt(new[]). em(If) objects were previously allocated, then the destructor
+will be called for each individual object. Be careful, though, when poiners to
+objects were allocated. If
+ emi(pointers to objects) were allocated the destructors of the objects to
+which the allocated pointers point won't automatically be called. A pointer is
+a primitive type and so no further action is taken when it is returned to the
+common pool.
     )
-    Operators tt(new[]) and tt(delete[]) may only be overloaded in
-classes. Consequently, when allocating primitive types or
-pointers to objects only the default line of action is followed: when arrays
-of pointers to objects are deleted, a i(memory leak) occurs unless the objects
-to which the pointers point were deleted earlier.
-
-    In this section the mere syntax for overloading operators
-tt(new[]) and tt(delete[]) is presented. It is left as an
-    i(exercise) to the reader to make good use of these overloaded operators.

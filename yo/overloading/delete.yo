@@ -1,36 +1,44 @@
-The ti(delete) operator may be overloaded too. The ti(operator delete) must
-have a ti(void *) argument, and an optional second argument of type ti(size_t),
-which is the size in bytes of objects of the class for which the tt(operator
-delete) is overloaded. The return type of the overloaded tt(operator delete) is
-tt(void).
+The ti(delete) operator may also be overloaded. In fact it's good practice to
+overload ti(operator delete) whenever tt(operator new) is also overloaded.
 
-Therefore, in a class the operator tt(delete) may be overloaded using the
-following prototype:
-        centt(void operator delete(void *);)
-    or
-        centt(void operator delete(void *, size_t);)
-    Overloading tt(delete[]) is discussed in section ref(NEWDELETEARRAY).
+tt(Operator delete) must define a ti(void *) parameter.  A second overloaded
+version defining a second parameter of type tt(size_t) is related to
+overloading tt(operator new[]) and is discussed in section
+ref(NEWDELETEARRAY).
 
-    The `home-made' tt(operator delete) is called after executing the
-i(destructor) of the associated class. So, the statement
-        centt(delete ptr;)
-    with tt(ptr) being a pointer to an object of the class tt(X) for which the
-operator tt(delete) was overloaded, boils down to the following statements:
+Overloaded tt(operator delete) members return tt(void).
+
+    The `home-made' tt(operator delete) is called when deleting a dynamically
+allocated object after executing the destructor of the associated
+class. So, the statement
         verb(
-    X::~X(ptr);     // call the destructor function itself
+    delete ptr;
+        )
+    with tt(ptr) being a pointer to an object of the class tt(String) for
+which the operator tt(delete) was overloaded, is a shorthand for the following
+statememnts:
+        verb(
+    ptr->~String(); // call the class's destructor
 
                     // and do things with the memory pointed to by ptr
-    X::operator delete(ptr, sizeof(*ptr));
+    String::operator delete(ptr);
         )
     The overloaded tt(operator delete) may do whatever it wants to do with the
-memory pointed to by tt(ptr). It could, e.g., simply delete it. If that
-would be the preferred thing to do, then the
-    hi(default operator delete) default tt(delete) operator
-can be activated using the ti(::) i(scope resolution operator). For example:
+memory pointed to by tt(ptr). It could, e.g., simply delete it. If that would
+be the preferred thing to do, then the default 
+tt(delete) operator can be called using the ti(::) 
+ i(scope resolution operator). For example:
         verb(
-    void X::operator delete(void *ptr)
+    void String::operator delete(void *ptr)
     {
-        // any operation considered necessary, then:
+        // any operation considered necessary, then, maybe:
         ::delete ptr;
     }
         )
+    To declare the above overloaded tt(operator delete) simply add the
+following line to the class's interface:
+        verb(
+    void operator delete(void *ptr);
+        )
+    Like tt(operator new operator delete) is a static member function
+(see also chapter ref(StaticDataFun)).
