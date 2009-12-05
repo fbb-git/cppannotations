@@ -1,15 +1,13 @@
-    In various classes overloading binary operators (like ti(operator+())) can
+    In various classes overloading binary operators (like ti(operator+)) can
 be a very natural extension of the class's functionality. For example, the
-tt(std::string) class has various overloaded forms of tt(operator+()) as have
-most em(abstract containers), covered in chapter ref(CONTAINERS).
+tt(std::string) class has various overloaded forms of tt(operator+).
 
     Most binary operators come in two flavors: the plain binary operator (like
 the tt(+) operator) and the arithmetic assignment variant (like the tt(+=)
 operator). Whereas the plain binary operators return const expression values,
 the arithmetic assignment operators return a (non-const) reference to the
-object to which the operator was applied. For example, with
-tt(std::string) objects the following code (annotated below the example)
-may be used:
+object to which the operator was applied. For example, with tt(std::string)
+objects the following code (annotations below the example) may be used:
         verbinclude(overloading/examples/binarystring.cc)
     itemization(
     it() at tt(// 1) the contents of tt(s3) is added to tt(s2). Next, tt(s2)
@@ -30,16 +28,17 @@ and right hand operands.
         eit() The string returned by the second tt(+) operator represents the
 value of the expression.
         )
-    it() statement tt(// 5) should not compile (although it does compile with
-the ti(Gnu) compiler version 3.1.1). It should not compile, as the tt(+)
+    it() statement tt(// 5) is interesting in that it should not compile but
+does compile with the ti(Gnu) compiler. It should not compile, as the tt(+)
 operator should return a tt(const) string, thereby preventing its modification
-by the subsequent tt(+=) operator. Below we will consequently follow this line
-of reasoning, and will ensure that overloaded binary operators will always
-return tt(const) values.
+by the subsequent tt(+=) operator (compare this situation with tt(int) values:
+tt((3 + intVar) += 4) won't compile. Clearly, tt(std::string) does em(not) do
+`as the ints do'). However, in the Annotations we will consequently let binary
+arithmetic operators return tt(const) values.
     )
 
-    Now consider the following code, in which a class tt(Binary) supports
-an overloaded tt(operator+()):
+    Consider the following code, in which a class tt(Binary) supports
+an overloaded tt(operator+):
         verbinclude(overloading/examples/binary1.cc)
     Compilation of this little program fails for statement tt(// 2), with the
 compiler reporting an error like:
@@ -49,51 +48,47 @@ compiler reporting an error like:
     Why is statement tt(// 1) compiled correctly whereas statement tt(// 2)
 won't compile?
 
-    In order to understand this, the notion of a emi(promotion) is
-introduced. As we have seen in section ref(EXPLICIT), constructors requiring
-a single argument may be implicitly activated when an object is apparently
-initialized by an argument of a corresponding type. We've encountered this
-repeatedly with tt(std::string) objects, when an tt(ASCII-Z) string was used
-to initialize a tt(std::string) object.
+    In order to understand this remember em(promotions). As we have seen in
+section ref(EXPLICIT), constructors expecting a single argument may be
+implicitly activated when an argument of an appropriate type is
+provided. We've encountered this repeatedly with tt(std::string) objects,
+where an tt(ASCII-Z) string may be used to initialize a tt(std::string)
+object.
 
-    In situations where a member function expects a tt(const &) to an object
-of its own class (like the tt(Binary const &) that was specified in the
-declaration of the tt(Binary::operator+()) member mentioned above), the type
-of the actually used argument may also be any type that can be used as an
-argument for a single-argument constructor of that class. This implicit call
-of a constructor to obtain an object of the proper type is called a
-em(promotion).
+    Analogously, in statement tt(// 1), the tt(+) operator is called for the
+tt(b2) object. This operator expects another tt(Binary) object as its right
+hand operand. However, an tt(int) is provided. As a constructor
+tt(Binary(int)) exists, the tt(int) value is first promoted to a tt(Binary)
+object. Next, this tt(Binary) object is passed as argument to the
+tt(operator+) member.
 
-    So, in statement tt(// 1), the tt(+) operator is called for the tt(b2)
-object. This operator expects another tt(Binary) object as its right hand
-operand. However, an tt(int) is provided. As a constructor tt(Binary(int))
-exists, the tt(int) value is first promoted to a tt(Binary) object. Next, this
-tt(Binary) object is passed as argument to the tt(operator+()) member.
-
-    Note that no promotions are possibly in statement tt(// 2): here the tt(+)
-operator is applied to an tt(int) typed value, which has no concept of a
-`constructor', `member function' or `promotion'.
+    In statement tt(// 2) no promotions are available: here the tt(+) operator
+is applied to an lvalue that is an tt(int). An tt(int) is a primitive type and
+primitive types have no concept of `constructors', `member functions' or
+`promotions'.
 
     How, then, are promotions of left-hand operands implemented in statements
 like tt("prefix " + s3)? Since promotions are applied to function arguments,
 we must make sure that both operands of binary operators are arguments. This
-means that binary operators are declared as emi(classless functions), also
-called emi(free functions). However, they conceptually belong to the class for
-which they implement the binary operator, and so they should be declared in
-the class's header file. We will cover their implementations shortly, but here
-is our first revision of the declaration of the class tt(Binary), declaring an
-overloaded tt(+) operator as a free function:
+means that plain binary arithmetic operators should be declared as
+ hi(operator: free)hi(function: free)em(free operators), also called em(free
+functions). Functions like the plain binary arithmetic operators conceptually
+belong to the class for which they implement the binary operator. Consequently
+they should be declared em(within) the class's header file. We will cover their
+implementations shortly, but here is our first revision of the declaration of
+the class tt(Binary), declaring an overloaded tt(+) operator as a free
+function:
         verbinclude(overloading/examples/binary1.h)
 
     By defining binary operators as free functions, the following promotions
 are possible:
     itemization(
     it() If the left-hand operand is of the intended class type, the right
-hand argument will be promoted whenever possible
+hand argument will be promoted whenever possible;
     it() If the right-hand operand is of the intended class type, the left
-hand argument will be promoted whenever possible
+hand argument will be promoted whenever possible;
     it() No promotions occur when none of the operands are of the intended
-class type
+class type;
     it() An ambiguity occurs when promotions to different classes are possible
 for the two operands. For example:
         verbinclude(overloading/examples/binaryambigu.cc)
@@ -113,29 +108,40 @@ the object might be modified in the same statement. E.g.,
 tt(Binary), showing both the declaration of the plain binary operator and the
 corresponding arithmetic assignment operator:
         verbinclude(overloading/examples/binary2.h)
+    If a class benefits from being i(move-aware) then for each tt(const)
+reference parameter an overloaded function expecting a tt(const) rvalue
+reference may be considered. With the class tt(Binary) and its tt(operator+)
+this would boild down to the following overloaded tt(operator+) functions:
+        verb(
+    Binary const operator+(Binary const &&ltmp, Binary const &rhs);
+    Binary const operator+(Binary const &lhs,   Binary const &&rtmp);
+    Binary const operator+(Binary const &&ltmp, Binary const &rtmp);
+        )
 
-    Finally, having available the arithmetic assignment operator, the
-implementation of the plain binary operator turns out to be extremely
-simple. It contains of a single return statement, in which an anonymous object
-is constructed to which the arithmetic assignment operator is applied. This
-anonymous object is then returned by the plain binary operator as its
-tt(const) return value. Since its implementation consists of merely one
-statement it is usually provided in-line, adding to its efficiency:
+    When implementing the arithmetic assignment operator the strong guarantee
+should again be kept in mind. Use a temporary object and swap if the
+arithmetic operation might throw. Example:
+        verb(
+    Binary &operator+=(Binary const &other)
+    {
+        Binary tmp(*this);
+        tmp.add(other);     // this may throw
+        swap(tmp);
+        return *this;
+    }
+        )
+    Here, too, defining a tt(operator+=(Binary const &&tmp)) should be
+considered if tt(Binary) shold be a move-aware class.
+
+    Having available the arithmetic assignment operator, implementating
+the plain binary operator is easy. The tt(lhs) argument is
+copied into a tt(Binary tmp) to which the tt(rhs) operand is added. Then
+tt(tmp) is returned. The copy construction and two statements may be
+contracted into one single return statement, but then compilers usually aren't
+able to apply copy elision resulting in two copy constructions. Usually 
+copy elision is performed when the steps are taken separately:
         verbinclude(overloading/examples/binary3.h)
-    One might wonder where the temporary value is located. Most compilers
-apply in these cases a procedure called `emi(return value optimization)': the
-anonymous object is created at the location where the eventual returned object
-will be stored. So, rather than first creating a separate temporary object,
-and then copying this object later on to the return value, it initializes the
-return value using the tt(l_hand) argument, and then applies the tt(+=)
-operator to add the tt(r_hand) argument to it. Without return value
-optimization it would have to:
-    itemization(
-    it() create separate room to accomodate the return value
-    it() initialize a temporary object using tt(l_hand)
-    it() Add tt(r_hand) to it
-    it() Use the copy constructor to copy the temporary object to the return
-        value.
-    )
-    Return value optimization is not required, but optionally available to
-compilers. As it has no negative side effects, most compiler use it.
+
+    
+
+

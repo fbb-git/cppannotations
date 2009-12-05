@@ -8,7 +8,9 @@
             Binary &operator+=(Binary const &other);
     };
 
-    Binary const operator+(Binary const &l_hand, Binary const &r_hand)
+    Binary const operator+(Binary const &lhs, Binary const &rhs)
     {
-        return Binary(l_hand) += r_hand;
+        Binary tmp(lhs);
+        tmp += ths;
+        return tmp;
     }
