@@ -1,21 +1,20 @@
 Manipulators taking arguments are implemented as hi(macro) macros: they are
 handled by the i(preprocessor), and are not available beyond the preprocessing
 stage.  The problem appears to be that you can't call a function in an
-i(insertion sequence): in a sequence of oplshift() calls the compiler
-will first call the functions, and then use their return values in the
-insertion sequence. That will invalidate the ordering of the arguments passed
-to your lshift()-operators.
+insertion sequence: when using multiple oplshift() operators in one statement
+the compiler will call the functions, save their return values, and will then
+use their return values in the insertion sequence. That invalidates the
+ordering of the arguments passed to your lshift()-operators.
 
-So, one might consider constructing another overloaded oplshift()
-accepting the address of a function receiving not just the ti(ostream)
-reference, but a series of other arguments as well. The problem now is that it
-isn't clear how the function will receive its arguments: you can't just call
-it, since that produces the abovementioned problem, and you can't just pass
-its address in the insertion sequence, as you normally do with a
-manipulator.
+So, one might consider constructing another overloaded oplshift() accepting
+the address of a function receiving not just the ti(ostream) reference, but a
+series of other arguments as well. But this creaes the problem that it isn't
+clear how the function should receive its arguments: you can't just call it
+since that takes us back to the abovementioned problem.  Merely passing its
+address is fine, but then no arguments can't be passed to the function.
 
-However, there is a solution, based on the use of hi(anonymous object)
-anonymous objects:
+There exists a solution, based on the use of hi(anonymous object) anonymous
+objects:
     itemization(
     it() First, a class is constructed, e.g. tt(Align), whose
 i(constructor) expects multiple arguments. In our example representing,

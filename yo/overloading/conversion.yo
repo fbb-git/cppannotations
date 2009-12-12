@@ -123,8 +123,19 @@ keyword.
     it() In certain situations (e.g., when a tt(String) argument is passed to
 a function specifying an i(ellipsis) parameter) the compiler needs a hand to
 disambiguate our intentions. A tt(static_cast) will solve the problem.
+    it() With em(template functions) conversion operators may not work
+immediately as expected. For example, when defining a conversion operator
+tt(X::operator std::string const() const) then tt(cout << X()) won't
+compile. The reason for this is explained in section ref(SPECIALIZING), but a
+shortcut allowing the conversion operator to work is to define the following
+overloaded tt(operator<<) function:
+        verb(
+    std::ostream &operator<<(std::ostream &out, std::string const &str)
+    {
+        return out.write(str.data(), str.length());
+    }
+        )
     )
-
     Conversion operators are also used when objects of classes defining 
 conversion operators are inserted into streams. Realize that the right hand
 sides of insertion operators are function parameters that are initialized by
@@ -134,7 +145,7 @@ the operator's right hand side arguments. The rules are simple:
 insertion operator accepting an tt(X) object the insertion operator is used;
     it() Otherwise, if the type returned by the conversion operator is
 insertable then the conversion operator is used;
-    it() Otherwise, a compilation error results. Note that this occurs if the
+    it() Otherwise, a compilation error results. Note that this happens if the
 type returned by the conversion operator itself defines a conversion operator
 to a type that may be inserted into a stream.
     )
