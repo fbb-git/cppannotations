@@ -16,11 +16,11 @@ int main()
 
     cout << "Object contains " << object.size() << " elements, " <<
             "Argument contains " << argument.size() <<
-            " elements," << endl;
+            " elements,\n";
 
     while (object.size())
     {
-        cout << object.front() << endl;
+        cout << object.front() << '\n';
         object.pop_front();
     }
 }

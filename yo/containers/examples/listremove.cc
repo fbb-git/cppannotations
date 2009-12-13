@@ -16,7 +16,7 @@
 
         while (object.size())
         {
-            cout << object.front() << endl;
+            cout << object.front() << '\n';
             object.pop_front();
         }
     }

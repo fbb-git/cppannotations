@@ -13,7 +13,7 @@
         )
             cout << *from << " ";
 
-        cout << endl;
+        cout << '\n';
     }
 
     int main()

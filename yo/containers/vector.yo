@@ -1,9 +1,7 @@
 The ti(vector) class implements an i(expandable array).
-Before tt(vector) containers can be used the following preprocessor
-directive must have been specified: hi(#include <vector>)
-        verb(
-    #include <vector>
-        )
+To use the tt(vector) containers the tt(vector) header file must have been
+included.
+
     The following constructors, operators, and member functions are available:
     itemization(
     it() hi(vector constructors) Constructors:
@@ -18,15 +16,15 @@ container name. This is common practice with containers.
         it() A vector may be initialized to a certain number of elements.  One
 of the nicer characteristics of vectors (and other containers) is that it
 initializes hi(containers: initialization) its data elements to the data
-type's i(default value). The data type's emi(default constructor) is used for
+type's default value. The data type's em(default constructor) is used for
 this i(initialization). With non-class data types the value 0 is used.  So,
 for the tt(int) vector we know its initial values are zero. With the advent of
-the C++0x standard it has also become
+the C++0x standard (starting tt(g++) release 4.4) it has also become
 possible to use i(initializer lists). Some examples:
         verb(
     vector<string> object(5, string("Hello")); // initialize to 5 Hello's,
     vector<string> container(10);              // and to 10 empty strings
-    vector<string> names = {"george", "frank", "tony", "karel"};
+    vector<string> names = {"george", "frank", "tony", "karel"}; // g++ 4.4
         )
         it() A vector may be initialized using iterators. To
 initialize a vector with elements 5 until 10 (including the last one) of an
@@ -41,7 +39,7 @@ example of the use of emi(iterators), in which the i(range of values) that is
 used starts at the first value, and includes all elements up to but not
 including the element to which the second iterator refers. The standard
 notation for this is rangeti(begin, end).
-        it() A vector may be initialized using a i(copy constructor):
+        it() A vector may be initialized using a copy constructor:
         verb(
     extern vector<string> container;
     vector<string> object(container);
@@ -52,44 +50,45 @@ supports the i(index operator), which may be used to retrieve or reassign
 individual elements of the vector. Note that the elements which are indexed
 must exist. For example, having defined an empty vector a statement like
 tt(ivect[0] = 18) produces an error, as the vector is empty.  So, the vector
-is em(not) automatically hi(automatic expansion) expanded, and it em(does)
-respect its i(array bounds). In this case the vector should be resized first,
-or tt(ivect.push_back(18)) should be used (see below).
-    it() The tt(vector) class has the following hi(vector: member functions)
-member functions:
+is em(not) automatically 
+ hi(automatic expansion) expanded, and it em(does) respect its 
+ i(array bounds). In this case the vector should be resized first, or
+tt(ivect.push_back(18)) should be used (see below).
+    it() The tt(vector) class offers the following 
+ hi(vector: member functions) member functions:
         itemization(
-        itht(vector::back())(Type &vector::back()):
+        itht(back)(Type &back()):
             quote(this member returns a reference to the last element in the
 vector. It is the i(responsibility of the programmer) to use the member only
 if the vector is not empty.)
-        itht(vector::begin())(vector::iterator vector::begin()):
+        itht(begin)(vector::iterator begin()):
             quote(this member returns an i(iterator) pointing to the first
-element in the vector, returning tt(vector::end()) if the vector is empty.)
-        itht(vector::capacity())(size_t vector::capacity()):
+element in the vector, returning tt(end) if the vector is empty.)
+        itht(capacity)(size_t capacity()):
             quote(Number of elements for which memory has been
-allocated. It returns at least the value returned by tt(size()))
-        iti(vector::clear()):
+allocated. It returns at least the value returned by tt(size))
+        itht(clear)(void clear()):
             quote(this member erases all the vector's elements.)
-        itht(vector::empty())(bool vector::empty())
+        itht(empty)(bool empty())
             quote(this member returns tt(true) if the vector contains no
 elements.)
-        itht(vector::end())(vector::iterator vector::end()):
+        itht(end)(vector::iterator end()):
             quote(this member returns an iterator pointing beyond the last
 element in the vector.)
-        itht(vector::erase())(vector::iterator vector::erase()):
+        itht(erase)(vector::iterator erase()):
             quote(this member can be used to erase a specific range of
 elements in the vector:)
             itemization(
             itt(erase(pos)) erases the element pointed to by the iterator
-tt(pos). The value tt(++pos) is returned.
+tt(pos). The iterator tt(++pos) is returned.
             itt(erase(first, beyond)) erases elements indicated by the iterator
 range rangett(first, beyond), returning tt(beyond).
             )
-        itht(vector::front())(Type &vector::front()):
+        itht(front)(Type &front()):
             quote(this member returns a reference to the first element in the
 vector. It is the responsibility of the programmer to use the member only if
 the vector is not empty.)
-        itht(vector::insert())(... vector::insert()):
+        itht(insert)(... insert()):
             quote(elements may be inserted starting at a certain position. The
 return value depends on the version of tt(insert()) that is called:)
             itemization(
@@ -102,20 +101,20 @@ tt(pos), tt(pos) is returned.
             itt(void insert(pos, n, value)) inserts tt(n) elements having value
 tt(value) at position tt(pos).
             )
-        itht(vector::pop_back())(void vector::pop_back()):
+        itht(pop_back)(void pop_back()):
             quote(this member removes the last element from the vector. With
 an i(empty vector) nothing happens.)
-        itht(vector::push_back())(void vector::push_back(value)):
+        itht(push_back)(void push_back(value)):
             quote(this member adds tt(value) to the end of the vector.)
 
-        itht(vector::reserve())(void vector::reserve(size_t request)):
-            quote(if tt(request) is less than or equal to tt(capacity()), this
+        itht(reserve)(void reserve(size_t request)):
+            quote(if tt(request) is less than or equal to tt(capacity), this
 call has no effect. Otherwise, it is a request to allocate additional
-memory. If the call is successful, then tt(capacity()) returns a value of at
-least tt(request). Otherwise, tt(capacity()) is unchanged. In either case,
-tt(size())'s return value won't change, until a function like tt(resize()) is
+memory. If the call is successful, then tt(capacity) returns a value of at
+least tt(request). Otherwise, tt(capacity) is unchanged. In either case,
+tt(size)'s return value won't change, until a function like tt(resize) is
 called, actually changing the number of accessible elements.)
-        itht(vector::resize())(void vector::resize()):
+        itht(resize)(void resize()):
             quote(this member can be used to alter the number of elements that
 are currently stored in the vector:)
             itemization(
@@ -125,17 +124,17 @@ not provided, the additional elements are initialized to the i(default value)
 of the used data type, otherwise tt(value) is used to initialize extra
 elements.
             )
-        itht(vector::rbegin())(vector::reverse_iterator vector::rbegin()):
+        itht(rbegin)(vector::reverse_iterator rbegin()):
             quote(hi(reverse_iterator) this member returns an iterator
 pointing to the last element in the vector.)
-        itht(vector::rend())(vector::reverse_iterator vector::rend()):
+        itht(rend)(vector::reverse_iterator rend()):
             quote(this member returns an iterator pointing before the first
 element in the vector.)
-        itht(vector::size())(size_t vector::size())
+        itht(size)(size_t size())
             quote(this member returns the number of elements in the vector.)
-        itht(vector::swap())(void vector::swap())
+        itht(swap)(void swap())
             quote(this member can be used to swap two vectors using identical
-data types. E.g.,)
+data types. Example:)
         verb(
     #include <iostream>
     #include <vector>
@@ -147,7 +146,7 @@ data types. E.g.,)
         vector<int> v2(10);
 
         v1.swap(v2);
-        cout << v1.size() << " " << v2.size() << endl;
+        cout << v1.size() << " " << v2.size() << '\n';
     }
     /*
         Produced output:

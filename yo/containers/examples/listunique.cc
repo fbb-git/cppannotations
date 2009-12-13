@@ -14,7 +14,7 @@
         )
             cout << *from << " ";
 
-        cout << endl;
+        cout << '\n';
     }
 
 
@@ -36,15 +36,15 @@
                 / sizeof(string)
             );
 
-        cout << "Initially we have: " << endl;
+        cout << "Initially we have:\n";
         showlist(target);
 
         target.sort();
-        cout << "After sort() we have: " << endl;
+        cout << "After sort() we have:\n";
         showlist(target);
 
         target.unique();
-        cout << "After unique() we have: " << endl;
+        cout << "After unique() we have:\n";
         showlist(target);
     }
     /*
