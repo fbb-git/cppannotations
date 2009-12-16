@@ -1,41 +1,37 @@
-The ti(map) class offers a (sorted) i(associative array). Before tt(map)
-containers can be used, the following preprocessor directive must have been
-specified: hi(#include <map>)
-        verb(
-    #include <map>
-        )
+The ti(map) class offers a (sorted) i(associative array). Before using a
+tt(map) container the tt(map) header file must have been included.
+
     A tt(map) is filled with emi(key/value) pairs, which may be of any
-container-acceptable type. Since types are associated with both the key and
-the value, we must specify i(two types) in the i(angle bracket notation),
-comparable to the specification we've seen with the tt(pair) (section
-ref(PAIR)) container. The first type represents the type of the key, the
-second type represents the type of the value. For example, a tt(map) in which
-the key is a tt(string) and the value is a tt(double) can be defined as
-follows:
+container-accepted type. Since types are associated with both the key and the
+value, we must specify em(two types) in the angle bracket notation, comparable
+to the specification we've seen with the tt(pair) container (cf. section
+ref(PAIR)). The first type represents the key's type, the second type
+represents the value's type. For example, a tt(map) in which the key is a
+tt(string) and the value is a tt(double) can be defined as follows:
         verb(
     map<string, double> object;
         )
     The emi(key) is used to access its associated information. That
-information is called the emi(value). For example, a i(phone book) uses the
-i(names of people) as the key, and uses the telephone number and maybe other
-information (e.g., the zip-code, the address, the profession) as the
-value. Since a tt(map) sorts its keys, the tt(key)'s tt(operator<()) must be
+information is called the emi(value). For example, a phone book uses the
+names of people as the key, and uses the telephone number and maybe other
+information (e.g., the zip-code, the address, the profession) as 
+value. Since a tt(map) sorts its keys, the tt(key)'s ti(operator<) must be
 defined, and it must be sensible to use it. For example, it is generally a bad
 idea to use pointers for keys, as sorting pointers is something different than
-sorting the values these pointers point to.
+sorting the values pointed at by those pointers.
 
-    The two fundamental operations on maps are the i(storage) of em(Key/Value)
-combinations, and the i(retrieval) of values, given their keys. The index
+    The two fundamental operations on maps are the storage of em(Key/Value)
+combinations, and the retrieval of values, given their keys. The index
 operator using a key as the index, can be used for both. If the index
 operator is used as em(lvalue), insertion will be performed. If it is used as
 em(rvalue), the key's associated value is retrieved.  Each key can be stored
 only once in a tt(map). If the same key is entered again, the new value
 replaces the formerly stored value, which is lost.
 
-A specific key/value combination can be implicitly or explicitly inserted into
-a tt(map). If i(explicit insertion) is required, the key/value combination
+A specific key/value combination can implicitly or explicitly be inserted into
+a tt(map). If explicit insertion is required, the key/value combination
 must be constructed first. For this, every tt(map) defines a ti(value_type)
-which may be used to i(create values) that can be stored in the tt(map). For
+which may be used to create values that can be stored in the tt(map). For
 example, a value for a tt(map<string, int>) can be constructed as follows:
         verb(
     map<string, int>::value_type siValue("Hello", 1);
@@ -46,9 +42,9 @@ tt(value_type) objects are also often used. E.g.,
         verb(
     map<string, int>::value_type("Hello", 1);
         )
-    Instead of using the line tt(map<string, int>::value_type(...)) over
-and over again, a ti(typedef) is often used to i(reduce typing) and to improve
-i(legibility):
+    Instead of using the line tt(map<string, int>::value_type(...)) over and
+over again, a ti(typedef) is frequently used to reduce typing and to improve
+legibility:
         verb(
     typedef map<string, int>::value_type StringIntValue
         )
@@ -57,8 +53,8 @@ constructed using:
         verb(
     StringIntValue("Hello", 1);
         )
-    Finally, tt(pairs) may be used to represent key/value combinations used by
-maps:
+    Alternatively, tt(pairs) may be used to represent key/value combinations
+used by maps:
         verb(
     pair<string, int>("Hello", 1);
         )
@@ -76,27 +72,27 @@ for the tt(map) container:
         )
     Note that the values stored in maps may be containers themselves. For
 example, the following defines a tt(map) in which the value is a tt(pair): a
-container hi(nested containers) hi(containers: nested) nested in another
-container:
+container 
+ hi(nested container) hi(container: nested) nested under another container:
         verb(
     map<string, pair<string, string>> object;
         )
-    Note the two consecutive closing angle brackets. Before the advent of the
-i(C++0x) standard consecutive closing brackets in container type
-specifications (and generally: in the context of template type specifications)
-would result in a compilation error, as the immediate
-    hi(concatenation of closing angle brackets) concatenation of the two
-angle closing brackets would be interpreted by the compiler as a
-    right shift operator (oprshift()), which is not what
-we want here. In compilers supporting the i(C++0x) standard (e.g., g++ 4.3
-and beyond) this construction is accepted. Compilers not yet implementing this
-feature require a separating blank between two consecutive closing angle
+    Note the use of the two 
+ hi(rshift())hi(angle brackets: consecutive) 
+ i(consecutive closing angle brackets). Before the advent of the i(C++0x)
+standard consecutive closing brackets in container type specifications (and
+generally: in the context of template type specifications) resulted in a
+compilation error, as the immediate concatenation of the two closing angle
+brackets would be interpreted by the compiler as a right shift operator
+(oprshift()), which is not what we want here. In compilers supporting the
+C++0x standard this construction is accepted. Compilers not yet implementing
+this feature require a separating blank between two consecutive closing angle
 brackets.
         it() A map may be initialized using two iterators.  The iterators may
 either point to tt(value_type) values for the map to be constructed, or to
-plain ti(pair) objects (see section ref(PAIR)). If pairs are used, their
-ti(first) elements represent the keys, and their tt(second) elements represent
-the values to be used. For example:
+plain ti(pair) objects. If pairs are used, their tt(first) element represents
+the type of the keys, and their tt(second) element represents the type of the
+values. Example:
         verb(
     pair<string, int> pa[] =
     {
@@ -110,41 +106,43 @@ the values to be used. For example:
     In this example, tt(map<string, int>::value_type) could have been written
 instead of tt(pair<string, int>) as well.
 
-    When tt(begin) is the first iterator used to construct a map and
-tt(end) the second iterator, rangett(begin, end) will be used to initialize
-the map. Maybe i(contrary to intuition), the tt(map) constructor
-will only enter em(new) keys.  If the last element of tt(pa) would have been
-tt("one", 3), only em(two) elements would have entered the tt(map): tt("one",
-1) and tt("two", 2). The value tt("one", 3) would have been
-    i(silently ignored).
+    If tt(begin) represents the first iterator that us used to construct a map
+and if tt(end) represents the second iterator, rangett(begin, end) will be
+used to initialize the map. Maybe contrary to intuition, the tt(map)
+constructor will only enter em(new) keys.  If the last element of tt(pa) would
+have been tt("one", 3), only em(two) elements would have entered the tt(map):
+tt("one", 1) and tt("two", 2). The value tt("one", 3) would silently have been
+ignored.
 
     The tt(map) receives its own copies of the data to which the iterators
-point. This is illustrated by the following example:
+point as illustrated by the following example:
         verbinclude(containers/examples/mapconstruct.cc)
+
     When tracing the output of this program, we see that, first, the
 constructor of a tt(MyClass) object is called to initialize the anonymous
 element of the array tt(pairs). This object is then copied into the first
 element of the array tt(pairs) by the copy constructor. Next, the original
-element is not needed anymore, and is destroyed. At that point the array
+element is not required anymore and is destroyed. At that point the array
 tt(pairs) has been constructed. Thereupon, the tt(map) constructs a temporary
 tt(pair) object, which is used to construct the map element. Having
 constructed the map element, the temporary tt(pair) object is
 destroyed. Eventually, when the program terminates, the tt(pair) element
 stored in the tt(map) is destroyed too.
-        it() A map may be initialized using a i(copy constructor):
+        it() A map may be initialized using a copy constructor:
         verb(
     extern map<string, int> container;
     map<string, int> object(container);
         )
         )
         COMMENT(MAP CONSTRUCTORS ENDS)
+
     it() Apart from the standard operators for containers, the tt(map)
 supports the i(index operator), which may be used to retrieve or reassign
 individual elements of the map. Here, the argument of the index operator is a
 key.  If the provided key is not available in the tt(map), a new data element
 is automatically added to the tt(map) using the default value or default
 constructor to initialize the value part of the new element. This default
-value is returned if the index operator is used as an i(rvalue).
+value is returned if the index operator is used as an rvalue.
 
 When initializing a new or reassigning another element of the map, the type of
 the right-hand side of the assignment operator must be equal to (or promotable
@@ -153,26 +151,26 @@ element tt("two") in a map, the following statement can be used:
         verb(
     mapsm["two"] = MyClass();
         )
-    it() The tt(map) class has the following hi(map: member functions) member
-functions:
+    it() The tt(map) class has the following member functions:
         COMMENT(MAP MEMBER FUNCTIONS)
         itemization(
-        ithtq(map::begin())(map::iterator map::begin())(this member
-returns an i(iterator) pointing to the first element of the map. )
-        ittq(map::clear())(this member erases all elements from the map.)
-        ithtq(map::count())(size_t map::count(key))(this member returns 1 if
+        ithtq(begin)(map::iterator begin())(this member
+returns an iterator pointing to the first element of the map. )
+        ithtq(clear)(void clear())(this member erases all elements from
+the map.)
+        ithtq(count)(size_t count(key))(this member returns 1 if
 the provided key is available in the tt(map), otherwise 0 is returned.)
-        ithtq(map::empty())(bool map::empty())(this member returns tt(true) if
+        ithtq(empty)(bool empty())(this member returns tt(true) if
 the map contains no elements.)
-        ithtq(map::end())(map::iterator map::end())(this member
+        ithtq(end)(map::iterator end())(this member
 returns an iterator pointing beyond the last element of the map.)
-        ithtq(map::equal_range())
-            (pair<map::iterator, map::iterator> map::equal_range(key))(this
+        ithtq(equal_range)
+            (pair<map::iterator, map::iterator> equal_range(key))(this
 member returns a pair of iterators, being respectively the return values of
-the member functions tt(lower_bound()) and tt(upper_bound()), introduced below.
+the member functions tt(lower_bound) and tt(upper_bound), introduced below.
 An example illustrating these member functions is given at the
-discussion of the member function tt(upper_bound()).)
-        ithtq(map::erase())(... map::erase())(this member can be
+discussion of the member function tt(upper_bound).)
+        ithtq(erase)(... erase())(this member can be
 used to erase a specific element or range of elements from the map:)
             itemization(
             itt(bool erase(key)) erases the element having the
@@ -183,32 +181,32 @@ tt(pos).
             itt(void erase(first, beyond)) erases all elements indicated by
 the iterator range rangett(first, beyond).
             )
-        ithtq(map::find())(map::iterator map::find(key))(this member returns
+        ithtq(find)(map::iterator find(key))(this member returns
 an iterator to the element having the given key. If the element isn't
-available, tt(end()) is returned. The following example illustrates the use of
-the tt(find()) member function:)
+available, tt(end) is returned. The following example illustrates the use of
+the tt(find) member function:)
     verbinclude(containers/examples/mapfind.cc)
-        ithtq(map::insert())(... map::insert())(this member can be used to
+        ithtq(insert)(... insert())(this member can be used to
 insert elements into the map. It will, however, not replace the values
 associated with already existing keys by new values. Its return value depends
-on the version of tt(insert()) that is called:)
+on the version of tt(insert) that is called:)
             itemization(
             itt(pair<map::iterator, bool> insert(keyvalue)) inserts
-a new tt(map::value_type) into the map. The return value is a
+a new tt(value_type) into the map. The return value is a
 ti(pair<map::iterator, bool>).  If the returned ti(bool) field is tt(true),
 tt(keyvalue) was inserted into the map. The value tt(false) indicates that the
 key that was specified in tt(keyvalue) was already available in the map, and
 so tt(keyvalue) was not inserted into the map.  In both cases the
 tt(map::iterator) field points to the data element having the
 tt(key) that was specified in tt(keyvalue). The use of this variant of
-tt(insert()) is illustrated by the following example:
+tt(insert) is illustrated by the following example:
         verbinclude(containers/examples/mapinsert.cc)
     Note the somewhat peculiar constructions like
         verb(
     cout << ret.first->first << " " << ret.first->second << ...
         )
     Note that `tt(ret)' is equal to the tt(pair) returned by the
-tt(insert()) member function. Its `tt(first)' field is an iterator into the
+tt(insert) member function. Its `tt(first)' field is an iterator into the
 tt(map<string, int>), so it can be considered a pointer to a tt(map<string,
 int>::value_type). These value types themselves are pairs too, having
 `tt(first)' and `tt(second)' fields. Consequently, `tt(ret.first->first)' is
@@ -220,28 +218,28 @@ an iterator to the inserted element is returned.
             itt(void insert(first, beyond)) inserts the (tt(map::value_type))
 elements pointed to by the i(iterator range) rangeti(first, beyond).
             )
-        ithtq(map::lower_bound())
-            (map::iterator map::lower_bound(key))
+        ithtq(lower_bound)
+            (map::iterator lower_bound(key))
             (this member returns an iterator pointing to the first
 tt(keyvalue) element of which the tt(key) is at least equal to the specified
 tt(key).  If no such element exists, the function returns
-tt(map::end()).)
-        ithtq(map::rbegin())(map::reverse_iterator map::rbegin())(
+tt(end).)
+        ithtq(rbegin)(map::reverse_iterator rbegin())(
     hi(reverse_iterator) this member returns an iterator pointing to the last
 element of the map.)
-        ithtq(map::rend())(map::reverse_iterator map::rend())(this member
+        ithtq(rend)(map::reverse_iterator rend())(this member
 returns an iterator pointing before the first element of the map.)
-        ithtq(map::size())(size_t map::size())(this member returns the
+        ithtq(size)(size_t size())(this member returns the
 number of elements in the map.)
-        ithtq(map::swap())(void map::swap(argument))(this member can be used
+        ithtq(swap)(void swap(argument))(this member can be used
 to swap two maps using identical key/value types.)
-        ithtq(map::upper_bound())
-            (map::iterator map::upper_bound(key))
+        ithtq(upper_bound)
+            (map::iterator upper_bound(key))
             (this member returns an iterator pointing to the first
 tt(keyvalue) element having a tt(key) exceeding the specified tt(key).  If no
-such element exists, the function returns tt(map::end()).  The following
-example illustrates the member functions tt(equal_range()), tt(lower_bound())
-and tt(upper_bound()):
+such element exists, the function returns tt(end).  The following
+example illustrates the member functions tt(equal_range), tt(lower_bound)
+and tt(upper_bound):
             verbinclude(containers/examples/mapbounds.cc)
         )
     )
@@ -250,7 +248,7 @@ and tt(upper_bound()):
     COMMENT(MAP PUBLIC IFACE ENDS)
     As mentioned at the beginning of this section, the tt(map) represents a
 sorted associative array. In a tt(map) the keys are sorted. If an application
-must i(visit all elements in a map) (or just the keys or the values)
-the tt(begin()) and tt(end()) iterators must be used. The following example
-shows how to make a simple table listing all keys and values in a map:
+must visit all elements in a map
+the tt(begin) and tt(end) iterators must be used. The following example
+shows how to make a simple table listing all keys and values found in a map:
         verbinclude(containers/examples/maptable.cc)

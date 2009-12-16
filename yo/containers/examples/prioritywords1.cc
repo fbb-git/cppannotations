@@ -13,7 +13,7 @@ int main()
 
     while (q.size())
     {
-        cout << q.top() << endl;
+        cout << q.top() << '\n';
         q.pop();
     }
 }

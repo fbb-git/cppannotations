@@ -15,10 +15,10 @@
 
         if ((it = object.lower_bound("tw")) != object.end())
             cout << "lower-bound `tw' is available, it is: " <<
-                    it->first << endl;
+                    it->first << '\n';
 
         if (object.lower_bound("twoo") == object.end())
-            cout << "lower-bound `twoo' not available" << endl;
+            cout << "lower-bound `twoo' not available" << '\n';
 
         cout << "lower-bound two: " <<
                 object.lower_bound("two")->first <<
@@ -26,13 +26,13 @@
 
         if ((it = object.upper_bound("tw")) != object.end())
             cout << "upper-bound `tw' is available, it is: " <<
-                    it->first << endl;
+                    it->first << '\n';
 
         if (object.upper_bound("twoo") == object.end())
-            cout << "upper-bound `twoo' not available" << endl;
+            cout << "upper-bound `twoo' not available" << '\n';
 
         if (object.upper_bound("two") == object.end())
-            cout << "upper-bound `two' not available" << endl;
+            cout << "upper-bound `two' not available" << '\n';
 
         pair
         <
@@ -49,7 +49,7 @@
                 :
                     p.second->first
             ) <<
-            endl;
+            '\n';
     }
     /*
         Generated output:

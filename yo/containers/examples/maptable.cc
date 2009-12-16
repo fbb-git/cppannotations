@@ -23,7 +23,7 @@
                     ++it
         )
             cout << setw(5) << it->first.c_str() <<
-                    setw(5) << it->second << endl;
+                    setw(5) << it->second << '\n';
     }
     /*
         Generated output:
