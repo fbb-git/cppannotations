@@ -1,69 +1,98 @@
-COMMENT( MOVE CONSTRUCTOR AND DERIVED CLASSES
+A derived class inherits functionality from its base class (or base classes,
+as bf(C++) supports multiple inheritance, cf. section ref(MULTIPLE)). When a
+derived class object is constructed it is built on top of its base class
+object. As a consequence the base class must have been constructed before the
+actual derived class elements can be initialized. This results in some
+requirements that must be observed when defining
+ hi(constructor: of derived classes) derived class constructors.
 
-    The tt(std::move) function should be used when implementing the move
-constructor to move the information in base classes or composed objects to
-their new destination object. E.g. (only showing the move
-constructor/operator=):
+A constructor exists to initialize the object's data members. A derived class
+constructor is also responsible for the proper initialization of its base
+class. Looking at the definition of the class tt(Land) introduced earlier
+(section ref(VehicleSystem), its constructor could simply be defined as
+follows:
         verb(
-    class Derived: public Base
-    {
-        std::string d_name;
-
-        public:
-            Derived(Derived&& tmp)    // move constructor
-            :
-                Base(std::move(tmp)),
-                d_name(std::move(tmp.d_name))
-            {}
-
-            Derived &operator=(Derived &&tmp);
-    };
-        )
-    The implementation of the em(move operator=) is left as an exercise to
-the reader.
-
-END)
-
-
-As mentioned earlier, a derived class inherits the functionality from its
-i(base class). In this section we shall describe the effects
-    i(inheritance) has on the constructor of a derived class.
-
-As will be clear from the definition of the class tt(Land), a i(constructor)
-exists to set both the tt(weight) and the tt(speed) of an object. The
-poor-man's implementation of this constructor could be:
-        verb(
-    Land::Land (size_t weight, size_t speed)
+    Land::Land(size_t weight, size_t speed)
     {
         setWeight(weight);
         setspeed(speed);
     }
         )
-    This implementation has the following disadvantage. The bf(C++) compiler
-will generate code calling the base class's i(default constructor) from each
-constructor in the i(derived class), unless explicitly instructed otherwise.
-This can be compared to the situation we encountered in composed objects (see
-section ref(Composition)).
-
-Consequently, in the above implementation the
-    i(default constructor) of tt(Vehicle) is called, which probably
-initializes the weight of the vehicle, only to be redefined immediately
-thereafter by the function tt(setWeight()).
-
-    A more efficient approach is of course to call the constructor of
-tt(Vehicle) expecting a tt(size_t weight) argument directly.  The syntax
-achieving this is to mention the constructor to be called (supplied with its
-arguments) immediately following the argument list of the constructor of the
-derived class itself. Such a i(base class initializer) is shown in the next
-example. Following the constructor's head a colon appears, which is then
-followed by the base class constructor. Only then any member initializer may
-be specified (using commas to separate multiple initializers), followed by the
-constructor's body:
+    However, this implementation has several disadvantages. 
+    itemization(
+    it() When constructing a derived class object a base class constructor
+will em(always) be called before any action is performed on the derived class
+object itself. By default the base class's i(default constructor) will be
+called. 
+    it() Using the base class constructor only to reassign new values to its
+data members in the derived class constructor's body usually is inefficient,
+but sometimes sheer impossible as in situations where base class reference or
+const data members must be initialized. In those cases a specialized base
+class constructor must be used instead of the base class default constructor. 
+    )
+    A derived class's base class may be initialized using a dedicated base
+class constructor by calling the base class constructor in the derived class
+constructor's initializer clause. Calling a base class constructor in a
+constructor's initializer clause is called a
+ emi(base class initializer). The base class initializer must be called before
+initializing any of the derived class's data members and when using the base
+class initializer none of the derived class data members may be used. When
+constructing a derived class object the base class is constructed first and
+only after that construction has successfully completed 
+the derived class data members are available for initialization. tt(Land)'s
+constructor may therefore be improved:
         verb(
     Land::Land(size_t weight, size_t speed)
     :
-        Vehicle(weight)
+        Vehicle(weight),
+        d_speed(speed)
+    {}
+        )
+
+    Derived class constructors always by default call their base class's
+default constructor. This is of course not correct for a derived class's
+ i(copy constructor). Assuming that the class tt(Land) must be provided with a
+copy constructor it may use the tt(Land const &other) to represent the other's
+base class:
+        verb(
+    Land::Land(Land const &other)   // assume a copy constructor is needed
+    :
+        Vehicle(other),             // copy-construct the base class part.
+        d_speed(other.speed)        // copy-construct Land's data members
+    {}
+        )
+
+    Likewise, a derived class i(move constructor) may have to be defined.
+A derived class may offer a move constructor for two reasons:
+    itemization(
+    it() it supports move construction for its  data members 
+    it() its base class is move-aware
+    )
+
+    The design of move constructors moving data members was covered in section
+ref(MOVE). A move constructor for a derived class whose base class is
+move-aware must em(anonimize) the rvalue reference before passing it to the
+base class move constructor. The tt(std::move) function should be used when
+implementing the move constructor to move the information in base classes or
+composed objects to their new destination object.
+
+    The first example shows the move constructor for the class tt(Auto),
+assuming it has a movable tt(char *d_brandName) data member and
+assuming that tt(Land) is a move-aware class. The second example shows the
+move constructor for the class tt(Land), assuming that it does not itself have
+movable data members, but that its tt(Vehicle) base class is move-aware:
+        verb(
+    Auto::Auto(Auto const &&tmp)
+    :
+        Land(std::move(tmp)),           // anonimize `tmp'
+        d_brandName(tmp.d_brandName)    // move the char *'s value
     {
-        setspeed(speed);
+        const_cast<Auto &>(tmp).d_brandName = 0;
     }
+
+    Land(Land const &&tmp)
+    :
+        Vehicle(std::move(tmp)),    // move-aware Vehicle
+        d_speed(tmp.d_speed)        // plain copying of plain data
+    {}
         )

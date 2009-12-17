@@ -1,0 +1,47 @@
+Now that tt(Auto) has been derived from tt(Land) and tt(Land) has been derived
+from tt(Vehicle) we might easily be seduced into thinking that these class
+hierarchies are the way to go when designing classes. But maybe we should
+temper our enthousiasm.
+
+Repeatedly deriving classes from classes quickly results in long, complex
+class hierarchies that are hard to understand, hard to use and hard to
+maintain. Hard to understand and use as users intending to use the class that
+was derived last now also have to learn all its (indirect) base class
+features. Hard to maintain because all these classes are very closely
+coupled. When data hiding is meticulously adhered to derived classes indeed do
+not have to be modified when their base classes change their data
+organization, but as more an more classes become dependent upon these base
+classes it quickly becomes practically infeasible to change those base
+classes.
+
+What initially looks like a big gain, inheriting the base class's interface,
+thus becomes a liability. The base class's interface is hardly ever completely
+required and in the end a class may benefit from explicitly defining its own
+member functions rather than obtaining them through inheritance. 
+
+Often classes can be defined em(in-terms-of) existing classes: some of their
+features are used, but others need to be shielded off. Consider the tt(stack)
+container: it is commonly implemented in-terms-of a tt(deque), returning
+tt(deque::back)'s value as tt(stack::top)'s value.
+
+When using inheritance to implement an tt(is-a) characteristic make sure to
+get the `direction of use' right: inheritance aiming at implementing an
+em(is-a) relationship should focus on the base class: the base class
+facilities aren't there to be used by the derived class, but the derived class
+facilities must be reused by the base class. We've seen this approach before
+when studying streams: the base class (e.g., tt(ostream)) is used time and
+again. Classes derived from tt(ostream) (like tt(ofstream) and
+tt(ostringstream)) are most useful when processed as tt(ostream) objects
+
+...
+
+When designing classes always aim at the lowest possible coupling. Big class
+hierarchies usually indicate poor understanding of robust class design. When
+a class's interface is only partially used consider using composition rather
+than inheritance and define the appropriate interface members in terms of the
+members offered by the composed objects. An em(is-a)
+relationship is focussing on the base class, not on the derived class and an
+em(is-a) relationship is usually realized through polymorphism, the topic of
+the next chapter.
+
+
