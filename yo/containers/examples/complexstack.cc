@@ -6,7 +6,7 @@
 
     int main()
     {
-        stack<complex<double> >
+        stack<complex<double>>
             cstack;
 
         cstack.push(complex<double>(3.14, 2.71));
@@ -15,7 +15,7 @@
         while (cstack.size())
         {
             cout << cstack.top().real() << ", " <<
-                    cstack.top().imag() << "i" << endl;
+                    cstack.top().imag() << "i" << '\n';
             cstack.pop();
         }
     }

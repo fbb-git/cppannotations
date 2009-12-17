@@ -27,6 +27,6 @@
 
         string apr("april");    // different pointers, same string
 
-        cout << "april     -> " << months["april"] << endl <<
-                "april     -> " << months[apr.c_str()] << endl;
+        cout << "april     -> " << months["april"] << '\n' <<
+                "april     -> " << months[apr.c_str()] << '\n';
     }

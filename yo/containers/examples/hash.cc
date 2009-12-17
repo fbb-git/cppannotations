@@ -20,10 +20,10 @@
         months["november"] = 30;
         months["december"] = 31;
 
-        cout << "september -> " << months["september"] << endl <<
-                "april     -> " << months["april"] << endl <<
-                "june      -> " << months["june"] << endl <<
-                "november  -> " << months["november"] << endl;
+        cout << "september -> " << months["september"] << '\n' <<
+                "april     -> " << months["april"] << '\n' <<
+                "june      -> " << months["june"] << '\n' <<
+                "november  -> " << months["november"] << '\n';
     }
     /*
         Generated output:
