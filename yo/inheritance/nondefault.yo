@@ -1,6 +1,6 @@
-An often heard source of irritation is the fact that operator tt(new[]) calls
-the default constructor
-    hi(new[]: calling non-default constructors) of a class to initialize the
+An often heard complaint is that operator tt(new[]) calls the default
+constructor
+ hi(new[]: and non-default constructors) of a class to initialize the
 allocated objects. For example, to allocate an array of 10 strings we can do
         verb(
     new string[10];
@@ -11,21 +11,26 @@ something like:
         verb(
     new string("hello world")[10];
         )
-
-    Such an initialization is usually accomplished in a two-step process:
-first the array is allocated (implicitly calling the default constructor);
-second the array's elements are initialized, as in the following little
-example:
+    The initialization of a dynamically allocated object usually consists of a
+two-step process: first the array is allocated (implicitly calling the default
+constructor); second the array's elements are initialized, as in the following
+little example:
         verb(
     string *sp = new string[10];
     fill(sp, sp + 10, string("hello world"));
         )
-    These approaches all suffer from `double initializations', comparable to
-not using member initializers in constructors.
+    These approaches all suffer from `i(double initialization)s', comparable
+to not using member initializers in constructors.
 
-    Fortunately em(inheritance) can profitably be used to call non-default
-constructors in combination with operator tt(new[]). The approach capitalizes
-on the following:
+    One way to avoid the double initialization is to use placement new
+(cf. section ref(PLACEMENT)): simply allocate the required amount of memory
+followed by the proper in-place allocation of the objects, using the
+appropriate constructors. 
+
+    Another way to avoid double initialization is to use inheritance.
+Inheritance can profitably be used to call non-default constructors in
+combination with operator tt(new[]). The approach capitalizes on the
+following:
     itemization(
     it() A base class pointer may point to a derived class object;
     it() A derived class without (non-static)
