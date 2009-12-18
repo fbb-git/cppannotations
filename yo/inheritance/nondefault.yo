@@ -22,12 +22,7 @@ little example:
     These approaches all suffer from `i(double initialization)s', comparable
 to not using member initializers in constructors.
 
-    One way to avoid the double initialization is to use placement new
-(cf. section ref(PLACEMENT)): simply allocate the required amount of memory
-followed by the proper in-place allocation of the objects, using the
-appropriate constructors. 
-
-    Another way to avoid double initialization is to use inheritance.
+    One way to avoid double initialization is to use inheritance.
 Inheritance can profitably be used to call non-default constructors in
 combination with operator tt(new[]). The approach capitalizes on the
 following:
@@ -87,3 +82,28 @@ tt(nstrings.cc).
     Note that the above implementation can't safely be used in a multithreaded
 environment. In that case a emi(mutex) should be used to protect the three
 statements just before the function's return statement.
+
+    A completely different way to avoid the double initialization (not using
+inheritance) is to use placement new (cf. section ref(PLACEMENT)): simply
+allocate the required amount of memory followed by the proper in-place
+allocation of the objects, using the appropriate constructors. The following
+example can also be used in multithreaded environments. The approach uses a
+pair of static tt(construct/destroy) members to perform the required
+initialization.
+
+    In the program shown below tt(construct) expects a tt(istream) that
+provides the initialization strings for objects of a class tt(String) simply
+containing a tt(std::string) object. tt(Construct) first allocates enough
+memory for the tt(n) tt(String) objects plus room for an initial tt(size_t)
+value. This initial tt(size_t) value is then initialized with tt(n). Next, in
+a tt(for) statement, lines are read from the provided stream and the lines are
+passed to the constructors, using placement new calls. Finally the address of
+the first tt(String) object is returned.
+
+    The member tt(destroy) handles the destruction of the objects. It
+retrieves the number of objects to destroy from the tt(size_t) it finds just
+before the location of the address of the first object to destroy. The objects
+are then destroyed by explicitly calling their destructors. Finally the raw
+memory, originally allocated by tt(construct) is returned.
+        verbinclude(inheritance/examples/placement.cc)
+
