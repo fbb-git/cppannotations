@@ -15,27 +15,26 @@ fig(InternalOrganization)
     figure(polymorphism/internal)
         (Internal organization of an tt(AirAuto) object.)
         (InternalOrganization)
-    The bf(C++) compiler will detect the ambiguity in an tt(AirAuto) object,
-and will therefore fail to compile a statement like:
+    The bf(C++) compiler detects the ambiguity in an tt(AirAuto) object,
+and will therefore not  compile  statements like:
         verb(
-    AirAuto cool;
-
-    cout << cool.weight() << endl;
+    AirAuto jBond;
+    cout << jBond.weight() << '\n';
         )
-    The question of which member function tt(weight()) should be called,
-cannot be answered by the compiler. The programmer has two possibilities to
-resolve the ambiguity explicitly:
+    Which member function tt(weight) to call cannot be determined by the
+compiler but the programmer has two possibilities to resolve the ambiguity for
+the compiler:
     itemization(
-    it() First, the function call where the ambiguity occurs can be
+    it() First, the function call where the ambiguity originates can be
 modified. The ambiguity is resolved using the i(scope resolution operator):
         verb(
     // let's hope that the weight is kept in the Auto
     // part of the object..
-    cout << cool.Auto::weight() << endl;
+    cout << jBond.Auto::weight() << '\n';
         )
-    Note the position of the scope operator and the class name: before the name
-of the member function itself.
-    it() Second, a dedicated function tt(weight()) could be created for
+    The scope resolution operator and the class name are put right before
+the name of the member function.
+    it() Second, a dedicated function tt(weight) could be created for
 the class tt(AirAuto):
         verb(
     int AirAuto::weight() const
@@ -44,8 +43,10 @@ the class tt(AirAuto):
     }
         )
     )
-    The second possibility from the two above is preferable, since it relieves
-the programmer who uses the class tt(AirAuto) of special precautions.
+    The second possibility is preferred as it does not require the compiler to
+flag an error; nor does it require the programmer using the class
+tt(AirAuto) to take special precautions.
 
-However, apart from these explicit solutions, there is a more elegant one,
-discussed in the next section.
+    However, there exists a more elegant solution, discussed in the next
+section.
+
