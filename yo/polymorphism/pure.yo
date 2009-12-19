@@ -1,75 +1,77 @@
-Until now the base class tt(Vehicle) contained its own, concrete,
-implementations of the virtual functions tt(weight()) and tt(setWeight()). In
-bf(C++) it is also possible only to em(mention) virtual member functions in a
-i(base class), without actually defining them. The functions are concretely
-implemented in a i(derived class). This approach, in some languages (like
- bf(C#, Delphi)hi(Java interface) and bf(Java)) known as an emi(interface),
-defines a emi(protocol), which em(must) be implemented by derived
-classes. This implies that derived classes must take care of the actual
-definition: the bf(C++) compiler will not allow the definition of an object of
-a class in which one or more member functions are left undefined.  The base
-class thus enforces a protocol by declaring a function by its name, return
-value and arguments.  The derived classes must take care of the actual
-i(implementation). The base class itself defines therefore only a em(model) or
-em(mold), to be used when other classes are derived. Such base classes are
-also called hi(class: abstract)
-    emi(abstract classes)
-    or em(abstract base classes). Abstract base classes are the foundation of
-many em(design patterns) hi(design pattern)
-    (cf. em(Gamma et al.) (1995))hi(Gamma, E.),
-allowing the programmer to create highly emi(reusable software). Some of these
-design patterns are covered by the Annotations (e.g, the emi(Template Method)
-in section ref(FORK)), but for a thorough discussion of design patterns the
-reader is referred to Gamma em(et al.)'s book.
+The base class tt(Vehicle) is provided with its own concrete implementations
+of its virtual members (tt(weight) and tt(setWeight)).  However, virtual
+member functions not necessarily em(have) to be implemented in base classes.
 
+When the implementations of virtual members are omitted from base classes the
+class imposes requirements upon derived classes. The derived classes are
+required to provide the `missing implementations'
 
-Functions that are only declared in the base class are
-called emi(pure virtual functions). A function is made pure virtual by
-prefixing  the keyword ti(virtual) to its declaration and by postfixing it
-with ti(= 0). An example of a pure virtual function occurs in the following
-listing, where the definition of a class tt(Object) requires the
-implementation of the i(conversion operator) ti(operator string()):
+This approach, in some languages (like bf(C#, Delphi)
+ hi(Java interface) and bf(Java)) known as an emi(interface), defines a
+ emi(protocol). Derived classes em(must) obey the protocol by implementing the
+as yet not implemented members. If a class contains at least one member whose
+implementation is missing no objects of that class can be defined.
+
+Such incompletely defined classes are always base classes. They enforce a
+protocol by merely declaring names, return values and arguments of some of
+their members. These classes are call hi(class: abstract)
+ emi(abstract classes) or em(abstract base classes).  Derived classes become
+non-abtract classes by implementing the as yet not implemented members.
+
+Abstract base classes are the foundation of many em(design patterns) 
+ hi(design pattern) (cf. em(Gamma et al.) (1995))
+ hi(Gamma, E.), allowing the programmer to create highly 
+ emi(reusable software). Some of these design patterns are covered by the
+annotations() (e.g, the emi(Template Method) in section ref(FORK)), but for a
+thorough discussion of design patterns the reader is referred to Gamma em(et
+al.)'s book.
+
+Members that are merely declared in base classes are called 
+ emi(pure virtual functions). A virtual member becomes a pure virtual member
+by postfixing ti(= 0) to its declaration (i.e., by replacing the semicolon
+ending its declaration by `tt(= 0;)'). Example:
         verb(
-    #include <string>
-
-    class Object
+    #include <iosfwd>
+    class Base
     {
         public:
-            virtual operator std::string() const = 0;
+            virtual ~Base();
+            virtual std::ostream &insertInto(std::ostream &out) const = 0;
     };
+    inline std::ostream &operator<<(std::ostream &out, Base const &base)
+    {
+        return base.insertInto(out);
+    }
         )
-    Now, all classes derived from tt(Object) em(must) implement the
-tt(operator string()) member function, or their objects cannot be
-constructed. This is neat: all objects derived from tt(Object) can now always
-be considered tt(string) objects, so they can, e.g., be inserted into
-ti(ostream) objects.
+    All classes derived from tt(Object) em(must) implement the tt(insertInto)
+member function, or their objects cannot be constructed. This is neat: all
+objects derived from tt(Object) can now always be inserted into ti(ostream)
+objects.
 
-    Should the i(virtual destructor) of a base class be a pure virtual
-function? The answer to this question is no: a class such as tt(Vehicle)
-should not em(require) derived classes to define a
-destructor. In contrast, tt(Object::operator string()) em(can) be a pure
-virtual function: in this case the base class defines a protocol which must be
-adhered to.
+    Could the i(virtual destructor) of a base class ever be a pure virtual
+function? The answer to this question is no. First of all, there is no need to
+enforce the availability of destructors in derived classes as destructors are
+provided by default (unless a destructor is declared with the tt(= delete)
+attribute using the new C++0x standard). Second, if it is a pure virtual
+member its implementation does not exist, but derived class destructors will
+eventually call their base class destructors. How could they call base class
+destructors if their implementations are lacking? More about this in the next
+section. 
 
-    Note what would happen if we would define the destructor of a base
-class as a pure virtual destructor: according to the emi(compiler), the
-derived class object can be constructed: as its destructor is defined, the
-derived class is not a pure abstract class. However, inside the derived class
-destructor, the destructor of its base class is implicitly called. This
-destructor was never defined, and the emi(linker) will loudly complain about
-an i(undefined reference) to, e.g., tt(Virtual::~Virtual()).
-
-    Often, but not necessarily always, pure virtual member functions are
+    Often, but not necessarily, pure virtual member functions are
 tt(const) hi(const member functions) member functions. This allows the
 construction of constant derived class objects. In other situations this might
-not be necessary (or realistic), and i(non-constant member functions) might be
-required. The general rule for tt(const) member functions applies also to pure
-virtual functions: if the member function will alter the object's data
-members, it cannot be a tt(const) member function. Often abstract base classes
-have hi(classes: without data members) i(no data members). However, the
-prototype of the pure virtual member function must be used again in derived
+not be necessary (or realistic), and 
+ i(non-constant member functions) might be required. The general rule for
+tt(const) member functions also applies to pure virtual functions: if the
+member function alters the object's data members, it cannot be a tt(const)
+member function. 
+
+Abstract base classes frequently don't have
+ hi(classes: without data members) data members.  However, once a base class
+declares a pure virtual member it em(must) be declared identically in derived
 classes. If the implementation of a pure virtual function in a derived class
-alters the data of the derived class object, than em(that) function cannot be
-declared as a tt(const) member function. Therefore, the author of an
-abstract base class should carefully consider whether a pure virtual member
-function should be a tt(const) member function or not.
+alters the derived class object's data, then em(that) function cannot be
+declared as a tt(const) member. Therefore, the author of an abstract base
+class should carefully consider whether a pure virtual member function should
+be a tt(const) member function or not.

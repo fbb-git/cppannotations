@@ -1,65 +1,116 @@
-As we have seen in chapter ref(INHERITANCE), bf(C++) provides the tools to
-derive classes from base classes, and to use base class pointers to address
-derived objects. As we've also seen, when using a i(base class pointer) to
-address an object of a i(derived class), the type of the pointer determines
-which i(member function) will be used. This means that a tt(Vehicle *vp),
-pointing to a tt(Truck) object, will incorrectly compute the truck's combined
-weight in a statement like tt(vp->weight()). The reason for this should now be
-clear: tt(vp) calls tt(Vehicle::weight()) and not tt(Truck::weight()), even
-though tt(vp) actually points to a tt(Truck).
+Using inheritance classes may be derived from other classes, called base
+classes. In the previous chapter we saw that base class pointers may be used
+to point to derived class objects. We also saw that when a base class pointer
+points to an object of a derived class it is the the type of the pointer
+rather than the type of the object it points to what determines which member
+functions are visible. So when a tt(Vehicle *vp), points to an tt(Auto) object
+tt(Auto)'s tt(speed) or tt(brandName) members can't be used.
 
-Fortunately, a remedy is available. In bf(C++) a tt(Vehicle *vp) may call a
-function tt(Truck::weight()) when the pointer actually points to a tt(Truck).
+In the previous chapter two fundamental ways classes may be related to each
+other were discussed: a class may be emi(implemented-in-terms-of) another
+class and it can be stated that a derived class emi(is-a) base class. The
+former relationship is usually implemented using composition, the latter
+is usually implemented using a special form of inheritance, called
+emi(polymorphism), the topic of this chapter. 
 
-The terminology for this feature is emi(polymorphism): it is as though the
-pointer tt(vp) changes its type from a base class pointer to a pointer to the
-class of the object it actually points to.  So, tt(vp) might behave like a
-tt(Truck *) when pointing to a tt(Truck), and like an tt(Auto *) when pointing
-to an tt(Auto) etc..+footnote(In one of the StarTrek movies, Capt.  Kirk was
-in trouble, as usual. He met an extremely beautiful lady who, however,
-later on changed into a hideous troll. Kirk was quite surprised, but the lady
-told him: ``Didn't you know I am a polymorph?'')
+An em(is-a) relationship between classes allows us to apply the 
+ emi(Liskow Substitution Principle) (emi(LSP)) according to which a derived
+class object may be passed to and used by code expecting a pointer or
+reference to a base class object. In the annotation() so far the LSP has been
+applied many times. Every time an tt(ostringstream, ofstream) or tt(fstream)
+was passed to functions expecting an tt(ostream) we've been applying this
+principle. In this chapter we'll discover how to design our own classes
+accordingly. 
 
-Polymorphism is implemented by a feature called emi(late binding). It's called
-that way because the decision em(which) function to call (a base class
-function or a function of a derived class) cannot be made emi(compile-time),
+LSP is implemented using a technique called emi(polymorphism): although a base
+class pointer is used it will perform actions defined in the (derived) class
+of the object it actually points to. So, a tt(Vehicle *vp) might behave like
+an tt(Auto *) when pointing to an tt(Auto)footnote(In one of the StarTrek
+movies, Capt.  Kirk was in trouble, as usual. He met an extremely beautiful
+lady who, however, later on changed into a hideous troll. Kirk was quite
+surprised, but the lady told him: ``Didn't you know I am a polymorph?'').
+
+Polymorphism is implemented using a feature called emi(late binding). It's
+called that way because the decision em(which) function to call (a base class
+function or a function of a derived class) cannot be made em(compile-time),
 but is postponed until the program is actually executed: only then it is
 determined which member function will actually be called.
 
-Note that in bf(C++) late binding is em(not) the default way functions are
-called. By default emi(static binding) (or emi(early binding)) is used: the
-class types of objects, object pointers or object refences determine which
-member functions are called. Late binding is an inherently different (and
-somewhat slower) procedure since it is decided i(run-time), rather than
-i(compile-time) what function is called (see section ref(howpolymorphism) for
-details). As bf(C++) supports em(both) late- and early-binding bf(C++)
-programmers are offered an option in what kind of binding to use, and so
-choices can be optimized to the situations at hand. Many other languages
-offering object oriented facilities (e.g., bf(Java)) only offer late
-binding. bf(C++) programmers should be keenly aware of this, as expecting
-early binding and getting late binding might easily produce nasty bugs.
+In bf(C++) late binding is em(not) the default way functions are called. By
+default emi(static binding) (or emi(early binding)) is used. With static
+binding the functions that are called are determined by the compiler, merely
+using the class types of objects, object pointers or object refences.
 
-Let's have a look at a simple example (put here even though polymorphism
-hasn't been covered yet at this point in order to have the example stand
-clearly) to hone our awareness of the differences between early and late
-binding. The example merely illustrates. Explanations of em(why) things are as
-shown are found in subsequent sections of this chapter.
+Late binding is an inherently different (and slightly slower) process as it is
+decided i(run-time), rather than i(compile-time) what function will be
+called. As bf(C++) supports em(both) late- and early-binding bf(C++)
+programmers are offered an option as to what kind of binding to use.  Choices
+can be optimized to the situations at hand. Many other languages offering
+object oriented facilities (e.g., bf(Java)) only or by default offer late
+binding. bf(C++) programmers should be keenly aware of this. Expecting early
+binding and getting late binding may easily produce nasty bugs.
 
-The following (using in-class implementations to reduce its size) shows a
-little program that may be compiled and run:
+Let's look at a simple example to start appreciating the differences between
+late and early binding. The example merely illustrates. Explanations of
+em(why) things are as shown will shortly be provided.
+
+Consider the  following little program:
         verbinclude(polymorphism/examples/notvirtual.cc)
-    This program could have been constructed from some predecessor, in which
-maybe just one class was defined. At some point its author decided that it
-would have been nice to have a separate tt(Base) class, maybe in order to
-factor out common functionality to be used by various derived classes. Note,
-for example, how the tt(derived) object calls tt(process()) which is defined
-in tt(Base): that's common functionality. Unfortunately, an error has crept
-in. The aim (which is automatically realized in many other object oriented
-programming languages) was that specialized functionality would be made
-available in derived classes. So, tt(Derived) re-implements tt(hello()). Alas:
-when run, the program displays tt(base hello). What went wrong? The answer is:
-static binding. Due to static binding tt(process()) only knows about
-tt(Base::hello()), and so that function is called. Polymorphism, which is not
+    The important characteristic of the above program is the tt(Base::process)
+function, calling tt(hello). As tt(process) is the only member that is defined
+in the public interface it is the only member that can be called by code not
+belonging to the two classes. The class tt(Derived), derived from tt(Base)
+clearly inherits tt(Base)'s interface and so tt(process) is also available in
+tt(Derived). So the tt(Derived) object in tt(main) is able to call
+tt(process), but not tt(hello).
+
+    So far, so good. Nothing new, all this was covered in the previous
+chapter.  One may wonder why tt(Derived) was defined at all.  It was
+presumably defined to create an implementation of tt(hello) that's appropriate
+for tt(Derived) but differing from tt(Base::hello)'s
+implementation. tt(Derived)'s author's reasoning was as follows: tt(Base)'s
+implementation of tt(hello) is not appropriate; a tt(Derived) class object can
+remedy that by providing an appropriate implementation. Furthermore our author
+reasoned: 
+    quote(``since the type of an
+object determines the interface that is used, tt(process) must call
+tt(Derived::hello) as tt(hello) is called via tt(process) from a tt(Derived)
+class object''.)
+
+Unfortunately our author's reasoning is flawed, due to static binding. When
+tt(Base::process) was compiled static binding caused the compiler to fixate
+the tt(hello) call to tt(Base::hello()).
+
+The author em(intended) to create a tt(Derived) class that tt(is-a) tt(Base)
+class. That only partially succeeded: tt(Base)'s interface was inherited, but
+after that tt(Derived) has relinquished all control over what happens. Once
+we're in tt(process) we're only able to see tt(Base)'s member
+implementations. Polymorphism offers a way out, allowing us to redefine (in a
+derived class) members of a base class allowing these redefined members to be
+used from the base class's interface. 
+
+This is the essence of LSP: public inheritance should not be used to reuse the
+base class members (in derived classes) but to be reused (by the base class,
+polymorphically using derived class members reimplementing base class
+members). 
+
+Take a second to appreciate the implications of the above little program. The
+tt(hello) and tt(process) members aren't too impressive, but the implications
+of the example are. The tt(process) member could implement directory travel,
+tt(hello) could define the action to perform when encountering a
+file. tt(Base::hello) might simply show the name of a file, but
+tt(Derived::hello) might delete the file; might only list its name if its
+younger than a certain age; might list its name if it contains a certain text;
+etc., etc.. Up to now tt(Derived) would have to implement tt(process)'s
+actions itself; Up to now code expecting a tt(Base) class reference or pointer
+could only perform tt(Base)'s actions. Polymorphism allows us to reimplement
+members of base classes and to use those reimplemented members in code
+expecting base class references or pointers. Using polymorphism existing code
+may be reused by derived classes reimplementing the appropriate members of
+their base classes. It's about time to uncover how this magic can be realized.
+
+
+Polymorphism, which is not
 the default in bf(C++), solves the problem and allows the author of the
 classes to reach its goal. For the curious reader: prefix tt(void hello()) in
 the tt(Base) class with the keyword tt(virtual) and recompile. Running the
