@@ -1,7 +1,7 @@
-In contrast to the previous definition of a class such as tt(AirAuto),
-situations may arise where the hi(data members: multiply included) double
-presence of the members of a base class is appropriate. To illustrate this,
-consider the definition of a tt(Truck) from section ref(Truck):
+Virtual inheritance can be used to merge multiply occurring base
+classes. However, situations may be encountered where multiple occurrences of
+base classes is appropriate. Consider the definition of a tt(Truck) (cf.
+section ref(Truck)):
         verb(
     class Truck: public Auto
     {
@@ -15,7 +15,6 @@ consider the definition of a tt(Truck) from section ref(Truck):
             void setWeight(int engine_wt, int trailer_wt);
             int weight() const;
     };
-
     Truck::Truck(int engine_wt, int sp, char const *nm,
                   int trailer_wt)
     :
@@ -23,7 +22,6 @@ consider the definition of a tt(Truck) from section ref(Truck):
     {
         d_trailer_weight = trailer_wt;
     }
-
     int Truck::weight() const
     {
         return                  // sum of:
@@ -37,28 +35,26 @@ d_trailer_weight) data member. Such a definition is of course valid, but it
 could also be rewritten. We could derive a tt(Truck) from an tt(Auto)
 em(and) from a tt(Vehicle), thereby explicitly requesting the double presence
 of a tt(Vehicle); one for the weight of the engine and cabin, and one for the
-weight of the trailer.
-A small point of interest here is that a derivation like
+weight of the trailer. A slight complication is that a class organization like
         verb(
     class Truck: public Auto, public Vehicle
         )
-    is not accepted by the bf(C++) compiler: a tt(Vehicle) is already part of
-an tt(Auto), and is therefore not needed. An i(intermediate class) solves
-the problem: we derive a class tt(TrailerVeh) from tt(Vehicle), and tt(Truck)
-from tt(Auto) and from tt(TrailerVeh).  All ambiguities concerning the member
-functions are then be solved for the class tt(Truck):
+    is not accepted by the bf(C++) compiler. As a tt(Vehicle) is already part
+of an tt(Auto), it is therefore not needed once again. This organzation may,
+however be forced using a small trick. By creating an additional class
+inheriting from tt(Vehicle) and deriving tt(Truck) from that additional class
+rather than directly from tt(Vehicle) the problem is solved. Simply derive a
+class tt(TrailerVeh) from tt(Vehicle), and then tt(Truck) from tt(Auto) and
+tt(TrailerVeh):
         verb(
     class TrailerVeh: public Vehicle
     {
         public:
-            TrailerVeh(int wt);
+            TrailerVeh(int wt)
+            :
+                Vehicle(wt)
+            {}
     };
-
-        inline TrailerVeh::TrailerVeh(int wt)
-        :
-            Vehicle(wt)
-        {}
-
     class Truck: public Auto, public TrailerVeh
     {
         public:
@@ -67,14 +63,12 @@ functions are then be solved for the class tt(Truck):
             void setWeight(int engine_wt, int trailer_wt);
             int weight() const;
     };
-
-        inline Truck::Truck(int engine_wt, int sp, char const *nm,
-                            int trailer_wt)
-        :
-            Auto(engine_wt, sp, nm),
-            TrailerVeh(trailer_wt)
-        {}
-
+    inline Truck::Truck(int engine_wt, int sp, char const *nm,
+                        int trailer_wt)
+    :
+        Auto(engine_wt, sp, nm),
+        TrailerVeh(trailer_wt)
+    {}
     inline int Truck::weight() const
     {
         return                      // sum of:
