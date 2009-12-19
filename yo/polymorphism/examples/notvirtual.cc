@@ -3,30 +3,28 @@
 
     class Base
     {
-        public:
+        protected:
             void hello()
             {
                 cout << "base hello\n";
             }
+        public:
             void process()
             {
                 hello();
             }
     };
-
     class Derived: public Base
     {
-        public:
+        protected:
             void hello()
             {
                 cout << "derived hello\n";
             }
     };
-
     int main()
     {
         Derived derived;
 
         derived.process();
-        return 0;
     }
