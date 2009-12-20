@@ -1,139 +1,126 @@
 The class hi(streambuf)tt(std::streambuf) receives the character sequences
-that are processed by streams and defines the interface between the stream
-objects and the devices (like a file on disk). A
-tt(streambuf) object is usually not directly constructed, but usually it is
-part of another classes em(specializing) tt(streambuf).
+processed by streams and defines the interface between the stream objects and
+the devices (like a file on disk). A tt(streambuf) object is usually not
+directly constructed, but usually it is part of another classes
+em(specializing) tt(streambuf).
 
-    The class plays an important role in offering features that were
-available as extensions to the pre-i(ANSI/ISO) standard implementations of
-bf(C++). Although the class cannot be used directly, its members are
-introduced here, as the current chapter is the most logical place to introduce
-the tt(class streambuf). However, this section of the current chapter assumes
-a basic familiarity with the concept of polymorphism, a topic discussed in
-detail in chapter ref(POLYMORPHISM). Readers not yet familiar with the concept
-of polymorphism may, for the time being, skip this section without loss of
-continuity.
+    The primary reason for existence of the class tt(streambuf) is to decouple
+the tt(stream) classes from the devices they operate upon. The rationale here
+is to add an extra layer between the classes allowing us to communicate with
+devices and the devices themselves. This implements a emi(chain of command)
+which is seen regularly in software design.
 
-    The primary reason for existence of the tt(class streambuf), however, is
-to decouple the tt(stream) classes from the hi(device) devices they operate
-upon. The rationale here is to use an extra software layer between, on the one
-hand, the classes allowing us to communicate with the device and, on the other
-hand, the communication between the software and the devices themselves. This
-implements a emi(chain of command) which is seen regularly in
-        i(software design):
-    The em(chain of command) is considered a generic pattern for the
-construction of i(reusable software), encountered also in, e.g., the
-        i(TCP/IP stack).
+    The em(chain of command) is considered a generic pattern when designing
+ i(reusable software), encountered also in, e.g., the
+ i(TCP/IP stack).
+
     A tt(streambuf) can be considered yet another example of the chain of
-command pattern: here the program talks to tt(stream) objects, which in turn
+command pattern. Here the program talks to tt(stream) objects, which in turn
 forward their requests to tt(streambuf) objects, which in turn communicate
-with the devices. Thus, as we will see shortly, we are now able to do in
+with the devices. Thus, as we will see shortly, we are able to do in
 user-software what had to be done via (expensive) system calls before.
 
-    The tt(class streambuf) has no public constructor, but does make available
+    The class tt(streambuf) has no public constructor, but does make available
 several public member functions. In addition to these public member functions,
-several member functions are available to specializing classes only. These
-emi(protected) em(members) are listed in this section for further
-reference. In section ref(FILEBUF) below, a particular specialization of the
-tt(class streambuf) is introduced. Note that all public members of
-tt(streambuf) discussed here are em(also) available in tt(filebuf).
+several member functions are only available to specializing classes.  In
+section ref(FILEBUF) a predefined specialization of the class tt(streambuf) is
+introduced. All public members of tt(streambuf) discussed here are em(also)
+available in tt(filebuf).
 
-    In section ref(POLYSTREAMBUF) the process of constructing specializations
-of the tt(class streambuf) is discussed, and in chapter ref(CONCRETE) several
-other implications of using tt(streambuf) objects are mentioned. In the
-current chapter examples of copying streams, of redirecting streams and of
-reading and writing to streams using the tt(streambuf) members of tt(stream)
-objects are presented (section ref(ADVANCEDIO)).
+    Section ref(POLYSTREAMBUF) covers how to construct specializations of the
+class tt(streambuf) and in chapter ref(CONCRETE) additional examples of
+tt(streambuf) specializations are provided. 
 
-    With the tt(class streambuf) the following public member functions are
-available. The type ti(streamsize) that is used below may, for all practical
-purposes, be considered an tt(unsigned int).
+    The class tt(streambuf) is used by streams performing input operations and
+by streams performing output operations and their member functions can be
+ordered likewise. The type tt(std::streamsize)hi(streamsize) used below may,
+for all practical purposes, be considered equal to the type tt(size_t).
 
-    Public members for i(input) operations:
+bf(Public members for input operations)
+
     itemization(
-    ithtq(streambuf::in_avail())
-        (streamsize streambuf::in_avail())
+    ithtq(in_avail)
+        (std::streamsize in_avail())
         (This member function returns a lower bound on the number of
         characters that can be read immediately.)
-    ithtq(streambuf::sbumpc())
-        (int streambuf::sbumpc())
-        (This member function returns the next available character or
-        endOfFile(). The returned character is removed from the tt(streambuf)
-        object. If no input is available, tt(sbumpc()) will call the
-        (protected) member hi(streambuf::uflow())
-        tt(uflow()) (see section ref(SBPROTECTED) below)
-        to make new characters available. endOfFile() is returned if no more
-        characters are available.)
-    ithtq(streambuf::sgetc())
-        (int streambuf::sgetc())
-        (This member function returns the next available character or
-        endOfFile(). The character is em(not) removed from the tt(streambuf)
-        object, however.)
-    ithtq(streambuf::sgetn())
-        (int streambuf::sgetn(char *buffer, streamsize n))
-        (This member function reads tt(n) characters from the input buffer,
-        and stores them in tt(buffer). The actual number of characters read is
-        returned. This member function calls hi(streambuf::xsgetn()) the
-        (protected) member tt(xsgetn()) (see section ref(SBPROTECTED) below)
-        to obtain the requested number of characters.)
-    ithtq(streambuf::snextc())
-        (int streambuf::snextc())
-        (This member function removes the current character from the input
-        buffer and returns the next available character or
-        endOfFile(). The character is em(not) removed from the tt(streambuf)
-        object, however.)
-    ithtq(streambuf::sputback())
-        (int streambuf::sputback(char c))
-        (Inserts tt(c) as the next character to read from the tt(streambuf)
-        object. Caution should be exercised when using this function: often
-        there is a maximum of just one character that can be put back.)
-    ithtq(streambuf::sungetc())
-        (int streambuf::sungetc())
+    ithtq(sbumpc)
+        (int sbumpc())
+       (The next available character or endOfFile() is returned. The returned
+        character is removed from the tt(streambuf) object. If no input is
+        available, tt(sbumpc) will call the (protected) member ti(uflow) (see
+        section ref(SBPROTECTED) below) to make new characters
+        available. endOfFile() is returned if no more characters are
+        available.)
+    ithtq(sgetc)
+        (int sgetc())
+       (The next available character or endOfFile() is returned. The character
+        is em(not) removed from the tt(streambuf) object.)
+    ithtq(sgetn)
+        (int sgetn(char *buffer, std::streamsize n))
+       (At most tt(n) characters are retrieved from the input buffer, and
+        stored in tt(buffer). The actual number of characters read is
+        returned. The (protected) member ti(xsgetn) (see section
+        ref(SBPROTECTED) below) is called to obtain the requested number of
+        characters.)
+    ithtq(snextc)
+        (int snextc())
+       (The current character is removed from the input buffer and returned as
+        the next available character or endOfFile() is returned. The character
+        is em(not) removed from the tt(streambuf) object.)
+    ithtq(sputback)
+        (int sputback(char c))
+       (Inserts tt(c) into the tt(streambuf)'s buffer to be returned as the
+        next character to read from the tt(streambuf) object. Caution should
+        be exercised when using this function: often there is a maximum of
+        just one character that can be put back.)
+    ithtq(sungetc)
+        (int sungetc())
         (Returns the last character read to the input buffer, to be read again
         at the next input operation.  Caution should be exercised when using
         this function: often there is a maximum of just one character that
         can be put back.)
     )
 
-    Public members for i(output) operations:
+bf(Public members for output operations)
+
     itemization(
-    ithtq(streambuf::pubsync())
-        (int streambuf::pubsync())
-        (Synchronize (i.e., flush) the buffer, by writing any pending
-        information available in the tt(streambuf)'s buffer to the
-        device. Normally used only by specializing classes.)
-    ithtq(streambuf::sputc())
-        (int streambuf::sputc(char c))
-        (This member function inserts tt(c) into the tt(streambuf) object.
-        If, after writing the character, the buffer is full, the function
-        calls the (protected) member function hi(streambuf::overflow())
-        tt(overflow()) to flush the buffer to the device  (see section
-        ref(SBPROTECTED) below).)
-    ithtq(streambuf::sputn())
-        (int streambuf::sputn(char const *buffer, streamsize n))
-        (This member function inserts tt(n) characters from tt(buffer) into
-        the tt(streambuf) object. The actual number of inserted characters
-        is returned. This member function calls hi(streambuf::xsputn()) the
-        (protected) member tt(xsputn()) (see section ref(SBPROTECTED) below)
-        to insert the requested number of characters.)
+    ithtq(pubsync)
+        (int pubsync())
+       (Synchronizes (i.e., flush) the buffer by writing any information
+        currently available in the tt(streambuf)'s buffer to the
+        device. Normally only used by classes derived from tt(streambuf).)
+    ithtq(sputc)
+        (int sputc(char c))
+       (Character tt(c) is inserted into the tt(streambuf) object.  If, after
+        writing the character, the buffer is full, the function calls the
+        (protected) member function ti(overflow) to flush the buffer to the
+        device (see section ref(SBPROTECTED) below).)
+    ithtq(sputn)
+        (int sputn(char const *buffer, std::streamsize n))
+       (At most tt(n) characters from tt(buffer) are inserted into the
+        tt(streambuf) object. The actual number of characters inserted is
+        returned. This member function calls the (protected) member ti(xsputn)
+        (see section ref(SBPROTECTED) below) to insert the requested number of
+        characters.)
     )
 
-    Public members for miscellaneous operations:
+bf(Public members for miscellaneous operations)
+
     itemization(
-    ithtq(streambuf::pubseekoff())
-        (pos_type streambuf::pubseekoff(off_type offset, ios::seekdir way,
+    ithtq(pubseekoff)
+        (ios::pos_type pubseekoff(ios::off_type offset, ios::seekdir way,
             ios::openmode mode = ios::in | ios::out))
-        (Reset the offset of the next character to be read or written to
-        tt(offset), relative to the standard ti(ios::seekdir) values
-        indicating the direction of the seeking operation. Normally used only
-        by specializing classes.)
-    ithtq(streambuf::pubseekpos())
-        (pos_type streambuf::pubseekpos(pos_type offset,
+       (Sets the offset of the next character to be read or written to
+        tt(offset), relative to the standard hi(seekdir) tt(ios::seekdir)
+        values indicating the direction of the seeking operation. Normally
+        only used by specializing classes.)
+    ithtq(pubseekpos)
+       (ios::pos_type pubseekpos(ios::pos_type offset,
             ios::openmode mode = ios::in | ios::out))
-        (Reset the i(absolute position) of the next character to be read or
-        written to tt(pos). Normally used only by specializing classes.)
-    ithtq(streambuf::pubsetbuf())
-        (streambuf *streambuf::pubsetbuf(char* buffer, streamsize n))
-        (Deploy ti(buffer) as the buffer to be used by the tt(streambuf)
-        object. Normally used only by specializing classes.)
+       (Sets the i(absolute position) of the next character to be read or
+        written to tt(pos). Normally only used by specializing classes.)
+    ithtq(pubsetbuf)
+        (streambuf *pubsetbuf(char* buffer, std::streamsize n))
+       (The tt(streambuf) object will use the ti(buffer) accomodating at least
+        tt(n) characters. Normally only used by specializing classes.)
     )

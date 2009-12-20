@@ -1,17 +1,13 @@
-As with the ti(dynamic_cast<>()) operator, the ti(typeid) is usually applied
-to base class objects, that are actually derived class objects. Similarly, the
-base class should contain one or more virtual functions.
+As with the ti(dynamic_cast) operator, ti(typeid) is usually applied to
+references to base class objects that refer to derived class
+objects. tt(Typeid) should only be used with base classes offering virtual
+members. Before using tt(typeid) the tthi(typeinfo) header file must have been
+included.
 
-In order to use the tt(typeid) operator, source files must
-    hi(#include <typeinfo>)
-        verb(
-    #include <typeinfo>
-        )
-    Actually, the tt(typeid) operator returns an object of type ti(type_info),
-which may, e.g., be compared to other tt(type_info) objects.
-
-    Different compilers may offer different implementations of the class
-tt(type_info), but at the very least it must provide the following interface:
+    The tt(typeid) operator returns an object of type tt(type_info).
+Different compilers may offer different implementations of the class
+tt(type_info), but at the very least tt(typeid) must offer the following
+interface:
         verb(
     class type_info
     {
@@ -26,46 +22,42 @@ tt(type_info), but at the very least it must provide the following interface:
             type_info &operator=(type_info const &other);
     };
         )
-    Note that this class has a i(private copy constructor) and overloaded
-hi(private assignment operator) hi(copy constructor: private)
-    hi(assignment operator: private) assignment operator. This prevents the
-normal construction or assignment of a tt(type_info) object. Such tt(type_info)
-objects are constructed and returned by the tt(typeid)
-operator. Compilers, however, may choose to extend or elaborate the
-tt(type_info) class and provide, e.g., lists of functions that can be called
-with a certain class.
+    Note that this class has a private copy constructor and a private
+overloaded assignment operator. This prevents code from  constructing
+tt(type_info) objects and prevents code from assigning tt(type_info) objects
+to each other. Instead, tt(type_info) objects are
+constructed and returned by the tt(typeid) operator.
 
-    If the tt(typeid) operator is given a base class reference (where the
-base class contains at least one virtual function), it will indicate that the
-type of its operand is the derived class. For example:
+    If the tt(typeid) operator is passed a base class reference it is able to
+return the actual name of the type the reference refers to. Example:
         verb(
-    class Base;     // contains at least one virtual function
+    class Base;
     class Derived: public Base;
 
     Derived d;
     Base    &br = d;
 
-    cout << typeid(br).name() << endl;
+    cout << typeid(br).name() << '\n';
         )
     In this example the tt(typeid) operator is given a base class reference.
-It will print the text ``tt(Derived)'', being the i(class name) of the class
+It prints the text ``tt(Derived)'', being the i(class name) of the class
 tt(br) actually refers to. If tt(Base) does not contain virtual functions, the
-text ``tt(Base)'' would have been printed.
+text ``tt(Base)'' is printed.
 
     The tt(typeid) operator can be used to determine the name of the actual
-type of hi(expression: actual type) expressions, not just of class type
+type of hi(expression: type of) expressions, not just of class type
 objects. For example:
         verb(
-    cout << typeid(12).name() << endl;     // prints:  int
-    cout << typeid(12.23).name() << endl;  // prints:  double
+    cout << typeid(12).name() << '\n';     // prints:  int
+    cout << typeid(12.23).name() << '\n';  // prints:  double
         )
-    Note, however, that the above example is suggestive at most of the type
-that is printed. It em(may) be tt(int) and tt(double), but this is not
-necessarily the case. If portability is required, make sure no tests against
-these static, built-in text-strings are required. Check out what your compiler
-produces in case of doubt.
+    Note, however, that the above example is suggestive at most. It em(may)
+print tt(int) and tt(double), but this is not necessarily the case. If
+portability is required, make sure no tests against these static, built-in
+text-strings are required. Check out what your compiler produces in case of
+doubt.
 
-    Note that in situations where the tt(typeid) operator is applied to
+    In situations where the tt(typeid) operator is applied to
 determine the type of a derived class, a base class em(reference)
         hi(typeid: argument)
     should be used as the argument of the tt(typeid) operator. Consider
@@ -108,26 +100,25 @@ actually refers to a tt(Derived) class object, and tt(typeid(*bp)) will return
 tt(typeid(Derived)).  A similar result is obtained if a base class reference
 is used: tt(7) returning tt(true) and tt(8) returning tt(false).
 
-    The tt(type_info::before(type_info const &rhs)) member can be used to
-determine the emi(collating order) of classes that can be used for comparing
-two types for equality.  The function returns a nonzero value if tt(*this)
-precedes tt(rhs) in the collating order for types. When a derived class is
-compared to its base class the comparison returns 0, otherwise a non-zero
-value. E.g.:
+    The tt(type_info::before(type_info const &rhs)) member is used to
+determine the emi(collating order) of classes. This is useful when comparing
+two em(types) for equality.  The function returns a nonzero value if tt(*this)
+precedes tt(rhs) in the hierarchy or collating order of the used types. When a
+derived class is compared to its base class the comparison returns 0,
+otherwise a non-zero value. E.g.:
         verb(
-    cout << typeid(ifstream).before(typeid(istream)) << endl;   // not 0
-    cout << typeid(istream).before(typeid(ifstream)) << endl;   // 0
+    cout << typeid(ifstream).before(typeid(istream)) << '\n' << // not 0
+            typeid(istream).before(typeid(ifstream)) << '\n';   // 0
         )
-    With built-in types the implementor may implement that a comparison of a
-`wider' type with a `smaller' type returns non-0, and 0 otherwise:
+    With built-in types the implementor may implement that non-0 is returned
+when a `wider' type is compared to a `smaller' type and 0 otherwise:
         verb(
-    cout << typeid(double).before(typeid(int)) << endl;   // not 1
-    cout << typeid(int).before(typeid(double)) << endl;   // 0
+    cout << typeid(double).before(typeid(int)) << '\n' <<   // not 0
+            typeid(int).before(typeid(double)) << '\n';     // 0
         )
     When two equal types are compared, 0 is returned:
         verb(
-    cout << typeid(ifstream).before(typeid(ifstream)) << endl;   // 0
+    cout << typeid(ifstream).before(typeid(ifstream)) << '\n';   // 0
         )
-
     When a tt(0)-pointer is passed to the tt(operator typeid) a ti(bad_typeid)
 exception is thrown.
