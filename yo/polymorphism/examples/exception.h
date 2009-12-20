@@ -1,36 +1,43 @@
-    #ifndef EXCEPTION_H_
-    #define EXCEPTION_H_
-
+    #ifndef INCLUDED_EXCEPTION_H_
+    #define INCLUDED_EXCEPTION_H_
     #include <iostream>
     #include <string>
 
     class Exception
     {
-        friend std::ostream &operator<<(std::ostream &str,
-                                        Exception const &e);
         std::string d_reason;
 
         public:
+            Exception(std::string const &reason);
             virtual ~Exception();
-            virtual void process() const = 0;
-            virtual operator std::string() const;
-        protected:
-            Exception(char const *reason);
+
+            std::ostream &insertInto(std::ostream &out) const;
+            void handle() const;
+
+        private:
+            virtual void action() const;
     };
 
-        inline Exception::~Exception()
-        {}
-        inline Exception::operator std::string() const
-        {
-            return d_reason;
-        }
-        inline Exception::Exception(char const *reason)
-        :
-            d_reason(reason)
-        {}
-        inline std::ostream &operator<<(std::ostream &str, Exception const &e)
-        {
-            return str << e.operator std::string();
-        }
+    inline void Exception::action() const
+    {
+        throw;
+    }
+    inline Exception::Exception(std::string const &reason)
+    :
+        d_reason(reason)
+    {}
+    inline void Exception::handle() const   
+    {
+        action();
+    }
+    inline std::ostream &Exception::insertInto(std::ostream &out) const
+    {
+        return out << d_reason;
+    }
+
+    inline std::ostream &operator<<(std::ostream &out, Exception const &e)
+    {
+        return e.insertInto(out);
+    }
 
     #endif

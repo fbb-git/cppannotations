@@ -50,7 +50,17 @@ classes:
         something intelligent when putting back character tt(c) fails. One
         might consider restoring the old read pointer when input buffer's
         begin has been reached. This member function is called when ungetting
-        or putting back a character fails.)
+        or putting back a character fails. In particular, it is called when
+            itemization(
+            itt(gptr() == 0): no buffering used,
+            itt(gptr() == eback()): no more room to push back,
+            itt(*gptr() != c): a different character than the next character
+                to be read must be pushed back.
+            )
+       If tt(c == endOfFile()) then the input device must be reset by one
+        character position. Otherwise tt(c) must be prepended to the
+        characters to be read. The function should return endOfFile() on
+        failure. Otherwise 0 can be returned.)
     ithtq(setg)
         (void setg(char *beg, char *next, char *beyond))
        (This member function initializes an input buffer. tt(beg) points to
@@ -67,20 +77,36 @@ classes:
         of characters that can be read from the device before tt(uflow) or
         tt(underflow) returns endOfFile(). By default 0 is returned (meaning
         no or some characters will be returned before the latter two functions
-        return endOfFile()).)
+        return endOfFile()). When a positive value is returned then the next
+        call of tt(u(nder)flow) will not return endOfFile().)
     ithtq(uflow)
         (virtual int uflow())
        (This member function may be overridden by derived classes to reload an
         input buffer with fresh characters. Its default implementation is to
-        call tt(underflow) (see below) and to increment the read pointer
-        tt(gptr). When em(no) input buffering is required this function,
+        call tt(underflow) (see below). If tt(underflow()) fails, endOfFile()
+        is returned.  Otherwise, the next character available character is
+        returned as tt(*gptr()) following a tt(gbump(-1)). tt(Uflow) also
+        moves the pending character that is returned to the backup
+        sequence. This is different from tt(underflow()), which merely returns
+        the next available character, but does not alter the input pointer 
+        positions.
+
+        When em(no) input buffering is required this function,
         rather than tt(underflow), can be overridden to produce the next
         available character from the device to read from.)
     ithtq(underflow)
         (virtual int underflow())
        (This member function may be overridden by derived classes to read
         another character from the device. The default implementation is to
-        return endOfFile(). Often, when buffering is used, the complete buffer
+        return endOfFile(). 
+
+        It is called when
+            itemization(
+            it() there is no input buffer (tt(eback() == 0))
+            itt(gptr() >= egptr()): the input buffer is exhausted.
+            )
+
+        Often, when buffering is used, the complete buffer
         is not refreshed as this would make it impossible to put back
         characters immediately following a reload. Instead, buffers are often
         refreshed in halves. This system is called a emi(split buffer).
@@ -110,7 +136,9 @@ classes:
         at once tt(n) characters from the input device. The default
         implementation is to call tt(sbumpc) for every single character
         meaning that by default this member (eventually) calls tt(underflow)
-        for every single character.)
+        for every single character. The function returns the actual number of
+        characters read or enfOfFile(). If endOfFile() is returned the
+        tt(streambuf) will stop reading the device.)
     )
 
 The following  protected members are available for output
@@ -179,7 +207,8 @@ operations. Again, some members may be overridden by derived classes:
         (streamsize xsputn(char const *buffer, streamsize n))
        (This member function may be overridden by derived classes to write a
         series of at most tt(n) characters to the output buffer. The actual
-        number of inserted characters is returned. The default implementation
+        number of inserted characters is returned. If endOfFile() is returned
+        writing to the device stops. The default implementation
         calls tt(sputc) for each individual character, so redefining this
         member is only necessary if a more efficient implementation is
         required.)
@@ -191,7 +220,8 @@ Several protected members are related to buffer management and positioning:
     ithtq(setbuf)
         (virtual streambuf *setbuf(char *buffer, streamsize n))
        (This member function may be overridden by derived classes to install a
-        buffer. The default implementation is to do nothing.)
+        buffer. The default implementation is to do nothing. It is called by
+        tt(pubsetbuf).)
     it()hi(seekoff)
         tt(virtual
             pos_type seekoff+OPENPARoff_type offset, ios::seekdir way,)nl()
@@ -203,7 +233,8 @@ Several protected members are related to buffer management and positioning:
         default implementation indicates failure by returning -1. The function
         is called when tt(tellg) or tt(tellp) are called. When derived class
         supports seeking, then it should also define this function to handle
-        repositioning requests.)
+        repositioning requests. It is called by ti(pubseekoff). The
+        new position or an invalid position (i.e., -1) is returned.)
     it() hi(seekpos)
         tt(virtual pos_type seekpos+OPENPARpos_type offset,
             ios::openmode mode =)nl()
@@ -216,12 +247,12 @@ Several protected members are related to buffer management and positioning:
         (virtual int sync())
        (This member function may be overridden by derived classes to flush the
         output buffer to the output device or to reset the input device just
-        betond the position of the character that was returned last. The
-        default implementation (not using a buffer) is to return 0, indicating
-        successful syncing. This member is used to ensure that any characters
-        that are still buffered are written to the device or to put unconsumed
-        characters back to the device when the tt(streambuf) object ceases to
-        exist.)
+        betond the position of the character that was returned last. It
+        returns 0 on success, -1 on failure. The default implementation (not
+        using a buffer) is to return 0, indicating successful syncing. This
+        member is used to ensure that any characters that are still buffered
+        are written to the device or to put unconsumed characters back to the
+        device when the tt(streambuf) object ceases to exist.)
    )
     )
     When classes are derived from tt(streambuf) at least tt(underflow) should

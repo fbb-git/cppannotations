@@ -3,13 +3,12 @@
 
     #include "exception.h"
 
-    class WarningException: public Exception
+    class Warning: public Exception
     {
         public:
-            WarningException(char const *reason)
+            Warning(std::string const &reason)
             :
-                Exception(reason)
+                Exception("Warning: " + reason)
             {}
-            void process() const;
     };
     #endif

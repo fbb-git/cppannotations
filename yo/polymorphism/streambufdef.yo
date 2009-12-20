@@ -1,8 +1,8 @@
 The class hi(streambuf)tt(std::streambuf) receives the character sequences
 processed by streams and defines the interface between the stream objects and
 the devices (like a file on disk). A tt(streambuf) object is usually not
-directly constructed, but usually it is part of another classes
-em(specializing) tt(streambuf).
+directly constructed, but usually it is used as base class of some derived
+class implementing the communication with some concrete device.
 
     The primary reason for existence of the class tt(streambuf) is to decouple
 the tt(stream) classes from the devices they operate upon. The rationale here
@@ -22,14 +22,14 @@ user-software what had to be done via (expensive) system calls before.
 
     The class tt(streambuf) has no public constructor, but does make available
 several public member functions. In addition to these public member functions,
-several member functions are only available to specializing classes.  In
-section ref(FILEBUF) a predefined specialization of the class tt(streambuf) is
-introduced. All public members of tt(streambuf) discussed here are em(also)
-available in tt(filebuf).
+several member functions are only available to classes derived from
+tt(streambuf).  In section ref(FILEBUF) a predefined specialization of the
+class tt(streambuf) is introduced. All public members of tt(streambuf)
+discussed here are em(also) available in tt(filebuf).
 
-    Section ref(POLYSTREAMBUF) covers how to construct specializations of the
-class tt(streambuf) and in chapter ref(CONCRETE) additional examples of
-tt(streambuf) specializations are provided. 
+    The next section shows the tt(streambuf) members that may be overridden
+when deriving classes from tt(streambuf). Chapter ref(CONCRETE) offers
+concrete examples of classes derived from tt(streambuf).
 
     The class tt(streambuf) is used by streams performing input operations and
 by streams performing output operations and their member functions can be
@@ -106,21 +106,22 @@ bf(Public members for output operations)
 
 bf(Public members for miscellaneous operations)
 
+    The next three members are normally only used by classes derived from
+tt(streambuf).
     itemization(
     ithtq(pubseekoff)
         (ios::pos_type pubseekoff(ios::off_type offset, ios::seekdir way,
             ios::openmode mode = ios::in | ios::out))
        (Sets the offset of the next character to be read or written to
         tt(offset), relative to the standard hi(seekdir) tt(ios::seekdir)
-        values indicating the direction of the seeking operation. Normally
-        only used by specializing classes.)
+        values indicating the direction of the seeking operation.)
     ithtq(pubseekpos)
        (ios::pos_type pubseekpos(ios::pos_type offset,
             ios::openmode mode = ios::in | ios::out))
        (Sets the i(absolute position) of the next character to be read or
-        written to tt(pos). Normally only used by specializing classes.)
+        written to tt(pos).)
     ithtq(pubsetbuf)
         (streambuf *pubsetbuf(char* buffer, std::streamsize n))
        (The tt(streambuf) object will use the ti(buffer) accomodating at least
-        tt(n) characters. Normally only used by specializing classes.)
+        tt(n) characters.)
     )

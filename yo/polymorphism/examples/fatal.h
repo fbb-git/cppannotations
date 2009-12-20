@@ -1,20 +1,25 @@
-    #ifndef FATALEXCEPTION_H_
-    #define FATALEXCEPTION_H_
+    #ifndef FATAL_H_
+    #define FATAL_H_
 
     #include "exception.h"
 
-    class FatalException: public Exception
+    class Fatal: public Exception
     {
         public:
-            FatalException(char const *reason);
-            void process() const;
+            Fatal(std::string  const &reason);
+        private:
+            virtual void action() const;
     };
-        inline FatalException::FatalException(char const *reason)
-        :
-            Exception(reason)
-        {}
-        inline void FatalException::process() const
-        {
-            exit(1);
-        }
+
+    inline Fatal::Fatal(std::string  const &reason)
+    :
+        Exception(reason)
+    {}
+
+    inline void Fatal::action() const
+    {
+        std::cout << "Fatal::action() terminates" << std::endl;
+        std::terminate();
+    }
+
     #endif
