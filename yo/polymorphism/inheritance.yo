@@ -1,0 +1,67 @@
+Inheritance should not be applied automatically and thoughtlessly. Often
+composition can be used instead, improving on a class's design by reducing
+coupling. When inhertitance is used em(public) inheritance should not
+automatically be used but the type of inheritance that is selected should
+match the programmer's intent. 
+
+We've seen that polymorphic classes on the one hand offer interface members
+defining the functionality that can be requested of base classes and on the
+other hand offer virtual members that can be overridden. Good class design is
+indicated by adherence to the principle of `one function, one task'. In this
+context: a class member should either be a member of the class's public or
+protected interface or it should as a virtual member be available for
+reimplementation by derived classes. Often this boils down to virtual members
+that are defined in the base class's em(private) section. They aren't there to
+be called by code using the base class, but they are there to be overridden by
+derived classes using polymorphism to redefine the base class's behavior. 
+
+The underlying principle was mentioned before in the introductional paragraph
+of this chapter: according to the emi(Liskow Substitution Principle)
+(emi(LSP)) an emi(is-a) relationship between classes (indicating that a
+derived class object em(is a) base class object) implies that a derived class
+object may be used in code expecting a base class object.
+
+Here inheritance is used em(not) to let the derived class use the facilities
+already implemented by the base class but to reuse the base class
+polymorphically by reimplementing the base class's virtual members in the
+derived class.  the base class.
+
+In this section we'll discuss the reasons for using inheritance. Why should
+inheritance (not) be used? If it is used what do we try to accomplish by it?
+
+Inheritance often competes with composition. Consider the following
+alternative class designs:
+        verb(
+    class Derived: // derived from Base
+    { ... };
+
+    class Composed
+    {
+        Base d_base;
+        ...
+    };
+        )
+    Why and when prefer tt(Derived) over tt(Base) and vice versa? What kind of
+inheritance should be used when designing the class tt(Derived)? 
+    itemization(
+    it() Since tt(Composed) and tt(Derived) are offered as alternatives we are
+        looking at the design of a class (tt(Derived) or tt(Composed)) that
+        emi(is-implemented-in-terms-of) another class.
+    it() Since tt(Composed) does itself not make tt(Base)'s interface
+        available, tt(Derived) shouldn't do so either, leading us to using
+        emi(private inheritance) when deriving from tt(Base).
+    it() Should we use inheritance or composition? Here are some arguments:
+        itemization(
+        it() Composition results in looser coupling and should therefore be
+            preferred over inheritance. 
+        it() Composition allows us to define multiple members of the same type
+            (think about a class having multiple tt(std::string) members)
+            which is not simply realized using inheritance.
+        it() About the only reason for using inheritance here if tt(Base)
+            offers members in its em(protected) interface that must be used
+            when implementing tt(Derived). Again: since we're
+            implementing-in-terms-of the inheritance type should be
+            tt(private). 
+        )
+    )
+
