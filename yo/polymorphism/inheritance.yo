@@ -62,6 +62,75 @@ inheritance should be used when designing the class tt(Derived)?
             when implementing tt(Derived). Again: since we're
             implementing-in-terms-of the inheritance type should be
             tt(private). 
+        it() Protected inheritance may be considered when the derived class
+            (tt(D)) itself is intended as a base class that should only make
+            the members of its own base class (tt(B)) available to classes
+            that are derived from it (i.e., tt(D)).
         )
     )
+
+    Private inheritance is also the inheritance of choice when the derived
+class is a certain kind of base class, but in order to initialize that base
+class an object of another class type must be available. Example: a new
+tt(istream) class-type (say: a stream tt(IRandStream) from which random
+numbers can be extracted) will be derived from tt(std::istream).  Although an
+tt(istream) can be constructed empty, receiving its tt(streambuf) later using
+its tt(rdbuf) member it is clearly more attractive to initialize the
+tt(istream) base class right away. Assuming that a tt(Randbuffer: public
+std::streambuf) has been created for generating random numbers tt(IRandStream)
+can be derived from tt(Randbuffer) and tt(std::ostream). That way the
+tt(ostream) base class can be initialized using the tt(Randbuffer) base
+class. As a tt(RandStream) is definitely not a tt(Randbuffer) em(public)
+inheritance is inappropriate. In this case tt(IRandStream)
+is-implemented-in-terms-of a tt(Randbuffer) and so em(private) inheritance
+should be used. tt(IRandStream)'s class interface should therefore start like
+this:
+        verb(
+    class IRandStream: private Randbuffer, public std::istream
+    {
+        public:
+            IRandStream(int lowest, int highest)    // defines the range 
+            :
+                Randbuffer(lowest, highest),
+                std::istream(this)                  // passes &Randbuffer
+            {}
+        ...
+    };
+        )
+
+    
+    Public inheritance should be reserved for classes for which the LSP holds
+true. In those cases the derived classes can always be used instead of the
+base class from which they derive by code merely using base class references,
+pointers or members (I.e., it holds true that the derived class emi(is-a) base
+class). This most often applies to classes derived from base classes offering
+virtual members. To separate the user interface from the redefinable interface
+the base class's public interface should em(not) contain virtual members
+(except for the virtual destructor) and the virtual members should all be in
+the base class's private section. Such virtual members can still be overridden
+by derived classes (which should not cause a surprise, considering how
+polymorphism is implemented) and offers the base class full control over the
+context in which the redefined members are used. Often the public interface
+merely calls a virtual member, but those members can always be redefined to
+perform additional duties. 
+    
+    The prototypical form of a hi(base class: prototype) base class therefore
+looks like this:
+        verb(
+    class Base
+    {
+        public:
+            virtual ~Base()
+            void process();             // calls a virtual member
+        private:
+            virtual void processImp();  // overridden by derived classes
+    };
+        )
+    
+
+
+
+
+
+
 
