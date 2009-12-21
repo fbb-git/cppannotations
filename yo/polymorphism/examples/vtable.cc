@@ -1,18 +1,13 @@
     class Base
     {
-        public:
-            virtual void member();
+        virtual void member();
     };
-
-        inline void Base::member()
-        {}
-
+    inline void Base::member()
+    {}
     class Derived: public Base
     {
-        public:
-            virtual void member();      // only declared
+        virtual void member();      // only declared
     };
-
     int main()
     {
         Derived d;  // Will compile, since all members were declared.

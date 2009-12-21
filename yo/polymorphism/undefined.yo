@@ -1,25 +1,22 @@
-    Occasionaly, the linker will complain with a message like the following:
-    hi(undefined reference to vtable)
-    hi(vtable: undefined reference)
+Occasionaly, the linker will generate an error like the following:
+ hi(undefined reference to vtable) hi(vtable: undefined reference)
         verb(
-    In function
-        `Derived::Derived[in-charge]()':
+    In function `Derived::Derived()':
         : undefined reference to `vtable for Derived'
         )
-    This error is caused by the absence of the implementation of
-a virtual function in a derived class, while the function is mentioned in the
-derived class's interface.
+    This error is generated when a virtual function's implementation is
+missing in a derived class, but the function is mentioned in the derived
+class's interface.
 
-    Such a situation can easily be created:
+    Such a situation is easily encountered:
     itemization(
     it() Construct a (complete) base class defining a virtual member function;
-    it() Construct a Derived class which mentions the virtual function in its
+    it() Construct a Derived class mentioning the virtual function in its
         interface;
-    it() The Derived class's virtual function, overriding the base class's
-function having the same name, is not implemented. Of course, the compiler
-doesn't know that the derived class's function is not implemented and will,
-when asked, generate code to create a derived class object;
-    it() However, the linker is unable to find the derived class's virtual
+    it() The Derived class's virtual function is not implemented. Of course,
+the compiler doesn't know that the derived class's function is not implemented
+and will, when asked, generate code to create a derived class object;
+    it() Eventually, the linker is unable to find the derived class's virtual
 member function. Therefore, it is unable to construct the derived class's
 vtable;
     it() The linker complains with the message:
