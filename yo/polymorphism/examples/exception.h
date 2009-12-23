@@ -26,7 +26,7 @@
     :
         d_reason(reason)
     {}
-    inline void Exception::handle() const   
+    inline void Exception::handle() const
     {
         action();
     }

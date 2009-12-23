@@ -11,7 +11,7 @@ class String
         String *sp;
         size_t *np;
     };
-        
+
     std::string d_str;
 
     public:
@@ -27,14 +27,14 @@ class String
         {
             Ptrs p = {operator new(n * sizeof(String) + sizeof(size_t))};
             *p.np++ = n;
-    
+
             string line;
             for (size_t idx = 0; idx != n; ++idx)
             {
                 getline(in, line);
                 new(p.sp + idx) String(line);
             }
-    
+
             return p.sp;
         }
         static void destroy(String *sp)
@@ -43,7 +43,7 @@ class String
             --p.np;
             for (size_t n = *p.np; n--; )
                 sp++->~String();
-        
+
             operator delete (p.vp);
         }
 };
@@ -54,17 +54,14 @@ int main()
 
     String::destroy(sp);
 }
- 
+
 /*
-    After providing 5 lines containing, respectively 
+    After providing 5 lines containing, respectively
         alfa, bravo, charlie, delta, echo
     the program displays:
-		destructor: alfa
-		destructor: bravo
-		destructor: charlie
-		destructor: delta
-		destructor: echo
+                destructor: alfa
+                destructor: bravo
+                destructor: charlie
+                destructor: delta
+                destructor: echo
 */
-
-
-

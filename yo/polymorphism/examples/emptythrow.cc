@@ -5,7 +5,7 @@
     {}
 
     using namespace std;
-    
+
     int main(int argc, char **argv)
     try
     {
@@ -28,7 +28,7 @@
     }
 
 //
-//    
+//
 //    void initialExceptionHandler(Exception const *e)
 //    {
 //        cout << *e << endl;         // show the plain-text information

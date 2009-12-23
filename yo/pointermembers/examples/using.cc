@@ -31,4 +31,3 @@
                 (object.*getPtr)() << '\n' <<   // (4)
                 (ptr->*getPtr)() << '\n';
     }
-

@@ -1,8 +1,8 @@
     #include <iostream>
     using namespace std;
-    
+
     static size_t count = 0;
-    
+
     class X
     {
         int x;
@@ -25,12 +25,12 @@
             }
             void operator delete[](void *mem)
             {
-                cout << "Deleting memory at " << mem << ", containing: " << 
+                cout << "Deleting memory at " << mem << ", containing: " <<
                     *reinterpret_cast<int *>(mem) << "\n";
                 ::operator delete(mem);
             }
     };
-    
+
     int main()
     try
     {

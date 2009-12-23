@@ -55,5 +55,3 @@
                 index << ", should be < " << d_size << '\n';
         throw out.str();
     }
-
-
