@@ -1,40 +1,34 @@
-Static hi(static members) members of a class exist without an object of their
-class. They exist em(separately from) any object of their class.  When these
-static members are public, they can be accessed as global entities, albeit
-that their class names are required when they are used.
+Static hi(static: members) members of a class can be used without having
+available an object of their class. Public static members can be called like
+free functions, albeit that their class names must be specified when they are
+called.
 
-Assume that a class tt(String) has a public static member function
-tt(int n_strings()), returning the number of string objects created so
+Assume a class tt(String) has a public static member function
+tt(count), returning the number of string objects created so
 far. Then, without using any tt(String) object the function
-tt(String::n_strings()) may be called:
+tt(String::count) may be called:
         verb(
     void fun()
     {
-        cout << String::n_strings() << endl;
+        cout << String::count() << '\n';
     }
         )
-    Public static members can usually be accessed like global entities (but
-see section ref(CALLINGCONVENTION)).  Private static members, on the other
-hand, can be accessed only from within the context of their class: they can
-only be accessed from inside the member functions of their class.
+    em(Public) static members can be called like free functions (but see also
+section ref(CALLINGCONVENTION)).  em(Private) static members can only be
+called within the context of their class, by their class's member or friend
+functions.
 
-    Since static members have no associated objects, but are comparable to
-global functions and data, their addresses can be stored in ordinary pointer
-variables, operating at the i(global) level. Actually, using a
-    i(pointer to member) to address a static member of a class would produce a
-i(compilation error).
-
-For example, the address of a static member function tt(int
-String::n_strings()) can simply be stored in a variable tt(int (*pfi)()), even
-though tt(int (*pfi)()) has em(nothing) in common with the tt(class
-String). This is illustrated in the next example:
+    Since static members have no associated objects their addresses can be
+stored in ordinary function pointer variables, operating at the global
+level. Pointers to members cannot be used to store addresses of static
+members. Example:
         verb(
     void fun()
     {
-        int (*pfi)() = String::n_strings;
-                    // address of the  static member function
+        size_t (*pf)() = String::count;
+                // initialize pf with the address of a static member function
 
-        cout << (*pfi)() << endl;
-                    // print the value produced by String::n_strings()
+        cout << (*pf)() << '\n';
+                // displays the value returned by String::count()
     }
         )

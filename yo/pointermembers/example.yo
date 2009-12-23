@@ -1,7 +1,7 @@
 Knowing how pointers to variables and objects are used does not intuitively
 lead to the concept of em(pointers to members) hi(pointer to members). Even if
 the return types and parameter types of member functions are taken into
-account, surprises are likely to be encountered.  For example, consider the
+account, surprises can easily be encountered.  For example, consider the
 following class:
         verb(
     class String
@@ -12,24 +12,27 @@ following class:
             char const *get() const;
     };
         )
-    For this class, it is not possible to let a tt(char const *(*d_sp)()
-const) data member point to the tt(get()) member function of the tt(String)
-class: tt(d_sp) cannot be given the address of the member function tt(get()).
+    For this class, it is not possible to let tt(char const *(*d_sp)() const)
+point to the tt(String::get) member function as tt(d_sp) cannot be given the
+address of the member function tt(get).
 
     One of the reasons why this doesn't work is that the variable tt(d_sp) has
-i(global scope), while the member function tt(get()) is defined within the
-tt(String) class, and has tt(class scope). The fact that the variable tt(d_sp)
-is part of the tt(String) class is irrelevant. According to tt(d_sp)'s
-definition, it points to a function living em(outside) of the class.
+hi(scope: global)i(global scope) (it is a pointer to em(a) function, not a
+pointer to a function within tt(String)), while the member function tt(get) is
+defined within the tt(String) class, and thus has tt(class scope). The fact
+that tt(d_sp) is a data member of the class tt(String) is irrelevant
+here. According to tt(d_sp)'s definition, it points to a function living
+somewhere em(outside) of the class.
 
-Consequently, in order to define a pointer to a member (either data or
-function, but usually a function) of a class, the scope of the pointer must be
-within the class's scope.  Doing so, a pointer to a member of the class
-tt(String) can be defined as
+Consequently, to define a pointer to a member (either data or function, but
+usually a function) of a class, the scope of the pointer must indicate
+hi(scope: class)i(class scope).  Doing so, a pointer to the member
+tt(String::get) is defined like this:
         verb(
     char const *(String::*d_sp)() const;
         )
-    So, due to the tt(String::) prefix, tt(d_sp) is defined as a pointer only
-in the context of the class tt(String). It is defined as a pointer to a
-function in the class tt(String), not expecting arguments, not modifying its
-object's data, and returning a pointer to constant characters.
+    So, by prefixing the tt(*d_sp) pointer data member by tt(String::), it is
+defined as a pointer in the context of the class tt(String). According to its
+definition it is em(a pointer to a function in the class tt(String), not
+expecting arguments, not modifying its object's data, and returning a pointer
+to constant characters).

@@ -6,7 +6,7 @@ its data from external code we promote a class's i(data integrity) and we
 prevent that external code becomes i(implementation dependent) on the data in
 a class.
 
-In this short chapter we will introduce the ti(friend) keyword and the
+In this (very) short chapter we introduce the ti(friend) keyword and the
 principles that underly its use. The bottom line being that by using the
 tt(friend) keyword functions are granted access to a class's tt(private)
 members. As will be discussed this does not automatically imply that we
@@ -15,73 +15,33 @@ abandon the principle of data hiding when the tt(friend) keyword is used.
 In this chapter the topic of
     i(friendship among classes) is not discussed. Situations in which it is
 natural to use friendship among classes are discussed in chapters
-ref(NESTEDCLASSES) and ref(TEMPLATES). 
+ref(NESTEDCLASSES) and ref(TEMPLATES) and are a natural extension of the way
+friendship is handled for functions.
 
-There must be a well-defined conceptual reason for declaring friendship
+There should be a well-defined conceptual reason for declaring friendship
 (i.e., using the tt(friend) keyword). The traditionally offered definition of
-a class usually looks something like this:
+the hi(class: concept defined) class concept usually looks something like
+this:
     quote(em(A class is a set of data together with the functions that operate
         on that set of data.)) 
 
-As we've seen in chapter ref(OVERLOADING) certain functions, in particular
-those implementing binary operators, may have to be defined outside of a class
-interface. Either to allow promotions for either their left hand side or right
-hand side operands or to extend the facilities of classes that are not
-directly under our control. Overloading the stream insertion and extraction
-operators are cases in point. 
+As we've seen in chapter ref(OVERLOADING) some functions have to be defined
+outside of a class interface. They are defined outside of the class interface
+to allow promotions for their operands or to extend the facilities of existing
+classes not directly under our control. According to the above traditional
+definition of the class concept those functions that cannot be defined in the
+class interface itself should nevertheless be considered functions belonging
+to the class. Stated otherwise: if permitted by the language's syntax they
+would certainly have been defined inside the class interface. There are two
+ways to implement such functions. One way consists of implementing those
+functions using available public member functions. This approach was used,
+e.g., in section ref(EXTRACTORS). Another approach applies the definition of
+the class concept to those functions. By stating that those functions in fact
+belong to the class they should be given direct access to the data members of
+objects. This is accomplished by the tt(friend) keyword.
 
-
-
-Consider a class tt(DateTime) representing a date and time. 
-        verb(
-    class Person
-    {
-        Name d_name;
-        Date d_birthDate;
-        Sex  d_sex;
-        MaritalStatus d_maritalStatus
-        public:
-            
-
-
-Consider the following situation.  The i(insertion operator) may be used to
-insert information into a stream.  This operator can be given data of several
-types: tt(int, double, char *), etc.. Earlier (chapter ref(MEMORY)), we
-introduced the class tt(Person). The class tt(Person) has members to retrieve
-the data stored in the tt(Person) object, like tt(char const
-*Person::name()). These members could be used to `insert' a tt(Person)
-object into a stream, as shown in section ref(EXTRACTORS).
-
-    With the tt(Person) class the implementation of the insertion
-and extraction operators is fairly optimal. The insertion operator uses
-emi(accessor) members which can be implemented as inline members,
-effectively making the private data members directly available for
-inspection. The extraction operator requires the use of emi(modifier) members
-that could hardly be implemented differently: the old memory will always have
-to be deleted, and the new value will always have to be copied to newly
-allocated memory.
-
-    But let's once more take a look at the class tt(PersonData), introduced in
-section ref(EXPLICIT). It seems likely that this class has at least the
-following (private) data members:
-        verb(
-    class PersonData
-    {
-        Person *d_person;
-        size_t d_n;
-    };
-        )
-    When constructing an overloaded insertion operator for a tt(PersonData)
-object, e.g., inserting the information of all its persons
-into a stream, the overloaded insertion operator is implemented rather
-inefficiently when the individual persons must be accessed using the
-    i(index operator).
-
-    In cases like these, where the i(accessor) and i(modifier) members tend to
-become rather complex, direct access to the private data members might improve
-efficiency. So, in the context of insertion and extraction, we are looking for
-overloaded member functions implementing the insertion and extraction
-operations and having access to the private data members of the objects to be
-inserted or extracted. In order to implement such functions em(non-member)
-functions must be given access to the private data members of a class. The
-ti(friend) keyword is used to implement this.
+A a general principle 
+    hi(class: externally declared functions) we state that all functions
+operating on the data of objects of a class that are declared in the same file
+as the class interface itself belong to that class and may be granted direct
+access to the class's data members.
