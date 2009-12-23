@@ -17,16 +17,8 @@ char
 int
     returnValue = 0;
 
-void handler()
-{
-    cerr << "Out of memory\n";
-    exit (1);
-}
-
 int main(int argc, char **argv)
 {
-    set_new_handler(handler);
-
     Arg::initialize("", argc, argv);
 
     Arg &arg(Arg::instance());

@@ -2,25 +2,19 @@
 
 void getKeys()
 {
-    string
-        line;
-    Pattern
-        pattern("([^:]+):<index\\s+(\\d+)\\s+(.*)>");
-    unsigned
-        filenameIndex = 0,
-        nr = 0;
+    string line;
+    Pattern pattern("([^:]+):<index\\s+(\\d+)\\s+(.*)>");
+    unsigned filenameIndex = 0;
 
     while (getline(cin, line))
     {
-        nr++;
-
         try
         {
             pattern.match(line);
         }
         catch (...)
         {
-            cerr << "Invalid entry at line " << nr << ": `" << line << "'\n";
+            cerr << "Invalid entry at line `" << line << "'\n";
             returnValue = 1;
             continue;
         }
@@ -30,7 +24,7 @@ void getKeys()
 
         if (pos.first == pos.second)
         {
-            cerr << "Missing key at line " << nr << ": `" << line << "'\n";
+            cerr << "Missing key at line `" << line << "'\n";
             returnValue = 1;
             continue;
         }
