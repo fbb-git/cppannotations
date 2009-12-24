@@ -1,53 +1,52 @@
     #include <iostream>
-    #include <sstream>
     #include <string>
     #include <vector>
     #include <functional>
     #include <numeric>
-
     using namespace std;
 
     class Time
     {
-        friend ostream &operator<<(ostream &str, Time const &time)
-        {
-            return cout << time.d_days << " days, " << time.d_hours <<
-                                                        " hours, " <<
-                            time.d_minutes << " minutes and " <<
-                            time.d_seconds << " seconds.";
-        }
-
+        friend ostream &operator<<(ostream &str, Time const &time);
         size_t d_days;
         size_t d_hours;
         size_t d_minutes;
         size_t d_seconds;
-
         public:
-            Time(size_t hours, size_t minutes, size_t seconds)
-            :
-                d_days(0),
-                d_hours(hours),
-                d_minutes(minutes),
-                d_seconds(seconds)
-            {}
-            Time &operator+=(Time const &rValue)
-            {
-                d_seconds   += rValue.d_seconds;
-                d_minutes   += rValue.d_minutes   + d_seconds / 60;
-                d_hours     += rValue.d_hours     + d_minutes / 60;
-                d_days      += rValue.d_days      + d_hours   / 24;
-                d_seconds   %= 60;
-                d_minutes   %= 60;
-                d_hours     %= 24;
-
-                return *this;
-            }
+            Time(size_t hours, size_t minutes, size_t seconds);
+            Time &operator+=(Time const &rValue);
     };
     Time const operator+(Time const &lValue, Time const &rValue)
     {
-        return Time(lValue) += rValue;
+        Time ret(lValue);
+        ret += rValue;
+        return ret;
     }
-
+    Time::Time(size_t hours, size_t minutes, size_t seconds)
+    :
+        d_days(0),
+        d_hours(hours),
+        d_minutes(minutes),
+        d_seconds(seconds)
+    {}
+    Time &Time::operator+=(Time const &rValue)
+    {
+        d_seconds   += rValue.d_seconds;
+        d_minutes   += rValue.d_minutes   + d_seconds / 60;
+        d_hours     += rValue.d_hours     + d_minutes / 60;
+        d_days      += rValue.d_days      + d_hours   / 24;
+        d_seconds   %= 60;
+        d_minutes   %= 60;
+        d_hours     %= 24;
+        return *this;
+    }
+    ostream &operator<<(ostream &str, Time const &time)
+    {
+        return cout << time.d_days << " days, " << time.d_hours <<
+                                                    " hours, " <<
+                        time.d_minutes << " minutes and " <<
+                        time.d_seconds << " seconds.";
+    }
     int main(int argc, char **argv)
     {
         vector<Time> tvector;
@@ -62,10 +61,6 @@
             (
                 tvector.begin(), tvector.end(), Time(0, 0, 0), plus<Time>()
             ) <<
-            endl;
+            '\n';
     }
-    /*
-        produced output:
-
-        2 days, 14 hours, 51 minutes and 30 seconds.
-    */
+    //  Displays: 2 days, 14 hours, 51 minutes and 30 seconds.

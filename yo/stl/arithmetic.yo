@@ -1,92 +1,83 @@
-The hi(arithmetic function object) arithmetic function objects support the
-standard i(arithmetic operations): i(addition), i(subtraction),
-i(multiplication), i(division), i(modulus) and i(negation). These predefined
-arithmetic function objects invoke the corresponding operator of the
-associated data type. For example, for addition the function object
-tt(plus<Type>) hi(plus<>()) is available. If we set tt(type) to tt(size_t)
-then the tt(+) operator for tt(size_t) values is used, if we set tt(type) to
-tt(string), then the tt(+) operator for strings is used. For example:
+The hi(function object: arithmetic)hi(arithmetic function object) arithmetic
+function objects support the standard i(arithmetic operations): addition,
+subtraction, multiplication, division, modulo and negation. These function
+objects invoke the corresponding operators of the data types for which they
+are instantiated. For example, for addition the function object tt(plus<Type>)
+hi(plus) is available. If we replace tt(Type) by tt(size_t) then the addition
+operator for tt(size_t) values is used, if we replace tt(Type) by tt(string),
+the addition operator for strings is used. For example:
         verbinclude(stl/examples/plus.cc)
     Why is this useful? Note that the function object can be used with all
-kinds of data types (not only with the predefined datatypes), in which the
-particular operator has been overloaded. Assume that we want to perform an
-operation on a common variable on the one hand and, on the other hand, in turn
-on each element of an array. E.g., we want to compute the sum of the elements
-of an array; or we want to concatenate all the strings in a text-array. In
-situations like these the function objects come in handy. As noted before, the
-function objects are heavily used in the context of the generic algorithms, so
-let's take a quick look ahead at one of them.
+kinds of data types (not only with the predefined datatypes) supporting the 
+operator called by the function object. 
 
-    One of the generic algorithms is called ti(accumulate()). It visits all
-elements implied by an iterator-range, and performs a requested binary
-operation on a common element and each of the elements in the range, returning
-the accumulated result after visiting all elements.
-For example, the following program accumulates all command line arguments,
-and prints the final string:
+Suppose we want to perform an operation on a left hand side operand which is
+always the same variable and a right hand side argument for which, in turn,
+all elements of an array should be used. E.g., we want to compute the sum of
+all elements in an array; or we want to concatenate all the strings in a
+text-array. In situations like these function objects come in handy. 
+
+As stated, function objects are heavily used in the context of the generic
+algorithms, so let's take a quick look ahead at yet another one.
+
+    The generic algorithm tt(accumulate) visits all elements specified by an
+iterator-range, and performs a requested binary operation on a common element
+and each of the elements in the range, returning the accumulated result after
+visiting all elements specified by the iterator range. It's easy to use this
+algorithm. The next program accumulates all command line arguments and prints
+the final string:
         verbinclude(stl/examples/plusaccumulate.cc)
     The first two arguments define the (iterator) range of elements to visit,
-the third argument is tt(string()). This anonymous string object provides an
-initial value. It could as well have been initialized to
-        centt(string("All concatenated arguments: "))
-    in which case the tt(cout) statement could have been a simple
+the third argument is tt(string). This anonymous string object provides an
+initial value. We could also have used
         verb(
-    cout << result << endl;
+    string("All concatenated arguments: ")
         )
-    Then, the operator to apply is tt(plus<string>()). Note here that a
-constructor is called: it is em(not) tt(plus<string>), but rather
-tt(plus<string>()). The final concatenated string is returned.
+    in which case the tt(cout) statement could simply have been 
+tt(cout << result << '\n').
+    The string-addition operation is used, called from tt(plus<string>). The
+final concatenated string is returned.
 
-    Now we define our own class tt(Time), in which the
-ti(operator+()) has been overloaded. Again, we can apply the predefined
-function object tt(plus), now tailored to our newly defined datatype, to add
-times:
+    Now we define a class tt(Time), overloading ti(operator+). Again, we can
+apply the predefined function object tt(plus), now tailored to our newly
+defined datatype, to add times:
         verbinclude(stl/examples/classtypeplus.cc)
-    Note that all member functions of tt(Time) in the above source are inline
-functions. This approach was followed in order to keep the example relatively
-small and to show explicitly that the tt(operator+=()) function may be an
-inline function. On the other hand, in real life tt(Time)'s tt(operator+=())
-should probably not be made inline, due to its size.
-
-    Considering the previous discussion of the tt(plus) function object, the
-example is pretty straightforward. The class tt(Time) defines a constructor,
-it defines an insertion operator and it defines its own tt(operator+()),
-adding two time objects.
-
-    In tt(main())  four tt(Time) objects are stored in a
-tt(vector<Time>) object. Then, the tt(accumulate()) generic algorithm is
-called to compute the accumulated time. It returns a tt(Time) object, which
-is inserted in the tt(cout ostream) object.
+    The design of the above program is fairly straightforward.  tt(Time)
+defines a constructor, it defines an insertion operator and it defines its own
+tt(operator+), adding two time objects. In tt(main) four tt(Time) objects are
+stored in a tt(vector<Time>) object. Then, tt(accumulate) is used to compute
+the accumulated time. It returns a tt(Time) object, which is inserted into
+tt(cout).
 
     While the first example did show the use of a em(named) function object,
-the last two examples showed the use of  emi(anonymous) objects which were
-passed to the (tt(accumulate())) function.
+the last two examples showed the use of  emi(anonymous) objects that were
+passed to the (tt(accumulate)) function.
 
-    The following arithmetic objects are available as predefined objects:
+    The STL supports the following set of arithmetic function objects:
     itemization(
-    iti(plus<>()): as shown, this object's tt(operator()()) member calls
-tt(operator+()) as a i(binary operator), passing it its two parameters,
-returning tt(operator+())'s return value.
-    iti(minus<>()): this object's tt(operator()()) member calls
-ti(operator-()) as a binary operator, passing it its two parameters and
-returning tt(operator-())'s return value.
-    iti(multiplies<>()): this object's tt(operator()()) member calls
-ti(operator*()) as a binary operator, passing it its two parameters and
-returning tt(operator*())'s return value.
-    iti(divides<>()): this object's tt(operator()()) member calls
-ti(operator/()), passing it its two parameters and
-returning tt(operator/())'s return value.
-    iti(modulus<>()): this object's tt(operator()()) member calls
-ti(operator%()), passing it its two parameters and
-returning tt(operator%())'s return value.
-    iti(negate<>()): this object's tt(operator()()) member calls
-tt(operator-()) as a unary operator, passing it its  parameter and
-returning the unary tt(operator-())'s return value.
+    itti(plus)(plus<>): as shown, this object's tt(operator()) member calls
+the binary ti(operator+), passing the latter operator its two parameter values
+and returning the latter operator's return value.
+    itti(minus)(minus<>): this object's tt(operator()) member calls
+the binary ti(operator-), passing the latter operator its two parameter values
+and returning the latter operator's return value.
+    itti(multiplies)(multiplies<>): this object's tt(operator()) member calls
+the binary ti(operator*), passing the latter operator its two parameter values
+and returning the latter operator's return value.
+    itti(divides)(divides<>): this object's tt(operator()) member calls
+ti(operator/), passing the latter operator its two parameter values and
+returning the latter operator's return value.
+    itti(modulus)(modulus<>): this object's tt(operator()) member calls
+ti(operator%), passing the latter operator its two parameter values and
+returning the latter operator's return value.
+    itti(negate)(negate<>): this object's tt(operator()) member calls
+the unary tt(operator-), passing the latter operator its  parameter and
+returning the latter operator's return value.
     )
-    An example using the unary tt(operator-()) follows, in
-which the ti(transform()) generic algorithm is used to toggle the signs of all
-elements in an array. The tt(transform()) generic algorithm expects two
-iterators, defining the range of objects to be transformed, an iterator
-defining the begin of the destination range (which may be the same iterator as
-the first argument) and a function object defining a unary operation for the
-indicated data type.
+    In the next example the ti(transform) generic algorithm is used to toggle
+the signs of all elements of an array. tt(Transform) 
+expects two iterators, defining the range of objects to be transformed; an
+iterator defining the begin of the destination range (which may be the same
+iterator as the first argument); and a function object defining a unary
+operation for the indicated data type.
         verbinclude(stl/examples/negate.cc)

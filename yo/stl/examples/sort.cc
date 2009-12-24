@@ -10,11 +10,11 @@
 
         for (int idx = 0; idx < argc; ++idx)
             cout << argv[idx] << " ";
-        cout << endl;
+        cout << '\n';
 
         sort(argv, argv + argc, less<string>());
 
         for (int idx = 0; idx < argc; ++idx)
             cout << argv[idx] << " ";
-        cout << endl;
+        cout << '\n';
     }

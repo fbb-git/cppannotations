@@ -9,5 +9,5 @@
         string result =
                 accumulate(argv, argv + argc, string(), plus<string>());
 
-        cout << "All concatenated arguments: " << result << endl;
+        cout << "All concatenated arguments: " << result << '\n';
     }

@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
         public:
             enum                // enums OK
             {
-                value = 5
+                VALUE = 5
             };
             Local(int argc)     // constructors and member functions OK
             :                   // in-class implementation required
