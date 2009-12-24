@@ -1,11 +1,11 @@
-Enumerations too hi(enumeration: nested) hi(nested enumerations) may be nested
-in classes. Nesting enumerations is a good way to show the close connection
-between the enumeration and its class. Nested enumerations have the same
-controlled visibility as other class members. They may be defined in the
-private, protected or public sections of classes and are inherited over class
-hierarchies.  In the class ti(ios) we've seen values like ti(ios::beg) and
-ti(ios::cur). In the current i(Gnu) bf(C++) implementation these values are
-defined as values in the ti(seek_dir) enumeration:
+Enumerations hi(enumeration: nested) hi(nested enumerations) may also be
+nested in classes. Nesting enumerations is a good way to show the close
+connection between the enumeration and its class. Nested enumerations have the
+same controlled visibility as other class members. They may be defined in the
+private, protected or public sections of classes and are inherited by derived
+classes.  In the class ti(ios) we've seen values like tt(ios::beg) and
+tt(ios::cur). In the current i(Gnu) bf(C++) implementation these values are
+defined as values of the ti(seek_dir) enumeration:
         verb(
     class ios: public _ios_fields
     {
@@ -18,11 +18,12 @@ defined as values in the ti(seek_dir) enumeration:
             };
     };
         )
-    For illustration purposes, let's assume that a class tt(DataStructure)
+    As an illustration assume that a class tt(DataStructure) represents a data
+structure that 
 may be traversed in a forward or backward direction. Such a class can define
-an enumeration tt(Traversal) having the values tt(forward) and
-tt(backward). Furthermore, a member function tt(setTraversal()) can be defined
-requiring either of the two enumeration values. The class can be defined as
+an enumeration tt(Traversal) having the values tt(FORWARD) and
+tt(BACKWARD). Furthermore, a member function tt(setTraversal) can be defined
+requiring a tt(Traversal) type of argument. The class can be defined as
 follows:
         verb(
     class DataStructure
@@ -30,8 +31,8 @@ follows:
         public:
             enum Traversal
             {
-                forward,
-                backward
+                FORWARD,
+                BACKWARD
             };
             setTraversal(Traversal mode);
         private:
@@ -47,10 +48,10 @@ enumeration can be used directly. For example:
         d_mode = mode;
         switch (d_mode)
         {
-            forward:
+            FORWARD:
             break;
 
-            backward:
+            BACKWARD:
             break;
         }
     }
@@ -63,24 +64,24 @@ the enumeration type is needed, as illustrated by the following piece of code:
     void fun()
     {
         DataStructure::Traversal                // enum typename required
-            localMode = DataStructure::forward; // enum typename not required
+            localMode = DataStructure::FORWARD; // enum typename not required
 
         DataStructure ds;
                                                 // enum typename not required
-        ds.setTraversal(DataStructure::backward);
+        ds.setTraversal(DataStructure::BACKWARD);
     }
         )
-    Again, only if tt(DataStructure) defines a nested class tt(Nested), in
+    Only if tt(DataStructure) defines a nested class tt(Nested), in
 turn defining the enumeration tt(Traversal), the two class scopes are
 required. In that case the latter example should have been coded as follows:
         verb(
     void fun()
     {
         DataStructure::Nested::Traversal
-            localMode = DataStructure::Nested::forward;
+            localMode = DataStructure::Nested::FORWARD;
 
         DataStructure ds;
 
-        ds.setTraversal(DataStructure::Nested::backward);
+        ds.setTraversal(DataStructure::Nested::BACKWARD);
     }
         )

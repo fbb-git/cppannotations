@@ -3,8 +3,6 @@
     enum EmptyEnum
     {};
 
-    using namespace std;
-
     int main()
     try
     {
@@ -12,10 +10,5 @@
     }
     catch (EmptyEnum)
     {
-        cout << "Caught empty enum\n";
+        std::cout << "Caught empty enum\n";
     }
-    /*
-        Generated output:
-
-        Caught empty enum
-    */
