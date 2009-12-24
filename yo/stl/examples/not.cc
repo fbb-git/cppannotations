@@ -11,16 +11,16 @@
 
         for (size_t idx = 0; idx < bArrSize; ++idx)
             cout << bArr[idx] << " ";
-        cout << endl;
+        cout << '\n';
 
         transform(bArr, bArr + bArrSize, bArr, logical_not<bool>());
 
         for (size_t idx = 0; idx < bArrSize; ++idx)
             cout << bArr[idx] << " ";
-        cout << endl;
+        cout << '\n';
     }
     /*
-        generated output:
+      Displays: 
 
         1 1 1 0 0 0
         0 0 0 1 1 1
