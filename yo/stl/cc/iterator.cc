@@ -9,11 +9,9 @@
 
         for (auto iter = args.begin(); iter != args.end(); ++iter)
             cout << *iter << " ";
-        cout << endl;
+        cout << '\n';
 
         for (auto iter = args.rbegin(); iter != args.rend(); ++iter)
             cout << *iter << " ";
-        cout << endl;
-
-        return 0;
+        cout << '\n';
     }
