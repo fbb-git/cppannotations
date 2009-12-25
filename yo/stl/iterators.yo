@@ -1,24 +1,23 @@
-Iterators are objects acting like i(pointers). Iterators have the following
-general  hi(iterators: general characteristics) characteristics:
+Iterators are objects acting like pointers. Iterators have the following
+general  hi(iterator) characteristics:
     itemization(
     it() Two iterators may be compared for (in)equality using the tt(==) and
-tt(!=) operators. Note that the em(ordering) operators (e.g., tt(>), tt(<))
-normally cannot be used.
+tt(!=) operators. The em(ordering) operators (e.g., tt(>), tt(<))
+can usually not be used.
     it() Given an iterator tt(iter), tt(*iter) represents the object the
 iterator points to (alternatively, tt(iter->) can be used to reach the members
 of the object the iterator points to).
     it() tt(++iter) or tt(iter++) advances the iterator to the next
 element. The notion of advancing an iterator to the next element is
-consequently applied: several containers have a emi(reversed_iterator) type, in
-which the tt(iter++) operation actually reaches a i(previous element) in a
+consequently applied: several containers support emi(reversed_iterator) types,
+in which the tt(++iter) operation actually reaches a previous element in a
 sequence.
-    it() em(Pointer arithmetic) may be used with containers having their
-elements stored consecutively in memory. This includes the ti(vector) and
-ti(deque). For these containers tt(iter + 2) points to the second element
+    it() em(Pointer arithmetic) may be used with iterators of containers
+storing their elements consecutively in memory like ti(vector) and
+ti(deque). For such containers tt(iter + 2) points to the second element
 beyond the one to which tt(iter) points.
-    it() An interator which is merely defined is comparable to a
-        hi(iterator: as 0-pointer) 0-pointer, as shown by the following little
-example:
+    it() Merely defining an iterator is comparable to having a 
+        0-pointer. Example:
         verb(
     #include <vector>
     #include <iostream>
@@ -28,29 +27,28 @@ example:
     {
         vector<int>::iterator vi;
 
-        cout << &*vi << endl;       // prints 0
+        cout << &*vi;       // prints 0
     }
         )
     )
-    The STL containers usually define members producing iterators (i.e., type
-ti(iterator)) using member functions ti(begin()) and ti(end()) and, in the
-case of reversed iterators (type tt(reverse_iterator)), ti(rbegin()) and
-ti(rend()). Standard practice requires the iterator range to be em(left
-inclusive): the notation rangeti(left, right) indicates that tt(left) is an
-iterator pointing to the first element that is to be considered, while
-tt(right) is an iterator pointing just em(beyond) the last element to be
-used. The iterator-range is said to be emi(empty) when tt(left == right).
-Note that with i(empty containers) hi(container: empty) the begin- and
-end-iterators are equal to each other.
+    STL containers usually define members offering iterators (i.e., they
+define their own type ti(iterator)). These members are commonly called
+ti(begin) and ti(end) and (for reversed iterators (type tt(reverse_iterator)))
+ti(rbegin) and ti(rend). 
 
-    The following example shows a situation where all elements of a vector of
-strings are written to tt(cout) using the iterator range rangett(begin(),
-end()), and the iterator range rangett(rbegin(), rend()). The following
-example shows that the tt(for-loops) for both ranges are
-identical. Furthermore it nicely illustrates how the ti(auto) keyword can be
+    Standard practice requires hi(iterator: range) iterator ranges to be
+em(left inclusive).  The notation rangeti(left, right) indicates that tt(left)
+is an iterator pointing to the first element, while tt(right) is an iterator
+pointing just em(beyond) the last element. The iterator range is em(empty)
+when tt(left == right).
+
+    The following example shows how all elements of a vector of strings can be
+inserted into tt(cout) using its iterator ranges rangett(begin(), end()), and
+rangett(rbegin(), rend()). Note that the tt(for-loops) for both ranges are
+identical. Furthermore it nicely illustrates how the tt(auto) keyword can be
 used to define the type of the loop control variable instead of using a much
-more verbose explicit variable definition like tt(vector<string>::iterator)
-(see also section ref(AUTO)):
+more verbose variable definition like tt(vector<string>::iterator) (see also
+section ref(AUTO)):
     verbinclude(stl/cc/iterator.cc)
 
     Furthermore, the STL defines em(const_iterator) types to be able to visit
@@ -73,9 +71,9 @@ generic algorithms, and in order to be able to create a particular type of
 iterator yourself it is hi(iterators: characteristics) important to know their
 characteristics. In general, iterators must define:
     itemization(
-    iti(operator==()), testing two iterators for equality,
-    iti(operator++()), incrementing the iterator, as i(prefix) operator,
-    iti(operator*()), to access the element the iterator refers to,
+    iti(operator==), testing two iterators for equality,
+    iti(operator++), incrementing the iterator, as i(prefix) operator,
+    iti(operator*), to access the element the iterator refers to,
     )
     The following types of iterators are used when describing generic
 algorithms later in this chapter:
@@ -87,7 +85,7 @@ InputIterator it is also possible to (see below) use a Forward-,
 Bidirectional- or RandomAccessIterator. With the generic algorithms presented
 in this chapter. Notations like ti(InputIterator1) and ti(InputIterator2)
 may be observed as well. In these cases, numbers are used to indicate which
-iterators `belong together'. E.g., the generic function tt(inner_product())
+iterators `belong together'. E.g., the generic function tt(inner_product)
 has the following prototype:
         verb(
     Type inner_product(InputIterator1 first1, InputIterator1 last1,
@@ -115,7 +113,7 @@ it is also possible to use a RandomAccessIterator. For example, to traverse a
 i(list) or a i(deque) a BidirectionalIterator may be useful.)
     it() bi(RandomAccessIterators):
         quote(RandomAccessIterators provide i(random access) to container
-elements. An algorithm such as ti(sort()) requires a RandomAccessIterator, and
+elements. An algorithm such as ti(sort) requires a RandomAccessIterator, and
 can therefore em(not) be used with lists or maps, which only provide
 BidirectionalIterators.)
     )
