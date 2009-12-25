@@ -14,7 +14,7 @@
                     ++iter
         )
             cout << *iter << " ";
-        cout << endl;
+        cout << '\n';
 
         for
         (
@@ -23,7 +23,7 @@
                     ++iter
         )
             cout << *iter << " ";
-        cout << endl;
+        cout << '\n';
 
         return 0;
     }

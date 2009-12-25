@@ -2,7 +2,7 @@
     #include <iterator>
     using namespace std;
 
-    class Y
+    class Insertable
     {
         public:
             typedef int const &const_reference;
@@ -14,7 +14,7 @@
     int main()
     {
         int arr[] = {1};
-        Y y;
+        Insertable insertable;
 
-        copy(arr, arr + 1, back_inserter(y));
+        copy(arr, arr + 1, back_inserter(insertable));
     }

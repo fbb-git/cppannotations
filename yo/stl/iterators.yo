@@ -49,76 +49,81 @@ identical. Furthermore it nicely illustrates how the tt(auto) keyword can be
 used to define the type of the loop control variable instead of using a much
 more verbose variable definition like tt(vector<string>::iterator) (see also
 section ref(AUTO)):
-    verbinclude(stl/cc/iterator.cc)
+    verbinclude(stl/examples/iterator.cc)
 
-    Furthermore, the STL defines em(const_iterator) types to be able to visit
-a series of elements in a constant container. Whereas the elements of the
-vector in the previous example could have been altered, the elements of the
-vector in the next example are immutable, and tt(const_iterator)s are
-required:
-        verbinclude(stl/cc/constiterator.cc)
-    The examples also illustrates that plain hi(iterators: pointers as)
-        hi(pointers: as iterators) pointers can be used instead of
-iterators. The initialization tt(vector<string> args(argv, argv + argc))
-provides the tt(args) vector with a pair of pointer-based iterators: tt(argv)
-points to the first element to initialize tt(sarg) with, tt(argv + argc)
-points just beyond the last element to be used, tt(argv++) reaches the next
-string. This is a general characteristic of pointers, which is why they too
-can be used in situations where tt(iterators) are expected.
+    Furthermore, the STL defines
+ hi(iterator: to const elements)emi(const_iterator) types that must be used
+when visiting a series of elements in a constant container. Whereas the
+elements of the vector in the previous example could have been altered, the
+elements of the vector in the next example are immutable, and
+tt(const_iterator)s are required:
+        verbinclude(stl/examples/constiterator.cc)
+    The examples also illustrates that plain
+ hi(pointers: as iterators) pointers can be used as iterators. The
+initialization tt(vector<string> args(argv, argv + argc)) provides the
+tt(args) vector with a pair of pointer-based iterators: tt(argv) points to the
+first element to initialize tt(sarg) with, tt(argv + argc) points just beyond
+the last element to be used, tt(++argv) reaches the next command line
+argument. This is a general pointer characteristic, which is why they too can
+be used in situations where tt(iterators) are expected.
 
-    The STL defines five i(types of iterators). These types recur in the
-generic algorithms, and in order to be able to create a particular type of
-iterator yourself it is hi(iterators: characteristics) important to know their
-characteristics. In general, iterators must define:
+    The STL defines five types hi(iterator: types) of iterators. These
+iterator types are expected by generic algorithms, and in order to create a
+particular type of iterator yourself it is important to know their
+characteristics. In general, iterators hi(iterator: requirements) must define:
     itemization(
     iti(operator==), testing two iterators for equality,
-    iti(operator++), incrementing the iterator, as i(prefix) operator,
+    iti(operator++), incrementing the iterator, as prefix operator,
     iti(operator*), to access the element the iterator refers to,
     )
     The following types of iterators are used when describing generic
-algorithms later in this chapter:
+algorithms  in chapter ref(GENERIC):
     itemization(
     it() bi(InputIterators).
-        quote(InputIterators can i(read from a container).  The dereference
-operator is guaranteed to work as ti(rvalue) in expressions. Instead of an
-InputIterator it is also possible to (see below) use a Forward-,
-Bidirectional- or RandomAccessIterator. With the generic algorithms presented
-in this chapter. Notations like ti(InputIterator1) and ti(InputIterator2)
-may be observed as well. In these cases, numbers are used to indicate which
-iterators `belong together'. E.g., the generic function tt(inner_product)
-has the following prototype:
+        quote(InputIterators are used to read from a container.  The
+dereference operator is guaranteed to work as ti(rvalue) in
+expressions. Instead of an InputIterator it is also possible to use (see
+below) Forward-, Bidirectional- or RandomAccessIterators.  Notations like
+ti(InputIterator1) and ti(InputIterator2) may be used as well. In these cases,
+numbers are used to indicate which iterators `belong together'. E.g., the
+generic algorithm link(tt(inner_product))(INNERPROD) has the following
+prototype:
         verb(
     Type inner_product(InputIterator1 first1, InputIterator1 last1,
                    InputIterator2 first2, Type init);
         )
-    Here tt(InputIterator1 first1) and tt(InputIterator1 last1) are a set of
-input iterators defining one range, while tt(InputIterator2 first2) defines
-the beginning of a second range. Analogous notations like these may be
-observed with other iterator types.)
+    tt(InputIterator1 first1) and tt(InputIterator1 last1) define a pair of
+input iterators on one range, while tt(InputIterator2 first2) defines the
+beginning of another range. Analogous notations may be used with other
+iterator types.)
     it() bi(OutputIterators):
-        quote(OutputIterators can be used to
-    i(write to a container). The dereference operator is guaranteed to work as
-an ti(lvalue) in expressions, but not necessarily as tt(rvalue). Instead of an
-OutputIterator it is also possible to use, see below, a Forward-,
-Bidirectional- or RandomAccessIterator.)
+        quote(OutputIterators can be used to write to a container. The
+dereference operator is guaranteed to work as an ti(lvalue) in expressions,
+but not necessarily as tt(rvalue). Instead of an OutputIterator it is also
+possible to use (see below) Forward-, Bidirectional- or
+RandomAccessIterators.)
     it() bi(ForwardIterators):
         quote(ForwardIterators combine InputIterators and
-OutputIterators. They can be used to i(traverse containers) in one direction,
+OutputIterators. They can be used to traverse containers in one direction,
 for reading and/or writing. Instead of a ForwardIterator it is also possible
-to use a Bidirectional- or RandomAccessIterator.)
+to use (see below) Bidirectional- or RandomAccessIterators.)
     it() bi(BidirectionalIterators):
-        quote(BidirectionalIterators can be used to i(traverse containers) in
+        quote(BidirectionalIterators can be used to traverse containers in
 both directions, for reading and writing. Instead of a BidirectionalIterator
-it is also possible to use a RandomAccessIterator. For example, to traverse a
-i(list) or a i(deque) a BidirectionalIterator may be useful.)
+it is also possible to use (see below) a RandomAccessIterator.)
     it() bi(RandomAccessIterators):
         quote(RandomAccessIterators provide i(random access) to container
-elements. An algorithm such as ti(sort) requires a RandomAccessIterator, and
-can therefore em(not) be used with lists or maps, which only provide
-BidirectionalIterators.)
+elements. An algorithm like link(tt(sort))(SORT) requires a
+RandomAccessIterator, and can therefore em(not) be used to sort the elements
+of lists or maps, which only provide BidirectionalIterators.)
     )
-    The example given with the RandomAccessIterator illustrates how to
-approach hi(approach towards iterators) iterators: look for the iterator
-that's required by the (generic) algorithm, and then see whether the
-datastructure supports the required iterator. If not, the algorithm cannot be
-used with the particular datastructure.
+    The example given with the RandomAccessIterator illustrates how to relate
+iterators and generic algorithms: look for the iterator that's required by the
+(generic) algorithm, and then see whether the datastructure supports the
+required type of iterator. If not, the algorithm cannot be used with the
+particular datastructure.
+
+In addition to these conceptual iterator types the STL defines several
+adaptors hi(adaptor: object to iterator) allowing objects to be passed as
+iterators. These adaptors are covered by the next few sections. Before those
+adaptors can be used the tthi(iterator) header file must have been included.
