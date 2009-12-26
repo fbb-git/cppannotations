@@ -1,37 +1,24 @@
-The ti(istream_iterator<Type>()) can be used to define an iterator (pair) for
-ti(istream) objects. The general form of the tt(istream_iterator<Type>())
-iterator is:
+The hi(istream_iterator)tt(istream_iterator<Type>) can be used to define a set
+of iterators for
+ hi(istream: iterator) tt(istream) objects. The general form of the
+tt(istream_iterator) iterator is:
         verb(
-    istream_iterator<Type> identifier(istream &inStream)
+    istream_iterator<Type> identifier(istream &in)
         )
-    Here, tt(Type) is the type of the data elements that are read from
-the tt(istream) stream. tt(Type) may be any type for which oprshift() is
-defined with tt(istream) objects.
+    Here, tt(Type) is the type of the data elements read from the tt(istream)
+stream. It is used as the `begin' iterator in an interator range. tt(Type) may
+be any type for which oprshift() is defined in combination with tt(istream)
+objects.
 
-    The i(default constructor) defines the end of the iterator pair,
-corresponding to i(end-of-stream). For example,
+    The default constructor is used as the end-iterator and corresponds to the
+ i(end-of-stream). For example,
         verb(
     istream_iterator<string> endOfStream;
         )
-    Note that the actual em(stream) object which was specified for the
-begin-iterator is em(not) mentioned here.
+    The em(stream) object that was specified when defining the 
+begin-iterator is em(not) mentioned with the default constructor.
 
-    Using a link(tt(back_inserter()))(INSERTER) and a set of
-tt(istream_iterator<>()) adaptors, all strings could be read from tt(cin) as
-follows:
+    Using tt(back_inserter) and tt(istream_iterator) adaptors, all strings
+from a stream can easily be stored in a container. Example (using i(anonymous)
+tt(istream_iterator) adaptors):
         verbinclude(stl/cc/istreamiterator.cc)
-    In the above example, note the use of the i(anonymous) versions of the
-tt(istream_iterator) adaptors. Especially note the use of the anonymous
-default constructor. The following (non-anonymous) construction could have
-been used instead of tt(istream_iterator<string>()):
-        verb(
-    istream_iterator<string> eos;
-
-    copy(istream_iterator<string>(cin), eos, back_inserter(vs));
-        )
-    Before tt(istream_iterators) can be used the following preprocessor
-directive must have been specified: hi(#include <iterator>)
-        verb(
-    #include <iterator>
-        )
-    This is implied when ti(iostream) is included.

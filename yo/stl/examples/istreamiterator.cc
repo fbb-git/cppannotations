@@ -1,7 +1,8 @@
-    #include <algorithm>
+    #include <iostream>
     #include <iterator>
     #include <string>
     #include <vector>
+    #include <algorithm>
     using namespace std;
 
     int main()
@@ -13,12 +14,9 @@
 
         for
         (
-            vector<string>::iterator from = vs.begin();
-                from != vs.end();
-                    ++from
+            vector<string>::const_iterator begin = vs.begin(), end = vs.end();
+                begin != end; ++begin
         )
-            cout << *from << " ";
-        cout << endl;
-
-        return 0;
+            cout << *begin << ' ';
+        cout << '\n';
     }
