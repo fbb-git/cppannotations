@@ -7,13 +7,12 @@
     {
         unique_ptr<string> sp(new string("Hello world"));
 
-        cout << *sp << endl;
+        cout << *sp << '\n';
         sp->insert(strlen("Hello "), "C++ ");
-        cout << *sp << endl;
+        cout << *sp << '\n';
     }
     /*
-        produced output:
-
-        Hello world
-        Hello C++ world
+        Displays:
+            Hello world
+            Hello C++ world
     */
