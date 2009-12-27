@@ -1,43 +1,25 @@
-One of the problems using pointers is that strict i(bookkeeping) is required
-with respect to their memory use and lifetime. When a pointer variable goes
-    i(out of scope), the memory pointed to by the pointer is suddenly
-inaccessible, and the program suffers from a i(memory leak). For example, in
-the following function tt(fun()), a memory leak is created by calling
-tt(fun()): the allocated tt(int) value remains inaccessibly allocated:
-        verb(
-    void fun()
-    {
-        new int;
-    }
-        )
-    To prevent memory leaks strict bookkeeping is required: the programmer has
-to make sure that the memory pointed to by a pointer is deleted just before
-the pointer variable goes i(out of scope). The above example could easily be
-repaired:
-        verb(
-    void fun()
-    {
-        delete new int;
-    }
-        )
-    Now tt(fun()) merely wastes some time.
+When pointers are used to access dynamically allocated memory strict
+bookkeeping is required to prevent memory leaks from happening. When a pointer
+variable referring to dynamically allocated memory goes out of scope, the
+dynamically allocated memory becomes inaccessible and the program suffers from
+a i(memory leak).
 
-    When a pointer variable points to em(a single value or object), the
-bookkeeping requirements may be relaxed when the pointer variable is defined
-as a tt(std::unique_ptr)hi(unique_ptr) object. Unique_ptrs are em(objects),
-masquerading as pointers. Since they're objects, their destructors are called
-when they go out of scope, and because of that, their destructors will take
-the responsibility of deleting the dynamically allocated memory.
+To prevent such memory leaks strict bookkeeping is required: the programmer
+has to make sure that the dynamically allocated memory is returned to the
+common pool just before the pointer variable goes out of scope. 
 
-Before tt(unique_ptrs) can be used the following preprocessor directive must
-have been specified:hi(#include <memory>)
-        verb(
-    #include <memory>
-        )
-    Normally, an tt(unique_ptr) object is initialized with a dynamically
-created value or object.
+When a pointer variable points to a dynamically allocated single value or
+object, bookkeeping requirements are greatly simplified when the pointer
+variable is defined as a tt(std::unique_ptr)hi(unique_ptr) object.
 
-    The following should be considered when using tt(unique_ptr)s:
+Unique_ptrs are em(objects) masquerading as pointers. Since they are objects,
+their destructors are called when they go out of scope.  Their destructors
+automatically delete the dynamically allocated memory.
+
+Before using tt(unique_ptrs) the tthi(memory) header file must have been
+included. 
+
+    tt(Unique_ptrs) have some special characteristics:
     itemization(
     it() when assigning a tt(unique_ptr) to another em(move semantics) is
 used. If move semantics are not available compilation will fail. On the other
@@ -45,12 +27,12 @@ hand, if compilation succeeds then the used containers or generic algorithms
 support the use of tt(unique_ptr)s. Here is an example:
         verb(
     std::unique_ptr<int> up1(new int);
-    std::unique_ptr<int> up2 = up1;      // compilation error
+    std::unique_ptr<int> up2(up1);      // compilation error
         )
-    The second definition fails to compile since tt(unique_ptr)'s copy
-constructor is private (the same holds true for the assignment
-operator). The tt(unique_ptr) class em(does) offer facilities to initialize
-and assign from em(rvalue references):
+    The second definition fails to compile as tt(unique_ptr)'s copy
+constructor is private (the same holds true for the assignment operator). But
+the tt(unique_ptr) class em(does) offer facilities to initialize and assign
+from em(rvalue references):
         verb(
     class unique_ptr                        // interface partially shown
     {
@@ -60,27 +42,27 @@ and assign from em(rvalue references):
             unique_ptr(const unique_ptr &other);
     };
         )
-    Consequently, in the above example move semantics should be used. E.g.,
+    In the next example move semantics is used and so it compiles correctly:
         verb(
-    std::unique_ptr<int> up1(new int);
-    std::unique_ptr<int> up2 = std::move(up3);
+    unique_ptr<int> cp(unique_ptr<int>(new int));
         )
     it() a tt(unique_ptr) object should only point to memory that was made
-available dynamically, as only i(dynamically allocated memory) can be deleted.
+available dynamically, as only dynamically allocated memory can be deleted.
     it() multiple tt(unique_ptr) objects should not be allowed to point to the
 same block of dynamically allocated memory. The tt(unique_ptr)'s interface was
-designed to prevent this from happening. Once an tt(unique_ptr) object goes out
+designed to prevent this from happening. Once a tt(unique_ptr) object goes out
 of scope, it deletes the memory it points to, immediately changing any other
-object also pointing to the allocated memory into a hi(wild pointer) wild
+object also pointing to the allocated memory into a hi(pointer: wild) wild
 pointer.
     )
-    The tt(class unique_ptr) defines several member functions
-to access the pointer itself or to have the tt(unique_ptr) point to another
-block of memory. These member functions and ways to construct tt(unique_ptr)
-objects are discussed in the next sections.
-
+    The class tt(unique_ptr) offers several member functions to access the
+pointer itself or to have a tt(unique_ptr) point to another block of
+memory. These member functions (and tt(unique_ptr) constructors) are
+introduced in the next few sections.
 
 A tt(unique_ptr) (as well as a tt(shared_ptr), see section ref(SHAREDPTR)) can
-be used as a safe alternative to the now deprecated tt(auto_ptr). It also
-augments tt(auto_ptr) as it can be used with containers and algorithms; as it
-adds customizable deleters and as it adds the possibility to handle arrays.
+be used as a safe alternative to the now hi(auto_ptr: deprecated) deprecated
+tt(auto_ptr). tt(Unique_ptr) also augments tt(auto_ptr) as it can be used with
+containers and (generic) algorithms as it adds customizable deleters arrays
+can also be handled by tt(unique_ptrs).
+

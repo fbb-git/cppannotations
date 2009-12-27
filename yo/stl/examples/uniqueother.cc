@@ -11,12 +11,8 @@
         unique_ptr<string> hello3;
 
         hello3 = move(hello2);
-        cout << // *hello1 << endl <<   // would segfault
-                // *hello2 << endl <<   // same
-                *hello3 << endl;
+        cout << // *hello1 << /\n' <<   // would have segfaulted
+                // *hello2 << '\n' <<   // same
+                *hello3 << '\n';
     }
-    /*
-        Produced output:
-
-        Hello world
-    */
+    // Displays:    Hello world
