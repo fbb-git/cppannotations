@@ -1,13 +1,14 @@
-The basic form to hi(shared_ptr: initialization) initialize an tt(shared_ptr)
-object is to provide its constructor with a block of memory allocated
-by ti(operator new) operator. The generic form is:
+Most often a tt(shared_ptr) hi(shared_ptr: initialization) is initialized by a
+dynamically allocated block of memory. The generic form is:
         verb(
     shared_ptr<type [, deleter_type]> identifier(new-expression
             [, deleter = deleter_type()]);
         )
     The second (template) argument (tt(deleter(_type))) is optional and may
-        hi(deleter class)
-refer to a class/object handling the destruction of the allocated memory. It
+ hi(deleter) refer to a free function or function object handling the
+destruction of the allocated memory. A deleter is used, e.g., in situations
+where a double pointer is allocated and the destruction must visit each nested
+pointer to destroy the allocated memory (see below for an illustration).  It
 is used in situations comparable to those encountered with tt(unique_ptr)
 (cf. section ref(UNIQUENEW)).
 
@@ -16,15 +17,12 @@ object:
         verb(
     shared_ptr<string> strPtr(new string("Hello world"));
         )
-    Note the use of tt(operator new) in the above expression. The type
-specified for the tt(shared_ptr) is identical to the type used in tt(new)
-expression.
+    The argument that is passed to the constructor is the pointer returned by
+tt(operator new). Note that tt(type) does em(not) mention the pointer.  The
+hi(shared_ptr: used type) type that is used in the tt(shared_ptr) construction
+is the same as the type that is used in tt(new) expressions.
 
-    All hi(shared_ptr: reaching members) member functions  available for
-objects allocated by the tt(new) expression can be reached via the
-tt(shared_ptr) as if it was a plain pointer to the dynamically allocated
-object. For example, in the following program the text `tt(C++)' is inserted
-behind the word `tt(hello)'. This example also shows the use of a copy
-constructed shared pointer and it shows that following the copy construction
-both objects point at the same information:
+The example illustrates that two tt(shared_ptrs) indeed share their
+information. After modifying the information controlled by one of the
+objects the information controlled by the other object is modified as well:
         verbinclude(stl/examples/sharedinsert.cc)

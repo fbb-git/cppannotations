@@ -1,0 +1,120 @@
+Classes having hi(class: having pointers) pointer data members require special
+attention. In particular at construction time one must be careful to prevent
+ hi(pointer: wild) wild pointers and/or hi(memory leak) memory leaks. Consider
+the following class defining two pointer data members:
+        verb(
+    class Filter
+    {
+        istream *d_in;
+        output  *d_out;
+        public:
+            Filter(char const *in, char const *out);
+    };
+        )
+    Assume that tt(Filter) objects filter information read from tt(*d_in) and
+write the filtered information to tt(*d_out).  Using pointers to streams
+allows us to have them point at any kind of stream like tt(istreams,
+ifstreams, fstreams) or tt(istringstreams).  The shown constructor could be
+implemented like this:
+        verb(
+    Filter::Filter(char const *in, char const *out)
+    :
+        d_in(new ifstream(in)),
+        d_out(new ofstream(out))
+    {
+        if (!*d_in || !*d_out)
+            throw string("Input and/or output stream not available");
+    }
+        )
+    Of course, the construction could fail. tt(new) could throw an exception,
+the stream constructors could throw an exception or the streams could not be
+opened in which case an exception is thrown from the constructor's body. Using
+a function try block helps, but if tt(d_in)'s initialization throws then
+tt(d_out) is still a wild pointer. Consequently the pointers would first have
+to be initialized to 0 and only then the initialization can be performed:
+        verb(
+    Filter::Filter(char const *in, char const *out)
+    try
+    :
+        d_in(0),
+        d_out(0)
+    {
+        d_in = new ifstream(in);
+        d_out = new ofstream(out);
+
+        if (!*d_in || !*d_out)
+            throw string("Input and/or output stream not available");
+    }
+    catch (...)
+    {
+        delete d_out;
+        delete d_in;
+    }
+        )
+    This may easily get complicated, though. If tt(filter) harbors yet another
+data member of a class whose constructor needs two streams then that data
+cannot be constructed or it must itself be converted into a pointer:
+        verb(
+    Filter::Filter(char const *in, char const *out)
+    try
+    :
+        d_in(0),
+        d_out(0)
+        d_filterImp(*d_in, *d_out)    // won't work
+    { ... }
+
+    // instead:
+
+    Filter::Filter(char const *in, char const *out)
+    try
+    :
+        d_in(0),
+        d_out(0),
+        d_filterImp(0)
+    {
+        d_in = new ifstream(in);
+        d_out = new ofstream(out);
+        d_filterImp = new FilterImp(*d_in, *d_out);
+        ...
+    }
+    catch (...)
+    {
+        delete d_filterImp;
+        delete d_out;
+        delete d_in;
+    }
+        )
+    Although the latter alternative works, it quickly gets hairy. In
+situations like this smart pointers should be used to prevent this
+hairiness. By defining the stream pointers as (smart pointer) objects they
+will, once constructed, properly be destroyed even if the rest of the
+constructor's code throws exceptions. Using a tt(FilterImp) and two
+tt(unique_ptr) data members tt(Filter)'s setup and its constructor becomes:
+        verb(
+    class Filter
+    {
+        std::unique_ptr<std::ifstream> d_in;
+        std::unique_ptr<std::ofstream> d_out;
+        FilterImp d_filterImp;
+        ...
+    };
+
+    Filter::Filter(char const *in, char const *out)
+    try
+    :
+        d_in(new ifstream(in)),
+        d_out(new ofstream(out)),
+        d_filterImp(*d_in, *d_out) 
+    {
+        if (!*d_in || !*d_out)
+            throw string("Input and/or output stream not available");
+    }
+        )
+    We're back at the original implementation but this time without having to
+worry about wild pointers and memory leaks. If one of the member initializers
+throws the destructors of previously constructed data members (which are now
+objects) are always called. 
+
+    As a i(rule of thumb): when classes need to define pointer data members
+they should define those pointer data members as smart pointers if there's any
+chance that their constructors throw exceptions.

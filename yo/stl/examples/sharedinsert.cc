@@ -10,11 +10,10 @@
 
         sp->insert(strlen("Hello "), "C++ ");
         cout << *sp << '\n' <<
-                *sp2 << endl;
+                *sp2 << '\n';
     }
     /*
-        produced output:
-
-        Hello C++ world
-        Hello C++ world
+        Displays:
+            Hello C++ world
+            Hello C++ world
     */

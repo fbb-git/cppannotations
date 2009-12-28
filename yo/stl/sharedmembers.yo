@@ -1,75 +1,65 @@
-The following hi(shared_ptr: operators) operators are defined for the class
-tt(shared_ptr):
+The class tt(shared_ptr) offers the following hi(shared_ptr: operators)
+operators:
     itemization(
-    ithtq(shared_ptr<>::operator=())
-        (shared_ptr &shared_ptr<Type>operator=(shared_ptr<Type> &other))
-        (This operator reduces the reference count of the left-hand side
-object, deleting its memory when its count decays to zero, and sets its
-pointer to the memory pointed at by right-hand side object, incrementing its
-reference count.)
-
-    ithtq(shared_ptr<>::operator bool() const)
-        (shared_ptr &shared_ptr<Type>operator bool() const)
-        (This operator returns tt(false) if the tt(shared_ptr) does not point
-to memory (i.e., its tt(get()) member, see below, returns 0). Otherwise,
-tt(true) is returned.)
-
-    ithtq(shared_ptr<>::operator*())
-        (Type &shared_ptr<Type>operator*())(This operator returns a reference to
-the information stored in the tt(shared_ptr) object. It acts like a normal
-pointer i(dereference) operator.)
-
-    ithtq(shared_ptr<>::operator->())
-        (Type *shared_ptr<Type>operator->())(This operator returns a pointer to
-the information stored in the tt(shared_ptr) object. Through this operator
-members of a stored object can be selected. For example:
-            verb(
+    ithtq(operator=)(shared_ptr &operator=(shared_ptr<Type> const &other))
+        (Copy assignment: the reference count of the operator's left hand side
+        operand is reduced. If the reference count decays to zero the
+        dynamically allocated memory controlled by the left hand side operand
+        is deleted. Next it will share the information with the operator's
+        right hand side operand, incrementing the information's reference
+        count.)
+    ithtq(operator=)(shared_ptr &operator=(shared_ptr<Type> &&tmp)) 
+       (Move assignment: the reference count of the operator's left hand side
+        operand is reduced. If the reference count decays to zero the
+        dynamically allocated memory controlled by the left hand side operand
+        is deleted. Next it will grab the information controlled by the
+        operator's right hand side operand which is turned into a 0-pointer.)
+    ithtq(operator bool)
+        (operator bool() const)
+       (If the tt(shared_ptr) actually points to memory tt(true) is returned,
+        otherwise, tt(false) is returned.)
+    ithtq(operator*)
+        (Type &operator*())
+       (A reference to the information stored in the
+        tt(shared_ptr) object is returned. It acts like a normal pointer.)
+    ithtq(operator->)
+       (Type *operator->())
+       (A pointer to the information controlled by the tt(shared_ptr) object
+        is returned. Example:
+       verb(
     shared_ptr<string> sp(new string("hello"));
-
-    cout << sp->c_str() << endl;
+    cout << sp->c_str() << '\n';
             )
         )
     )
 
-    The following i(member functions) are defined for tt(shared_ptr) objects:
+    The following i(member function) member functions are supported:
     itemization(
-    ithtq(shared_ptr<>::get())(Type *shared_ptr<Type>::get())(This member does
-the same as tt(operator->()): it returns a pointer to the information stored
-in the tt(shared_ptr) object. This pointer can be inspected: if it's zero the
-tt(shared_ptr) object does not point to any memory.  This member cannot be used
-to let the tt(shared_ptr) object point to (another) block of memory.)
-
-    ithtq(shared_ptr<>::get_deleter())
-        (Deleter &shared_ptr<Type>::get_deleter())(This member returns a
-reference to the i(deleter class) object used by the tt(shared_ptr).)
-
-    ithtq(shared_ptr<>::release())(Type *shared_ptr<Type>::release())
-    (This member returns a pointer to the information stored in the
-tt(shared_ptr) object, which loses the memory it pointed at (and changes into a
-i(0-pointer)). The member can be used to transfer the information stored in
-the tt(shared_ptr) object to a plain tt(Type) pointer.  It is the
-i(responsibility of the programmer) to i(delete) the memory returned by this
-member function.)
-
-    ithtq(shared_ptr<>::reset())(void shared_ptr<Type>::reset(Type *))
-    (This member may also be called em(without) argument, to delete the
-memory stored in the tt(shared_ptr) object, or with a pointer to a
-i(dynamically allocated) block of memory, which will thereupon be the
-memory accessed by the tt(shared_ptr) object. This member function can
-be used to assign a new hi(shared_ptr: assigning new content) block of
-memory (new content) to an tt(shared_ptr) object.)
-
-    ithtq(shared_ptr<>::swap())
+    ithtq(get)(Type *get())
+       (A pointer to the information controlled by the tt(shared_ptr) object
+        is returned. It acts like tt(operator->). The returned pointer can be
+        inspected. If it is zero the tt(shared_ptr) object does not point to
+        any memory.)
+    ithtq(get_deleter)(Deleter &get_deleter())
+       (A reference to the tt(shared_ptr)'s deleter (function or function
+        object) is returned.)
+    ithtq(reset)(void reset(Type *))
+      (The reference count of the information controlled by the tt(shared_ptr)
+        object is reduced and if it decays to zero it is deleted. Then the
+        object's information will refer to the argument that is passed to the
+        function, setting its shared count to 1. It can also be called without
+        argument, turning the object into a 0-pointer. This member function
+        can be used to assign a new block of dynamically allocated memory to a
+        tt(shared_ptr) object.)
+      ithtq(swap)
         (void shared_ptr<Type>::swap(shared_ptr<Type> &&))
-    (This member is used to swap two identically typed tt(shared_ptr)s.)
-
-    ithtq(shared_ptr<>::unique() const)
-        (bool shared_ptr<Type>unique() const)
-        (This member returns tt(true) if the memory is referenced by the
-current object only and returns tt(false) otherwise).
-
-    ithtq(shared_ptr<>::use_count() const)
-        (size_t shared_ptr<Type>use_count() const)
-        (This member  returns the number of objects sharing the memory pointed
-at by their data pointers.)
+       (Two identically typed tt(shared_ptrs) are swapped.)
+    ithtq(unique)
+        (bool unique() const)
+        (If the current object is the only object referring to the memory
+        controlled by the object tt(true) is returned otherwise (including the
+        situation where the object is a 0-pointer) tt(false) is returned.)
+    ithtq(use_count)(size_t use_count() const)
+       (The number of objects sharing the memory controlled by the object is
+        returned.)
     )
