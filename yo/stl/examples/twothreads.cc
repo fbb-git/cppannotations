@@ -12,24 +12,27 @@
     {
         int *d_data;
         size_t d_size;
+        int d_value;
         public:
-            Zero(int *data, size_t size)
+            Zero(int *data, size_t size, int value)
             :
                 d_data(data),
-                d_size(size)
+                d_size(size),
+                d_value(value)
             {}
-            void operator()(int arg) const
+            void operator()()
             {
                 for (int *ptr = d_data + d_size; ptr-- != d_data; )
-                    *ptr = 0;
+                    *ptr = d_value;
             }
     };
 
     int main()
     {
         int data[30];
-        Zero zero(data, 30);
-        int value = 0;
-        std::thread t1(zero, value);
-        std::thread t2(hello);
+        Zero zero(data, 30, 0);
+        thread t1(zero);
+        thread t2(hello);
+        t1.join();
+        t2.join();
     };
