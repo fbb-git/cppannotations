@@ -1,31 +1,35 @@
-There are three ways to hi(shared_ptr: defining) define tt(shared_ptr)
+There are four ways to hi(shared_ptr: defining) define tt(shared_ptr)
 objects. Each definition contains the usual tt(<type>) specifier between
-angle brackets. Concrete examples are given in the coming sections, but an
-overview of the various possibilities is presented here:
+angle brackets:
     itemization(
-    it() The basic form initializes an tt(shared_ptr) object to point to a block
-of memory allocated by the tt(new) operator:
-        verb(
-    shared_ptr<type> identifier (new-expression [, deleter]);
-        )
-    This form is discussed in section ref(SHAREDNEW).
-
-    it() Shared pointers support copy construction. When copy constructing a
-shared pointer both tt(shared_ptr) objects point at the same memory, and the
-object's reference count is incremented.
-
-    it() Another form initializes an tt(shared_ptr) object using em(move
-semantics), either supported by the data type itself or forced using
-tt(std::move):
-        verb(
-    // type must support move semantics or std::move(other) must be used
-    shared_ptr<type> identifier(a temporary shared_ptr for type);
-        )
-    This form is discussed in section ref(SHAREDMOVE).
-    it() The third form simply creates an tt(shared_ptr) object that
-does not point to a particular block of memory:
+    it() The default constructor simply creates a tt(shared_ptr) object that
+does not point to a particular block of memory. Its pointer is initialized to
+0 (zero):
         verb(
     shared_ptr<type> identifier;
         )
     This form is discussed in section ref(SHAREDPLAIN).
+
+    it() The copy constructor initializes a tt(shared_ptr) so that both
+objects share the memory pointed at by the existing object. The copy
+constructor also increments the tt(shared_ptr)'s reference count.
+
+    it() The move constructor is initialized with the pointer and reference
+count of a temporary tt(shared_ptr). The temporary tt(shared_ptr) is changed
+into a 0-pointer. An existing tt(shared_ptr) may have its data moved to a
+newly defined tt(shared_ptr) (turning the existing tt(shared_ptr) into a
+0-pointer as well) by applying hi(move)tt(std::move).
+    The tt(shared_ptr)'s move constructor is discussed in section
+ref(SHAREDMOVE).
+
+    it() The form that is used most often initializes a tt(shared_ptr) object
+to the block of dynamically allocated memory that is passed to the object's
+constructor. Optionally ti(deleter) can be provided. A (free) function (or
+function object) receiving the tt(shared_ptr)'s pointer as its argument can be
+passed as deleter. It is supposed to return the dynamically allocated
+memory to the common pool (doing nothing if the pointer equals zero).
+        verb(
+    shared_ptr<type> identifier (new-expression [, deleter]);
+        )
+    This form is discussed in section ref(SHAREDNEW).
     )
