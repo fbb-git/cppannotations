@@ -1,15 +1,15 @@
-Consider a classic producer-consumer case: the producer generates items
-which are consumed by a consumer. The producer can only produce so many items
-before  its storage capacity has filled up and the client cannot consume more
-items than the producer has produced.
+Consider a classic producer-consumer case: the producer generates items to be
+consumed by a consumer. The producer can only produce so many items before its
+storage capacity has filled up and the client cannot consume more items than
+the producer has produced.
 
 At some point the producer will therefore have to wait until the client has
-consumed enough and there's space available in the producer's
+consumed enough so there's again space available in the producer's
 storage. Similarly, the client will have to wait until the producer has
-produced some more items.
+produced at least some items.
 
 Locking and polling the amount of available items/storage at fixed time
-intervals usually isn't a good option as it is in principle a wasteful scheme:
+intervals usually isn't a good option as it is in essence a wasteful scheme:
 threads continue to wait during the full interval even though the condition to
 continue may already have been met; reducing the interval, on the other hand,
 isn't an attractive option either as it results in a relative increase of the
@@ -17,7 +17,7 @@ overhead associated with handling the associated mutexes.
 
 Condition variables hi(std::condition_variable) may be used to solve these
 kinds of problems. A thread simply sleeps until it is notified by another
-thread. In general terms this may be accomplished as follows:
+thread. Generally this may be accomplished as follows:
     verb(
     producer loop:
         - produce the next item
@@ -44,52 +44,50 @@ performed by the client or by the producer. `Waiting' in this case means:
     it() Reduce the count
     it() Release the lock.
     )
-    To implement this a tt(condition_variable) is used. The variable
-containing the actual count is called tt(semaphore); and it can be protected
-by a tt(mutex sem_mutex). In addition a tt(condition_variable condition) is
+    To implement this scheme a ti(condition_variable) is used. The variable
+containing the actual count is called a ti(semaphore) and it can be protected
+using a tt(mutex sem_mutex). In addition a tt(condition_variable condition) is
 defined. The waiting process is defined in the following function tt(down)
 implemented as follows:
         verb(
     void down()
     {
-        unique_lock<mutex> lk(sem_mutex);   // get the lock
+        unique_lock<mutex> lock(sem_mutex);   // get the lock
         while (semaphore == 0)
-            condition.wait(lk);             // see 1, below.
+            condition.wait(lock);           // see 1, below.
         --semaphore;                        // dec. semaphore count
     }                                       // the lock is released
         )
-    At 1 the condition variable's ti(wait())
-        hi(wait(): condition_variable) member internally releases the
+    At 1 the condition variable's tt(wait) member internally releases the
 lock, wait for a notification to continue, and re-acquires the lock just
-before returning. Consequently, the tt(down)'s code always has complete and
+before returning. Consequently, tt(down)'s code always has complete and
 unique control over tt(semaphore).
 
     What about notifying the condition variable? This is handled by the
 `increment the number ...' parts in the abovementioned produced and consumer
-loops. These parts are defined by the following tt(up()) function, implemented
-as follows:
+loops. These parts are defined by the following tt(up) function:
         verb(
     void up()
     {
-        lock_guard<std::mutex> lk(sem_mutex);   // get the lock
+        lock_guard<std::mutex> lock(sem_mutex); // get the lock
         if (semaphore++ == 0)
             condition.notify_one();             // see 2, below
     }                                           // the lock is released
         )
     At 2 tt(semaphore) is always incremented. However, by using a postfix
-increment it can be tested for being zero at the same time and if it was zero,
+increment it can be tested for being zero at the same time and if it was zero
 initially then tt(semaphore) is now one. Consequently, the thread waiting for
 tt(semaphore) being unequal to zero may now
-continue. tt(Condition.notify_one())hi(notify_one()) will notify a waiting
-thread (see tt(down)'s implementation above). If situations where multiple
-threads are waiting `ti(notify_all())' can be used.
+continue. tt(Condition.notify_one)hi(notify_one) will notify a waiting thread
+(see tt(down)'s implementation above). In situations where multiple threads
+are waiting `ti(notify_all)' can be used.
 
-    Handling tt(semaphore) can very well be implemented in a class
-tt(Semaphore), offering members tt(down()) and tt(up()). For a more extensive
+    Handling tt(semaphore) can very well be encapsulated  in a class
+tt(Semaphore), offering members tt(down) and tt(up). For a more extensive
 discussion of semaphores see i(Tanenbaum, A.S.) (2006)
     i(Structured Computer Organization), Pearson Prentice-Hall.
 
-    Using the semaphore facilities, embedded in a class tt(Semaphore) whose
+    Using the semaphore facilities of the class tt(Semaphore) whose
 constructor expects an initial value of its tt(semaphore) data member, the
 classic producer and consumer case can now easily be implemented in the
 following multi-threaded program+footnote(A more elaborate example of the

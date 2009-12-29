@@ -10,5 +10,5 @@ int main()
 
     for (int idx = 0; idx < 20; ++idx)
         cout << (bd(mt) ? "heads" : "tail") << (idx + 1 == 10 ? '\n' : ' ');
-    cout << endl;
+    cout << '\n';
 }

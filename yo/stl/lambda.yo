@@ -1,38 +1,39 @@
-The C++0x standard introduces emi(lambda functions) into bf(C++). As there
-is currently no indication as to when this feature will become available in
-the tt(g++) compiler this section will only cover the concept, the proposed
-syntax and some examples.
+The C++0x standard adds emi(lambda function) em(lambda functions) into
+bf(C++). As there is currently no indication as to when this feature will
+become available in the tt(g++) compiler this section will only cover the
+concept, the proposed syntax and some examples.
 
-As we've seen the generic algorithms often accept an argument which can either
+As we've seen generic algorithms often accept an argument that can either
 be a function object or a plain function. Examples are the tt(sort) and
 tt(find_if) generic algorithms. When the function called by the generic
 algorithm must remember its state a function object is appropriate, otherwise
 a plain function will do.
 
 The function or function object is usually not readily available. Often it
-must be defined in or near the function using the generic algorithm.  Often
-the software engineer will resort to anonymous namespaces in which a class or
-function is defined that is thereupon used in the function calling the generic
-algorithm. If that function is itself a member function the need may be felt
-to access other members of its class from the function called by the generic
-algorithm. Often this results in a significant amount of code (defining the
-class), in complex code (to make available software elements that aren't
-native to the called function (object)), and -at the level of the source file-
-code that is irrelevant at the current level of specification. Nested classes
-don't solve these problems and, moreover, nested classes can't be used in
-templates.
+must be defined in or near the location where the generic algorithm is used.
+Often the software engineer will resort to anonymous namespaces in which a
+class or function is defined that is thereupon used by the function calling
+the generic algorithm. If that function is itself a member function the need
+may be felt to allow the function called by the generic algorithm access to
+other members of its class. Often this results in a significant amount of code
+(defining the class); in complex code (to make available software elements
+that aren't native to the called function (object)); and -at the level of the
+source file- code that is irrelevant at the current level of
+specification. Nested classes don't solve these problems and nested classes
+can't be used in templates.
 
 Solutions to the above problems exist. In section ref(STLWRAPPERS) a general
 approach is discussed allowing the use of members and/or local variables in
 the context of a function or function object called from generic algorithms.
 
-However, the solutions given in section ref(STLWRAPPERS) are in fact makeshift
-solutions that need to be used as long as the language doesn't offer lambda
+But the solutions presented in section ref(STLWRAPPERS) are in fact makeshift
+solutions that must be used as long as the language doesn't offer lambda
 functions. A i(lambda function) is an
-    i(anonymous function). Such a function may be defined on the spot, and
-will exist only during the lifetime of the statement of which it is a part.
+    i(anonymous function)hi(function: anonymous). Such a function may be
+defined on the spot and exists only during the lifetime of the statement
+of which it is a part.
 
-Here is an example of the definition of a lambda function:
+Here is an example of a lambda function:
         verb(
     [](int x, int y)
     {
@@ -54,7 +55,8 @@ only be used if the lambda function has a single statement of the form
     tt(return expression;).
 
     Alternatively, the return type can be explicitly specified using a
-        i(late-specified return type), (cf. section ref(AUTO)):
+        hi(return type: late-specified)i(late-specified return type),
+(cf. section ref(AUTO)):
         verb(
     [](int x, int y) -> int
     {
@@ -62,13 +64,14 @@ only be used if the lambda function has a single statement of the form
         return z + x;
     }
         )
-    A lambda function not returning a value (i.e., a void-function) does not
-have to specify a return type at all.
+    There is no need to specify a return type for lambda functions that do 
+not return values (i.e., a void lambda function).
 
     Variables having the same scope as the lambda function can be accessed
-from the lambda function using references. This allows passing the
-    i(local context) to a lambda function. Such variables are
-called a emi(closure). Here is an example:
+from the lambda function using references, declared in between the lambda
+function's square brackets. This allows passing the
+    i(local context) to lambda functions. Such variables are called a
+emi(closure). Here is an example:
         verb(
     void showSum(vector<int> &vi)
     {
@@ -85,18 +88,18 @@ called a emi(closure). Here is an example:
         )
     The variable tt(int total) is passed to the lambda function as a reference
 (tt([&total])) and can directly be accessed by the function. Its parameter
-list merely defines an tt(int x), which is initialized in turn by each of the
-values stored in tt(vi). Once the generic algorithm has completed
-tt(showSum)'s variable tt(total) has received a value equal to the sum of all
-the vector's values. It has outlived the lambda function and its value is
-displayed.
+list merely defines an tt(int x), which is initialized in sequence by each of
+the values stored in tt(vi). Once the generic algorithm has completed
+tt(showSum)'s variable tt(total) has received a value that is equal to the sum
+of all the vector's values. It has outlived the lambda function and its value
+is displayed.
 
-    If a closure variable is defined without the reference symbol it becomes a
-simple value which is initialized by the local variable when the lambda
-function is passed to the generic algorithm. Usually closure variables are
-passed by reference. If em(all) local variables are to be passed by reference
-the notation ti([&]) can be used (to pass the full closure by value use
-    ti([=])):
+    If a closure variable is defined without the reference symbol (tt(&)) it
+is interpreted as a value parameter of the lambda function that is initialized
+by the local variable when the lambda function is passed to the generic
+algorithm. Usually closure variables are passed by reference. If em(all) local
+variables are to be passed by reference a mere ti([&]) can be used (to
+pass the full closure by value ti([=]) should be used):
         verb(
     void show(vector<int> &vi)
     {
@@ -117,36 +120,36 @@ the notation ti([&]) can be used (to pass the full closure by value use
 The specific internal implementation can vary, but the expectation is that the
 lambda function will store the actual stack pointer of the function it is
 created in, rather than individual references to stack variables.
-    )
+    END )
 
-    Combinations of variables passed by value, but some by reference or
-passed by reference but some by value is possible. In that case the default is
-followed by a list of variables passed differently. E.g.,
+    It is also possible to pass some variables to lambda function by value and
+other variables by reference.  In that case the default is specified using
+tt(&) or tt(=). This default specifying symbol is then followed by a list of
+variables passed differently. Example:
         verb(
     [&, value](int x)
     {
         total +=  x * value;
     };
         )
-    In this case tt(total) will be passed by reference, tt(value) by value.
+    Here  tt(total) will be passed by reference, tt(value) by value.
 
-    Within a class context, members may define lambda functions as well. In
-those cases the lambda function has full access to all the class's members. In
-other words, it is defined as a friend of the class. For example:
+    Class members may also define lambda functions. Such lambda functions have
+full access to all the class's members. In other words, they are automatically
+defined as friends of the class. Example:
         verb(
     class Data
     {
         std::vector<std::string> d_names;
-
         public:
-            void show() const;
+            void show() const
             {
                 int count = 0;
                 std::for_each(d_names.begin(), d_end(),
                     [this, &count](std::string const &name)
                     {
                         std::cout << ++count <<
-                            this->capitalized(name) << endl;
+                            this->capitalized(name) << '\n';
                     }
                 )
             }
@@ -157,9 +160,9 @@ other words, it is defined as a friend of the class. For example:
     Note the use of the tt(this) pointer: inside the lambda function it must
 explicitly be used (so,nl()
         tt(this->capitalized(name)) is used rather than
-tt(capitalized(name))). In addition, in situations like the above tt(this)
-will automatically be available when tt([&]) or tt([=]) is used. So, the above
-lambda function could have been defined as:
+tt(capitalized(name))). In addition, in situations like these tt(this) will
+automatically be available when either tt([&]) or tt([=]) is used. So, the
+above lambda function could also have been defined as:
         verb(
                     [&](std::string const &name)
                     {
@@ -167,17 +170,14 @@ lambda function could have been defined as:
                             this->capitalized(name) << endl;
                     }
         )
-    When lambda functions are compared to, e.g., the function wrappers
-discussed in section ref(STLWRAPPERS) it probably won't come as a surprise
-that
-lambda functions are function objects. It is possible to assign a
-    lambda function to a variable. An example of such an assignment (using
-tt(auto) to define the type of the variable) is:
+
+    Lambda functions may be assigned to variables. An example of such an
+assignment (using tt(auto) to define the variable's type) is:
         verb(
     auto lambdaFun = [this]()
                      {
                         this->member();
                      };
         )
-
-Lambda functions are not yet supported by the tt(g++) compiler.
+    The lifetime of such lamda functions is equal to the lifetime of the
+variable receiving the lambda function as its value.

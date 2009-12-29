@@ -71,7 +71,7 @@
                 g_selector.wait();
 
                 ++d_item;
-                cerr << "P " << d_item << ' ' << msec << endl;
+                cerr << "P " << d_item << ' ' << msec << '\n';
                 g_available.down();
                 g_queue.push(d_item);
                 g_filled.up();
@@ -100,7 +100,7 @@
                 g_rand >> msec;
                 g_selector.setAlarm(0, msec);
                 g_selector.wait();
-                cout << "C Retrieved item " << d_item << ' ' << msec << endl;
+                cout << "C Retrieved item " << d_item << ' ' << msec << '\n';
             }
         }
     };
