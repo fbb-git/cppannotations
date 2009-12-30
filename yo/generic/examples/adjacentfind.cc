@@ -1,11 +1,11 @@
     #include <algorithm>
     #include <string>
     #include <iostream>
+    using namespace std;
 
     class SquaresDiff
     {
         size_t d_minimum;
-
         public:
             SquaresDiff(size_t minimum)
             :
@@ -16,9 +16,6 @@
                 return second * second - first * first  >= d_minimum;
             }
     };
-
-    using namespace std;
-
     int main()
     {
         string sarr[] =
@@ -29,7 +26,7 @@
         string *last = sarr + sizeof(sarr) / sizeof(string);
         string *result = adjacent_find(sarr, last);
 
-        cout << *result << endl;
+        cout << *result << '\n';
         result = adjacent_find(++result, last);
 
         cout << "Second time, starting from the next position:\n" <<
@@ -38,7 +35,7 @@
                     "** No more adjacent equal elements **"
                 :
                     "*result"
-            ) << endl;
+            ) << '\n';
 
         size_t iv[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
         size_t *ilast = iv + sizeof(iv) / sizeof(size_t);
@@ -46,15 +43,12 @@
 
         cout <<
             "The first numbers for which the squares differ at least 10: "
-            << *ires << " and " << *(ires + 1) << endl;
-
-        return 0;
+            << *ires << " and " << *(ires + 1) << '\n';
     }
     /*
-        Generated output:
-
-        echo
-        Second time, starting from the next position:
-        ** No more adjacent equal elements **
-        The first numbers for which the squares differ at least 10: 5 and 6
+        Displays:
+            echo
+            Second time, starting from the next position:
+            ** No more adjacent equal elements **
+            The first numbers for which the squares differ at least 10: 5 and 6
     */

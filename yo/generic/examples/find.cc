@@ -14,24 +14,21 @@
 
         copy
         (
-            find(sarr, last, "delta"), last, ostream_iterator<string>(cout, " ")
+            find(sarr, last, "delta"), last, 
+                                       ostream_iterator<string>(cout, " ")
         );
-        cout << endl;
+        cout << '\n';
 
         if (find(sarr, last, "india") == last)
         {
             cout << "`india' was not found in the range\n";
             copy(sarr, last, ostream_iterator<string>(cout, " "));
-            cout << endl;
+            cout << '\n';
         }
-
-        return 0;
-
     }
     /*
-        Generated output:
-
-        delta echo
-        `india' was not found in the range
-        alpha bravo charley delta echo
+        Displays:
+            delta echo
+            `india' was not found in the range
+            alpha bravo charley delta echo
     */

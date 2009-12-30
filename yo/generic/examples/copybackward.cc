@@ -19,12 +19,6 @@
             last,
             ostream_iterator<string>(cout, " ")
         );
-        cout << endl;
-
-        return 0;
+        cout << '\n';
     }
-    /*
-        Generated output:
-
-        golf hotel foxtrot golf hotel foxtrot golf hotel
-    */
+    // Displays:    golf hotel foxtrot golf hotel foxtrot golf hotel

@@ -1,19 +1,18 @@
     #include <algorithm>
     #include <string>
+    #include <cstring>
     #include <iostream>
+    using namespace std;
 
     class CaseString
     {
         public:
-            bool operator()(std::string const &first,
-                            std::string const &second) const
+            bool operator()(string const &first,
+                            string const &second) const
             {
                 return !strcasecmp(first.c_str(), second.c_str());
             }
     };
-
-    using namespace std;
-
     int main()
     {
         string first[] =
@@ -30,18 +29,15 @@
 
         cout << "The elements of `first' and `second' are pairwise " <<
             (equal(first, last, second) ? "equal" : "not equal") <<
-            endl <<
+            '\n' <<
             "compared case-insensitively, they are " <<
             (
                 equal(first, last, second, CaseString()) ?
                     "equal" : "not equal"
-            ) << endl;
-
-        return 0;
+            ) << '\n';
     }
     /*
-        Generated output:
-
-        The elements of `first' and `second' are pairwise not equal
-        compared case-insensitively, they are equal
+        Displays:
+            The elements of `first' and `second' are pairwise not equal
+            compared case-insensitively, they are equal
     */

@@ -1,5 +1,6 @@
     #include <numeric>
     #include <vector>
+    #include <iterator>
     #include <iostream>
     using namespace std;
 
@@ -12,18 +13,15 @@
         adjacent_difference(iv.begin(), iv.end(), ov.begin());
 
         copy(ov.begin(), ov.end(), ostream_iterator<int>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         adjacent_difference(iv.begin(), iv.end(), ov.begin(), minus<int>());
 
         copy(ov.begin(), ov.end(), ostream_iterator<int>(cout, " "));
-        cout << endl;
-
-        return 0;
+        cout << '\n';
     }
     /*
-        generated output:
-
-        1 1 3 5
-        1 1 3 5
+        Displays:
+            1 1 3 5
+            1 1 3 5
     */

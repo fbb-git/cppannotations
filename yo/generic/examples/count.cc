@@ -8,12 +8,6 @@
 
         cout << "Number of times the value 3 is available: " <<
             count(ia, ia + sizeof(ia) / sizeof(int), 3) <<
-            endl;
-
-        return 0;
+            '\n';
     }
-    /*
-        Generated output:
-
-        Number of times the value 3 is available: 3
-    */
+    // Displays:    Number of times the value 3 is available: 3

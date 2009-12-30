@@ -1,7 +1,9 @@
     #include <algorithm>
     #include <string>
+    #include <cstring>
     #include <iterator>
     #include <iostream>
+    using namespace std;
 
     class CaseName
     {
@@ -10,14 +12,11 @@
         public:
             CaseName(char const *str): d_string(str)
             {}
-            bool operator()(std::string const &element)
+            bool operator()(std::string const &element) const
             {
-                return !strcasecmp(element.c_str(), d_string.c_str());
+                return strcasecmp(element.c_str(), d_string.c_str()) == 0;
             }
     };
-
-    using namespace std;
-
     int main()
     {
         string sarr[] =
@@ -31,22 +30,18 @@
             find_if(sarr, last, CaseName("charley")),
             last, ostream_iterator<string>(cout, " ")
         );
-        cout << endl;
+        cout << '\n';
 
         if (find_if(sarr, last, CaseName("india")) == last)
         {
             cout << "`india' was not found in the range\n";
             copy(sarr, last, ostream_iterator<string>(cout, " "));
-            cout << endl;
+            cout << '\n';
         }
-
-        return 0;
-
     }
     /*
-        Generated output:
-
-        Charley Delta Echo
-        `india' was not found in the range
-        Alpha Bravo Charley Delta Echo
+        Displays:
+            Charley Delta Echo
+            `india' was not found in the range
+            Alpha Bravo Charley Delta Echo
     */

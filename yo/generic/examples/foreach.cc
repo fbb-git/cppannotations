@@ -1,26 +1,24 @@
     #include <algorithm>
     #include <string>
+    #include <cstring>
     #include <iostream>
     #include <cctype>
+    using namespace std;
 
     void lowerCase(char &c)                     // `c' *is* modified
     {
-        c = static_cast<char>(tolower(c));
+        c = tolower(static_cast<unsigned char>(c));
     }
-                                                // `str' is *not* modified
-    void capitalizedOutput(std::string const &str)
+    void capitalizedOutput(string const &str)   // `str' is *not* modified
     {
         char    *tmp = strcpy(new char[str.size() + 1], str.c_str());
 
-        std::for_each(tmp + 1, tmp + str.size(), lowerCase);
+        for_each(tmp + 1, tmp + str.size(), lowerCase);
 
         tmp[0] = toupper(*tmp);
-        std::cout << tmp << " ";
+        cout << tmp << " ";
         delete tmp;
     };
-
-    using namespace std;
-
     int main()
     {
         string sarr[] =
@@ -31,12 +29,9 @@
         string *last = sarr + sizeof(sarr) / sizeof(string);
 
         for_each(sarr, last, capitalizedOutput)("that's all, folks");
-        cout << endl;
-
-        return 0;
+        cout << '\n';
     }
     /*
-        Generated output:
-
-        Alpha Bravo Charley Delta Echo Foxtrot Golf Hotel That's all, folks
+        Displays:
+          Alpha Bravo Charley Delta Echo Foxtrot Golf Hotel That's all, folks
     */

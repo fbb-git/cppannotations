@@ -11,12 +11,6 @@
         fill_n(iv.begin() + 2, 4, 8);
 
         copy(iv.begin(), iv.end(), ostream_iterator<int>(cout, " "));
-        cout << endl;
-
-        return 0;
+        cout << '\n';
     }
-    /*
-        Generated output:
-
-        0 0 8 8 8 8 0 0
-    */
+    // Displays:    0 0 8 8 8 8 0 0

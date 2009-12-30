@@ -18,12 +18,6 @@
                                     // copy to cout using an ostream_iterator
                                     // for strings,
         copy(sarr, last, ostream_iterator<string>(cout, " "));
-        cout << endl;
-
-        return 0;
+        cout << '\n';
     }
-    /*
-        Generated output:
-
-        charley delta echo foxtrot golf hotel golf hotel
-    */
+    //  Displays: charley delta echo foxtrot golf hotel golf hotel

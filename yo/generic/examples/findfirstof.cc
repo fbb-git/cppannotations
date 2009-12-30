@@ -2,6 +2,7 @@
     #include <string>
     #include <iterator>
     #include <iostream>
+    using namespace std;
 
     class Twice
     {
@@ -11,9 +12,6 @@
                 return first == (second << 1);
             }
     };
-
-    using namespace std;
-
     int main()
     {
         string sarr[] =
@@ -36,7 +34,7 @@
             find_first_of(sarr, last, search, search + 3),  // at 1st 'foxtrot'
             last, ostream_iterator<string>(cout, " ")
         );
-        cout << endl;
+        cout << '\n';
 
         size_t range[] = {2, 4, 6, 8, 10, 4, 6, 8, 10};
         size_t nrs[]   = {2, 3, 4};
@@ -46,13 +44,10 @@
             find_first_of(range, range + 9, nrs, nrs + 3, Twice()),
             range + 9, ostream_iterator<size_t>(cout, " ")
         );
-        cout << endl;
-
-        return 0;
+        cout << '\n';
     }
     /*
-        Generated output:
-
-        foxtrot golf hotel foxtrot golf hotel india juliet kilo
-        4 6 8 10 4 6 8 10
+        Displays:
+            foxtrot golf hotel foxtrot golf hotel india juliet kilo
+            4 6 8 10 4 6 8 10
     */

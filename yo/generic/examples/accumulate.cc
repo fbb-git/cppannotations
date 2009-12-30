@@ -10,15 +10,12 @@
 
         cout <<
             "Sum of values: " << accumulate(iv.begin(), iv.end(), int()) <<
-            endl <<
+            "\n"
             "Product of values: " << accumulate(iv.begin(), iv.end(), int(1),
-                                            multiplies<int>()) << endl;
-
-        return 0;
+                                            multiplies<int>()) << '\n';
     }
     /*
-        Generated output:
-
-        Sum of values: 10
-        Product of values: 24
+        Displays:
+            Sum of values: 10
+            Product of values: 24
     */
