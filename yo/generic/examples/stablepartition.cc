@@ -25,14 +25,11 @@
 
         copy(ia, ia + 10, ostream_iterator<int>(cout, " "));
         cout << '\n';
-
-        return 0;
     }
     /*
         Displays:
-
-        Last element <= 4 is ia[3]
-        1 3 4 2 9 10 7 8 6 5
-        Last element <= 4 is ia[3]
-        1 3 2 4 5 7 9 10 8 6
+            Last element <= 4 is ia[3]
+            1 3 4 2 9 10 7 8 6 5
+            Last element <= 4 is ia[3]
+            1 3 2 4 5 7 9 10 8 6
     */

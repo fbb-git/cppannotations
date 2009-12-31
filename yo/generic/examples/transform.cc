@@ -5,26 +5,21 @@
     #include <string>
     #include <cctype>
     #include <iterator>
-
-    class Caps
-    {
-        public:
-            std::string operator()(std::string const &src)
-            {
-                std::string tmp = src;
-
-                transform(tmp.begin(), tmp.end(), tmp.begin(), toupper);
-                return tmp;
-            }
-    };
-
     using namespace std;
 
+    string caps(string const &src)
+    {
+        string tmp;
+        tmp.resize(src.length());
+
+        transform(src.begin(), src.end(), tmp.begin(), ::toupper);
+        return tmp;
+    }
     int main()
     {
         string words[] = {"alpha", "bravo", "charley"};
 
-        copy(words, transform(words, words + 3, words, Caps()),
+        copy(words, transform(words, words + 3, words, caps),
                                 ostream_iterator<string>(cout, " "));
         cout << '\n';
 
@@ -37,12 +32,9 @@
         copy(squares.begin(), squares.end(),
                                 ostream_iterator<int>(cout, " "));
         cout << '\n';
-
-        return 0;
     }
     /*
         Displays:
-
-        ALPHA BRAVO CHARLEY
-        1 4 9 16 25
+            ALPHA BRAVO CHARLEY
+            1 4 9 16 25
     */

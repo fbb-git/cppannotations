@@ -3,19 +3,13 @@
     #include <string>
     #include <vector>
     #include <iterator>
-
-    class CaseString
-    {
-        public:
-            bool operator()(std::string const &first,
-                            std::string const &second) const
-            {
-                return !strcasecmp(first.c_str(), second.c_str());
-            }
-    };
-
+    #include <cstring>
     using namespace std;
 
+    bool casestring(string const &first, string const &second)
+    {
+        return strcasecmp(first.c_str(), second.c_str()) == 0;
+    }
     int main()
     {
         string words[] = {"oscar", "Alpha", "alpha", "alpha",
@@ -32,17 +26,14 @@
         vector<string> remaining2;
 
         unique_copy(words, words + size,
-                                back_inserter(remaining2), CaseString());
+                                back_inserter(remaining2), casestring);
 
         copy(remaining2.begin(), remaining2.end(),
                 ostream_iterator<string>(cout, " "));
         cout << '\n';
-
-        return 0;
     }
     /*
         Displays:
-
-        oscar Alpha alpha papa quebec
-        oscar Alpha papa quebec
+            oscar Alpha alpha papa quebec
+            oscar Alpha papa quebec
     */

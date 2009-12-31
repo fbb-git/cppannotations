@@ -17,12 +17,9 @@
         sort(words, words + 7, greater<string>());
         copy(words, words + 7, ostream_iterator<string>(cout, " "));
         cout << '\n';
-
-        return 0;
     }
     /*
         Displays:
-
-        kilo lima mike november oscar papa quebec
-        quebec papa oscar november mike lima kilo
+            kilo lima mike november oscar papa quebec
+            quebec papa oscar november mike lima kilo
     */

@@ -1,19 +1,14 @@
     #include <algorithm>
     #include <iostream>
     #include <string>
+    #include <cstring>
     #include <iterator>
-
-    class CaseLess
-    {
-        public:
-            bool operator()(std::string const &left, std::string const &right)
-            {
-                return strcasecmp(left.c_str(), right.c_str()) < 0;
-            }
-    };
-
     using namespace std;
 
+    bool caseless(string const &left, string const &right)
+    {
+        return strcasecmp(left.c_str(), right.c_str()) < 0;
+    }
     int main()
     {
         string set1[] = { "kilo", "lima", "mike", "november",
@@ -30,16 +25,13 @@
         string set3[] = { "PAPA", "QUEBEC", "ROMEO"};
 
         copy(result,
-            set_intersection(set1, set1 + 7, set3, set3 + 3, result,
-            CaseLess()),
+            set_intersection(set1, set1 + 7, set3, set3 + 3, result, 
+                                                             caseless),
             ostream_iterator<string>(cout, " "));
         cout << '\n';
-
-        return 0;
     }
     /*
         Displays:
-
-        papa quebec
-        papa quebec
+            papa quebec
+            papa quebec
     */

@@ -24,16 +24,13 @@
         cout << '\n';
         copy(second, second + n, ostream_iterator<string>(cout, " "));
         cout << '\n';
-
-        return 0;
     }
     /*
         Displays:
-
-        Before:
-        alpha bravo charley
-        echo foxtrot golf
-        After:
-        echo foxtrot golf
-        alpha bravo charley
+            Before:
+            alpha bravo charley
+            echo foxtrot golf
+            After:
+            echo foxtrot golf
+            alpha bravo charley
     */

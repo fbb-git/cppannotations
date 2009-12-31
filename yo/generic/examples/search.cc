@@ -1,18 +1,16 @@
     #include <algorithm>
     #include <iostream>
     #include <iterator>
+    using namespace std;
 
     class absInt
     {
         public:
-            bool operator()(int i1, int i2)
+            bool operator()(int i1, int i2) const
             {
                 return abs(i1) == abs(i2);
             }
     };
-
-    using namespace std;
-
     int main()
     {
         int range1[] =  {-2, -4, -6, -8, 2, 4, 6, 8};
@@ -33,12 +31,9 @@
             ostream_iterator<int>(cout, " ")
         );
         cout << '\n';
-
-        return 0;
     }
     /*
         Displays:
-
-        6 8
-        -6 -8 2 4 6 8
+            6 8
+            -6 -8 2 4 6 8
     */

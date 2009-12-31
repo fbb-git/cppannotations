@@ -30,16 +30,13 @@
         cout << "35 can be inserted before " <<
                 (upper_bound(ia, ia + n, 35, greater<int>()) == ia ?
                                     "the first element " : "???") << '\n';
-
-        return 0;
     }
     /*
         Displays:
-
-        Sequence: 10 15 15 20 30
-        15 can be inserted before 20
-        35 can be inserted after the last element
-        Sequence: 30 20 15 15 10
-        15 can be inserted before 10
-        35 can be inserted before the first element
+            Sequence: 10 15 15 20 30
+            15 can be inserted before 20
+            35 can be inserted after the last element
+            Sequence: 30 20 15 15 10
+            15 can be inserted before 10
+            35 can be inserted before the first element
     */
