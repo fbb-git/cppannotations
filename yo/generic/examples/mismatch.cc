@@ -1,20 +1,18 @@
     #include <algorithm>
     #include <string>
+    #include <cstring>
     #include <iostream>
     #include <utility>
+    using namespace std;
 
     class CaseString
     {
         public:
-            bool operator()(std::string const &first,
-                            std::string const &second) const
+            bool operator()(string const &first, string const &second) const
             {
                 return strcasecmp(first.c_str(), second.c_str()) == 0;
             }
     };
-
-    using namespace std;
-
     int main()
     {
         string range1[] =
@@ -36,12 +34,9 @@
             range1 + 5
         )
             cout << "When compared case-insensitively they match\n";
-
-        return 0;
     }
     /*
         Displays:
-
-        The elements hotel and Hotel at offset 3 differ
-        When compared case-insensitively they match
+            The elements hotel and Hotel at offset 3 differ
+            When compared case-insensitively they match
     */

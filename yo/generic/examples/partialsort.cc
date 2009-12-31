@@ -18,14 +18,11 @@
         partial_sort(ia, ia + 5, ia + 10, greater<int>());
         copy(ia, ia + 10, ostream_iterator<int>(cout, " "));
         cout << '\n';
-
-        return 0;
     }
     /*
         Displays:
-
-        find the 3 smallest elements:
-        1 2 3 7 9 5 4 6 8 10
-        find the 5 biggest elements:
-        10 9 8 7 6 1 2 3 4 5
+            find the 3 smallest elements:
+            1 2 3 7 9 5 4 6 8 10
+            find the 5 biggest elements:
+            10 9 8 7 6 1 2 3 4 5
     */

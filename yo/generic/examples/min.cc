@@ -1,19 +1,17 @@
     #include <algorithm>
     #include <iostream>
     #include <string>
+    #include <cstring>
+    using namespace std;
 
     class CaseString
     {
         public:
-            bool operator()(std::string const &first,
-                            std::string const &second) const
+            bool operator()(string const &first, string const &second) const
             {
                 return strcasecmp(second.c_str(), first.c_str()) > 0;
             }
     };
-
-    using namespace std;
-
     int main()
     {
         cout << "Word '" << min(string("first"), string("second")) <<
@@ -24,13 +22,10 @@
 
         cout << "Word '" << min(string("first"), string("SECOND"),
                             CaseString()) << "' is lexicographically first\n";
-
-        return 0;
     }
     /*
         Displays:
-
-        Word 'first' is lexicographically first
-        Word 'SECOND' is lexicographically first
-        Word 'first' is lexicographically first
+            Word 'first' is lexicographically first
+            Word 'SECOND' is lexicographically first
+            Word 'first' is lexicographically first
     */

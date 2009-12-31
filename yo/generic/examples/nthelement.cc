@@ -19,14 +19,11 @@
         cout << "sorting with respect to " << ia[5] << '\n';
         copy(ia, ia + 10, ostream_iterator<int>(cout, " "));
         cout << '\n';
-
-        return 0;
     }
     /*
         Displays:
-
-        sorting with respect to 4
-        1 2 3 4 9 7 5 6 8 10
-        sorting with respect to 5
-        10 8 7 9 6 5 3 4 2 1
+            sorting with respect to 4
+            1 2 3 4 9 7 5 6 8 10
+            sorting with respect to 5
+            10 8 7 9 6 5 3 4 2 1
     */
