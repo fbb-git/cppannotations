@@ -26,7 +26,7 @@
             set_symmetric_difference(set1, set1 + 7, set2, set2 + 3,
                                                            result),
             ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         string set3[] = { "PAPA", "QUEBEC", "ROMEO"};
 
@@ -35,12 +35,12 @@
                                                            result,
             CaseLess()),
             ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         kilo lima mike november oscar romeo
         kilo lima mike november oscar ROMEO

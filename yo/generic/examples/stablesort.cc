@@ -10,7 +10,7 @@
     {
         ostream &operator<<(ostream &out, pss const &p)                 // 2
         {
-            return out << "    " << p.first << " " << p.second << endl;
+            return out << "    " << p.first << " " << p.second << '\n';
         }
     }
 
@@ -56,7 +56,7 @@
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         sorted by names:
             Goldberg Eugene

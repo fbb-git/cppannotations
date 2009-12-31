@@ -2,19 +2,18 @@
     #include <iterator>
     #include <iostream>
     #include <string>
+    #include <cstring>
+    using namespace std;
 
     class CaseString
     {
         public:
-            bool operator()(std::string const &first,
-                            std::string const &second) const
+            bool operator()(string const &first,
+                            string const &second) const
             {
                 return strcasecmp(first.c_str(), second.c_str()) < 0;
             }
     };
-
-    using namespace std;
-
     int main()
     {
         string word1 = "hello";
@@ -63,17 +62,14 @@
                     "beyond or at "
             );
         copy(two, two + 3, ostream_iterator<string>(cout, " "));
-        cout << endl <<
+        cout << "\n"
             "using case-insensitive comparisons.\n";
-
-        return 0;
     }
     /*
-        Generated output:
-
-        hello is before help in the alphabet
-        hello is beyond or at hello in the alphabet
-        help is beyond or at hello in the alphabet
-        alpha bravo charley  is ordered before ALPHA BRAVO DELTA
-        using case-insensitive comparisons.
+        Displays:
+            hello is before help in the alphabet
+            hello is beyond or at hello in the alphabet
+            help is beyond or at hello in the alphabet
+            alpha bravo charley  is ordered before ALPHA BRAVO DELTA
+            using case-insensitive comparisons.
     */

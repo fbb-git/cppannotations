@@ -17,14 +17,14 @@
         int     ia[] = {-4, 7, -2, 10, -12};
 
         cout << "The minimum int value is " << *min_element(ia, ia + 5) <<
-                endl;
+                '\n';
         cout << "The minimum absolute int value is " <<
-                *min_element(ia, ia + 5, AbsValue()) << endl;
+                *min_element(ia, ia + 5, AbsValue()) << '\n';
 
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         The minimum int value is -12
         The minimum absolute int value is -2

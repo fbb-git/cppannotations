@@ -10,7 +10,7 @@
         while (getline(cin, line))
         {
             reverse(line.begin(), line.end());
-            cout << line << endl;
+            cout << line << '\n';
         }
 
         return 0;

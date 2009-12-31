@@ -25,7 +25,7 @@
         do
         {
             copy(saints, saints + 4, ostream_iterator<string>(cout, " "));
-            cout << endl;
+            cout << '\n';
         }
         while (next_permutation(saints, saints + 4, CaseString()));
 
@@ -38,14 +38,14 @@
         do
         {
             copy(saints, saints + 4, ostream_iterator<string>(cout, " "));
-            cout << endl;
+            cout << '\n';
         }
         while (next_permutation(saints, saints + 4, CaseString()));
 
         return 0;
     }
     /*
-        Generated output (only partially given):
+        Displays (only partially given):
 
         All permutations of 'Oh when the saints':
         Sequences:

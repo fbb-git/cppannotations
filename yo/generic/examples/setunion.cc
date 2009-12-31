@@ -25,7 +25,7 @@
         copy(result,
             set_union(set1, set1 + 7, set2, set2 + 3, result),
             ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         string set3[] = { "PAPA", "QUEBEC", "ROMEO"};
 
@@ -33,12 +33,12 @@
             set_union(set1, set1 + 7, set3, set3 + 3, result,
             CaseLess()),
             ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         kilo lima mike november oscar papa quebec romeo
         kilo lima mike november oscar papa quebec ROMEO

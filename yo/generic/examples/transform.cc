@@ -26,7 +26,7 @@
 
         copy(words, transform(words, words + 3, words, Caps()),
                                 ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         int         values[] = {1, 2, 3, 4, 5};
         vector<int> squares;
@@ -36,12 +36,12 @@
 
         copy(squares.begin(), squares.end(),
                                 ostream_iterator<int>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         ALPHA BRAVO CHARLEY
         1 4 9 16 25

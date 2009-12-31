@@ -17,12 +17,12 @@
                         bind1st(greater<string>(), string("mike")),
                         string("ALPHA"));
         copy (result, result + size, ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         return 0;
     }
     /*
-        Generated output (all on one line):
+        Displays (all on one line):
 
         ALPHA ALPHA ALPHA mike ALPHA november ALPHA oscar ALPHA ALPHA
                                                           papa quebec

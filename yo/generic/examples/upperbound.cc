@@ -11,30 +11,30 @@
 
         cout << "Sequence: ";
         copy(ia, ia + n, ostream_iterator<int>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         cout << "15 can be inserted before " <<
-                *upper_bound(ia, ia + n, 15) << endl;
+                *upper_bound(ia, ia + n, 15) << '\n';
         cout << "35 can be inserted after " <<
                 (upper_bound(ia, ia + n, 35) == ia + n ?
-                                    "the last element" : "???") << endl;
+                                    "the last element" : "???") << '\n';
 
         sort(ia, ia + n, greater<int>());
 
         cout << "Sequence: ";
         copy(ia, ia + n, ostream_iterator<int>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         cout << "15 can be inserted before " <<
-                *upper_bound(ia, ia + n, 15, greater<int>()) << endl;
+                *upper_bound(ia, ia + n, 15, greater<int>()) << '\n';
         cout << "35 can be inserted before " <<
                 (upper_bound(ia, ia + n, 35, greater<int>()) == ia ?
-                                    "the first element " : "???") << endl;
+                                    "the first element " : "???") << '\n';
 
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         Sequence: 10 15 15 20 30
         15 can be inserted before 20

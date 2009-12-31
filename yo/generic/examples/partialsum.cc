@@ -13,17 +13,17 @@
         copy(ia2,
             partial_sum(ia, ia + 5, ia2),
             ostream_iterator<int>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         copy(ia2,
             partial_sum(ia, ia + 5, ia2, multiplies<int>()),
             ostream_iterator<int>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         1 3 6 10 15
         1 2 6 24 120

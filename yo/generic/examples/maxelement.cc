@@ -1,5 +1,6 @@
     #include <algorithm>
     #include <iostream>
+    using namespace std;
 
     class AbsValue
     {
@@ -9,22 +10,16 @@
                 return abs(first) < abs(second);
             }
     };
-
-    using namespace std;
-
     int main()
     {
         int     ia[] = {-4, 7, -2, 10, -12};
 
-        cout << "The max. int value is " << *max_element(ia, ia + 5) << endl;
+        cout << "The max. int value is " << *max_element(ia, ia + 5) << '\n';
         cout << "The max. absolute int value is " <<
-                *max_element(ia, ia + 5, AbsValue()) << endl;
-
-        return 0;
+                *max_element(ia, ia + 5, AbsValue()) << '\n';
     }
     /*
-        Generated output:
-
-        The max. int value is 10
-        The max. absolute int value is -12
+        Displays:
+            The max. int value is 10
+            The max. absolute int value is -12
     */

@@ -22,22 +22,22 @@
 
         string *removed = unique(words, words + size);
         copy(words, removed, ostream_iterator<string>(cout, " "));
-        cout << endl
+        cout << '\n'
              << "Trailing elements are:\n";
         copy(removed, words + size, ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         removed = unique(words, words + size, CaseString());
         copy(words, removed, ostream_iterator<string>(cout, " "));
-        cout << endl
+        cout << '\n'
              << "Trailing elements are:\n";
         copy(removed, words + size, ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         alpha Alpha papa quebec
         Trailing elements are:

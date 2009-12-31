@@ -12,17 +12,17 @@
 
         cout << "find the 3 smallest elements:\n";
         copy(ia, ia + 10, ostream_iterator<int>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         cout << "find the 5 biggest elements:\n";
         partial_sort(ia, ia + 5, ia + 10, greater<int>());
         copy(ia, ia + 10, ostream_iterator<int>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         find the 3 smallest elements:
         1 2 3 7 9 5 4 6 8 10

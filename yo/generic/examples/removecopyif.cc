@@ -28,12 +28,12 @@
 
         cout << "Removing all \"alpha\"s:\n";
         copy(remaining, returnvalue, ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         Removing all "alpha"s:
         kilo lima mike november oscar papa quebec

@@ -12,12 +12,12 @@
             size_t    size = line.size();
             char        copy[size + 1];
 
-            cout << "line: " << line << endl <<
+            cout << "line: " << line << '\n' <<
                     "reversed: ";
             reverse_copy(line.begin(), line.end(), copy);
             copy[size] = 0;     // 0 is not part of the reversed
                                 // line !
-            cout << copy << endl;
+            cout << copy << '\n';
         }
         return 0;
     }

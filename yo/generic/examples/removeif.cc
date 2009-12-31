@@ -18,15 +18,15 @@
                     bind2nd(equal_to<string>(), string("alpha")));
 
         copy(words, removed, ostream_iterator<string>(cout, " "));
-        cout << endl
+        cout << '\n'
              << "Trailing elements are:\n";
         copy(removed, words + size, ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         Removing all "alpha"s:
         kilo lima mike november oscar papa quebec

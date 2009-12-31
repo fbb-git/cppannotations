@@ -15,15 +15,15 @@
         cout << "Removing all \"alpha\"s:\n";
         removed = remove(words, words + size, "alpha");
         copy(words, removed, ostream_iterator<string>(cout, " "));
-        cout << endl
+        cout << '\n'
              << "Leftover elements are:\n";
         copy(removed, words + size, ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         Removing all "alpha"s:
         kilo lima mike november oscar papa quebec

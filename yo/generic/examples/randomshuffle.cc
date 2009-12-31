@@ -28,7 +28,7 @@
     {
         std::copy(begin, end,
                         std::ostream_iterator<std::string>(std::cout, " "));
-        std::cout << std::endl << std::endl;
+        std::cout << "\n\n";
     }
 
     using namespace std;
@@ -56,7 +56,7 @@
         return 0;
     }
     /*
-        Generated output (for example):
+        Displays (for example):
 
         Using Default Shuffle:
         lima oscar mike november papa kilo

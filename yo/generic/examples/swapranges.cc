@@ -12,22 +12,22 @@
 
         cout << "Before:\n";
         copy(first, first + n, ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
         copy(second, second + n, ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         swap_ranges(first, first + n, second);
 
         cout << "After:\n";
         copy(first, first + n, ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
         copy(second, second + n, ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         Before:
         alpha bravo charley

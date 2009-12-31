@@ -40,7 +40,7 @@
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         The elements hotel and Hotel at offset 3 differ
         When compared case-insensitively they match

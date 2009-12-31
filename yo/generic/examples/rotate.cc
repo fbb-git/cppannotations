@@ -15,12 +15,12 @@
         rotate(words, words + midsize, words + size);
 
         copy(words, words + size, ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         echo foxtrot golf hotel india juliet kilo lima mike november oscar papa
     */

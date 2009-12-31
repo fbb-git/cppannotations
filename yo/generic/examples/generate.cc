@@ -2,6 +2,7 @@
     #include <vector>
     #include <iterator>
     #include <iostream>
+    using namespace std;
 
     class NaturalSquares
     {
@@ -16,9 +17,6 @@
                 return d_newsqr += (d_last++ << 1) + 1;
             }
     };
-
-    using namespace std;
-
     int main()
     {
         vector<size_t>    uv(10);
@@ -26,12 +24,6 @@
         generate(uv.begin(), uv.end(), NaturalSquares());
 
         copy(uv.begin(), uv.end(), ostream_iterator<int>(cout, " "));
-        cout << endl;
-
-        return 0;
+        cout << '\n';
     }
-    /*
-        Generated output:
-
-        1 4 9 16 25 36 49 64 81 100
-    */
+    // Displays:   1 4 9 16 25 36 49 64 81 100

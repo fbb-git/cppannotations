@@ -7,7 +7,7 @@
     {
         std::cout << header << ":\n";
         std::copy(ia, ia + 20, std::ostream_iterator<int>(std::cout, " "));
-        std::cout << std::endl;
+        std::cout << '\n';
     }
 
     using namespace std;
@@ -45,7 +45,7 @@
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         The values 1-20 in a max-heap:
         20 19 15 18 11 13 14 17 9 10 2 12 6 3 7 16 8 4 1 5

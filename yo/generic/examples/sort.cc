@@ -12,16 +12,16 @@
 
         sort(words, words + 7);
         copy(words, words + 7, ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         sort(words, words + 7, greater<string>());
         copy(words, words + 7, ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         kilo lima mike november oscar papa quebec
         quebec papa oscar november mike lima kilo

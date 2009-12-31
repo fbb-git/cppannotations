@@ -19,12 +19,12 @@
                                                          string("ALPHA")),
             ostream_iterator<string>(cout, " ")
         );
-        cout << endl;
+        cout << '\n';
 
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         kilo ALPHA lima mike ALPHA november ALPHA oscar ALPHA ALPHA papa quebec
     */

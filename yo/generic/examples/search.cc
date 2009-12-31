@@ -24,7 +24,7 @@
             range1 + 8,
             ostream_iterator<int>(cout, " ")
         );
-        cout << endl;
+        cout << '\n';
 
         copy
         (
@@ -32,12 +32,12 @@
             range1 + 8,
             ostream_iterator<int>(cout, " ")
         );
-        cout << endl;
+        cout << '\n';
 
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         6 8
         -6 -8 2 4 6 8

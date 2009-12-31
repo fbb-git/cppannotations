@@ -12,28 +12,25 @@
 
         cout << "Before:\n";
         copy(first, first + n, ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
         copy(second, second + n, ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         for (size_t idx = 0; idx < n; ++idx)
             iter_swap(first + idx, second + idx);
 
         cout << "After:\n";
         copy(first, first + n, ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
         copy(second, second + n, ostream_iterator<string>(cout, " "));
-        cout << endl;
-
-        return 0;
+        cout << '\n';
     }
     /*
-        Generated output:
-
-        Before:
-        alpha bravo charley
-        echo foxtrot golf
-        After:
-        echo foxtrot golf
-        alpha bravo charley
+        Displays:
+            Before:
+            alpha bravo charley
+            echo foxtrot golf
+            After:
+            echo foxtrot golf
+            alpha bravo charley
     */

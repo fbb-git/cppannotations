@@ -16,7 +16,7 @@
                    bind1st(equal_to<string>(), string("alpha")),
                    string("ALPHA"));
         copy(words, words + size, ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
         return 0;
     }
     /*

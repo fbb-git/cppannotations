@@ -27,7 +27,7 @@
 
         copy(remaining.begin(), remaining.end(),
                 ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         vector<string> remaining2;
 
@@ -36,12 +36,12 @@
 
         copy(remaining2.begin(), remaining2.end(),
                 ostream_iterator<string>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         oscar Alpha alpha papa quebec
         oscar Alpha papa quebec

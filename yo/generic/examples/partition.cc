@@ -28,12 +28,12 @@
         cout << "Last element <= 4 is ia[" << split - ia - 1 << "]\n";
 
         copy(ia, ia + 10, ostream_iterator<int>(cout, " "));
-        cout << endl;
+        cout << '\n';
 
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         Last element <= 4 is ia[3]
         1 3 4 2 9 10 7 8 6 5

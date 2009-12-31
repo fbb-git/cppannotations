@@ -28,7 +28,7 @@
         return 0;
     }
     /*
-        Generated output:
+        Displays:
 
         Word 'first' is lexicographically first
         Word 'SECOND' is lexicographically first
