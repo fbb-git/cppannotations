@@ -9,7 +9,7 @@
     {
         string words[] =
             { "kilo", "alpha", "lima", "mike", "alpha", "november",
-              "alpha", "oscar", "alpha", "alpha", "papa", "quebec" };
+              "alpha", "oscar", "alpha", "alpha", "papa"};
         size_t const size = sizeof(words) / sizeof(string);
         string result[size];
 
@@ -18,12 +18,8 @@
                         string("ALPHA"));
         copy (result, result + size, ostream_iterator<string>(cout, " "));
         cout << '\n';
-
-        return 0;
     }
     /*
-        Displays (all on one line):
-
-        ALPHA ALPHA ALPHA mike ALPHA november ALPHA oscar ALPHA ALPHA
-                                                          papa quebec
+        Displays:
+            ALPHA ALPHA ALPHA mike ALPHA november ALPHA oscar ALPHA ALPHA papa
     */

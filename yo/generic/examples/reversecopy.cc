@@ -19,5 +19,4 @@
                                 // line !
             cout << copy << '\n';
         }
-        return 0;
     }

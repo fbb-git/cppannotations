@@ -2,6 +2,7 @@
     #include <iostream>
     #include <string>
     #include <iterator>
+    using namespace std;
 
     class LessThan
     {
@@ -11,14 +12,11 @@
             :
                 d_x(x)
             {}
-            bool operator()(int value)
+            bool operator()(int value) const
             {
                 return value <= d_x;
             }
     };
-
-    using namespace std;
-
     int main()
     {
         int ia[] = {1, 3, 5, 7, 9, 10, 2, 8, 6, 4};
@@ -29,12 +27,9 @@
 
         copy(ia, ia + 10, ostream_iterator<int>(cout, " "));
         cout << '\n';
-
-        return 0;
     }
     /*
         Displays:
-
-        Last element <= 4 is ia[3]
-        1 3 4 2 9 10 7 8 6 5
+            Last element <= 4 is ia[3]
+            1 3 4 2 9 10 7 8 6 5
     */

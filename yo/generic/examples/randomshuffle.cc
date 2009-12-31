@@ -3,13 +3,12 @@
     #include <string>
     #include <time.h>
     #include <iterator>
+    using namespace std;
 
     int randomValue(int remaining)
     {
-        return static_cast<int>
-                ( ((0.0 + remaining) * rand()) / (RAND_MAX + 1.0) );
+        return rand() % remaining;
     }
-
     class RandomGenerator
     {
         public:
@@ -22,17 +21,11 @@
                 return randomValue(remaining);
             }
     };
-
-
-    void show(std::string *begin, std::string *end)
+    void show(string *begin, string *end)
     {
-        std::copy(begin, end,
-                        std::ostream_iterator<std::string>(std::cout, " "));
-        std::cout << "\n\n";
+        copy(begin, end, ostream_iterator<string>(cout, " "));
+        cout << "\n\n";
     }
-
-    using namespace std;
-
     int main()
     {
         string words[] =
@@ -52,18 +45,15 @@
         cout << "Using the randomValue() function:\n";
         random_shuffle(words, words + size, randomValue);
         show(words, words + size);
-
-        return 0;
     }
     /*
         Displays (for example):
+            Using Default Shuffle:
+            lima oscar mike november papa kilo
 
-        Using Default Shuffle:
-        lima oscar mike november papa kilo
+            Using RandomGenerator:
+            kilo lima papa oscar mike november
 
-        Using RandomGenerator:
-        kilo lima papa oscar mike november
-
-        Using the randomValue() function:
-        mike papa november kilo oscar lima
+            Using the randomValue() function:
+            mike papa november kilo oscar lima
     */

@@ -22,14 +22,11 @@
              << "Trailing elements are:\n";
         copy(removed, words + size, ostream_iterator<string>(cout, " "));
         cout << '\n';
-
-        return 0;
     }
     /*
         Displays:
-
-        Removing all "alpha"s:
-        kilo lima mike november oscar papa quebec
-        Trailing elements are:
-        oscar alpha alpha papa quebec
+            Removing all "alpha"s:
+            kilo lima mike november oscar papa quebec
+            Trailing elements are:
+            oscar alpha alpha papa quebec
     */

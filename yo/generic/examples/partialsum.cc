@@ -19,12 +19,9 @@
             partial_sum(ia, ia + 5, ia2, multiplies<int>()),
             ostream_iterator<int>(cout, " "));
         cout << '\n';
-
-        return 0;
     }
     /*
         Displays:
-
-        1 3 6 10 15
-        1 2 6 24 120
+            1 3 6 10 15
+            1 2 6 24 120
     */

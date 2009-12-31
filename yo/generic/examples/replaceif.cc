@@ -17,10 +17,8 @@
                    string("ALPHA"));
         copy(words, words + size, ostream_iterator<string>(cout, " "));
         cout << '\n';
-        return 0;
     }
     /*
-        generated output:
-
-        kilo ALPHA lima mike ALPHA november ALPHA oscar ALPHA ALPHA papa quebec
+        Displays:
+            kilo ALPHA lima mike ALPHA november ALPHA oscar ALPHA ALPHA papa
     */

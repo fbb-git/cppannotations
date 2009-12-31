@@ -12,6 +12,4 @@
             reverse(line.begin(), line.end());
             cout << line << '\n';
         }
-
-        return 0;
     }
