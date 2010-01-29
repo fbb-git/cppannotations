@@ -1,91 +1,139 @@
-    The initial tt(add()) template, defining two identically typed parameters
-works fine for all types sensibly supporting tt(operator+()) and a copy
+    The initial tt(add) template, defining two identically typed parameters
+works fine for all types supporting tt(operator+) and a copy
 constructor. However, these assumptions are not always met. For example, when
-tt(char *)s are used, neither the tt(operator+()) nor the copy constructor is
-(sensibly) available. The compiler does not know this, and will try to
-instantiate the simple function template
-        verb(
-    template <typename Type>
-    Type add(Type const &t1, Type const &t2);
-        )
-    But it can't do so, since tt(operator+()) is not defined for pointers. In
-situations like these it is clear that a match between the template's type
-parameter(s) and the actually used type(s) is possible, but the standard
-implementation is pointless or produces errors.
+using tt(char *)s using tt(operator+) or a `copy constructor' does not make
+sense. The compiler will first try to instantiate the function template, but
+then compilation fails as  tt(operator+) is not defined for pointers. 
+
+In such situations the compiler may be able to resolve the template type
+parameters but it (or we ...) may then detect that the standard implementation
+is pointless or produces errors.
 
     To solve this problem a emi(template explicit specialization) may be
 defined.  A template explicit specialization defines the function template for
 which a generic definition already exists using specific actual template type
-parameters.
+parameters. As we saw in the previous section the compiler will always prefer
+a more specialized function over a less specialized one. So the template
+explicit specialization will be selected whenever possible. 
 
-    In the abovementioned case an explicit specialization is required for a
-tt(char const *), but probably also for a tt(char *) type. Probably, as the
-compiler still uses the standard type-deducing process mentioned earlier. So,
-when our tt(add()) function template is specialized for tt(char *) arguments,
-then its return type em(must) also be a tt(char *), whereas it em(must) be a
-tt(char const *) if the arguments are tt(char const *) values. In these cases
-the template type parameter tt(Type) will be deduced properly. With tt(Type ==
-char *), for example, the head of the instantiated function becomes:
-        centt(char *add(char *const &t1, char *const &t2))
-    If this is considered undesirable, an em(overloaded) version could be
-designed expecting pointers. The following function template definition
-expects two (tt(const)) pointers, and returns a non-const pointer:
+A template explicit specialization may offer a specialization for its template
+type parameter(s). The special type will then consistently be subsituted for
+the template type parameter in all of the template function's code. For
+example if the explicitly specialized type is tt(char const *) then in the
+template definition 
         verb(
-    template <typename T>
-    T *add(T const *t1, T const *t2)
+    template <typename Type>
+    Type add(Type const &lvalue, Type const &rvalue)
     {
-        std::cout << "Pointers\n";
-        return new T;
+        return lvalue + rvalue;
     }
         )
-    But we might still not be where we want to be, as em(this) overloaded
-version will now only accept pointers to constant tt(T) elements. Pointers to
-non-const tt(T) elements will not be accepted. At first sight it may come as a
-surprise that the compiler will not apply a qualification transformation. But
-there's no need for the compiler to do so: when non-const pointers are used
-the compiler will simply use the initial definition of the tt(add()) template
-function expecting any two arguments of equal types.
+    tt(Type) must be replaced by tt(char const *), resulting in a function
+having prototype
+        verb(
+    char const *add(char const *const &lvalue, char const * const &rvalue);
+        )
+    Now we try to use this function:
+        verb(
+    int main(int argc, char **argv)
+    {
+        add(argv[0], argv[1]);
+    }
+        )
+    However, the compiler ignores our specialization and tries to instantiate
+the initial function template. This fails leaving us wondering why it didn't
+select the explicit specialization....
 
-    So do we have to define yet another overloaded version, expecting
-non-const pointers? It is possible, but at some point it should become clear
-that our approach doesn't scale. Like ordinary functions and classes,
-templates should have well-described purposes. Trying to add overloaded
-template definitions to overloaded template definitions quickly turns the
-template into a kludge. Don't follow this approach. A better approach is
-probably to construct the template so that it fits its original purpose, make
-allowances for the occasional specific case, and to describe its purpose
-clearly in the template's documentation.
-
-    Nevertheless, there may be situations where a template explicit
-specialization may be worth considering. Two specializations for tt(const) and
-non-tt(const) pointers to characters might be considered for our tt(add())
-function template. Template explicit specializations are constructed as
-follows:
+    To see what happened here we replay, step by step, the compiler's actions:
     itemization(
-    it() They start with the keyword tt(template).
+    it() tt(add) is called with tt(char *) arguments.
+    it() Both types are equal, so the compiler deduces that tt(Type) equals
+tt(char *).
+    it() Now it inspects the specialization. Can a tt(char *) template type
+argument match a tt(char const *const &) template parameter? Here
+opportunities for the allowable transformations from section ref(TEMPFUNARGS)
+may arise. A qualification transformation seems to be the only viable one,
+allowing the compiler to bind a const-parameter to a non-const argument. 
+    it() So, in terms of tt(Type) the compiler can match an argument of some 
+tt(Type) or an argument of some tt(Type const) to a tt(Type const &). 
+    it() tt(Type) itself is not modified, and so tt(Type) is a tt(char *).
+    it() Next the compiler inspects the available explicit specializations. It
+finds one, specializing for tt(char const *). 
+    it() Since a tt(char const *) is not a tt(char *) it rejects the explicit
+specialization and uses the generic form, resulting in a compilation error.
+    )
+    If our tt(add) function template should also be able to handle tt(char *)
+template type arguments another explicit specialization for tt(char *) may be
+required, resulting in the prototype
+        verb(
+    char *add(char *const &lvalue, char * const &rvalue);
+        )
+
+    Instead of defining another explicit specialization an em(overloaded)
+function template could be designed expecting pointers. The following function
+template definition expects two pointers to constant tt(Type) values and
+returns a pointer to a non-constant tt(Type):
+        verb(
+    template <typename Type>
+    Type *add(Type const *t1, Type const *t2)
+    {
+        std::cout << "Pointers\n";
+        return new Type;
+    }
+        )
+    What actual types may be bound to the above function parameters? In this
+case only a tt(Type const *), allowing tt(char const *)'s to be passed as
+arguments. There's no opportunity for a qualification transformation here.
+The qualification transformation allows the compiler to add a tt(const) to a
+non-const argument if the parameter itself (and em(not)  tt(Type)) is
+specified in terms of a tt(const) or tt(const &). Loooking at, e.g., tt(t1) we
+see that it's defined as a tt(Type const *). There's nothing tt(const) here
+that's referring to the parameter (in which case it would have been tt(Type
+const *const t1) or tt(Type const *const &t1)). Consequently a qualification
+transformation cannot be applied here.
+
+    As the above overloaded function template only accepts tt(char const *)
+arguments, it will not accept (without a reinterpret cast) tt(char *)
+arguments. So tt(main)'s tt(argv) elements cannot be passed to our overloaded
+function template.  
+
+    So do we have to define yet another overloaded function template, this
+time expecting tt(Type *) arguments? It is possible, but at some point it
+should become clear that our approach doesn't scale. Like ordinary functions
+and classes, function templates should have one conceptually clear
+purpose. Trying to add overloaded function templates to overloaded function
+templates quickly turns the template into a kludge. Don't use this approach. A
+better approach is to construct the template so that it fits its original
+purpose, to make allowances for the occasional specific case and to describe
+its purpose clearly in its documentation.
+
+    In some situations constructing template explicit specialization may of
+course be defensible. Two specializations for tt(const) and non-tt(const)
+pointers to characters might be appropriate for our tt(add) function
+template. hi(template: explicit specialization) Here's how they are
+constructed:
+    itemization(
+    it() Start with the keyword tt(template).
     it() Next, an empty set of angle brackets is written. This indicates to
 the compiler that there must be an em(existing) template whose prototype
 matches the one we're about to define. If we err and there is no such template
-        hi(template-id does not match template declaration)
+        hi(template: id-declaration mismatch)
 then the compiler reports an error like:
         verb(
     error: template-id `add<char*>' for `char* add(char* const&, char*
            const&)' does not match any template declaration
         )
-    it() Next the head of the function is defined, which must follow the same
-syntax as a template explicit instantiation declaration (see
-section ref(TEMPFUNEXDEC)): it must specify the correct returntype, function
-name, template type parameter explicitations, as well as the function's
-parameter list.
-    it() The body of the function, definining the special implementation that
-is required for the special actual template parameter types.
+    it() Now the function's head is defined. It must match the prototype of
+the initial function template or the form of a template explicit instantiation
+declaration (see section ref(TEMPFUNEXDEC)) if its specialized type cannot be
+determined from the function's arguments. It must specify the correct
+returntype, function name, maybe explicit template type arguments, as well as
+the function's parameter list.
+    it() Finally the function's body is defined, providing the special
+implementation that is required for the specialization.
     )
-    Here are two  explicit specializations for the function template
-tt(add()), expecting tt(char *) and tt(char const *) arguments (note that the
-tt(const) still appearing in the first template specialization is unrelated to
-the specialized type (tt(char *)), but refers to the tt(const &) mentioned in
-the original template's definition. So, in this case it's a reference to a
-constant pointer to a tt(char), implying that the tt(char)s may be modified):
+    Here are two explicit specializations for the function template tt(add),
+expecting tt(char *) and tt(char const *) arguments:
         verb(
     template <> char *add<char *>(char * const &p1,
                                         char * const &p2)
@@ -107,13 +155,12 @@ constant pointer to a tt(char), implying that the tt(char)s may be modified):
     Template explicit specializations are normally included in the file
 containing the other function template's implementations.
 
-    A template explicit specialization can be declared in the usual way. I.e.,
+    Template explicit specializations can be declared in the usual way. I.e.,
 by replacing its body with a semicolon.
 
-    Note in particular how important the pair of i(angle brackets) are that
-follow the tt(template) keyword when declaring a template explicit
-specialization. If the angle brackets were omitted, we would have constructed
-a
+    When em(declaring) a template explicit specialization the pair of i(angle
+brackets) following the tt(template) keyword are essential. If omitted, we
+would have constructed a
         i(template instantiation declaration).
     The compiler would silently process it, at the expense of a somewhat
 longer compilation time.
@@ -126,24 +173,48 @@ the compiler is able to deduce these types from the function's arguments.  As
 this is the case with the tt(char (const) *) specializations, they could also
 be declared as follows:
         verb(
-    template <> char *add(char * const &p1,
-                                        char * const &p2)
+    template <> char *add(char * const &p1, char * const &p2)
     template <> char const *add(char const *const &p1,
-                                        char const *const &p2);
+                                char const *const &p2);
         )
-    In addition, tt(template <>) could be omitted. However, this would remove
-the template character from the declaration, as the resulting declaration is
-now nothing but a plain function declaration. This is not an error: template
-functions and non-function templates may overload each other. Ordinary
-functions are not as restrictive as function templates with respect to allowed
-type conversions. This could be a reason to overload a template with an
-ordinary function every once in a while.
+    If in addition tt(template <>) could be omitted the template character
+would be removed from the declaration. The resulting declaration is now a mere
+function declaration. This is not an error: template functions and
+non-function templates may mutually overload each other. Ordinary functions
+are not as restrictive as function templates with respect to allowed type
+conversions. This could be a reason to overload a template with an ordinary
+function every once in a while. 
 
     A function template explicit specialization is not just another overloaded
         hi(function template: specialization vs. overloading) version of the
 the function template. Whereas an overloaded version may define a completely
 different set of template parameters, a specialization must use the same set
-of template parameters as its non-specialized variant, but the compiler will
-use the specialization in situations where the actual template arguments match
-the types defined by the specialization. Subject to this restriction, many
-specializations can be defined.
+of template parameters as its non-specialized variant. The compiler uses the
+specialization in situations where the actual template arguments match the
+types defined by the specialization (following the rule that the most
+specialized set of parameters matching a set of arguments will be
+used). For different sets of parameters  overloaded versions of functions (or
+function templates) must be used.
+
+    Now that we've covered explicit specializations and overloading let's
+consider what happens when a class defines a tt(std::string) conversion
+operator (cf. section ref(ConversionOperators)). A conversion operator is
+guaranteed to be used as an rvalue. This means that obects of a class defining
+a tt(string) conversion operator can be assigned to, e.g., tt(string)
+objects. But when trying to insert objects defining tt(string) conversion
+operators into streams then the compiler complains that we're attemping to
+insert an inappropriate type into an tt(ostream). However, when this class
+defines an tt(int) conversion operator insertion is performed flawlessly. The
+reason for this distinction is that tt(operator<<) is defined as a plain
+(free) function when inserting a basic type (like tt(int)) but it is defined
+as a function template when inserting a tt(string). Hence, when trying to
+insert an object of our class defining a tt(string) conversion operator the
+compiler visits all overloaded versions of insertion operators inserting into
+tt(ostream) objects. Since no basic type conversion is available the basic
+type insertion operators can't be used. Since the available conversions for
+template arguments do not allow the compiler to look for conversion operators
+our class defining the tt(string) conversion operator cannot be inserted into
+an tt(ostream). If such a class should be insertable into tt(ostream) objects
+it must define its own overloaded insertion operator (in addition to the
+tt(string) conversion operator that was required to use the class's objects 
+as rvalue in tt(string) assignments).

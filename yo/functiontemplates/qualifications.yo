@@ -1,9 +1,9 @@
-A emi(qualification transformation) adds ti(const) or ti(volatile) qualifications
-to em(pointers). This transformation is applied when the function template's
-parameter is explicitly defined using a tt(const) (or tt(volatile)) modifier,
-and the function's argument isn't a tt(const) or tt(volatile) entity. In that
-case, the transformation adds tt(const) or tt(volatile), and subsequently deduces
-the template's type parameter. For example:
+A emi(qualification transformation) adds ti(const) or ti(volatile)
+qualifications to em(pointers). This transformation is applied when the
+function template's type parameter explicitly specifies tt(const) (or
+tt(volatile)) but the function's argument isn't a tt(const) or tt(volatile)
+entity. In that case tt(const) or tt(volatile) is provided by the compiler.
+Subsequently the compiler deduces the template's type parameter. For example:
         verb(
     template<typename Type>
     Type negate(Type const &value)
@@ -18,6 +18,7 @@ the template's type parameter. For example:
         )
     Here we see the function template's tt(Type const &value) parameter: a
 reference to a tt(const Type). However, the argument isn't a tt(const int),
-but an tt(int) that can be modified. Applying a qualification transformation, the
-compiler adds tt(const) to tt(x)'s type, and so it matches tt(int const x)
-with tt(Type const &value), deducing that tt(Type) must be tt(int).
+but an tt(int) that can be modified. Applying a qualification transformation,
+the compiler adds tt(const) to tt(x)'s type, and so it matches tt(int const
+x).  This is then matched against tt(Type const &value) allowing the compiler
+to deduce that tt(Type) must be tt(int).

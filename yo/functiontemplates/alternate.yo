@@ -7,7 +7,7 @@ following function:
         return lhs + rhs;
     }
         )
- The above function may be converted to a (more generic) template function:
+ The above function may be converted to a template function:
         verb(
     template <typename Lhs, typename Rhs>
     Lhs add(Lhs lhs, Rhs rhs)
@@ -21,13 +21,14 @@ following function:
         )
  the intended return type is probably a tt(double) rather than an
 tt(int). This can be solved by adding an additional template type parameter
-specifying the return type, but it requires the specification of that type:
+specifying the return type but then  that type must explicitly be specified:
         verb(
     add<double>(3, 3.4);
         )
- This problem can't be solved using ti(decltype) (cf. section ref(AUTO)) as
-tt(lhs) and tt(rhs) aren't known to the compiler by the time tt(decltype) is
-used in the following attempt to get rid of the additional type parameter:
+ Using ti(decltype) (cf. section ref(AUTO)) to define the return type won't
+work as tt(lhs) and tt(rhs) aren't known to the compiler by the time
+tt(decltype) is used. Thus the next attempt to get rid of the additional
+template type parameter will fail to compile:
         verb(
     template <typename Lhs, typename Rhs>
     decltype(lhs + rhs) add(Lhs lhs, Rhs rhs)
@@ -39,8 +40,8 @@ used in the following attempt to get rid of the additional type parameter:
     The tt(decltype)-based definition of a function's return type may become
 fairly complex. To reduce the complexities the i(C++0x) standard provides the
 emi(late-specified return type) syntax that em(does) allow the use of
-tt(decltype) to define a function's return type (it is primarily used with
-template functions but it may also be used for non-template functions):
+tt(decltype) to define a function's return type. It is primarily used with
+template functions but it may also be used for non-template functions:
         verb(
     template <typename Lhs, typename Rhs>
     auto add(Lhs lhs, Rhs rhs) -> decltype(lhs + rhs)
@@ -50,7 +51,7 @@ template functions but it may also be used for non-template functions):
         )
  When this function is used in a statement like tt(cout << add(3, 3.4)) the
 resulting value will be 6.4, which is most likely the intended result, rather
-than 6. As an example how a late-specified return type might reduce the
+than 6. As an example how a late-specified return type may reduce the
 complexity of a function's return type definition consider the following:
         verb(
     template <class T, class U>
@@ -61,11 +62,11 @@ complexity of a function's return type definition consider the following:
     template <class T, class U>
     auto add(T t, U u) -> decltype(t+u);
         )
-    which is arguably easier to read.
+    which most people think is easier to read.
 
 The expression specified with tt(decltype) does not necessarily use the
-parameters tt(lhs) and tt(rhs). In the following function definition
-tt(lhs.length()) is used instead of tt(lhs) itself:
+parameters tt(lhs) and tt(rhs) themselves. In the next function
+definition tt(lhs.length) is used instead of tt(lhs) itself:
         verb(
     template <typename Class, typename Rhs>
     auto  add(Class lhs, Rhs rhs) -> decltype(lhs.length() + rhs)
@@ -73,10 +74,10 @@ tt(lhs.length()) is used instead of tt(lhs) itself:
         return lhs.length() + rhs;
     }
         )
-    Any variable visible at the time tt(decltype) is compiled can be used in
-the tt(decltype) expression. However, it is currently not possible to handle
-member selection through pointers to members. The following code aims at
-specifying the address of a member function as tt(add)'s first argument and
+    em(Any) variable visible at the time tt(decltype) is compiled can be used
+in the tt(decltype) expression. However, it is currently not possible to
+handle member selection through pointers to members. The following code aims
+at specifying the address of a member function as tt(add)'s first argument and
 then use its return value type to determine the template function's return
 type:
         verb(

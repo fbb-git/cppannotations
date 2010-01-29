@@ -1,19 +1,18 @@
-    A template is not instantiated when its definition is read by the
-compiler. A template is merely a em(recipe) telling the compiler how to create
-particular code once it's time to do so. It's very much like a recipe in a
-cooking book: you reading a cake's recipe doesn't mean you have actually
-cooked that cake by the time you've read the recipe.
+    Different from an ordinary function that results in code once the compiler
+reads its definition a template is not instantiated when its definition is
+read. A template is merely a em(recipe) telling the compiler how to create
+particular code once it's time to do so. It's indeed very much like a recipe
+in a cooking book. You reading how to bake a cake doesn't mean you have
+actually baked that cake by the time you've read the recipe.
 
     So, when is a function template actually instantiated? There are two
-situations in which the compiler will decide to  instantiate templates:
+situations where the compiler decides to instantiate templates:
     itemization(
-    it() They are instantiated when they're actually used (e.g., the function
-tt(add()) is called with a pair of tt(size_t) values);
+    it() They are instantiated when they are used (e.g., the function
+tt(add) is called with a pair of tt(size_t) values);
     it() When addresses of function templates are taken they are instantiated.
-For example:
+Example:
         verb(
-    #include "add.h"
-
     char (*addptr)(char const &, char const &) = add;
         )
     )
@@ -25,57 +24,55 @@ implications for the function template's code. These implications are
 discussed in section ref(NAMERESFUN).
 
     The compiler is not always able to deduce the template's type parameters
-unambiguously. In that case the compiler reports an ambiguity which must be
-solved by the software engineer. Consider the following code:
-        verbinclude(functiontemplates/cc/ambiguous.cc)
+unambiguously. When the compiler reports an ambiguity it must be solved by the
+software engineer. Consider the following code:
+        verbinclude(functiontemplates/examples/ambiguous2.cc)
     When this little program is compiled, the compiler reports an ambiguity it
-cannot resolve. It has two candidate functions, as for each overloaded version
-of tt(fun()) a proper instantiation of tt(add()) can be constructed:
+cannot resolve. It has two candidate functions as for each overloaded version
+of tt(fun) an tt(add) function can be instantiated:
         verb(
     error: call of overloaded 'fun(<unknown type>)' is ambiguous
     note: candidates are: int fun(size_t (*)(int*, size_t))
     note:                 double fun(double (*)(double*, size_t))
         )
-    Situations like these should of course be avoided. Function templates can
-only be instantiated if there's no ambiguity. Ambiguities arise when multiple
+    Such situations should of course be avoided. Function templates can only
+be instantiated if there's no ambiguity. Ambiguities arise when multiple
 functions emerge from the compiler's function selection mechanism (see section
-ref(FUNCTIONSELECTION)). It is up to us to resolve these
-ambiguities. Ambiguities like the above can be resolved using a blunt
-ti(static_cast) (as we select among alternatives, all of them possible and
-available):
+ref(FUNCTIONSELECTION)). It is up to us to resolve the ambiguities. They
+em(could) be resolved using a blunt ti(static_cast) (by which we select among
+alternatives, all of them possible and available):
         verbinclude(functiontemplates/examples/cast.cc)
-    But if possible, type casts should be avoided. How to avoid casts in
-situations like these is explained in the next section (ref(TEMPFUNEXPLICIT)).
+    But it's good practice to avoid type casts wherever possible. How to do
+this is explained in the next section (ref(TEMPFUNEXPLICIT)).
 
-    As mentioned in section ref(TEMPFUNDECL), the linker will remove
-        hi(linker: removing identical template instantiations)
-identical instantiations of a template from the final program,
-leaving only one instantiation for each unique set of actual template type
-parameters. Let's have a look at an example showing this behavior of the
-linker. To illustrate the linker's behavior, we will do as follows:
+    As mentioned in section ref(TEMPFUNDECL), the linker removes
+ hi(linker: removing identical template instantiations) identical
+instantiations of a template from the final program, leaving only one
+instantiation for each unique set of actual template type parameters. To
+illustrate the linker's behavior we do as follows:
     itemization(
     it() First we construct several source files:
             itemization(
-            itt(source1.cc) defines a function tt(fun()), instantiating
-tt(add()) for tt(int)-type arguments, including tt(add())'s template
-definition. It displays tt(add())'s address. Here is tt(source1.cc):
+            itt(source1.cc) defines a function tt(fun), instantiating
+tt(add) for tt(int)-type arguments, including tt(add)'s template
+definition. It displays tt(add)'s address:
         verbinclude(functiontemplates/examples/pointerunion.h)
         verbinclude(functiontemplates/examples/source1.cc)
-            itt(source2.cc) defines the same function, but only declares the
-proper tt(add()) template using a template declaration (em(not) an
-instantiation declaration). Here is tt(source2.cc):
+            itt(source2.cc) defines the same function, but merely declares the
+proper tt(add) template using a template declaration (em(not) an instantiation
+declaration). Here is tt(source2.cc):
         verbinclude(functiontemplates/examples/source2.cc)
-            itt(main.cc) again includes tt(add())'s template definition,
-declares the function tt(fun()) and defines tt(main()), defining tt(add())
-for tt(int)-type arguments as well and displaying tt(add())'s function
-address. It also calls the function tt(fun()). Here is tt(main.cc):
+            itt(main.cc) again includes tt(add)'s template definition,
+declares the function tt(fun) and defines tt(main), defining tt(add)
+for tt(int)-type arguments as well and displaying tt(add)'s function
+address. It also calls the function tt(fun). Here is tt(main.cc):
         verbinclude(functiontemplates/examples/main.cc)
             )
     it() All sources are compiled to object modules. Note the different sizes
-of tt(source1.o) (2104 bytes using tt(g++) version 4.1.2. All sizes reported
+of tt(source1.o) (1912 bytes using tt(g++) version 4.3.4. All sizes reported
 here may differ somewhat for different compilers and/or run-time libraries)
-and tt(source2.o) (1928 bytes). Since tt(source1.o) contains the instantiation
-of tt(add()), it is somewhat larger than tt(source2.o), containing only the
+and tt(source2.o) (1740 bytes). Since tt(source1.o) contains the instantiation
+of tt(add), it is somewhat larger than tt(source2.o), containing only the
 template's declaration. Now we're ready to start our little experiment.
     it() Linking tt(main.o) and tt(source1.o), we obviously link together two
 object modules, each containing its own instantiation of the same template
@@ -84,14 +81,15 @@ function. The resulting program produces the following output:
     0x80486d8
     0x80486d8
         )
-        Furthermore, the size of the resulting program is 8701 bytes.
+        Furthermore, the size of the resulting program is 6352 bytes.
     it() Linking tt(main.o) and tt(source2.o), we now link together an object
-module containing the instantiation of the tt(add()) template, and another
+module containing the instantiation of the tt(add) template, and another
 object module containing the mere declaration of the same template
 function. So, the resulting program cannot but contain a single instantiation
 of the required function template. This program has exactly the same size, and
 produces exactly the same output as the first program.
     )
-    So, from our little experiment we can conclude that the linker will indeed
-remove identical template instantiations from a final program, and that using
-mere template declarations will not result in template instantiations.
+    From our little experiment we conclude that the linker indeed removes
+identical template instantiations from a final program. Furthermore we
+conclude that using mere template declarations does not result in template
+instantiations.

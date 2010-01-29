@@ -1,167 +1,195 @@
-    When the compiler encounters a function call, it must decide which
-function to call when overloaded functions are available. In this section this
-        hi(function selection mechanism) function selection mechanism is
-described.
+When the compiler encounters a function call, it must decide which function to
+call when overloaded functions are available. Earlier we've encountered
+principles like `the most specific function will be selected'. This is a
+fairly intuitive description of the compiler's i(function selection) mechanism.
+In this section we'll have a closer look at this mechanism.
 
-    In our discussion, we assume that we ask the compiler to compile the
-following tt(main()) function:
+Assume we ask the compiler to compile the following tt(main) function:
         verb(
     int main()
     {
-        double x = 12.5;
-        add(x, 12.5);
+        process(3, 3);
     }
         )
-    Furthermore we assume that the compiler has seen the following six
-function declarations when it's about to compile tt(main()):
+    Furthermore assume that the compiler has encountered the following 
+function declarations when it's about to compile tt(main):
         verb(
-    template <typename Type>                                    // function 1
-    Type add(Type const &lvalue, Type const &rvalue);
-
-    template <typename Type1, typename Type2>                   // function 2
-    Type1 add(Type1 const &lvalue, Type2 const &rvalue);
-
-    template <typename Type1, typename Type2, typename Type3>   // function 3
-    Type1 add(Type1 const &lvalue, Type1 const &mvalue, Type2 const &rvalue);
-
-    double add(float lvalue, double rvalue);                    // function 4
-    double add(std::vector<double> const &vd);                  // function 5
-    double divide(double lvalue, double rvalue);                // function 6
+	template <class T>
+	void process(T &t1, int i);      			// 1
+	
+	template <class T1, class T2>
+	void process(T1 const &t1, T2 const &t2);   // 2
+	
+	template <class T>           		
+	void process(T const &t, double d);    		// 3
+	
+	template <class T>           		
+	void process(T const &t, int i);       		// 4
+	
+	template <>
+	void process<int, int>(int i1, int i2);  	// 5
+	                                         	
+	void process(int i1, int i2);            	// 6
+	                                         	
+	void process(int i, double d);           	// 7
+	                                         	
+	void process(double d, int i);           	// 8
+	                                         	
+	void process(double d1, double d2);      	// 9
+	                                         	
+	void process(std::string s, int i)       	// 10
+	                                         	
+	int add(int, int);                       	// 11
         )
-    The compiler, having read tt(main())'s statement, must now decide which
+    The compiler, having read tt(main)'s statement, must now decide which
 function must actually be called. It proceeds as follows:
     itemization(
-    it() First, a set of emi(candidate functions) is constructed. This set
+    it() First, a set of 
+ hi(functions: candidate) emi(candidate functions) is constructed. This set
 contains all functions that:
         itemization(
-        it() are i(visible) at the point of the call;
+        it() are visible at the point of the call;
         it() have the same names as the called function.
         )
-        As function 6 has a different name, it is removed from the set. The
-compiler is left with a set of five candidate functions: 1 until 5.
-    it() Second, the set of emi(viable functions) is constructed. Viable
-functions are functions for which i(type conversions) exist that can be
-applied to match the types of the parameters of the functions and the types of
-the actual arguments. This implies that the number of arguments must match the
-number of parameters of the viable functions.
-    it() As functions 3 and 5 have different numbers of parameters they are
-removed from the set.
-    it() Now let's `play compiler' to decide among the remaining functions 1,
-2 and 4. This is done by assigning em(penalty points) to the remaining
-functions. Eventually the function having the smallest score will be
-selected. A point is assigned for every standard argument deduction process
-transformation that is required (so, for every em(lvalue-, qualification-), or
-em(derived-to-base class) transformation that is applied).
-    it() Eventually multiple functions might emerge at the top. Even though we
-have a draw in this case, the compiler will not always report an ambiguity. As
-we've seen before, a more specialized function is selected over a more general
-function. So, if a template explicit specialization and its more general
-variant appear at the top, the specialization is selected. Similarly, a
-ordinary function will be selected over a function template (but remember:
-only if both appear at the top of the ranking process).
-    it() As a i(rule of thumb) we have:
-        itemization(
-        it() when there are multiple viable functions at the top of the set of
-viable functions, then the plain function template instantiations are
-removed;
-        it() if multiple functions remain, template explicit specializations
-are removed;
-        it() if only one function remains, it is selected;
-        it() otherwise, the compiler can't decide and reports an error: the
-call is ambiguous.
-        )
+        As function 11 has a different name, it is removed from the set. The
+compiler is left with a set of 10 candidate functions.
+
+    it() Second, the set of 
+ hi(functions: viable) emi(viable functions) is constructed. Viable functions
+are functions for which i(type conversions) exist that can be applied to match
+the types of the function's parameters of the functions and the types of the
+actual arguments to the types of the actual arguments. This implies that at
+least the number of arguments must match the number of parameters of the
+viable functions. Function 10's first argument is a tt(string). As a
+tt(string) cannot be initialized by an tt(int) value no approprate conversion
+exists and function 10 is removed from the list of candidate functions.
+tt(double) parameters can be retained. Standard conversions em(do) exists for
+tt(int)s to tt(double)s, so all functions having ordinary tt(double)
+parameters can be retained. Therefore, the set of viable functions consists of
+functions 1 until 9.
     )
-    Now we apply the above procedure to the viable functions 1, 2 and 4.
-It happens that function 1 contains a slight complication, so we'll start with
-function 2.
+
+    At this point the compiler tries to determine the types of the template
+type parameters. It may use any of the three standard template parameter
+transformation procedures when trying to match actual types to template type
+parameters. In this process it concludes that no type cannot be determined for
+the tt(T) in function 1's tt(T &t1) parameter as the argument tt(3) is a
+constant tt(int) value. Thus function 1 is removed from the list of
+viable functions. The compiler is now confronted with the following set of
+potentially instantiated function templates and ordinary functions:
+        verb(
+	void process(T1 [= int] const &t1, T2 [= int] const &t2);   // 2
+	void process(T [= int] const &t, double d);                 // 3
+	void process(T [= int] const &t, int i);        			// 4
+	void process<int, int>(int i1, int i2);  					// 5
+	void process(int i1, int i2);            					// 6
+	void process(int i, double d);           					// 7
+	void process(double d, int i);           					// 8
+	void process(double d1, double d2);      					// 9
+    )
+
+    The compiler associates a em(direct match count) value to each of the
+viable functions. The direct match count counts the number of arguments that
+can be matched to function parameters without an (automatic) type
+conversion. E.g., for function 2 this count equals 2, for fuction 6 it is 1
+and for function 9 it is 0. The functions are now (decrementally) sorted by
+their direct match count values:
+        verb(
+                                                             match
+                                                             count
+	void process(T1 [= int] const &t1, T2 [= int] const &t2);  2 // 2
+	void process(T [= int] const &t, int i);       			   2 // 4
+	void process<int, int>(int i1, int i2);  			       2 // 5
+	void process(int i1, int i2);            				   2 // 6
+	void process(T [= int] const &t, double d);    			   1 // 3
+	void process(int i, double d);           				   1 // 7
+	void process(double d, int i);           				   1 // 8
+	void process(double d1, double d2);      				   0 // 9
+    )
+    If there is no draw for the top value the corresponding function is
+selected and the function selection process is completed.
+
+    When multiple functions appear at the top the compiler verifies that no
+ambiguity has been encountered. An ambiguity is encountered if the
+em(sequences) of parameters for which type conversions were (not) required
+differ. As an example consider functions 3 and 8. Using D for `direct match'
+and C for `conversion' the arguments match function 3 as D,C and function 8 as
+C,D. If 2, 4, 5 and 6 would not have been present then the compiler would have
+reported an ambiguity as the sequences of argument/parameter matching
+procedures differ for functions 3 and 8. The same difference is encountered
+comparing functions 7 and 8 and no such difference is encountered comparing
+functions 3 and 7.
+
+    At this point there is a draw for the top value and the compiler
+proceeds with the subset of associated functions (functions 2, 4, 5 and
+6). With each of these functions an `ordinary parameter count' is associated
+counting the number of non-template parameters of the functions. The functions
+are decrementally sorted by this count, resulting in:
+        verb(
+                                                         ordin. param.
+                                                             count
+	void process(int i1, int i2);            				   2 // 6
+	void process(T [= int] const &t, int i);       			   1 // 4
+	void process(T1 [= int] const &t1, T2 [= int] const &t2);  0 // 2
+	void process<int, int>(int i1, int i2);  			       0 // 5
+        )
+    Now there is no draw for the top value. The corresponding function
+(tt(process(int, int)), function 6)) is selected and the function selection
+process is completed. Function 6 is used in tt(main)'s function call
+statement. 
+
+If function 6 would not have existed function 4 would have been used. Assuming
+that neither function 4 nor function 6 would have existed the selection
+process would continue with functions 2 and 5:
+        verb(
+                                                         ordin. param.
+                                                             count
+	void process(T1 [= int] const &t1, T2 [= int] const &t2);  0 // 2
+	void process<int, int>(int i1, int i2);  			       0 // 5
+        )
+
+    In this situation a draw is encountered once again and the selection
+process continues. A `type of function' value is associated with each of the
+functions having the highest ordinary parameter count and these functions are
+decrementally sorted by their type of function values. Value 2 is associated
+to ordinary functions, value 1 to template explicit specializations and value
+0 to plain function templates. 
+
+    If there is no draw for the top value the corresponding function is
+selected and the function selection process is completed. If there is a draw
+the compiler reports and ambiguity and cannot determine which function to
+call.  Assuming only functions 2 and 5 existed then this selection step
+would have resulted in the following ordering:
+        verb(
+                                                           function
+                                                             type
+	void process<int, int>(int i1, int i2);  			       1 // 5
+	void process(T1 [= int] const &t1, T2 [= int] const &t2);  0 // 2
+        )
+    Function 5, the template explicit specialization, would have been
+selected.
+
+The function selection mechanism is summarized as follows:
     itemization(
-    it() Function 2 has prototype:
-        verb(
-    template <typename T1, typename T2>
-    T1 add(T1 const &a, T2 const &b);
-        )
-    The function is called as tt(add(x, 12.5)). As tt(x) is a tt(double) both
-tt(T &x) and tt(T const &x) would be acceptable, albeit that tt(T const &x)
-will require a qualification transformation. Since the function's prototype
-uses tt(T const &) a qualification transformation is needed. The function is
-charged 1 point, and tt(T1) is now determined as tt(double).
-
-    Next, 12.5 is recognized as a tt(double) as well (note that tt(float)
-constants are recognized by their `F' suffix, e.g., 12.5F), and it is also a
-constant value. So, without transformations, we find tt(12.5 == T2 const &)
-and at no charge tt(T2) is recognized as tt(double) as well.
-    it() Function 4 has prototype:
-        verb(
-    double add(float lvalue, double rvalue);
-        )
-    Although it is called as tt(add(x, 12.5)) with tt(x) being of type
-tt(double); but a standard conversion exists from type tt(double) to type
-tt(float). Furthermore, 12.5 is a tt(double), which can be used to initialize
-tt(rvalue).
+    it() The set of candidate functions is constructed: identical names;
+    it() The set of viable functions is constructed: correct number of
+        parameters and available type conversions;
+    it() Template type determination, dropping templates whose type parameters
+        cannot be determined;
+    it() Decrementally sort the functions by their direct match count
+        values. If there no draw for the top value the associated function is
+        selected, completing the selection process.
+    it() Inspect the functions associated with the top value for ambiguities
+        in automatic type conversion sequences. If different sequences are
+        encountered report an ambiguity and terminate the selection process.
+    it() Decrementally sort the functions associated with the top value by
+        their ordinary parameter count values.  If there no draw for the top
+        value the associated function is selected, completing the selection
+        process.
+    it() Decrementally sort the functions associated with the top value by
+        their function type values using 2 for ordinary functions, 1 for
+        template explicit specializations and 0 for plain template functions.
+        parameter count values. If there no draw for the top value the
+        associated function is selected, completing the selection process.
+    it() Report an ambiguity and terminate the selection process.
     )
-    Thus, at this point we could ask the compiler to select among:
-        verb(
-    add(double const &, double const &b);
-        )
-    and
-        verb(
-    add(float, double);
-        )
-    This does not involve `function template selection' since the first one
-has already been determined. As the first function doesn't require any
-standard conversion at all, it is selected, since a perfect match is selected
-over one requiring a standard conversion.
-
-    As an intermezzo you are invited to take a closer look at this process by
-defining tt(float x) instead of tt(double x), or by defining tt(add(float x,
-double x)) as tt(add(double x, double x)): in these cases the function
-template has the same prototype as the ordinary function, and so the ordinary
-function is selected since it's a more specific function. Earlier we've seen
-that process in action when redefining tt(ostream::operator>>(ostream &os,
-string &str)) as an ordinary function.
-
-    Now it's time to go back to  function template 1.
-    itemization(
-    it() Function 1 has prototype:
-        verb(
-    template <typename T>
-    T add(T const &t1, T const &t2);
-        )
-    Once again we call tt(add(x, 12.5)) and will deduce template types. In
-this case there's only one template type parameter T.  Let's start with the
-first parameter:
-        itemization(
-        it() The argument tt(x) is of type tt(double), so both tt(T &x) and
-tt(T const &x) are acceptable. According to the function's parameter list tt(T
-const &x) must be used, which requires a qualification transformation. So
-we'll charge the function 1 point and T is determined as tt(double).  This
-results in the instantiation of
-        verb(
-    add(double const &t1, double const &t2)
-        )
-    allowing us to call, at the expense of 1 point, tt(add(x, 12.5)).
-        )
-    But we can do better by starting our deduction process at the em(second)
-parameter:
-        itemization(
-        it() Since 12.5 is a constant tt(double) value we see that tt(12.5 == T
-const &). So we conclude (free of charge) that T is tt(double). Our function
-becomes
-        verb(
-    add(double const &t1, double const &t2)
-        )
-allowing us to call tt(add(x, 12.5)).
-        )
-    )
-    Earlier this section, we preferred  function 2 over function 4. Function 2
-is a function template that required one qualification
-transformation. Function 1, on the other hand, did not require any
-transformation at all, so it emerges as the function to be used.
-
-    As an i(exercise), feed the above six declarations and tt(main()) to the
-compiler and wait for the linker errors: the linker will complain that the
-(template) function
-        verb(
-    double add<double>(double const&, double const&)
-        )
-    is an i(undefined reference).

@@ -8,6 +8,5 @@
     {
         std::cout << fun(
                         static_cast<int (*)(int const &, int const &)>(add)
-                    ) << std::endl;
-        return 0;
+                    );
     }

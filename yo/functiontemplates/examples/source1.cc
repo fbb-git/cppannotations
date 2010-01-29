@@ -6,5 +6,5 @@
     {
         PointerUnion pu = { add };
 
-        std::cout << pu.vp << std::endl;
+        std::cout << pu.vp << '\n';
     }

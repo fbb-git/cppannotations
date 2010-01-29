@@ -12,7 +12,6 @@ using namespace std;
     {
         t.x();
     }
-
     void useInt()
     {
         int arg;
@@ -26,7 +25,6 @@ using namespace std;
     {
         arg = sqrt(arg);
     }
-
     template<typename Fun, typename Arg>
     void call(Fun fun, Arg arg)
     {
@@ -46,11 +44,10 @@ using namespace std;
         cout << "Passed ref(value), returns: " << value << endl;
     }
     /*
-        Output of this program:
-
-        In call: arg = 1.73205
-        Passed value, returns: 3
-        In call: arg = 1.73205
-        Passed ref(value), returns: 1.73205
+        Displays:
+            In call: arg = 1.73205
+            Passed value, returns: 3
+            In call: arg = 1.73205
+            Passed ref(value), returns: 1.73205
     */
 //=
