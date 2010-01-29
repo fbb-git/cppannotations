@@ -1,27 +1,30 @@
 Up to this point we've only encountered templates having a fixed number of
 template parameters. The C++0x standard extends this with
-    emi(variadic templates).
+    hi(template: variadic)emi(variadic templates).
 
 Variadic templates are defined for function templates and for class
-templates. Variadic templates allow the specification of an arbitrary number
-of arguments of any type.
+templates. Variadic templates allow us to specify an arbitrary number of
+template arguments of any type.
 
-They were added to the language to prevent the template constructor from
-having to define many overloaded template versions and to be able to create
-em(type safe) variadic functions.
+Variadic templates were added to the language to prevent us from having to
+define many overloaded templates and to be able to create em(type safe)
+variadic functions.
 
 Although bf(C) (and bf(C++)) support i(variadic functions), their use has
 always been deprecated in bf(C++) as those functions are notoriously
-type-em(un)safe. Furthermore, variadic function templates can be used to allow
-these functions to process objects that until now couldn't be processed
-properly by traditional variadic functions.
+type-em(un)safe. Variadic function templates can be used to process objects
+that until now couldn't be processed properly by bf(C)-style variadic
+functions.
 
-Here is an example of the declaration of a variadic template tt(Variadic):
+Template header of variadic templates show the phrase 
+ hi(typename ... Params)tt(typename ... Params)
+in their template headers (tt(Params) being a formal name). A
+variadic class template tt(Variadic)  could be declared as follows:
         verb(
-    template<typename... Values> class Variadic;
+    template<typename ... Params> class Variadic;
         )
-    Assuming the template's definition has been provided then
-this template can be instantiated using any number of typenames. E.g.,
+    Assuming the class template's definition is available then this template
+can be instantiated using any number of template arguments. Example:
         verb(
     class Variadic<
             int,
@@ -29,47 +32,51 @@ this template can be instantiated using any number of typenames. E.g.,
             std::map<std::string, std::vector<int>>
     > v1;
         )
-    It is possible to define an `empty' variadic template by not
-specifying any type when instantiating the variadic template. E.g.,
+    The template argument list of a variadic template can be
+empty. Example:
         verb(
     class Variadic<> empty;
         )
-    On the other hand,  the instantiation of an empty variadic template may be
-prevented by providing one or more fixed parameters. E.g.,
+    If this is considered undesirable an empty template argument list can be 
+prevented by providing one or more fixed parameters. Example:
         verb(
     template<typename First, typename... Rest>
     class tuple;
         )
 
-    Here is an example of the declaration of a variadic function template
-tt(printf):
+    bf(C)'s function bf(printf)(3) is a well-known example of a type-unsafe
+function. It is turned into a type-safe function when it is implemented as a
+variadic function template. Not only does this turn the function into a
+type-safe function but it is also automatically extended to accept any type
+that can be defined by bf(C++). Here is a possible declaration of a variadic
+function template tt(printcpp):
         verb(
     template<typename ... Params>
-    void printf(std::string const &strFormat, Params ... parameters);
+    void printcpp(std::string const &strFormat, Params ... parameters);
         )
-
-Note the use of the i(ellipsis) (i(...)). It serves two purposes:
+    The i(ellipsis) (i(...)) used in the declaration serves two purposes:
     itemization(
-    it() Written to the em(left) of a template parameter name, it declares a
-       emi(parameter pack). A parameter pack allows the software engineer to
-        associate arguments (maybe none) with the variadic template
-        parameters. Parameter packs can be used to bind type and non-type
-        template parameters.
-    it() Written to the em(right) of a template or function call argument, it
-        represents a series of template arguments.
+    it() In the template header it is written to the em(left) of a template
+        parameter name where it declares a emi(parameter pack). A parameter
+        pack allows us to specify any number of template arguments when
+        instantiating the template. Parameter packs can be used to
+        bind type and non-type template arguments to template parameters.
+    it() In a template instantiation it is written to the em(right) of the
+        template pack's parameter name. In that case it represents a series of
+        template arguments that are subsequently matched with a function
+        parameter that in turn is provided to the right of the ellipsis.
     )
-
-Although no syntax is offered to determine the individual parameters they can
-be determined recursively. An example is provided in the next section. In
-addition hi(variadic template: number of arguments)the number of arguments in
-a template parameter pack can be determined using ti(sizeof) as shown in the
-following example:
+    bf(C++) offers no syntax to determine the individual template
+arguments. However, the arguments can be determined recursively. An example is
+provided in the next section. The em(number)  
+ hi(variadic template: number of arguments) of arguments can be determined
+using a new invocation of the ti(sizeof) operator:
         verb(
-    template<typename ... Args>
+    template<typename ... Params>
     struct StructName
     {
-        static size_t const s_size = sizeof...(Args);
+        static size_t const s_size = sizeof ... (Params);
     };
 
-    // SomeName<int, char>::s_size          -- returns 2
+    // StructName<int, char>::s_size          -- initialized to 2
         )

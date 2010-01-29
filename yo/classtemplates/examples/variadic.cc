@@ -1,50 +1,58 @@
-
 #include <iostream>
 #include <stdexcept>
 #include <string>
+using namespace std;
 
-namespace FBB
+void printcpp(string const &format)
 {
-    void printf(char const *s)
-    {
-        while (*s)
-        {
-            if (*s == '%' && *(++s) != '%')
-                throw std::runtime_error(
-                            "invalid format string: missing arguments");
-            std::cout << *s++;
-        }
-    }
+    size_t left = 0;
+    size_t right = 0;
 
-    template<typename T, typename ... Args>                 // 1
-    void printf(const char* s, T value, Args ... args)      // 2
+    while (true)
     {
-        while (*s)
-        {
-            if (*s == '%' && *(++s) != '%')                 // 6
-            {
-                std::cout << value;                         // 8
-                printf(*s ? ++s : s, args...);              // 9
-                return;
-            }
-            std::cout << *s++;
-        }
-        throw std::logic_error("extra arguments provided to printf");
+        if ((right = format.find('%', right)) == string::npos)
+            break;
+        if (format.find("%%", right) != right)
+            throw std::runtime_error(
+                        "printcpp: missing arguments");
+        ++right;
+        cout << format.substr(left, right - left);
+        left = ++right;
     }
+    cout << format.substr(left);
+}
 
-} // FBB
+template<typename First, typename ... Params>
+void printcpp(std::string const &format, First value, Params ... params)
+{
+    size_t left = 0;
+    size_t right = 0;
+    while (true)
+    {                                              
+        if ((right = format.find('%', right)) == string::npos)      // 1
+            throw std::logic_error("printcpp: too many arguments");
+
+        if (format.find("%%", right) != right)                      // 2
+            break;
+
+        ++right;
+        cout << format.substr(left, right - left);
+        left = ++right;
+    }
+    cout << format.substr(left, right - left) << value;
+    printcpp(format.substr(right + 1), params ...);
+
+
 
 int main(int argc, char **argv)
 try
 {
-    FBB::printf("Hello %x with main called with %x args"
-                                            " and a string showing %x\n",
-        "world", argc, std::string("A String"));
-
-    return 0;
+    printcpp("Hello % with %%main%% called with % args"
+                                            " and a string showing %\n",
+        "world", argc, string("A String"));
 }
 catch (std::runtime_error err)
 {
-    std::cout << err.what() << std::endl;
+    std::cout << err.what() << '\n';
     return 1;
 }

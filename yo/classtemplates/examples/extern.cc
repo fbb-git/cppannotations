@@ -7,5 +7,5 @@ extern template class vector<int>;
 void vectorUser()
 {
     vector<int> vi;
-    cout << vi.size() << endl;
+    cout << vi.size() << '\n';
 }

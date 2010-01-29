@@ -1,156 +1,230 @@
-    Now that we've covered the construction of function templates, we're ready
-for the next step: constructing class templates. Many useful class templates
-already exist. Instead of illustrating how an existing class template was
-constructed, let's discuss the construction of a useful new class template.
+Having covered the construction of function templates, we're now ready for the
+next step: constructing class templates. Many useful class templates already
+exist. Rather than illustrating the construction of a class template by
+looking at an already existing class template the construction of another
+potentially useful new class template will be undertaken.
 
-    In chapter ref(STL) we've encountered the tt(auto_ptr) class (section
-ref(AUTOPTR)). The tt(auto_ptr) (in the C++0x standard
-deprecated in favor of tt(unique_ptr) and
-tt(shared_ptr) (cf. sections ref(UNIQUEPTR) and ref(SHAREDPTR)))
-allows an object to act like a pointer.
+The new class implements a emi(circular queue).  a circular queue has a fixed
+number of tt(max_size) elements. New elements are inserted at its back and
+only its head and tail elements can be accessed. Only the head element can be
+removed from a circular queue. Once tt(n) elements have been appended the next
+element will again be inserted at the queue's (physical) first position. The
+circular queue allows insertions until it holds tt(max_size) elements. As long
+as a circular queue contains at least one element elements may be removed from
+it. Trying to remove an element from an empty circular queue or to add another
+element to a full circular queue results in exceptions being thrown. In
+addition to other constructors a circular queue must offer a constructor
+initializing its objects for tt(max_size) elements. This constructor must make
+available the memory for the tt(max_size) elements but must not call those
+elements default constructors (hinting at the use of the placement tt(new)
+operator). A circular queue should offer value semantics as well as a move
+constructor.
 
-    One of the disadvantages of tt(auto_ptr) is that it can only be used for
-single objects and not for pointers to arrays of objects. This can be
-remedied, and here we'll construct the class template tt(FBB::auto_ptr),
-behaving like tt(auto_ptr), but managing a pointer to an array of objects. It
-must be stressed that tt(FBB::auto_ptr) is only developed here as an
-illustration. The STL classes tt(unique_ptr) and tt(shared_ptr) should be used
-in `real life'.
+Please note that in the above description the actual data type that is used
+for the circular queue is nowhere mentioned. This is a clear indication that
+our class could very well be defined as a 
+ hi(template: class)emi(class template). Alternatively, the class could be
+defined for some concrete data type which is then abstracted when converting
+the class to a class template.
 
-    Using an existing class as our point of departure shows an important
-design principle: it's often easier to construct a template (function or
-        hi(construction: class template)
-        hi(class template: construction) class) from an existing template than
-to construct the template completely from scratch. In this case the existing
-tt(std::auto_ptr) acts as our model.  Therefore, we want to provide the class
-with the following members:
-    itemization(
-    it() Constructors to create an object of the class tt(FBB::auto_ptr);
-    it() A i(destructor);
-    it() An overloaded ti(operator=());
-    it() An ti(operator[]()) to retrieve and reassign the elements given
-their indices.
-    it() All other members of tt(std::auto_ptr), with the exception of
-the dereference operator (ti(operator*())), since our tt(FBB::auto_ptr) object
-will hold multiple objects, and although it would be entirely possible to
-define it as a member returning a reference to the first element of its array
-of objects, the member tt(operator+(int index)), returning the address of
-object tt(index) would most likely be expected too. These extensions of
-tt(FBB::auto_ptr) are left as exercises to the reader.
-    )
-    Now that we have decided which members we need, the class interface can be
-constructed. Like function templates, a class template definition begins with
-the keyword ti(template), which is also followed by a non-empty list of
-template type
-        hi(template type parameters)
-    and/or non-type parameters, surrounded by angle brackets. The
-tt(template) keyword followed by the template parameter list enclosed in
-angle brackets is called a emi(template announcement) in the bf(C++)
-Annotations. In some cases the template announcement's parameter list may be
-empty, leaving only the angle brackets.
-
-    Following the template announcement the class interface is provided, in
-which the formal template type parameter names may be used to represent types
-and constants. The class interface is constructed as usual. It starts with the
-keyword tt(class) and ends with a semicolon.
-
-    Normal i(design considerations) should be followed when constructing
-class template member functions or class template constructors:
-        hi(class template: member functions)
-    class template type parameters
-        hi(class template: type parameters)
-    should preferably be defined as tt(Type const &), rather than tt(Type), to
-prevent unnecessary copying of large i(data structures). Template
-        hi(class template: constructors)
-    class constructors should use i(member initializers) rather than member
-assignment within the body of the constructors, again to prevent double
-assignment of composed objects: once by the default constructor of the object,
-once by the assignment itself.
-
-Here is our initial version of the class
-        ti(FBB::auto_ptr)
-        hi(auto_ptr: storing multiple objects)
-    showing all its members:
-        verbinclude(classtemplates/examples/autoptr.h)
-    The class interface shows the following features:
-    itemization(
-    it() If it is assumed that the template type tt(Data) is an ordinary type,
-the class interface appears to have no special characteristics at all. It
-looks like any old class interface. This is generally true. Often a template
-class can easily be constructed after having constructed the class for one or
-two ordinary types, followed by an abstraction phase changing all necessary
-references to ordinary data types into generic data types, which then become
-the template's type parameters.
-    it() At closer inspection, some special characteristics can actually be
-discerned. The parameters of the class's copy constructor and overloaded
-assignment operators aren't references to plain tt(auto_ptr) objects, but
-rather references to tt(auto_ptr<Data>) objects. Class template objects (or
-their references or pointers) em(always) require the template type parameters
-to be specified.
-    it() Different from the standard design of copy constructors and
-overloaded assignment operators, their parameters are em(non-)tt(const)
-references. This has nothing to do with the class being a class template, but
-is a consequence of tt(auto_ptr)'s design itself: both the copy constructor
-and the overloaded assignment operator take the other's object's pointer,
-effectively changing the other object into a i(0-pointer).
-    it() Like ordinary classes, members can be defined em(inline). Actually,
-em(all) class template members are defined inline (when using precompiled
-templates
-        emi(precompiled templates)
-        hi(templates: precompiled)
-    this doesn't change; it only means that the compiler has reorganized the
-template definition so that it can process the definition faster).
-As noted in section ref(INLINE), the definition may be put inside the
-        hi(template members: defined in/outside the interface)
-class interface or outside (i.e., following) the class interface. As a
-        i(rule of thumb)
-    the same design principles should be followed here as with ordinary
-classes: they should be defined below the interface to keep the interface
-clean and readable. Long implementations in the interface tend to obscure the
-interface itself.
-    it() When objects of a class template are instantiated, the definitions of
-all the template's member functions that are used (but em(only) those) must
-have been seen by the compiler. Although that characteristic of templates
-could be refined to the point where each definition is stored in a separate
-function template definition file, including only the definitions of the
-function templates that are actually needed, it is hardly ever done that way
-(even though it would speed up the required compilation time). Instead, the
-usual way to define class templates is to define the interface, defining some
-functions inline, and to define the remaining function templates immediately
-below the class template's interface.
-    it() Beside the dereference operator (tt(operator*())), the well-known
-pair of ti(operator[]()) members are defined. Since the class receives no
-information about the size of the array of objects, these members cannot
-support i(array-bound checking).
-    )
-    Let's have a look at some of the member functions defined beyond the class
-interface.     Note in particular:
-    itemization(
-    it() The definition below the interface is the actual template
-definition. Since it is a definition it must start with a
-    ti(template phrase). The function's em(declaration) must also start with a
-ti(template) phrase, but that is implied by the interface itself, which
-already provides the required phrase at its very beginning;
-    it() Wherever tt(auto_ptr) is mentioned in the implementation, the
-template's type parameter is mentioned as well. This is obligatory. Actually,
-the class template's type name is the name of the class template plus its
-        hi(class template: type name)
-template argument. Thus, a tt(vector<int>) represents another em(class type)
-than a tt(vector<float>).
+In this section the class template tt(CirQue) (circular
+queue) is constructed, having one template type parameter tt(Data)
+representing the data type that is stored in the circular queue. The
+outline of the interface of this class template looks like this:
+    hi(template parameter list)
+        verb(
+    template<typename Data>
+    class CirQue
+    {
+        // member declarations
+    };
         )
-    Some remarks about specific members:
+    A class template's definition starts like a function template's
+definition:
     itemization(
-    it() The advised tt(copy()) and tt(destroy()) members (see section
-ref(CopyDestroy)) are very simple, but were added to the implementation to
-promote standardization of classes containing pointer members.
-    it() The overloaded assignment constructor still has to check for
-i(auto-assignment).
+    it() The keyword ti(template), starting a template definition or
+declaration.
+    it() The angle bracket enclosed list following tt(template): a
+list containing one or more comma-separated elements called the
+enclosed list is called the
+ emi(template parameter list). Template parameter lists may have multiple
+elements, like this:
+        verb(
+    typename Type1, typename Type2, typename Type3
+        )
+    When a class template defines multiple template type parameters they are
+matched in sequence with the list of template type arguments provided when
+defining objects of such a class template. Example:
+        verb(
+    template <typename Type1, typename Type2, typename Type3>
+    class MultiTypes
+    {
+        ...
+    };
+    
+    MultiTypes<int, double, std::string> multiType;
+        // Type1 is int, Type2 is double, Type3 is std::string
+        )
+    it() Inside the template parameter list we find the emi(formal type) name
+(tt(Data) for tt(CirQue)). It is a formal (type) name, like the formal types
+used in function template parameter lists.
+    it() Following the template header the class interface is defined. It may
+use the formal type names defined in the template header as type names. 
     )
-    Now that the class has been defined, it can be used. To use the class, its
-object must be instantiated for a particular data type. The example defines a
-new tt(std::string) array, storing all command-line arguments. Then, the first
-command-line argument is printed. Next, the tt(auto_ptr) object is used to
-initialize another tt(auto_ptr) of the same type. It is shown that the
-original tt(auto_ptr) now holds a 0-pointer, and that the second tt(auto_ptr)
-object now holds the command-line arguments:
-        verbinclude(classtemplates/examples/autoptr.cc)
+    Once the tt(CirQue) class template has been defined it can be used to
+create all kinds of circular queues. As one of its constructors expects a
+tt(size_t) argument defining the maximum number of elements that can be stored
+in the circular queue circular queues could be defined like this:
+        verb(
+    CirQue<int> cqi(10);            // max 10 ints
+    CirQue<std::string> cqstr(30);  // max 30 strings
+        )
+    As noted in the introductory section of this chapter the combination of
+name of the class template and the data type for which it is instantiated
+defines a data type. Also note the similarity between defining a
+tt(std::vector) (of some data type) and a tt(CirQue) (of some data type). 
+
+    Like tt(std::map) containers class templates may be defined with multiple
+template type parameters. 
+
+
+Back to tt(CirQue). A tt(CirQue) must be capable of storing tt(max_size)
+tt(Data) elements. These elements are eventually stored in memory pointed at by
+a pointer tt(Data *d_data), initially pointing to raw memory. New elements are
+added at the backside of the tt(CirQue). A pointer tt(Data *d_back) is used to
+point to the location where the next element will be stored. Likewise, tt(Data
+*d_front) points to the location of the tt(CirQue)'s  first element. Two
+tt(size_t) data members are used to monitor the filling state of the
+tt(CirQue): tt(d_size) represents the number of elements currently stored in
+the tt(CirQue), tt(d_maxSize) represents the maximum number of elements that
+the tt(CirQue) can contain. Thus, the tt(CirQue)'s data members are:
+    verbinsert(DATA)(classtemplates/examples/cirque.h)
+
+    The class tt(CirQue) offers various member functions.  Normal design
+principles should be adhered to when constructing class template
+members. Class template type parameters should preferably be defined as
+tt(Type const &), rather than tt(Type), to prevent unnecessary copying of
+large data structures. Template class constructors should use member
+initializers rather than member assignment within the body of the
+constructors. Member function definitions should preferably not be provided
+in-class but below the class interface. Since class template member functions
+are function templates their  definitions should be provided in the header
+file offering the class interface. They em(may) be given the tt(inline)
+attribute. 
+
+tt(CirQue) declares the following (public) members (their definitions are
+provided as well; all definitions are provided below the class interface): 
+    itemization(
+    ittq(explicit CirQue(size_t maxSize = 0))(Constructor initializing a
+        tt(CirQue) capable of storing tt(max_size Data) elements. As the
+constructor's parameter is given a default argument value this constructor can
+also be used as a default constructor, allowing us to define, e.g., vectors of
+tt(CirQue)s.  The constructor initializes the tt(Cirque) object's tt(d_data)
+member to a block of raw memory and tt(d_front) and tt(d_back) are initialized
+to tt(d_data). As class template member functions are themselves function
+templates their implementations outside of the class template's interface must
+start with the class template's template header. Here is the implementation of
+the tt(CirQue(size_t)) constructor:
+        verbinsert(CIRQUE)(classtemplates/examples/cirque.h)
+    )
+    ittq(CirQue(CirQue<Data> const &other))(The copy constructor has no
+special features. It uses a private support member tt(inc) to increment
+tt(d_back) (see below) and placement new to copy the other's tt(Data) elements
+to the current object. The implementation of the copy constructor is
+straightforward:
+        verbinsert(COPYCONS)(classtemplates/examples/cirque.h)
+    )
+    ittq(CirQue(CirQue<Data> const &&tmp))(The move constructor merely
+initializes the current object's tt(d_data) pointer to 0 and swaps (see the
+member tt(swap), below) the temporary object with the current
+object. tt(CirQue)'s destructor will inspect tt(d_data) and will immediately
+return when it's zero. Implementation:
+        verbinsert(MOVECONS)(classtemplates/examples/cirque.h)
+    )
+    ittq(~CirQue())(The destructor inspects the tt(d_data) member. If it is
+zero then nothing has been allocated and the destructor immediately
+returns. This may occur in two situations: the circular queue contains no
+elements or the information was grabbed from a temporary object by some move
+operation, setting the temporary's tt(d_data) member to zero. Otherwise
+tt(d_size) elements are destroyed by explicitly calling their destructors
+followed by returning the element's raw memory to the common
+pool. Implementation: 
+        verbinsert(DESTRUCTOR)(classtemplates/examples/cirque.h)
+    )
+    ittq(CirQue &operator=(CirQue<Data> const &other))(The copy assignment
+        operator has a  standard implementation:
+        verbinsert(COPYASSIGN)(classtemplates/examples/cirque.h)
+    )
+    ittq(CirQue &operator=(CirQue<Data> const &&tmp))(The move assignment
+        operator also has a standard implementation. As its implementation
+        merely calls tt(swap) it is defined as an inline function template:
+        verbinsert(MOVEASSIGN)(classtemplates/examples/cirque.h)
+    )
+    ittq(void pop_front())(removes the element pointed at by tt(d_front) from
+        the tt(CirQue).  Throws an exception if the tt(CirQue) is empty. The
+        exception is thrown as a tt(CirQue<Data>::EMPTY) value, defined by the
+        tt(enum CirQue<Data>::Exception) (see tt(push_back)). The
+        implementation is straightforward (explicitly calling the destructor
+        of the element that is removed):
+       verbinsert(POPFRONT)(classtemplates/examples/cirque.h)
+    )
+    ittq(void push_back(Data const &object))(adds another element to the
+        tt(CirQue).  Throws a tt(CirQue<Data>::FULL) exception if the 
+        tt(CirQue) is full. The exceptions that can be thrown by a tt(CirQue)
+        are defined in its tt(Exception) enum:
+       verbinsert(EXCEPTION)(classtemplates/examples/cirque.h)
+        A copy of tt(object) is installed in the tt(CirQue)'s raw memory using
+        placement tt(new) and its tt(d_size) is incremented.
+       verbinsert(PUSHBACK)(classtemplates/examples/cirque.h)
+    )
+    ittq(void swap(CirQue<Data> &other))(swaps the current tt(CirQue) object
+        with another tt(CirQue<Data>) object;
+       verbinsert(PUSHBACK)(classtemplates/examples/cirque.h)
+    )
+)
+    The remaining public members all consist of one-liners and are implemented
+as inline functiontemplates:
+    itemization(
+    ittq(Data &back())(returns a reference to the element pointed at by
+        tt(d_back) (undefined result if the tt(CirQue) is empty):
+       verbinsert(BACK)(classtemplates/examples/cirque.h)
+    )
+    ittq(Data &front())(returns reference to the element pointed at by
+        tt(d_front) (undefined result if the tt(CirQue) is empty);
+       verbinsert(FRONT)(classtemplates/examples/cirque.h)
+    )
+    ittq(bool empty() const)(returns tt(true) if the tt(CirQue) is empty;
+       verbinsert(PUSHBACK)(classtemplates/examples/cirque.h)
+    )
+    ittq(bool full() const)(returns tt(true) if the tt(CirQue) is full;
+       verbinsert(PUSHBACK)(classtemplates/examples/cirque.h)
+    )
+    ittq(size_t size() const)(returns the number of elements currently stored
+        in the  tt(CirQue);
+       verbinsert(PUSHBACK)(classtemplates/examples/cirque.h)
+    )
+    ittq(size_t maxSize() const)(returns the maximum number of elements that
+        can be stored in the tt(CirQue);
+       verbinsert(PUSHBACK)(classtemplates/examples/cirque.h)
+    )
+)
+
+    Finally, the class has one private member, tt(inc), returning a
+cyclically incremented pointer into tt(CirQue)'s raw memory:
+       verbinsert(INC)(classtemplates/examples/cirque.h)
+
+
+    When objects of a class template are instantiated, em(only) the
+definitions of all the template's member functions that are used must have
+been seen by the compiler. That characteristic of templates could be refined
+to the point where each definition is stored in a separate function template
+definition file. In that case only the definitions of the function templates
+that are actually needed would have to be included. However, it is hardly ever
+done that way. Instead, the usual way to define class templates is to define
+the interface and to define the remaining function templates immediately below
+the class template's interface (defining some functions inline).
+
+    Now that the class tt(CirQue) has been defined, it can be used. To use the
+class its object must be instantiated for a particular data type. In the
+following example it is initialized for data type tt(std::string):
+        verbinclude(classtemplates/examples/cirque.cc)

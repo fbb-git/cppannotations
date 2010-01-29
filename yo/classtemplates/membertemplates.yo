@@ -1,73 +1,77 @@
-    Our previous attempt to define a template non-type parameter which is
+Our previous attempt to define a template non-type parameter that is
 initialized by the compiler to the number of elements of an array failed
 because the template's parameters are not implicitly deduced when a
-constructor is called, but they are explicitly specified, when an object of
-the class template is defined. As the parameters are specified just before the
-template's constructor is called, there's nothing to deduce anymore, and the
-compiler will simply use the explicitly specified template arguments.
+constructor is called. Instead, they must explicitly be specified when an
+object of the class template is defined. As the template arguments are
+specified just before the template's constructor is called the compiler
+doens't have to deduce anything and it can simply use the explicitly specified
+template arguments.
 
-    On the other hand, when template em(functions) are used, the actual
-template parameters are deduced from the arguments used when calling the
-function. This opens an approach route to the solution of our problem. If the
-constructor itself is made into a member which itself is a function template
-(containing a i(template announcement) of its own), then the compiler
-will be able to deduce the non-type parameter's value, without us having to
-specify it explicitly as a class template non-type parameter.
+In contrast, when em(function) templates are used, the actual template
+parameters are deduced from the arguments used when calling the function. This
+opens up an alley leading to the solution of our problem. If the constructor
+itself is turned into a function template (having its own template header),
+then the compiler em(will) be able to deduce the non-type parameter's value
+and there is no need anymore to specify it explicitly using a class template
+non-type parameter.
 
-    Member functions (or classes) of class templates which themselves are
-templates are called em(member templates).
+Members (functions or nested classes) of class templates that are themselves 
+templates are called 
         hi(member template)
         hi(class template: member template)
-    Member templates are defined in the same way as any other template,
-including the tt(template <typename ...>) header.
+ em(member templates).
 
-    When converting our earlier tt(FBB::auto_ptr(Data const (&array)[Size]))
-constructor into a member template we may use the class template's tt(Data)
-type parameter, but must provide the member template with a non-type parameter
-of its own. The class interface is given the following additional member
-declaration:
+Member templates are defined as any other template, including its own template
+header.
+
+When converting our earlier tt(CirQue(Data const (&array)[Size])) constructor
+into a member template the class template's tt(Data) type parameter can still
+be used, but we must provide the member template with a non-type parameter of
+its own. Its declaration in the (partially shown) class interface looks like
+this:
         verb(
     template <typename Data>
-    class auto_ptr
+    class CirQue
     {
-        ...
         public:
             template <size_t Size>
-            auto_ptr(Data const (&arr)[Size]);
-        ...
+            explicit CirQue(Data const (&arr)[Size]);
     };
         )
-    and the constructor's implementation becomes:
-        verb(
-    template <typename Data>
-    template <size_t Size>
-    inline auto_ptr<Data>::auto_ptr(Data const (&arr)[Size])
-    :
-        d_data(new Data[Size]),
-        d_n(Size)
-    {
-        std::copy(arr, arr + Size, d_data);
-    }
-        )
-
+    Its implementation becomes:
+    verbinsert(MEMBER)(classtemplates/examples/cirque.h)
+    The implementation uses the STL's tt(copy) algorithm and a
+tt(back_inserter) adapter to insert the array's elements into the
+tt(CirQue). To use the tt(back_inserter) tt(CirQue) must define two (public)
+tt(typedef)s (cf. section ref(INSERTER)):
+    verbinsert(TYPEDEFS)(classtemplates/examples/cirque.h)
+    
     Member templates have the following characteristics:
     itemization(
-    it() Normal i(access rules) apply: the constructor
-can be used
-by the general program to construct an tt(FBB::auto_ptr) object of a given
-data type. As usual for class templates, the data type must be specified when
-the object is constructed. To construct an tt(FBB::auto_ptr) object from the
-array tt(int array[30]) we define:
-    centt(FBB::auto_ptr<int> object(array);)
+    it() Two tt(template)
+            hi(template header: for member templates)
+     headers must be used: the class template's tt(template)
+header is specified first followed by the member template's template header;
+    it() Normal access rules apply: the member template can be
+used by programs to construct an tt(CirQue) object of a given data
+type. As usual for class templates, the data type must be specified when the
+object is constructed. To construct a tt(CirQue) object from the array
+tt(int array[30]) we define:
+        verb(
+    CirQue<int> object(array);
+        )
     it() Any member can be defined as a member template, not just a
-constructor.
-    it() When a template member is defined below its class, the class template
-    hi(template members: defined below their class) parameter list must
-precede the function template parameter list of the template
-member. Furthermore:
-        itemization(
-        it() The member should be defined inside its proper namespace
-environment. The organization within files defining class templates within a
+constructor;
+    it() When a template member is implemented below its class interface, the
+template class header must precede the function template header of the member
+template;
+    it() The implementation of the member template must specify its proper
+scope.  The member template is defined as a member of the class tt(CirQue),
+instantiated for the formal template parameter type tt(Data);
+    it() The template parameter names in the declaration and
+implementation must be identical;
+    it() The member template should be defined inside its proper namespace
+environment. The organization of files defining class templates within a
 namespace should therefore be:
         verb(
     namespace SomeName
@@ -83,58 +87,46 @@ namespace should therefore be:
         {
             ...
         }
-    }                                   // namespace closed
-        )
-        it() Two tt(template)
-            hi(template spec.: with member templates)
-     announcements must be used: the class template's tt(template)
-announcement is specified first, followed by the member template's
-tt(template) announcement.
-        it() The definition itself must specify the member template's
-proper scope: the member template is defined as a member of the class
-tt(FBB::auto_ptr), instantiated for the formal template parameter type
-tt(Data). Since we're already inside the namespace tt(FBB), the function
-header starts with tt(auto_ptr<Data>::auto_ptr).
-        it() The formal template parameter names in the declaration and
-implementation must be identical.
+    }                                   // namespace closes
         )
     )
-    One small problem remains. When we're constructing an tt(FBB::auto_ptr)
-object from a fixed-size array the above constructor is not used. Instead, the
-constructor tt(FBB::auto_ptr<Data>::auto_ptr(Data *data)) is activated. As the
-latter constructor is not a member template, it is considered a more
-specialized version of a constructor of the class tt(FBB::auto_ptr) than the
-former constructor. Since both constructors accept an array the compiler will
-call tt(auto_ptr(Data *)) rather than tt(auto_ptr(Data const
-(&array)[Size])). This problem can be solved by simply changing the
-constructor tt(auto_ptr(Data *data)) into a member template as well, in which
-case its template type parameter should be changed into `tt(Data)'. The only
-remaining subtlety is that template parameters of member templates may not
-shadow
-        hi(shadowing template parameters)
-        hi(class template: shadowing template parameters)
-    the template parameters of their class. Renaming tt(Data) into tt(Data2)
-takes care of this subtlety. Here is the (inline) definition of the
-tt(auto_ptr(Data *)) constructor, followed by an example in which both
-constructors are actually used:
+
+    A potentially occurring problem remains. Assume that in addition to the
+above member template a tt(CirQue<Data>::CirQue(Data const *data)) has been
+defined. Some (here not further elaborated) protocol may be defined allowing
+the constructor to determine the number of elements that should be stored in
+the tt(CirQue) object. When we now define
+        verb(
+    CirQue<int> object(array);
+        )
+    it is this latter constructor, rather than the member template, that is
+used by the compiler. The compiler selects this latter constructor as it is a
+more specialized version of a constructor of the class tt(CirQue) than the
+member template (cf. section ref(FUNCTIONSELECTION)). Problems like these can
+be solved by defining the constructor tt(CirQue(Data const *data)) into a
+member template as well.  It could receive a template type parameter
+tt(Data2). tt(Data) cannot be used as template parameters of a member template
+may not shadow hi(class template: shadowing parameters) template parameters of
+its class. Using tt(Data2) instead of tt(Data) takes care of this
+subtlety. Here is the declaration of the constructor tt(CirQue(Data2 const *))
+as it could appear in the tt(CirQue) header file:
         verb(
     template <typename Data>
-    template <typename Data2>           // data: dynamically allocated
-    inline auto_ptr<Data>::auto_ptr(Data2 *data)
-    :
-        d_data(data),
-        d_n(0)
-    {}
+    class CirQue
+    {
+        template <typename Data2>
+        explicit CirQue(Data2 const *data);
+    }
         )
-    Calling both constructors in tt(main()):
+    Here is how the two constructors are selected in code defining two
+tt(CirQue) objects:
         verb(
     int main()
     {
         int array[30];
+        int *iPtr = array;
 
-        FBB::auto_ptr<int> ap(array);
-        FBB::auto_ptr<int> ap2(new int[30]);
-
-        return 0;
+        CirQue<int> ac(array);      // calls CirQue(Data const (&arr)[Size])
+        CirQue<int> acPtr(iPtr);    // calls CirQue(Data2 const *)
     }
         )

@@ -1,118 +1,71 @@
-    Our earlier class tt(FBB::auto_ptr) can be used for many different
-types. Their common characteristic is that they can simply be assigned to the
-class's tt(d_data) member, e.g., using tt(auto_ptr(Data *data)). However, this
-is not always as simple as it looks. What if tt(Data)'s actual type is tt(char
-*)? Examples of a tt(char **), tt(data)'s resulting type, are well-known:
-tt(main())'s tt(argv) parameter and and ti(environ), for example are tt(char
-**) varables, both having a final element equal to 0. The specialization
-developed here assumes that there is indeed such a final 0-pointer element.
+The class tt(CirQue) can be used for many different types. Their common
+characteristic is that they can simply be pointed at by class's tt(d_data)
+member. But this is not always as simple as it looks. What if tt(Data) turns
+out to be a tt(vector<int>)? For such data types the vanilla tt(CirQue)
+implementation will not properly work and a specialization could be
+considered. When considering a specialization one should also consider
+inheritance. Often a class derived from the class template accepting the
+incompatible data structure as its argument but otherwise equal to the
+original class template can easily be designed. The developmental advantage of
+inheritance over specialization is clear: the inherited class inherits the
+members of its base class while the specialization inherits nothing. All
+members defined by the original class template must be implemented again by
+the class template's specialization.
 
-    It this special case we might not be interested in the mere reassignment
-of the constructor's parameter to the class's tt(d_data) member, but we might
-be interested in copying the complete tt(char **) structure. To implement this,
-class template specializations may be used.
+The specialization considered here is a true specialization in that the
+data members and representation used by the specialization greatly differ from
+the original tt(CirQue) class template. Therefore all members defined by the
+orginal class template must be modified to fit the specialization's data
+organization. 
 
-    Class template specializations are used in cases where member
-        hi(class template: specializations)
-    function templates cannot (or should not) be used for a particular actual
-template parameter type. In those cases specialized template members can be
-constructed, fitting the special needs of the actual type.
+    Like function template specializations class template specializations
+start with a template header that may or may not have an empty template
+parameter list. If the template parameters are directly specialized by the
+specialization it remains empty (e.g., tt(CirQue)'s template type parameter
+tt(Data) is specialized for tt(char *) data). But the template parameter list
+may show tt(typename Data) when specializing for a tt(vector<Data>), i.e., a
+vector storing any type of data. This leads to the following principle:
+    quote(hi(template: specialization) A template specialization is recognized
+by the template argument list following a function or class template's
+em(name) and em(not) by an empty template parameter list. Class template
+specializations may have non-empty template parameter lists. If so, a
+emi(partial class template specialization) is defined.)
 
-    Class template member specializations are specializations of existing
-class members. Since the class members already exist, the specializations will
-em(not) be part of the class interface. Rather, they are defined below the
-interface as members, redefining the more generic members using explicit
-types. Furthermore, as they are specializations of existing class members,
-their function prototypes must exactly match the prototypes of the member
-functions for which they are specializations. For our tt(Data = char *)
-specialization the following definition could be designed:
-        verb(
-    template <>
-    auto_ptr<char *>::auto_ptr(char **argv)
-    :
-        d_n(0)
-    {
-        char **tmp = argv;
-        while (*tmp++)
-            d_n++;
-        d_data = new char *[d_n];
-
-        for (size_t idx = 0; idx < d_n; idx++)
-        {
-            std::string str(argv[idx]);
-            d_data[idx] =
-                strcpy(new char[str.length() + 1], str.c_str());
-        }
-    }
-        )
-    Now, the above specialization will be used to construct the following
-tt(FBB::auto_ptr) object:
-        verb(
-    int main(int argc, char **argv)
-    {
-        FBB::auto_ptr<char *> ap3(argv);
-        return 0;
-    }
-        )
-
-    Although defining a template member specialization may allow us to use the
-occasional exceptional type, it is also quite possible that a single template
-member specialization is not enough. Actually, this is the case when designing
-the tt(char *) specialization, since the template's tt(destroy())
-implementation is not correct for the specialized type tt(Data = char *). When
-multiple members must be specialized for a particular type, then a complete
-class template specialization might be considered.
-
-    A completely specialized class shows the following characteristics:
+    A completely specialized class has the following characteristics:
     itemization(
-    it() The class template specialization follows the generic class template
-definition. After all, it's a specialization, so the compiler must have seen
-what is being specialized.
-    it() All the class's template parameters are given specific type names or
-(for the non-type parameters) specific values. These specific values are
-explicitly stated in a template parameter specification list (surrounded by
-angle brackets) which is inserted immediately following the template's class
-name.
-    it() All the specialized template members specify the specialized types
-and values where the generic template parameters are used in the generic
-template definition.
-    it() Not all the template's members em(have) to be defined, but, to
-ensure generality of the specialization, em(should) be defined. If a member is
-left out of the specialization, it can't be used for the specialized type(s).
-    it() Additional members may be defined in the specialization. However,
-those that are defined in the generic template too must have corresponding
-members (using the same prototypes, albeit using the generic template
-parameters) in the generic class template definition. The compiler will not
-complain when additional members are defined, and will allow you to use those
-members with objects of the specialized class template.
-    it() Member functions of specialized class templates may be defined
-within their specializing class or they may be declared in the specializing
-class. When they are only declared, then their definitition should be given
-below the specialized class template's interface. Such an implementation may
-em(not) begin with a tt(template <>) announcement, but should immediately
-start with the member function's header.
+    it() The class template specialization must be provided after the generic
+class template definition. As it is a specialization the compiler
+must first have seen the original class template;
+    it() The completely specialized class template's template parameter list
+is empty;
+    it() All of the class's template parameters are given explicit type names
+or (for the non-type parameters) explicit values. These explicitations are
+provided in a template parameter specification list (surrounded by angle
+brackets) that is inserted immediately after the specialized template's class
+em(name);
+    it() All members of the specialized class template use specialized types
+and values where original template parameters are used in the original
+template definition;
+    it() All original template's members (maybe with the exception of some
+constructors) em(should) be redefined by the specialization. If a member is
+left out of the specialization, it cannot be used for a specialized class
+template object;
+    it() The specialization may define additional members (but maybe shouldn't
+as it breaks the one-to-one correspondence between the original and
+specialized class template);
+    it() Member functions of specialized class templates may be declared by
+the specializing class and implemented below their class interface. If their
+implementations follow the class interface they may em(not) begin with a
+tt(template <>) header, but must immediately start with the member function's
+header.
     )
 
-    Below a full specialization of the class template tt(FBB::auto_ptr) for
-the actual type tt(Data = char *) is given, illustrating the above
-characteristics. The specialization should be appended to the file already
-containing the generic class template. To reduce the size of the example
-members that are only declared may be assumed to have identical
-implementations as used in the generic template.
-        verbinclude(classtemplates/examples/autoptr2.h)
+Here is an example of a completely specialized tt(CirQue) class, specialized
+for a tt(vector<int>). All members of the specialized class are declared, but
+only non-trivial implementations of its members are provided. The specialized
+class uses a copy of the tt(vector) passed to the constructor and implements a
+circular queue using its tt(vector) data member:
+    verbinclude(classtemplates/examples/cirquevector.h)
+ Here is an example showing the use of the specialized tt(CirQue) class:
+    verbinsert(MAIN)(classtemplates/examples/cirquevector.cc)
 
-    Note that specializations not automatically have empty template
-        hi(template specialization: non-empty template parameter list)
-    parameter lists. Consider the following example of an (grossly incomplete)
-specialization of tt(FBB::auto_ptr):
-        verbinclude(classtemplates/examples/autoptr4.h)
-
-    In this example a specialization is created for the type tt(std::vector),
-instantiated with any data type tt(T). Since tt(T) is not specified, it must
-be mentioned in the template paramter list as a template type parameter.
-E.g., if an tt(FBB::auto_ptr<std::vector<int> *>) is constructed, the compiler
-deducts that tt(T) is an tt(int) and will use the tt(vector<T> *)
-specialization, in which tt(T) could be used as a type specification. The
-following basic example shows that the compiler will indeed select the
-tt(vector<T>*) specialization:
-        verbinclude(classtemplates/examples/autoptr4.cc)

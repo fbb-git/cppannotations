@@ -22,7 +22,7 @@
     };
 
 //MATRIXROW
-    template <size_t Columns, typename DataType>  // no default specified
+    template <size_t Columns, typename DataType>  // no default allowed
     class Matrix<1, Columns, DataType>
 //=
     {
@@ -107,7 +107,6 @@
     {
         std::fill(d_matrix, d_matrix + Rows, MatrixRow());
     }
-
     template <size_t Rows, size_t Columns, typename DataType>
     Matrix<Rows, Columns, DataType>::Matrix(std::istream &str)
     {
@@ -117,7 +116,7 @@
     }
 //=
 
-//OPERATOR=
+//OPERATORINDEX
     template <size_t Rows, size_t Columns, typename DataType>
     Matrix<1, Columns, DataType>
     &Matrix<Rows, Columns, DataType>::operator[](size_t idx)
@@ -154,7 +153,7 @@
     }
 //=
 
-//ROWOPERATOR=
+//ROWOPERATORINDEX
     template <size_t Columns, typename DataType>
     DataType &Matrix<1, Columns, DataType>::operator[](size_t idx)
     {
