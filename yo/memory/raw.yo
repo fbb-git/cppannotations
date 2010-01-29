@@ -1,0 +1,44 @@
+As we've seen operator tt(new) allocates the memory for an object and
+subsequently initialize that object calling one of its constructors. Likewise,
+operator tt(delete) calls an object's destructor and subsequently returns the
+memory allocated by operator tt(new) to the common pool.
+
+In the next section we'll encounter another use of tt(new), allowing us to
+initialize objects in so-called emi(raw memory): memory merely consisting of
+bytes that have been made available either by static or dynamic
+allocation. 
+
+Raw memory is made available by 
+ hi(operator new) tt(operator new(sizeInBytes)). This should not be
+interpreted as an array of any kind but just a series of memory locations that
+were dynamically made available. tt(operator new) returns a tt(void *) so a
+(static) cast is required to use it as memory of some type. Here are two
+examples:
+        verb(
+                                // room for 5 ints
+    int *ip = static_cast<int *>(operator new(5 * sizeof(int)));
+                                // room for 5 strings
+    string *sp = static_cast<int *>(operator new(5 * sizeof(string)));
+        )
+ As tt(operator new) has no concept of data types the size of the intended
+data type must be specified when allocating raw memory for a certain number of
+objects of an intended type. The use of tt(operator new) therefore somewhat
+resembles the use of bi(malloc)(3).
+
+The counterpart of tt(operator new) is ti(operator delete). tt(Operator new)
+expects a tt(void *) (so a pointer to any type can be passed to it). The
+pointer is interpreted as a pointer to raw memory and is returned to the
+common pool. tt(Operator delete) does em(not) call a destructor. The use of
+tt(operator delete) therefore resembles the use of bi(free)(3). To return the
+memory pointed at by the abovementioned variables tt(ip) and tt(sp)
+tt(operator delete) should be used:
+        verb(
+                    // delete raw memory allocated by operator new
+    operator delete(ip);
+    operator delete(sp);
+        )
+
+
+
+
+
