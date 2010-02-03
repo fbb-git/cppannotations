@@ -26,3 +26,30 @@ and tt(Type == Actual);
 and tt(Type == Actual);
     )
 
+Let's look at a concrete exampe where contraction occurs. Consider the
+following template function where a function parameter is defined as an rvalue
+references to some template type parameter:
+        verb(
+    template <typename Type>
+    void function(Type &&param)
+    {
+        callee(static_cast<Type &&>(param));
+    }
+        )
+ In this situation, when tt(function) is called with an (lvalue) argument of
+type tt(TP &) the template type parameter tt(Type) is deduced to be tt(Tp
+&). Therefore, tt(param) is considered to be instantiated as tt(Tp &param) (as
+tt(Tp & &&param)) is contracted as tt(Tp &param). But with an rvalue typed
+argument (tt(Tp &&)) it results in tt(Tp &&param) (again using contraction). 
+
+Likewise, when tt(callee) is called using the tt(static_cast) the same
+contraction occurs, so if tt(Type &&param) is interpreted as tt(Tp &param) the
+static cast em(also) uses type tt(Tp &param). If (Type &&param) is interpreted
+as tt(Tp &&param) the static cast em(also) uses type tt(Tp &&param).
+
+This characteristics allows us to pass a function argument straight through to
+a nested function em(without) changing its type: lvalues remain lvalues,
+rvalues remain rvalues. This characteristic is therefore also known as
+ emi(perfect forwarding) which will be discussed in greated detail in section
+ref(PERFECT). Perfect forwarding prevents the template author from having to
+define multiply overloaded versions of a function template.
