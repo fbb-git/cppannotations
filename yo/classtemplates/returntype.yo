@@ -1,31 +1,30 @@
 As amply illustrated in chapter ref(GENERIC) function objects play an
-important role when using generic algorithms. Like generic algorithms
-themselves, function objects can be generically defined as members of class
-templates. When the function call operator (tt(operator()())) of such classes
-themselves have arguments, then the types of those arguments may be abstracted
-as well by defining the function call operator as a member template.  Consider
-the following example:
+important role with generic algorithms. Like generic algorithms themselves,
+function objects can be generically defined as members of class
+templates. When the function call operator (tt(operator())) of such classes
+themselves have arguments then the types of those arguments may also be
+abstracted by defining the function call operator itself as a member template.
+Example:
         verb(
     template <typename Class>
     class Filter
     {
         Class obj;
         public:
-            template <typename Arg>
-            Arg operator()(Arg const &arg) const
+            template <typename Param>
+            Param operator()(Param const &param) const
             {
-                return obj(arg);
+                return obj(param);
             }
     };
         )
-    The tt(Filter) class template is a wrapper around tt(Class), filtering
-tt(Class)'s overloaded function call through its own function call
-operator. In the above example the return value of tt(Class)'s function call
-operator is simply passed on, but any other manipulation is possible as
-well.
+    The template class tt(Filter) is a wrapper around tt(Class), filtering
+tt(Class)'s function call operator through its own function call operator. In
+the above example the return value of tt(Class)'s function call operator is
+simply passed on, but any other manipulation is of course also possible.
 
-    A particular type specified with tt(Filter)'s instantiation may have
-multiple function call operators, e.g.:
+    A type that is specified as tt(Filter)'s template type argument may of
+course have multiple function call operators:
         verb(
     struct Math
     {
@@ -33,26 +32,26 @@ multiple function call operators, e.g.:
         double operator()(double x);
     };
         )
-    tt(Math) objects can now be filtered defining tt(Filter<Math> fm) and then
-either using tt(Math)'s first or second function call operator, depending on
-the actual argument type. With tt(fm(5)) the tt(int)-version is used, with
-tt(fm(12.5)) the tt(double)-version is used.
+    tt(Math) objects can now be filtered using tt(Filter<Math> fm) using
+tt(Math)'s first or second function call operator, depending on the actual
+argument type. With tt(fm(5)) the tt(int)-version is used, with tt(fm(12.5))
+the tt(double)-version is used.
 
-    Unfortunately the scheme doesn't work if the function call operators have
-different return and argument types. E.g., the following class tt(Convert)
-cannot be used with tt(Filter):
+    Unfortunately this scheme doesn't work if the function call operators have
+different return and argument types. Because of this the following class
+tt(Convert) cannot be used with tt(Filter):
         verb(
     struct Convert
     {
-        double operator()(int x);
-        std::string operator()(double x);
+        double operator()(int x);           // int-to-double
+        std::string operator()(double x);   // double-to-string
     };
         )
-    This problem can be tackled successfully using defines the class template
-linebreak() ti(std::result_of<Functor(Typelist)>) defined by the
-    C++0x standard. This class template defines tt(type) representing the
-type returned by tt(Functor<TypeList>). It can be used to improve tt(Filter)
-as follows:
+    This problem can be tackled successfully by the class template
+ hi(result_of)tt(std::result_of<Functor(Typelist)>) that is defined by the
+C++0x standard. This class template offers a tt(tyedef), tt(type),
+representing the type that is returned by tt(Functor<TypeList>). It can be
+used to improve tt(Filter) as follows:
         verb(
     template <typename Class>
     class Filter
@@ -60,7 +59,7 @@ as follows:
         Class obj;
         public:
             template <typename Arg>
-            typename std::result_of<Class(Arg)>::type
+                typename std::result_of<Class(Arg)>::type
                 operator()(Arg const &arg) const
                 {
                     return obj(arg);
@@ -71,13 +70,62 @@ as follows:
 tt(fc(5)) will return a tt(double), while tt(fc(4.5)) returns a
 tt(std::string).
 
-    The template type parameter that is used when tt(result_of) is used must
-represent the type(s) of a function call operator. It starts with the
-operator's class type (which may be a template type parameter, as shown),
-followed by a (possibly empty) list of types. The compiler will match the
-provided specification with existing function call operators and will define
-the template's tt(::type) as the return type of the matched function call
-operator.
+The class tt(Convert) must define the relationships between its function call
+operators and their return types. Predefined function objects (like those in
+the standard template libary) already do so, but self-defined function objects
+must to this explicitly. 
 
-To use the tt(std::result_of) template the header file
-    hi(#include <functional>) tt(functional) must be included.
+If a function object class defines only one function call operator it can
+define its return type by a tt(typedef). If the above class tt(Convert) would
+only define the first of its two function call operators then the tt(typedef)
+(in the class's tt(public) section) should be:
+        verb(
+    typedef double type;
+        )
+    
+If multiple function call operators are defined, each with its own signature
+and return type, then the association between signature and return type is set
+up as follows (all in the class's tt(public) section):
+    itemization(
+    it() define a generic tt(struct result) like this:
+        verb(
+    template <typename Signature>
+    struct result;
+        )
+    it() For each function call signature define a em(specialization) of
+tt(struct result). tt(Convert)'s first function call operator gives rise to:
+        verb(
+    template <typename Class>
+    struct result<Class(int)>
+    {
+        typedef double type;
+    };
+        )
+    and tt(Convert)'s second function call operator to:
+        verb(
+    template <typename Class>
+    struct result<Class(double)>
+    {
+        typedef std::string type;
+    };
+        )
+    it() In cases where function call operators have multiple arguments the
+specifications should again provide for the correct signatures. A function
+call operator called with an tt(int) and a tt(double), returning a tt(size_t)
+gets:
+        verb(
+    template <typename Class>
+    struct result<Class(int, double)>
+    {
+        typedef size_t type;
+    };
+        )
+    )
+
+Before using tt(std::result_of) the header file tthi(functional) must have
+been included.
+
+
+
+
+

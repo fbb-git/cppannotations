@@ -1,127 +1,155 @@
-Rvalue references, introduced in bf(C++) by the C++0x standard can also be
-used to achieve emi(perfect forwarding), which was not available in bf(C++)
-before the advent of the C++0x standard. In combination with variadic
-templates rvalue references allow function templates to forward arguments to
-other functions accepting such arguments. The provided arguments are
-`perfectly forwarded' as they are forwarded in a type-safe way: called
-functions must have matching arguments, matching both in types and number, in
-order to be called.
+Consider tt(string)'s member tt(insert). tt(String::insert) has several
+overloaded implementations. It can be used to insert text (completely or
+partially) provided in a tt(string) or in a tt(char const *) argument; to
+insert single characters a specified number of times; iterators can be used to
+specify the range of characters to be inserted; etc., etc.. All in,
+tt(string) offers five overloaded tt(insert) members.
 
-Perfect forwarding is very useful in situations where objects must pass on
-arguments to (overloaded) members of, e.g., composed objects. Traditionally, a
-class intending to expose some of the functionality of a composed member
-had to repeat that part of the composed member's interface in its own
-interface. Perfect forwarding may change this and may only require the
-addition of one single member template to the composing class's
-interface. In the following example a class tt(Composer) wants to expose the
-tt(substr) members of its composed tt(std::string d_str). Rather than to
-repeat all overloaded versions of tt(std::string) in its own interface it uses
-perfect forwarding to be able to call all overloaded tt(substr) members of
-tt(d_str):
+Assume the existence of a class tt(Inserter) that is used to insert
+information into all kinds of objects. Such a class could have a tt(string)
+data member into which information can be inserted. tt(Inserter)'s interface
+only partially has to copy tt(string)'s interface to realize this: only
+tt(string::insert)'s interfaces must be duplicated. These duplicating
+interfaces often contain one statement (calling the appropriate member
+function of the object's data member) and are for this reason often
+implemented in-line. These wrapper functions merely em(forward) their
+parameters to the appropriate member function of the object's data member.
+
+Factory functions also frequently forward their parameters to the constructors
+of objects that they return.
+
+Before the C++0x standard the interfaces of overloaded functions needed to
+be duplicated by the forwarding entity: tt(Inserter) needed to duplicate the
+interfaces of all five tt(string::insert) members; a factory function needed
+to duplicate the interfaces of the constructors of the class of the objects it
+returned.
+
+The C++0x standard simplifies and generalizes forwarding of parameters by
+offering emi(perfect forwarding), implemented through rvalue references and
+variadic templates. With perfect forwarding the arguments passed to functions
+are `perfectly forwarded' to nested functions. Forwarding is called
+em(perfect) as the arguments are forwarded in a type-safe way. To use perfect
+forwarding nested functions must define parameter lists matching the
+forwarding parameters both in types and number.
+
+Perfect forwarding is easily implemented:
+    itemization(
+    it() The forwarding function is defined as a variadic template;
+    it() The forwarding function's parameter list is an
+        hi(parameter pack: rvalue reference) 
+        em(rvalue reference parameter pack) (e.g., tt(Params && ... params));
+    itht(forward)(std::forward) is used to forward the forwarding function's
+        arguments to the nested function, keeping track of their types and
+        number. Before using tt(forward) the tthi(utility) header file must
+        have been included. The nested function is then called using this
+        stanza for its arguments: tt(std::forward<Params>(params) ...).
+    )
+
+In the following example perfect forwarding is used to implement
+tt(Inserter::insert). The tt(insert) function that's actually called now
+depends on the types and number of arguments that are passed to
+tt(Inserter::insert):
         verb(
-    class Composer
+    class Inserter
     {
-        string d_str;   // somehow initialized, e.g., via a constructor
-
+        std::string d_str;  // somehow initialized
         public:
-            template<typename ...Args>
-            string substr(Args&&... args)
+                            // constructors not implemented,
+                            // but see below     
+            Inserter();     
+            Inserter(std::string const &str);
+            Inserter(Inserter const &other);
+            Inserter(Inserter const &&other);
+
+            template<typename ... Params>
+            void insert(Params && ... params)
             {
-                return d_cl.substr(std::forward<Args>(args)...);
+                d_str.insert(std::forward<Params>(params) ...);
             }
     };
         )
-    The core elements in the above example are:
-    itemization(
-    it() The definition of tt(substr) as a variadic template
-    it() em(Forwarding) hi(forward function arguments)
-            the function's arguments, keeping track of their
-            types, using  ti(std::forward)tt(<Args>(args) ...).
-    )
-    As a result, the version of tt(d_str.substr) that is actually called
-depends on the arguments passed to tt(Composer::substr).
 
-Another situation where perfect forwarding is useful is where a
-    i(factory function) is to be constructed. A factory function forwards its
-arguments to constructors of other classes, returning the thus constructed
-object. When a factory function also receives the typename of the class to
-construct it can be constructed as a generic factory function. A factory
-function may be useful when the construction of several objects of several
-types must be centralized (e.g., when object construction should be logged or
-objects should be constructed dynamically and shared pointers are used to
-refer to constructed objects). Here is an example of a generic factory
-function that may be used to obtain any kind of object using whatever set of
-arguments the constructors may expect:
+A factory function returning a tt(Inserter) can also easily be implemented
+using perfect forwarding. Rather than defining four overloaded factory
+functions a single one now suffices. By providing the factory function with an
+additional template type parameter specifying the class of the object to
+construct the factory function is turned into a completely general factory
+function:
         verb(
-    template <typename Class, typename ... Args>
-    Class factory(Args&& ... args)
+    template <typename Class, typename ... Params>
+    Class factory(Params && ... params)
     {
-        return Class(std::forward<Args>(args) ...);
+        return Class(std::forward<Params>(params) ...);
     }
         )
-    This example shows the same core elements as encountered previously. A
-variadic function template forwarding its argument to a constructor of a class
-specified at call-time. Assume the existence of two classes tt(One) and
-tt(Two), each having a default constructor, a constructor expecting an tt(int)
-and a copy constructor, then objects could be constructed by the factory as
-follows:
+Here are some examples showing its use:    
         verb(
-    One one(factory<One>());
-    Two two(factory<Two>(3));
-    Two second(factory<Two>(two));
+    Inserter inserter(factory<Inserter>("hello"));
+    string delimiter(factory<string>(10, '='));
+    Inserter copy(factory<Inserter>(inserter));
         )
-    Here a default tt(One) object, a tt(Two) object using tt(Two)'s constructor
-expecting and tt(int) and a tt(Two) object using tt(Two)'s copy constructor
-are constructed.
 
-COMMENT(
-Question: What is that forward function in our solution?
+The function tt(std::forward) is provided by the  standard library. It
+performs no magic, but merely returns tt(params) as an nameless object. That
+way it acts like tt(std::move) that also removes the name from an object,
+returning it as a nameless object. The unpack operator has nothing to do with
+the use of tt(forward) but merely tells the compiler to apply tt(forward) to
+each of the arguments in turn. Thus it behaves similarly to bf(C)'s ellipsis
+operator used by variadic functions. 
 
-Like move, forward is a simple standard library function used to express our
-intent directly and explicitly, rather than through potentially cryptic uses
-of references. We want to forward the argument a1, so we simply say so.
+Perfect forwarding was introduced in section ref(CONTRACTIONS): a template
+function defining a tt(Type &&param), with tt(Type) being a template type
+parameter will convert tt(Type &&) to tt(Tp &) if the function is called with
+an argument of type tt(Tp &). Otherwise it will bind tt(Type) to tt(Tp),
+with tt(param) being defined as  tt(Tp &&param). As a result an em(lvalue)
+argument will bind to an lvalue-type (tt(Tp &)), while an em(rvalue) argument
+will bind to an rvalue-type (tt(Tp &&)). 
 
-Here, forward preserves the lvalue/rvalue-ness of the argument that was passed
-to factory. If an rvalue is passed to factory, then an rvalue will be passed
-to T's constructor with the help of the forward function. Similarly, if an
-lvalue is passed to factory, it is forwarded to T's constructor as an lvalue.
-
-The definition of forward looks like this:
-
-template <class T>
-struct identity
-{
-    typedef T type;
-};
-
-template <class T>
-T&& forward(typename identity<T>::type&& a)
-{
-    return a;
-}
-
-template <class T, class A1>
-std::shared_ptr<T>
-factory(A1&& a1)
-{
-    return std::shared_ptr<T>( new T( forward<A1>(a1) )  );
-}
-END)
-
-COMMENT(
-Variadic templates are unaware of the intention of programmers with respect to
-the nature of provided arguments, and sometimes they need a little
-help. Consider the following code snippet:
+The function tt(std::forward) merely passes the argument (and its type) on to
+the called function or object. Here is its simplified implementation:
         verb(
-    void calledFunction(ostream &out)
+    typedef <type T>
+    T &&forward(T &&a)
     {
-        out << "hello";
-    }
-
-    template <typename ... Args>
-    void caller(Args &&... args)
-    {
-        calledFunction(std::forward<Args>(args) ...);
-    }
+        return a;
+    }   
         )
-END)
+    Since tt(T &&) turns into an lvalue reference when tt(forward) is called
+with an lvalue (or lvalue reference) and remains an rvalue reference if
+tt(forward) is called with an rvalue reference and since tt(forward) (like
+tt(std::move)) anonymizes the variable passed as argument to tt(forward) the
+argument value is forwarded while keeping its type 
+from the function's parameter to the called function's argument. This is
+called em(perfect forwarding) as the called function will only be called if
+the types of the arguments used when calling the `outer' function (e.g.,
+tt(factory) exactly match the types of the parameters of the called function
+(e.g., tt(Class)'s constructor). Perfect forwarding therefore is a tool to
+uphold type safety.
+
+    A cosmetic improvement to tt(forward) forces users of tt(forward) to
+specify the type to use rather than to have the compiler deduct the type as a
+result of the function template parameter type deduction's process. This is
+realized by a small support struct template:
+        verb(
+    template <typename T>
+    struct identity
+    {
+        typedef T type;
+    };
+        )
+    This struct merely defines tt(identity::type) as tt(T), but as it is a
+struct it must be specified explicitly. It cannot be determined from the
+function's argument itself. The subtle modification to the above
+implementation of tt(forward) thus becomes (see section ref(DISTINGUISH) for
+the use of tt(typename) in the function's parameter list):
+        verb(
+    typedef <type T>
+    T &&forward(typename identity<T>::type&& a)
+    {
+        return a;
+    }   
+        )
+    Now tt(forward) must explicitly state the tt(a)'s plain type, as in:
+        verb(
+    std::forward<Params>(params)
+        )
