@@ -1,63 +1,53 @@
-Standard C++ allows the use of tt(typedef)s to create `shorthand' notations
-for extensive type names, often resulting in code that is easier to write and
-usually easier to read and understand. E.g., instead of writing
-        verb(
-    std::map<std::shared_ptr<KeyType>, std::vector<std::set<std::string>>>
-        mapObject;
-        )
-    it is possible to write
-        verb(
-    MapKeyVectorStringSet mapObject;
-        )
-    after having defined
+The tt(typedef) keyword is frequently used  to define `shorthand' notations
+for extensive type names. Consider the following example:
         verb(
     typedef
        std::map<std::shared_ptr<KeyType>, std::vector<std::set<std::string>>>
-            MapKeyVectorStringSet;
+            MapKey_VectorStringSet;
+
+    MapKey_VectorStringSet mapObject;
         )
-    However, it may be that the data type varies. Multiple maps might be used,
-some of them storing tt(string) objects, other might store tt(double) values.
-A class may be defined inheriting from this complex map allowing the
-specification of, e.g., the final key and value types. E.g.,
+    In situations like this the actual type of the key or the data stored in
+the map's vector might vary. Some may store tt(string) objects, other may
+store tt(double) values.
+
+A class may be defined based on the above tt(map) allowing the
+specification of the final key and value types. Example:
         verb(
     template <typename DeepKey, typename DeepValue>
     class DeepMap: public std::map<std::shared_ptr<DeepKey>,
                             std::vector<std::set<DeepMap>>>
     {};
         )
-    This doubtlessly reduces the amount of work, as it is now possible to
-write
+    This increases the flexibility of the initially defined map as it is now
+possible to write
         verb(
     DeepMap<KeyType, std::string> mapObject;
         )
-
-The C++0x standard adds to this the possibility to become even lazier: it
-allows the definition of a tt(typedef) in which some of the template
-parameters are specified leaving other parameters to be specified at a later
-moment in time. E.g., the C++0x standard allows fixating the key type and
-    hi(typedef: fixating some template params)
-leaving the value type open by introducing the following syntax:
+    The C++0x standard adds to this the possibility to pre-specify either of
+these template type parameters. To preset the key's type to tt(std::string)
+leaving the data type open for later specification the following syntax is
+    hi(typedef: fixating template params) available: 
         verb(
-    template< typename DeepValue>
-    using MapKeyDeepValue = DeepMap<KeyType, DeepValue>;
+    template<typename DeepValue>
+    using MapString_DeepValue = DeepMap<std::string, DeepValue>;
 
-    MapKeyDeepValue<std::string> sameTypeAs(mapObject);
+    MapString_DeepValue<size_t> specialMap;
         )
-    a similar shorthand notation could be used to fixate the value type and
-leave the key type open for later specification.
+    The tt(specialMap) now uses tt(shared_ptr<string>) for its key and
+tt(vector<set<size_t>>) for its data type. A similar shorthand notation can
+be used to pre-specify the value type leaving the key type open for later
+specification.
 
-    In addition to the above emi(templated typedef)em(s) the ti(using) keyword
+    In addition to the above template syntax the ti(using) keyword
 can also be used to separate a typedef name from a complex type
-definition. Consider constructing a typedef for a pointer to a function
+definition. Consider constructing a typedef defining a pointer to a function
 expecting and returning a tt(double). The traditional way to define such a
 type is as follows:
         verb(
     typedef double (*PFD)(double);
         )
-    The C++0x standard defines the following alternative syntax:
+    In  addition the C++0x standard offers the following alternative syntax:
         verb(
     using PFD = double (*)(double);
         )
-
-Partially specified typedefs and the alternative syntax for type definition
-are not yet supported by the tt(g++) compiler.
