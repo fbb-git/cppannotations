@@ -1,4 +1,4 @@
-    #include <stddef.h>
+    #include <cstddef>
 
     template <size_t Rows, size_t Columns, typename DataType = double>
     class Matrix;

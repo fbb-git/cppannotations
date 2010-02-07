@@ -16,10 +16,8 @@
         public:
             Storage();
     };
-
     template <typename Type>
     size_t Storage<Type>::s_time = 0;
-
     template <typename Type>
     Storage<Type>::Storage()
     {}
@@ -32,9 +30,9 @@
     }
 //=
 
-//CLASS
-    class Friend;
+//    class Friend;         // SF.
 
+//CLASS
     template <typename Type>
     class Composer
     {
