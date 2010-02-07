@@ -6,7 +6,7 @@ ostream &TableType::insert(ostream &ostr) const
         return ostr;
 
     d_tableSupport.setParam(ostr, d_nRows, d_colWidth,
-                            d_widthType == EqualWidth ? d_maxWidth : 0);
+                            d_widthType == EQUALWIDTH ? d_maxWidth : 0);
 
     for (size_t row = 0; row < d_nRows; row++)
     {

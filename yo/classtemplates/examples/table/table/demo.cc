@@ -20,7 +20,7 @@ int main()
             s.end(),
             ts,
             3,
-            TableBase::Horizontal
+            TableBase::HORIZONTAL
         );
 
 }

@@ -14,13 +14,13 @@ class TableType
     public:
         enum WidthType
         {
-            EqualWidth,
-            ColumnWidth,
+            EQUALWIDTH,
+            COLUMNWIDTH,
         };
         enum FillDirection
         {
-            Horizontal,
-            Vertical
+            HORIZONTAL,
+            VERTICAL
         };
 
     private:

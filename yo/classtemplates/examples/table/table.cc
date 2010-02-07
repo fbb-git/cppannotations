@@ -27,7 +27,7 @@
 
         Table<istream_iterator<string> >
             table(iter, istream_iterator<string>(), nCols,
-                  argc == 2 ? TableType::Vertical : TableType::Horizontal);
+                  argc == 2 ? TableType::VERTICAL : TableType::HORIZONTAL);
 
         cout << table << endl;
         return 0;

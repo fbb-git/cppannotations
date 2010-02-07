@@ -37,43 +37,43 @@ class. It also offers two simple constructors:
 class. It defines the hierarchic sort criteria. It expects
         hi(sort criteria: hierarchic sorting)
     a pointer to a series of pointers to member functions of the class
-tt(Type) as well as a tt(size_t) indicating the size of the array. 
+tt(Type) as well as a tt(size_t) representing the size of the array. 
 
-COMMENT(>>>>>>>>>>>>> NEXT <<<<<<<<<<<<<)
-
- The array's first element indicates the class's most significant or first
-sort criterion, the array's last element indicates the class's least
-significant or last sort criterion. Since the ti(stable_sort) generic
-algorithm was designed explicitly to support hierarchic sorting, the member
-uses this generic algorithm to sort tt(SortVector)'s elements. With hierarchic
-sorting, the least significant criterion should be sorted
-first. tt(hierarchicSort)'s implementation therefore, is easy, assuming the
-existence of a support class tt(SortWith) whose objects are initialized by the
-addresses of the member functions passed to the tt(hierarchicSort()) member:
+ The array's first element indicates tt(Type)'s most significant sort
+criterion, the array's last element indicates the class's least significant
+sort criterion. Since the ti(stable_sort) generic algorithm was designed
+explicitly to support hierarchic sorting, the member uses this generic
+algorithm to sort tt(SortVector)'s elements. With hierarchic sorting, the
+least significant criterion should be sorted first. tt(hierarchicSort)'s
+implementation is therefore easy. It requires a support class tt(SortWith)
+whose objects are initialized by the addresses of the member functions passed
+to the tt(hierarchicSort()) member:
         verbinsert(SORT)(classtemplates/examples/template2template.cc)
 
-    The class tt(SortWith) is a simple emi(wrapper class) around a pointer to
-a predicate function. Since it's dependent on tt(SortVector)'s actual data
-type tt(SortWith) itself is also a class template:
+    The class tt(SortWith) is a simple wrapper class around a pointer to
+a predicate function. Since it depends on tt(SortVector)'s actual data
+type the class tt(SortWith) must also be a class template:
         verbinsert(SORTWITH)(classtemplates/examples/template2template.cc)
-It's constructor receives such a pointer and initializes the class's tt(d_ptr)
-data member:
+
+ tt(SortWith)'s constructor receives a pointer to a predicate function and
+initializes the class's tt(d_ptr) data member:
         verbinsert(SORTCONS)(classtemplates/examples/template2template.cc)
-    Its binary predicate member tt(operator()()) should return tt(true) if its
-first argument should be sorted before its second argument:
+
+    Its binary predicate member (tt(operator())) must return tt(true) if its
+first argument should eventually be placed ahead of its second argument:
         verbinsert(OPERATOR)(classtemplates/examples/template2template.cc)
 
-    Finally, an illustration is provided by the following tt(main()) function.
+    The following tt(main) function provides an illustration:
     itemization(
-    it() First, A tt(SortVector) object is created for tt(MultiData) objects,
-using the ti(copy()) generic algorithm to fill the tt(SortVector) object from
+    it() First, A tt(SortVector) object is created for tt(MultiData) objects.
+It uses the ti(copy) generic algorithm to fill the tt(SortVector) object from
 information appearing at the program's standard input stream. Having
 initialized the object its elements are displayed to the standard output
 stream:
         verbinsert(MAIN1)(classtemplates/examples/template2template.cc)
     it() An array of pointers to members is initialized with the addresses of
-two member functions. The text comparison is considered the most significant
-sort criterion:
+two member functions. The text comparison is the most significant sort
+criterion:
         verbinsert(ARRAY)(classtemplates/examples/template2template.cc)
     it() Next, the array's elements are sorted and displayed to the standard
 output stream:
@@ -82,8 +82,10 @@ output stream:
 member functions are swapped, and the previous step is repeated:
         verbinsert(SORT2)(classtemplates/examples/template2template.cc)
     )
-    After compilation the program the following command can be given:
-        centt(echo a 1 b 2 a 2 b 1 | a.out)
+    After compiling the program the following command can be given:
+        verb(
+    echo a 1 b 2 a 2 b 1 | a.out
+        )
     This results in the following output:
         verb(
     a 1 b 2 a 2 b 1

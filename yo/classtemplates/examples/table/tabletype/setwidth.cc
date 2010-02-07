@@ -3,10 +3,10 @@
 void TableType::setWidth(WidthType type)
 {
     d_widthFun =
-        ((d_widthType = type) == EqualWidth) ?
+        ((d_widthType = type) == EQUALWIDTH) ?
             &TableType::maxWidth
         :
             &TableType::columnWidth;
 
-    d_tableSupport.setParam(d_widthType == EqualWidth ? d_maxWidth : 0);
+    d_tableSupport.setParam(d_widthType == EQUALWIDTH ? d_maxWidth : 0);
 }
