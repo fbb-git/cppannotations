@@ -12,7 +12,7 @@ only partially has to copy tt(string)'s interface to realize this: only
 tt(string::insert)'s interfaces must be duplicated. These duplicating
 interfaces often contain one statement (calling the appropriate member
 function of the object's data member) and are for this reason often
-implemented in-line. These wrapper functions merely em(forward) their
+implemented in-line. These wrapper functions merely emi(forward) their
 parameters to the appropriate member function of the object's data member.
 
 Factory functions also frequently forward their parameters to the constructors
@@ -152,4 +152,27 @@ the use of tt(typename) in the function's parameter list):
     Now tt(forward) must explicitly state the tt(a)'s plain type, as in:
         verb(
     std::forward<Params>(params)
+        )
+
+    Using the tt(std::forward) function and the rvalue reference specification
+is not restricted to the context of parameter packs. Because of the special
+way rvalue references to template type parameters are treated (cf. section
+ref(CONTRACTIONS)) they can profitably be used to forward individual function
+    hi(forward: parameters)
+ parameters as well. Here is an example showing how an argument to a function
+can be forwarded from a template to a function that is itself passed to the
+template as a pointer to a (unspecified) function:
+        verb(
+    template<typename Fun, typename ArgType>
+    void caller(Fun fun, ArgType &&arg)
+    {
+        fun(std::forward<ArgType>(arg));
+    }
+        )
+    A function tt(display(ostream &out)) and tt(increment(int &x)) may now
+both be called through tt(caller). Example:
+        verb(
+    caller(display, cout);
+    int x = 0;
+    caller(increment, x);
         )

@@ -33,3 +33,42 @@ type):
     typedef Combi<vector<complex>>, string, pair<int, double>> MultiTypes;
     MultiTypes mt({{3.5, 4}, {-1, -1}}, "mt", {1950, 1.72});
         )
+
+    The same construction can also be used to define template data members
+that support variadic type lists such as tt(tuples) (cf. section ref
+TUPLES). Such a class could be designed along these lines:
+        verb(
+    template <typename ... Types>
+    struct Multi
+    {
+        std::tuple<Types ...> d_tup;        // define tuple for Types types
+
+        Multi(Types ... types)
+        :                                   // initialize d_tup from Multi's
+            d_tup(std::forward<Types>(types) ...)   //             arguments
+        {}
+    };
+        )
+
+    The ellipses that are used when forwarding parameter packs are
+essential. The compiler considers their omission an error. In the following
+tt(struct) definition it was the intent of the programmer to pass a parameter
+pack on to a nested object construction but ellipses were omitted while
+specifying the template parameters, resulting in a
+    hi(parameter packs not expanded)
+ emi(parameter packs not expanded with `...') error message:
+        verb(
+    template <int size, typename ... List>
+    struct Call
+    {
+        Call(List && ... list)
+        {
+            Call<size - 1, List &&> call(std::forward<List>(list) ...);
+        }
+    };
+        )
+    Instead of the above definition of the tt(call) object the programmer
+should have used:
+        verb(
+    Call<size - 1, List && ...> call(std::forward<List>(list) ...);
+        )
