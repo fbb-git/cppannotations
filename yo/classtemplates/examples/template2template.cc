@@ -44,7 +44,7 @@
                 std::vector<Type>(begin, end)
             {}
 //=
-            void hierarchicalSort
+            void hierarchicSort
             (
                 bool (Type::**arr)(Type const &rhv) const,
                 size_t n
@@ -53,7 +53,7 @@
 
 //SORT
     template <typename Type>
-    void SortVector<Type>::hierarchicalSort(
+    void SortVector<Type>::hierarchicSort(
                 bool (Type::**arr)(Type const &rhv) const,
                 size_t n)
     {
@@ -124,7 +124,7 @@
         };
 //=
 //SORT1
-        sv.hierarchicalSort(arr, 2);
+        sv.hierarchicSort(arr, 2);
 //=
         copy(sv.begin(), sv.end(),
             ostream_iterator<MultiData>(cout, " "));
@@ -132,7 +132,7 @@
         cout << "\n====\n";
 //SORT2
         swap(arr[0], arr[1]);
-        sv.hierarchicalSort(arr, 2);
+        sv.hierarchicSort(arr, 2);
 //=
         copy(sv.begin(), sv.end(),
             ostream_iterator<MultiData>(cout, " "));
