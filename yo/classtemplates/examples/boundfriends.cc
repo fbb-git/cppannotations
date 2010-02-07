@@ -4,14 +4,15 @@
     #include <iterator>
 
 /*
+//  SF:
+//    template <typename Key, typename Value>
+//    class Dictionary;
+//
+//    template <typename Key, typename Value>
+//    Dictionary<Key, Value>
+//               subset(Key const &key, Dictionary<Key, Value> const &dict);
+
 //FUNCTION
-    template <typename Key, typename Value>
-    class Dictionary;
-
-    template <typename Key, typename Value>
-    Dictionary<Key, Value>
-               subset(Key const &key, Dictionary<Key, Value> const &dict);
-
     template <typename Key, typename Value>
     class Dictionary
     {
@@ -93,11 +94,8 @@
     class Iterator
     {
         friend Dictionary<Key, Value>::Dictionary();
-
         std::map<Key, Value> &d_dict;
-
         Iterator(Dictionary<Key, Value> &dict);
-
         public:
 //=
         typename std::map<Key, Value>::iterator begin();
