@@ -18,7 +18,7 @@
         sort(sp.rbegin(), sp.rend());
         copy(sp.begin(), sp.end(), ostream_iterator<string>(cout, " "));
 
-        cout << endl;
+        cout << '\n';
     }
     /*
             when called as:
