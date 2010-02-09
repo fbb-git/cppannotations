@@ -1,8 +1,8 @@
-    Consider the following example in which a nested class, that is not
-depending on a template parameter, is defined within a template
-class. Furthermore, the class template member tt(nested()) returns an object
-of the nested class. Note that a (deprecated) in-class member implementation
-is used. The reason for this will become clear shortly.
+In the following example a nested class, not depending on a template
+parameter, is defined inside a class template. The class template member
+tt(nested) returns an object of this nested class. The example uses a
+(deprecated) in-class member implementation. The reason for this will become
+clear shortly.
         verb(
     template <typename T>
     class Outer
@@ -10,21 +10,18 @@ is used. The reason for this will become clear shortly.
         public:
             class Nested
             {};
-
             Nested nested() const
             {
                 return Nested();
             }
     };
         )
-    The above example compiles flawlessly: within the class tt(Outer) there is
-no ambiguity with respect to the meaning of tt(nested())'s return
-type.
+    The above example compiles flawlessly. Inside the class tt(Outer) there is
+no ambiguity with respect to the meaning of tt(nested)'s return type.
 
-    However, since it is advised to implement inline and template members
-below their class interface (see section ref(DEFINLINE)), we now remove the
-implementation from the interface itself, and put it below the
-interface. Suddenly the compiler refuses to compile our member tt(nested()):
+    However, following good practices inline and template members should be
+implemented below their class interfaces (see section ref(DEFINLINE)). So we
+remove the implementation from the interface and put it below the interface:
         verb(
     template <typename T>
     class Outer
@@ -42,25 +39,24 @@ interface. Suddenly the compiler refuses to compile our member tt(nested()):
         return Nested();
     }
         )
-    The above implementation of tt(nested()) produces an error message like
-
+ Suddenly the compiler refuses to compile the tt(nested) member, producing an
+error message like
     quote(
     em(error:)
     emi(expected constructor, destructor, or type conversion) em(before
 'Outer').)
+    Now that the implementation is moved out of the interface the return type
+(i.e., tt(Outer<T>::Nested)) refers to a type defined by tt(Outer<T>) rather
+than to a member of tt(Outer<T>).
 
-    In cases like these the return type (i.e., tt(Outer<T>::Nested))
-refers to a em(subtype) of tt(Outer<T>) rather than to a member of
-tt(Outer<T>).
-
-    As a general rule the following holds true: the keyword tt(typename) must
-be used whenever a type is referred to that is a em(subtype) of a type that is
-itself depending on a template type parameter.
+    Here, too, tt(typename) must be used. The general rule being: the keyword
+tt(typename) must be used whenever a type is referred to that is a em(subtype)
+of a type that itself depends on a template type parameter.
         hi(template: subtypes inside templates)
         hi(class template: subtype vs. static members)
     Writing tt(typename) in front of tt(Outer<T>::Nested) removes the
-compilation error and therefore the correct implementation of the function
-tt(nested()) becomes:
+compilation error. Thus, the correct implementation of the function
+tt(nested) becomes:
         verb(
     template <typename T>
     typename Outer<T>::Nested Outer<T>::nested() const

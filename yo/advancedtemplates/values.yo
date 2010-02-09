@@ -1,7 +1,7 @@
 In i(template programming) values are preferably represented by tt(enum)
 values. Enums are preferred over, e.g., tt(int const) values since enums never
-have any linkage: they are pure symbolic values with no memory
-representation.
+require any linkage. They are pure symbolic values with no memory
+representation whatsoever.
 
 Consider the situation where a programmer must use a cast, say a
 ti(reinterpret_cast). A problem with a tt(reinterpret_cast) is that it is the
@@ -13,22 +13,26 @@ write extreme but absolutely pointless tt(reinterpret_cast) statements, like
         )
 
     Wouldn't it be nice if the compiler would warn us against such oddities by
-generating an error message? If that's what we'd like the compiler to do,
-there must be some way to distinguish madness from weirdness. Let's assume we
-agree on the following distinction: reinterpret casts are never acceptable if
-the target type represents a larger type than the expression (source) type,
-since that would immediately result in abusing the amount of memory that's
-actually available to the target type. In this way we can't allow reinterpret
-cast from tt(int) to tt(double) since a tt(double) is a larger type than an
-tt(int).
+generating an error message? 
+
+    If that's what we'd like the compiler to do, there must be some way to
+distinguish madness from weirdness. Let's assume we agree on the following
+distinction: reinterpret casts are never acceptable if the target type
+represents a larger type than the expression (source) type, since that would
+immediately result in exceeding the amount of memory that's actually available
+to the target type. For this reason it's clearly silly to
+tt(reinterpret_cast<doble *>(&intVar)), but tt(reinterpret_cast<char
+*>(&intVar)) could be defensible.
 
     The intent is now to create a new kind of cast, let's call it
-ti(reinterpret_to_smaller_cast), which can only be performed if the target
-type is a em(smaller) type than the source type (note that this exactly the
-opposite readoning as used by Alexandrescu hi(Alexandrescu, A.)  (2001),
-section 2.1).
+ti(reinterpret_to_smaller_cast). It should only be allowed to perform a
+tt(reinterpret_to_smaller_cast) if the target type occupies less memory than
+the source type (note that this exactly the opposite reasoning as used by
+Alexandrescu hi(Alexandrescu, A.)  (2001), section 2.1).
 
-    The following template is constructed:
+COMMENT(>>>>>>>>>>>>> NEXT <<<<<<<<<<<<<)
+
+    We construct the following template:
         verb(
     template<typename Target, typename Source>
     Target &reinterpret_to_smaller_cast(Source &source)
@@ -37,6 +41,8 @@ section 2.1).
         return reinterpret_cast<Target &>(source);
     }
         )
+
+
     At the comment an enum-definition is inserted with a suggestive name,
 resulting in a compile-time error if the condition is not met. A division by
 zero is clearly not allowed, and noting that a tt(false) value represents a
