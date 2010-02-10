@@ -1,26 +1,30 @@
-Being able to make choices is an essential feature of programming
-languages. If we want to be able to `program the compiler' this feature must
-be present in templates as well. Note again that being able to make
-choices in templates has em(nothing) to do with run-time execution of
-programs. The essence of template meta programming is that we're em(not) using
-or relying on any executable code in our template meta program. Of course, the
-result will usually be executable code, but the particular code that is
-produced must be a function of decisions the compiler can make by itself.
+An essential characteristic of programming languages is that they allow the
+conditional execution of code. For this bf(C++) offers the tt(if) and
+tt(switch) statements. If we want to be able to `program the compiler'
+this feature must also be offered by templates. 
 
-Since template (member) functions are only instantiated when they are actually
-used, we can even define specializations of functions which are mutually
-exclusive. I.e., it is possible to define a specialization which may be
-compilable in one situation, but not in another, and a second specialization
-which is compilable in the other situation, but not in the first
-situation. This way code can be tailored to the demands of a concrete
-situation.
+Like templates storing values templates making choices do not require any code
+to be executed run-timed. The selection is purely made by the compiler,
+compile-time. The essence of template meta programming is that we are em(not)
+using or relying on any executable code.  The result will often be executable
+code, but the code that is produced by the meta program is a function of
+decisions the compiler made by itself.
 
-A feature like this cannot be implemented in code. For example, when designing
-a generic storage class the software engineer may have the intention to store
-i(value class) type objects as well as objects of i(polymorphic class) types in
-the storage class. From this point of departure the engineer may conclude that
-the storage class should contain pointers to objects, rather than objects
-themselves, and the following code may be conceived of:
+Template (member) functions are only instantiated when they are actually
+used. Consequenlty we can define specializations of functions that are
+mutually exclusive. Thus it is possible to define a specialization that can be
+compiled in one situation, but not in another and to define another
+specialization that can be compiled in the other situation, but not in the
+first situation. Using specializations code can be generated that is tailored
+to the demands of a particular situation.
+
+A feature like this cannot be implemented in run-time executable code. For
+example, when designing a generic storage class the software engineer may
+intend to store em(value class) type objects as well as objects of
+em(polymorphic class) types in the final storage class. Thus the software
+engineer may conclude that the storage class should contain pointers to
+objects, rather than the objects themselves. The initially designed code may
+look like this:
         verb(
     template <typename Type>
     void Storage::add(Type const &obj)
@@ -33,49 +37,53 @@ themselves, and the following code may be conceived of:
         );
     }
         )
-    The intent is to use the tt(clone()) member function of the tt(Type) class
+    The intent is to use the tt(clone) member function of the tt(Type) class
 if tt(Type) is a polymorphic class and the standard copy constructor if
 tt(Type) is a value class.
 
-    Unfortunately, this scheme will normally fail to compile as value classes
-do not define tt(clone()) member functions and polymorphic base classes should
-define
-        hi(polymorphic class: copy constructors)
-    their copy constructor in the class's private section. It doesn't matter
-to the compiler that tt(clone()) is never called for value classes and the
-copy constructor is never called for value type classes: it has some code to
+    Unfortunately, this scheme normally fails as value classes do not define
+tt(clone) member functions and polymorphic base classes should tt(delete)
+their copy constructors (cf. section ref(DEFAULTED)). It doesn't matter to the
+compiler that tt(clone) is never called for value classes and the copy
+constructor is unavailable in polymorphic classes. It merely has some code to
 compile, and can't do that because of missing members. It's as simple as that.
 
-    Template meta programming comes to the rescue. Knowing that template
-functions are only instantiated when used, we design em(specializations) of
-our tt(add()) function, and provide our class tt(Storage) with an additional
-(in addition to tt(Type) itself) template
-non-type parameter indicating whether we'll use tt(Storage) for polymorphic or
-non-polymorphic classes:
+    Template meta programming comes to the rescue. Knowing that class template
+member functions are only instantiated when used, we intend to design
+overloaded tt(add) member functions of which only one will be called (and thus
+instantiated). Our selection will be based on an additional (in addition to
+tt(Type) itself) template non-type parameter that indicates whether we'll use
+tt(Storage) for polymorphic or non-polymorphic classes. Our class tt(Storage)
+starts like this:
         verb(
     template <typename Type, bool isPolymorphic>
     class Storage
-        ...
         )
-    and we simply define overloaded versions of our tt(add()) member: one
-implementing the polymorphic class variant expecting tt(true) as its argument,
-and one implementing the value class variant accepting tt(false) as its
-argument.
+    Initially two em(overloaded) versions of our tt(add) member are defined:
+one used with tt(Storage) objects storing polymorphic objects (using tt(true)
+as its template non-type argument) and one storing value
+class objects (using tt(false) as its template non-type argument).
 
-    Again we run into a problem: overloading members cannot be based on
-argument values, only on types. Fortunately there is a way out: in section
-ref(INTTYPE) it was discussed how to convert integral values to types, and
-knowledge of how to do this now comes in handy. The strategy is to define two
-overloaded versions: one defining an tt(IntType<true>) parameter, implementing
-the polymorphic class and one defining an tt(IntType<false>) parameter,
-implementing the polymorphic class. In addition to these overloaded versions
-of the member function tt(add()) the member tt(add()) itself calls the
-appropriate overloaded member by providing an tt(IntType) argument,
-constructed from tt(Storage)'s template non-type parameter. Here are the
-implementations:
+    We run into a small problem: functions cannot be overloaded by their
+argument values but only by their argument types. But a solution
+exists. Realizing that types are defined by the combination of templates and
+their template arguments we may convert the values tt(true) and tt(false) into
+types using the knowledge obtained in section ref(INTTYPE) about how to
+convert integral values to types.
 
-    Declared in tt(Storage)'s private section:
+We'll provide one (private) tt(add) member with a tt(IntType<true>) parameter
+(implementing the polymorphic class and another (private) tt(add) member with
+a tt(IntType<false>) parameter (implementing the non-polymorphic class).
+
+In addition to these two private members a third (public) member tt(add) is
+defined calling the appropriate private tt(add) member by providing an
+tt(IntType) argument, constructed from tt(Storage)'s template non-type
+parameter. 
+
+Here are the implementations of the three tt(add) members:
         verb(
+    // declared in Storage's private section:
+
     template <typename Type, bool isPolymorphic>
     void Storage<Type, isPolymorphic>::add(Type const &obj, IntType<true>)
     {
@@ -87,70 +95,71 @@ implementations:
     {
         d_data.push_back(new Type(obj));
     }
-        )
-    Declared in tt(Storage)'s public section:
-        verb(
+
+    // declared in Storage's public section:
+
     template <typename Type, bool isPolymorphic>
     void Storage<Type, isPolymorphic>::add(Type const &obj)
     {
         add(obj, IntType<isPolymorphic>());
     }
         )
+    The appropriate tt(add) member is instantiated and called because a
+primitive value can be converted to a type. Each of the possible template
+non-type values is thus used to define an overloaded class template member
+function.
 
-    In the above example making a selection was made possible by converting a
-primitive value to a type and then (since  each concrete primitive value may be
-used to construct a different type) using these types to define overloaded
-versions of template member functions one of which is then called from a
-(public) member using tt(IntType) to construct the appropriate selector type.
+    Since class template members are only instantiated when used only one of
+the overloaded private tt(add) members is instantiated. Since the other one is
+never called (and thus never instantiated) compilation errors are prevented.
 
-    Since template members are only instantiated when used, only one of the
-overloaded private tt(add()) members is instantiated. Since the other one is
-never called compilation errors are prevented.
+    Some software engineers have reservations when thinking about the
+tt(Storage) class that uses pointers to store copies of value class
+objects. Their argument is that value class objects can very well be stored by
+value, rather than by pointer. They'd rather store value class objects by
+value and polymorphic class objects by pointer. 
 
-    Some software engineers may have second thoughts when thinking about the
-tt(Storage) class using pointers to store copies of value classes. Their
-argument could be that value class objects can  be stored by value,
-rather than by pointer. In those cases we'd like to define the actual type
-used for storing the values as either value types or pointer types. Situations
-like these frequently occur in template meta programming and the following
-tt(struct IfElse)
+    Such distinctions  frequently occur in template meta programming and
+the following tt(struct IfElse)
         hi(template: IfElse)
         hi(template: select type given bool)
     may be used to obtain one of two types, depending on a tt(bool) selector
-value. First define the em(general form) of the template:
+value.
+
+    First define the em(generic form) of the template:
         verb(
     template<bool selector, typename FirstType, typename SecondType>
     struct IfElse
     {
-        typedef FirstType TypeToUse;
+        typedef FirstType type;
     };
         )
-    Then define a specialization for the case where the selector value is
-tt(false). Note that the specialized tt(struct) has three arguments, matching
-the template parameters of the above general form. The tt(template<...>)
-specification used with specializations merely define what remaining template
-parameters are present in the specialization:
+    Then define a partial specialization. The specialization represents
+a specific selector value (e.g., tt(false)) and leaves the remaining types
+open to further specification:
         verb(
     template<typename FirstType, typename SecondType>
     struct IfElse<false, FirstType, SecondType>
     {
-        typedef SecondType TypeToUse;
+        typedef SecondType type;
     };
         )
-    The tt(IfElse) struct uses in its second definition a partial
-specialization to select the tt(FalseType) if the tt(selector) is
-tt(false). In all other cases (i.e., tt(selector == true)) the less specific
-generic case is instantiated by the compiler, defining tt(FirstType) as the
-tt(TypeToUse).
+    The former (generic) definition associates tt(FirstType) with the
+tt(IfElse::type) type definition, the latter definition (partially specialized
+for the logical value tt(false)) associates tt(SecondType) partial
+specialization with the tt(IfElse::type) type definition.
 
-    The tt(IfElse) struct allows us to emi(templatize structural types): our
-tt(Storage) class may use em(pointers) to store copies of polymorphic class
-type objects, but em(values) to store value class type objects.
+The tt(IfElse) template allows us to define class templates whose data
+organization is conditional to the template's parameters.
+    hi(class template: conditional data organization)
+ Using tt(IfElse) the tt(Storage) class may define
+em(pointers) to store copies of polymorphic class type objects and em(values)
+to store value class type objects:
         verb(
     template <typename Type, bool isPolymorphic>
     class Storage
     {
-        typedef typename IfElse<isPolymorphic, Type *, Type>::TypeToUse
+        typedef typename IfElse<isPolymorphic, Type *, Type>::type
                 DataType;
 
         std::vector<DataType> d_data;
@@ -180,25 +189,26 @@ type objects, but em(values) to store value class type objects.
         add(obj, IntType<isPolymorphic>());
     }
         )
-    The above example uses tt(IfElse)'s tt(TypeToUse), which is a type defined
-by tt(IfElse) as either tt(FirstType) or tt(SecondType) to define the actual
-data type to be used for tt(Storage)'s tt(std::vector) data type. To prevent
-long data type definitions tt(Storage) defines its own type tt(DataType).
+    The above example uses tt(IfElse)'s tt(type), defined by tt(IfElse) as
+either tt(FirstType) or tt(SecondType). tt(IfElse)'s tt(type) defines the
+actual data type to use for tt(Storage)'s tt(vector) data type.
 
-    The remarkable result in this example is that the em(structure) of the
-tt(Storage) class's data is now depending on its template parameters. Since
-the tt(isPolymorphic == true) situation uses different data types than
-t(isPolymorphic == false) situation, the overloaded private tt(add()) members
+    The remarkable result in this example is that the em(data organization) of
+the tt(Storage) class now depends on its template arguments. Since the
+tt(isPolymorphic == true) situation uses different data types than the
+t(isPolymorphic == false) situation, the overloaded private tt(add) members
 can utilize this difference immediately. E.g., tt(add(Type const &obj,
-IntType<false>)) now uses direct copy construction to stpre a copy of tt(obj)
+IntType<false>)) uses direct copy construction to store a copy of tt(obj)
 in tt(d_vector).
 
-    It is also possible to select a type from more than two alternatives. In
-that case, tt(IfElse) structs can be nested. Remember that these structs never
-have any effect on the run-time program, which simply is confronted with the
-appropriate type, conditional to the type that's associated with the selector
-value. The following example, defining tt(MapType) as a map having plain types
-or pointers for either its key or its value type, illustrates this approach:
+    It is also possible to make a selection from multiple types as tt(IfElse)
+structs can be nested. Realize that using tt(IfElse) never has any effect on
+the size or execution time of the final executable program. The final program
+simply contains the appropriate type, conditional to the type that's
+eventually selected. 
+
+    The following example, defining tt(MapType) as a map having plain types or
+pointers for either its key or value types, illustrates this approach:
         verb(
     template <typename Key, typename Value, int selector>
     class Storage
@@ -217,9 +227,9 @@ or pointers for either its key or its value type, illustrates this approach:
                                                 // otherwise:
                             map<Key *, Value *> // use map<Key *, Value *>
 
-                        >::TypeToUse
-                    >::TypeToUse
-                >::TypeToUse
+                        >::type
+                    >::type
+                >::type
                 MapType;
 
         MapType d_map;
@@ -237,13 +247,17 @@ or pointers for either its key or its value type, illustrates this approach:
         add(key, value, IntType<selector>());
     }
         )
-    The principle used in the above examples is: if different data types are
-to be used in class templates, depending on template non-type parameters, an
-tt(IfElse) struct can be used to define the appropriate type, and overloaded
-member functions may utilize knowledge about the appropriate types to optimize
-their implementations.
+    The principle used in the above examples is: if class templates may use
+data types that depend on template non-type parameters, an tt(IfElse) struct
+can be used to select the appropriate data types. Knowledge about the various
+data types may also be used to define overloaded member functions. The
+implementations of these overloaded members may then be optimized to the
+various data types. In programs only one of these alternate functions (the one
+that is optimized to the actually used data types) will then be instantiated.
 
-    Note that the overloaded functions have identical parameter lists as the
-matching public wrapper function, but add to this parameterlist a specific
-tt(IntType) type, allowing the compiler to select the appropriate overloaded
-version, based on the template's non-type selector parameter.
+COMMENT(>>>>>>>>>>>>> NEXT <<<<<<<<<<<<<)
+
+    Note that the overloaded tt(add) functions have identical parameter lists
+as the matching public wrapper function, but add to this parameterlist a
+specific tt(IntType) type, allowing the compiler to select the appropriate
+overloaded version, based on the template's non-type selector parameter.

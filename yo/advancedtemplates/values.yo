@@ -30,9 +30,7 @@ tt(reinterpret_to_smaller_cast) if the target type occupies less memory than
 the source type (note that this exactly the opposite reasoning as used by
 Alexandrescu hi(Alexandrescu, A.)  (2001), section 2.1).
 
-COMMENT(>>>>>>>>>>>>> NEXT <<<<<<<<<<<<<)
-
-    We construct the following template:
+    To start, we construct the following template:
         verb(
     template<typename Target, typename Source>
     Target &reinterpret_to_smaller_cast(Source &source)
@@ -42,18 +40,17 @@ COMMENT(>>>>>>>>>>>>> NEXT <<<<<<<<<<<<<)
     }
         )
 
-
-    At the comment an enum-definition is inserted with a suggestive name,
-resulting in a compile-time error if the condition is not met. A division by
+    At the comment an enum-definition is inserted defining a symbol having a
+suggestive name.  A compile-time error results if the required condition is
+not met and the error message displays the name of the symbol. A division by
 zero is clearly not allowed, and noting that a tt(false) value represents a
 zero value, the condition could be:
         verb(
     1 / (sizeof(Target) <= sizeof(Source));
         )
     The interesting part is that this condition doesn't result in any code at
-all: it's a mere value that's computed by the compiler while compiling the
-expression. To transform this into a useful error message the expression is
-assigned to a desciptive tt(enum) value, resulting in, e.g.,
+all. The enum's value is a plain value that's computed by the compiler while
+evaluating the expression:
         verb(
     template<typename Target, typename Source>
     Target &reinterpret_to_smaller_cast(Source &source)
@@ -67,23 +64,26 @@ assigned to a desciptive tt(enum) value, resulting in, e.g.,
     }
         )
     When tt(reinterpret_to_smaller_cast) is used to cast from tt(int) to
-tt(ostream) an error is produced by the compiler, like:
+tt(double) an error is produced by the compiler, like this:
         verb(
     error: enumerator value for 'the_Target_size_exceeds_the_Source_size'
-        not integer constant
+        is not an integer constant
         )
     whereas no error is reported if, e.g.,
-tt(reinterpret_to_smaller_cast<int>(cout)) is requested.
+tt(reinterpret_to_smaller_cast<int>(doubleVar)) is requested with
+tt(doubleVar) defined as a tt(double).
 
-    In the above example a tt(enum) was used to compute compile time a value
+    In the above example a tt(enum) was used to compute (compile-time) a value
 that is illegal if an assumption is not met. The creative part is finding an
 appropriate expression.
 
     Enum values are well suited for these situations as they do not consume
 any memory and their evaluation does not produce any executable code. They can
-be used to accumulate values too: the resulting enum value will then contain a
-final value, computed by the compiler rather than by code as the next sections
-illustrate. In general, programs shouldn't do run-time what they can do
+be used to accumulate values too: the resulting enum value then contains a
+final value, computed by the compiler rather than by executable code as the
+next sections illustrate. In general, programs shouldn't do run-time what they
+can do
         hi(run-time vs. compile-time)
-    compile-time and computing complex calculations resulting in constant
+    compile-time and performing complex calculations resulting in constant
 values is a clear example of this principle.
+
