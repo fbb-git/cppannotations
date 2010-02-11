@@ -1,51 +1,47 @@
 Consider the following situation: a software engineer is asked to design a
-storage class tt(Storage) which is able to store data, which may either make
-and store copies of the data or store the data as received, and which may
-either use a vector or a linked list as its underlying storage medium. How
-should the engineer tackle this request?
+storage class tt(Storage). Data stored in tt(Storage) objects may either make
+and store copies of the data or store the data as received. tt(Storage)
+objects may also either use a vector or a linked list as its underlying
+storage medium. How should the engineer tackle this request? Should four
+different tt(Storage) classes be designed?
 
-The engineer's first reaction could be to develop tt(Storage) as a class
-having two data members, one being a list, another being a vector, and to
-provide the constructor with maybe an enum value indicating whether the data
-itself or new copies should be stored using that enum value to set a series
-of pointers to member functions to activate the appropriate subset of its
-private member functions, providing public wrapper functions to hide the use
-of the pointers to members.
+The engineer's first reaction could be to develop an all-in tt(Storage) class.
+It could have having two data members, a list and a vector, and to provide the
+constructor with maybe an enum value indicating whether the data itself or new
+copies should be stored. The enum value can be used to initialize a series of
+pointers to member functions performing the requested tasks (e.g., using a
+vector to store the data or a list to store copies).
 
-Complex, but doable, until the engineer is confronted with a modification of
-the original question: now the request states that it should also be possible
-to use -in the case of new copies- a custom-made allocation scheme, rather
-than the standard tt(new) operator, and it should also be possible to use yet
-another type of container, in addition to the vector and list that were
-already part of the design. E.g., a tt(queue) could be preferred or maybe even
-a tt(stack).
+Complex, but doable. Then the engineer is asked to modify the class: in the
+case of new copies a custom-made allocation scheme should be used rather than
+the standard tt(new) operator.  It should also be possible to use yet another
+type of container, in addition to the vector and list that were already part
+of the design. E.g., a tt(deque) could be preferred or maybe even a tt(stack).
 
-It's clear that the approach suggesting to have all functionality provided by
-the class doesn't scale. The class tt(Storage) would soon become a monolithic
-giant which
-    hi(class: monolithic)
-is hard to understand, maintain, test, and deploy.
+It's clear that the approach aiming at implementing all functionality and all
+possible combinations in one class doesn't scale. The class tt(Storage) would
+soon become a monolithic giant which is hard to understand, maintain, test,
+and deploy.
 
 One of the reasons why the big, all-encompassing class is hard to deploy and
 understand is that a well-designed class should
-        hi(class: enforce constraints)
-    emi(enforce constraints): the design of the class should, by itself,
+        hi(class: enforcing constraints)
+    em(enforce constraints): the design of the class should, by itself,
 disallow certain operations, violations of which should be detected by the
-compiler, rather than by a program, crashing or terminating with a fatal
-error.
+compiler, rather than by a program that might terminate with a fatal error.
 
 Consider the above request. If the class offers both an interface to access
 the vector data storage em(and) an interface to access the list data storage,
 then it's likely that the class will offer an overloaded ti(operator[]) member
 to access elements in the vector. This member, however, will be syntactically
-present, but semantically hi(syntactic vs. semantic use) invalid when the
-em(list) data storage is selected, which doesn't support tt(operator[]).
+present, but semantically invalid when the em(list) data storage is selected,
+which doesn't support tt(operator[]).
 
 Sooner or later, em(users) of the monolithic all-encompassing class
 tt(Storage) will fall into the trap of using tt(operator[]) even though
 they've selected the list as the underlying data storage. The compiler won't
 be able to detect the error, which will only appear once the program is
-running, leaving em(users) rather than the em(engineer) flabbergasted.
+running, confusing em(users).
 
 The question remains: how should the engineer proceed, when confronted with
 the above questions? It's time to introduce hi(class: policy) em(policies).

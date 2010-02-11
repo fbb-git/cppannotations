@@ -1,5 +1,8 @@
 #include <iostream>
 #include <tuple>
+#include <vector>
+#include <algorithm>
+
 using namespace std;
 
 // The Aux struct receives 
@@ -12,7 +15,7 @@ using namespace std;
 //  5. Any other series of arguments (params, typename ... Params)
 
 template <  int size, 
-            typename Tuple, 
+            typename Tuple,
             typename Fun,
             typename ArgType,
             typename ... Params>
@@ -20,11 +23,14 @@ struct Aux
 {
     typedef typename tuple_element<size - 1, Tuple>::type ElType;
 
-    inline Aux(Tuple &&tuple, Fun fun, ArgType &&arg, Params && ... params)
+//    inline Aux()
+//    {}
+
+    inline Aux(Tuple &tuple, Fun fun, ArgType &&arg, Params && ... params)
     {
-        Aux<size - 1, Tuple &&, Fun, ArgType &&, ElType &&, Params && ...>
+        Aux<size - 1, Tuple, Fun, ArgType, ElType, Params ...>
         (
-            forward<Tuple>(tuple), 
+            tuple, 
             fun,
             forward<ArgType>(arg),
             forward<ElType>(get<size - 1>(tuple)), 
@@ -43,7 +49,7 @@ template <
             typename ... Params>
 struct Aux<0, Tuple, Fun, ArgType, Params ...>
 {
-    inline Aux(Tuple &&tuple, Fun fun, ArgType &&arg, Params && ... params)
+    inline Aux(Tuple &tuple, Fun fun, ArgType &&arg, Params && ... params)
     {
         fun(forward<ArgType>(arg), forward<Params>(params) ...);
     }
@@ -61,7 +67,7 @@ class Wrapper
 
     Fun d_fun;
     std::tuple<Params ...> d_tuple;
-
+    
     public:
         Wrapper(Fun fun, Params && ... params)
         :
@@ -81,20 +87,51 @@ class Wrapper
         }
 };
 
-void fun(int &x, ostream &out)
+class Vector
 {
-    out << "Value is: " << x << '\n';
-    ++x;
-}
+    vector<int> d_v;
+
+    template <typename Fun, typename ... Param>
+    static Wrapper<Fun, Param ...> genWrapper(Fun fun, Param && ... param)
+    {
+        return Wrapper<Fun, Param ...>(fun, std::forward<Param>(param) ... );
+    }
+
+    public:
+
+    Vector()
+    :
+        d_v({1, 2, 3, 4})
+    {}
+
+    void run(ostream &out)
+    {
+        int count = 0;
+        for_each(d_v.begin(), d_v.end(), 
+            genWrapper(callfun, count, out));
+
+//            Wrapper<
+//        void (*)(int, int &, ostream &), int &, ostream &>
+//                        (callfun, count, out));
+        cout << "Number of calls: " << count << '\n';
+    }
+
+    private: 
+
+
+    static void callfun(int v, int &count, ostream &o)
+    {
+        o << "Value is: " << v << '\n';
+        ++count;
+    }
+
+};
 
 int main()
 {
-    int x = 5;
-    Wrapper<void (*)(int &, ostream &), ostream &> wrapper(fun, cout);
-
-    wrapper(x);
-
-    std::cout << "Now: " << x << '\n';
+    Vector v;
+    v.run(cout);
 }
+
 
 
