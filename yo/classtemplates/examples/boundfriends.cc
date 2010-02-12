@@ -16,8 +16,10 @@
     template <typename Key, typename Value>
     class Dictionary
     {
-        friend Dictionary<Key, Value> subset<Key, Value>
-                   (Key const &key, Dictionary<Key, Value> const &dict);
+        friend Dictionary<Key, Value> 
+            subset<Key, Value>(Key const &key, 
+                               Dictionary<Key, Value> const &dict);
+
         std::map<Key, Value> d_dict;
         public:
             Dictionary();
