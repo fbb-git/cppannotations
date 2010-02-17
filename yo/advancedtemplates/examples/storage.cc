@@ -32,7 +32,7 @@ int main(int argc, char **argv)
             copy(istream_iterator<string>(cin), istream_iterator<string>(),
                     back_inserter(storage));
 
-            cout << "Element index 1 is " << storage[1] << endl;
+            cout << "Element index 1 is " << storage[1] << '\n';
             storage[1] = "hello";
 
             copy(storage.begin(), storage.end(),

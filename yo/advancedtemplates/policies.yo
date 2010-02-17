@@ -1,12 +1,13 @@
 A emi(policy) defines (in some contexts: prescribes) a particular kind of
-behavior. In our context a hi(class: policy) em(policy class) defines a
-certain part of the class interface, and it may define i(inner types),
-i(member functions) and i(data members).
+behavior. In bf(C++) a 
+    hi(class: policy) 
+ em(policy class) defines a certain part of the class interface. It may also
+define i(inner types), i(member functions), and i(data members).
 
-In the previous section a problem of how to create a class which might use a
-series of allocation schemes was introduced. These allocation schemes all
+In the previous section the problem of creating a class that might use any of
+a series of allocation schemes was introduced. These allocation schemes all
 depend on the actual data type to be used, and so the `template' reflex should
-kick in: the allocation schemes should probably be defined as template
+kick in. Allocation schemes should probably be defined as template
 classes, applying the appropriate allocation procedures to the data type at
 hand. E.g. (using in-class implementations to save some space), the following
 three allocation classes could be defined:
@@ -109,22 +110,24 @@ to this, additional allocation schemes could be implemented by the user as
 well.
 
     In order to be able to apply the proper allocation scheme to the class
-tt(Storage) it should also be designed as a class template. The class will
+tt(Storage) it should be designed as a class template itself. The class will
 also need a template type parameter allowing users to specify the data type.
 
-    It would be possible to specify the data type with
-the specification of the allocation scheme, resulting in code like:
+    The data type to be used by a particular allocation scheme can of course
+be specified when the allocation scheme itself is specified. This would result
+in code like this:
         verb(
     template <typename Data, typename Scheme>
     class Storage ...
         )
-    and then use tt(Storage), e.g., as follows:
+    tt(Storage) would then be used as follows:
         verb(
     Storage<string, NewAlloc<string> > storage;
         )
-    However, this implementation is unnecessarily complex, as it requires the
-user to specify the data type twice. Instead, the allocation scheme should be
-specified using a third type of template parameter, not requiring the user to
-specify the data type with the allocation scheme to use. This third type of
+    This implementation is needlessly complex, as it requires the user to
+specify the data type twice. Instead, the allocation scheme should be
+specified using a new type of template parameter, not requiring the user to
+specify the data type to be used by the allocation scheme. This new kind of
 template parameter (in addition to the well-known em(template type parameter)
-and em(template non-type parameter)) is the emi(template template parameter).
+and em(template non-type parameter)) is called the
+ emi(template template parameter).

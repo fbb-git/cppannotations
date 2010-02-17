@@ -1,18 +1,19 @@
-In the previous section policy classes are used as base classes of template
-classes resulting in the interesting observation that a policy class
-actually serves as a em(base class) of a derived class
+In the previous section policy classes were used as base classes of template
+classes. This resulted in the interesting observation that a policy class
+may serve as a em(base class) of a derived class
         hi(class template: as base class)
-    Since a policy class may act as a base class, it is thinkable that a
-pointer or reference to a policy class is used to point or refer to the
-derived class using the policy.
+    As a policy class may act as a base class, a pointer or reference to such
+a policy class can be used to point or refer to the derived class using the
+policy.
 
     This situation, although legal, should be avoided for various reasons:
+        hi(pointer: to policy base class)
     itemization(
     it() Destruction of a derived class object using the base class's
 destructor requires the implementation of a virtual destructor;
     it() A virtual destructor introduces overhead to a class that normally has
 no data members, but merely defines behavior: suddenly a ti(vtable) is
-required as well as a data member: a pointer to the vtable;
+required as well as a data member pointing to the vtable;
     it() Virtual member functions somewhat reduce the efficiency of code;
 thus virtual member functions using emi(dynamic polymorphism), somewhat
 counteract the emi(static polymorphism) offered by templates;
@@ -20,13 +21,11 @@ counteract the emi(static polymorphism) offered by templates;
 once an instantiation of a class's member is required, the class's vtable and
 em(all) its virtual members must be implemented too.
     )
-
-    To avoid these drawbacks, it is good practice to prevent using references
-or pointers to policy classes to refer or point to derived class objects.
-        hi(policy class: avoid pointers to)
-    This is accomplished by providing policy classes with
+    To avoid these drawbacks, it is good practice to prevent the use of
+references or pointers to policy classes to refer or point to derived class
+objects. This is accomplished by providing policy classes with
         hi(destructor: for policy classes)
-    em(nonvirtual protected destructors). Since the destructor is non-virtual
-there is no implementation penalty in reduced efficiency or memory overhead,
-and since it is protected users cannot refer to classes derived from the
-policy class using a pointer or reference to the policy class.
+    em(nonvirtual protected destructors). With a non-virtual destructor there
+is no performance penalty and since its destructor is protected users cannot
+refer to classes derived from the policy class using a pointer or reference to
+the policy class.
