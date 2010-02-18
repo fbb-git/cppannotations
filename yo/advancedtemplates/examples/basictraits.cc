@@ -32,5 +32,5 @@ int main()
      BasicTraits<int const *>::RvalueRefType rvalue = int(10);
      BasicTraits<int const &&>::PtrType      ptr = new int(14);
      cout << value << ' ' << rvalue << ' ' << *ptr << '\n';
-// //=
+//=
 }
