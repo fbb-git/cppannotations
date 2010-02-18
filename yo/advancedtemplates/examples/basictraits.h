@@ -11,9 +11,10 @@
             typedef T Type;
             enum
             {
-                isValue = true,
                 isPointer = false,
-                isConst = false
+                isConst = false,
+                isRef = false,
+                isRRef = false
             };
         };
 //=
@@ -23,9 +24,10 @@
             typedef T Type;
             enum
             {
-                isValue = false,
                 isPointer = true,
-                isConst = true
+                isConst = true,
+                isRef = false,
+                isRRef = false
             };
         };
 //POINTER
@@ -35,9 +37,10 @@
             typedef T Type;
             enum
             {
-                isValue = false,
                 isPointer = true,
-                isConst = false
+                isConst = false,
+                isRef = false,
+                isRRef = false
             };
         };
 //=
@@ -48,9 +51,10 @@
             typedef T Type;
             enum
             {
-                isValue = false,
                 isPointer = true,
-                isConst = true
+                isConst = true,
+                isRef = false,
+                isRRef = false
             };
         };
 //=
@@ -60,9 +64,10 @@
             typedef T Type;
             enum
             {
-                isValue = false,
                 isPointer = false,
-                isConst = false
+                isConst = false,
+                isRef = true,
+                isRRef = false
             };
         };
 
@@ -72,9 +77,34 @@
             typedef T Type;
             enum
             {
-                isValue = false,
                 isPointer = false,
-                isConst = true
+                isConst = true,
+                isRef = true,
+                isRRef = false
+            };
+        };
+        template <typename T>
+        struct Basic<T &&>
+        {
+            typedef T Type;
+            enum
+            {
+                isPointer = false,
+                isConst = false,
+                isRef = false,
+                isRRef = true
+            };
+        };
+        template <typename T>
+        struct Basic<T const &&>
+        {
+            typedef T Type;
+            enum
+            {
+                isPointer = false,
+                isConst = true,
+                isRef = false,
+                isRRef = true
             };
         };
 
@@ -82,14 +112,17 @@
             typedef typename Basic<TypeParam>::Type ValueType;
             typedef ValueType *PtrType;
             typedef ValueType &RefType;
+            typedef ValueType &&RvalueRefType;
 
             enum
             {
-                isValueType = Basic<TypeParam>::isValue,
                 isPointerType = Basic<TypeParam>::isPointer,
-                isReferenceType = not Basic<TypeParam>::isPointer and
-                                  not Basic<TypeParam>::isValue,
-                isConst = Basic<TypeParam>::isConst
+                isReferenceType = Basic<TypeParam>::isRef,
+                isRvalueReferenceType = Basic<TypeParam>::isRRef,
+                isConst = Basic<TypeParam>::isConst,
+
+                isPlainType = not (isPointerType or isReferenceType or
+                                   isRvalueReferenceType or isConst)
             };
 
     };
