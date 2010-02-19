@@ -1,54 +1,23 @@
 This section serves two purposes. On the one hand it illustrates capabilities
 of the various meta-programming capabilities of templates, which can be used
-as a source for inspiration when developing your own templates. On the other
+as a source of inspiration when developing your own templates. On the other
 hand, it culminates in a concrete example, showing some of the power template
 meta-programming has.
 
 This section itself was inspired by Andrei Alexandrescu's (2001) book
         hi(Alexandrescu, A.)
-    bf(Modern C++ design), and much of this section's structure borrows from
-Andrei's coverage of hi(typelist) em(typelists).
+    bf(Modern C++ design). It diverts from Alexandrescu's book in its use of
+variadic templates which were not yet available when he wrote his book. Even
+so, the algorithms used by Alexandrescu are still useful when using variadic
+templates.
 
-    A typelist is a very simple tt(struct): like a tt(std::pair) it consists
-of two elements, although in this case the typelist does not contain data
-members, but type definitions. It is defined as follows:
+    The C++0x standard offers the link(tuple)(TUPLES) to store and retrieve
+values of multiple types. Here the focus is merely on processing types.
+A simple struct tt(TypeList) will be our working horse for the upcoming
+subsections. Here is its definition:
         verbinsert(TYPELIST)(advancedtemplates/examples/typelist.h)
-
-    The typelist allows us to store any number of types using a recursive
-definition. E.g., the three types tt(char, short, int) may be stored as
-follows:
+    A typelist allows us to store any number of types. Here is an example
+storing the three types tt(char, short, int) in a tt(TypeList):
         verb(
-    TypeList<char, Typelist<short, int> >
+    TypeList<char, short, int>
         )
-    Although this is a possible representation, usually ti(NullType)
-(cf. section ref(NULLTYPE)) is used as the final type, acting comparably to a
-0-pointer. Using tt(NullType) the above three types are represented as
-follows:
-        verb(
-    TypeList<char,
-        TypeList<short,
-            TypeList<int, NullType> > >
-        )
-    This way to represent lists of types may be accepted by the compiler, but
-usually not as easily by programmers, who frequently have a hard time putting
-in the right number of parentheses. Alexandrescu suggest to ease the burden by
-defining a series of emi(macros), even though macros are generally deprecated
-in bf(C++). The ti(TYPELIST) macros suggested by Alexandrescu allow us to
-        hi(macro: TYPELIST)
-define typelists for varying numbers of types, and they are easily expanded if
-accommodating larger numbers of types is necessary. Here are the definitions
-of the first five tt(TYPELIST) macros:
-        verbinsert(MACROS)(advancedtemplates/examples/typelist.h)
-
-    Note the recursive nature of these macro definitions: recursion is how
-template meta programs perform iteration and in the upcoming sections
-implementations heavily depend on recursion. With all solutions to the
-problems covered by the coming sections a verbal discussion is provided
-explaining the philosophies that underlie the recursive implementations.
-
-    Of course, even here macros are ugly. The
-        i(macro)
-    processor will be confused if a type is somewhat complex, like
-tt(Wrap<HEAD, idx>). Fortunately situations like these can be prevented using
-a simple tt(typedef). E.g., tt(typenef Wrap<HEAD, idx> HEADWRAP) and then
-using tt(HEADWRAP) instead of the full type definition.
