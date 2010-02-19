@@ -109,6 +109,8 @@
         };
 
         public:
+            BasicTraits(BasicTraits const &other) = delete;
+
             typedef typename Basic<TypeParam>::Type ValueType;
             typedef ValueType *PtrType;
             typedef ValueType &RefType;

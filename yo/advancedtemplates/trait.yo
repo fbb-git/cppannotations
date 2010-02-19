@@ -86,7 +86,9 @@ the outer trait class is:
         // Define specializations of the template `Base' here
 
         public:
-           typedef typename Basic<TypeParam>::Type ValueType;
+            BasicTraits(BasicTraits const &other) = delete;
+
+            typedef typename Basic<TypeParam>::Type ValueType;
             typedef ValueType *PtrType;
             typedef ValueType &RefType;
             typedef ValueType &&RvalueRefType;
@@ -102,8 +104,16 @@ the outer trait class is:
             };
     };
         )
+    The trait class's public interface explicitly deletes its copy
+constructor. As it therefore defines no constructor at all and as it has no
+static members it does not offer any run-time executable code. 
+All the trait class's facilities must therefore be used compile time. 
+
     A trait class template can be used to obtain the proper type, irrespective
 of the template type argument provided. It can also be used to select
 a proper specialization that depends on, e.g., the tt(const)-ness of a
 template type. Example:
         verbinsert(MAIN)(advancedtemplates/examples/basictraits.cc)
+
+
+

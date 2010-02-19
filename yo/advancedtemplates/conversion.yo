@@ -5,109 +5,101 @@ argument in cases where tt(U)s are requested.
 
 This reasoning is behind the following class which can be used to determine
 whether a type tt(T) can be used where a type tt(U) is expected. The
-interesting part, however, is that no code is actually generated or executed:
-all decisions can be made by the compiler.
+interesting part is that no code is actually generated or executed.  All
+decisions are made by the compiler.
 
-In the second part of this section it will be shown how the code developed in
+In the second part of this section we'll show shown how the code developed in
 the first part can be used to detect whether a class tt(B) is a base class of
-another clas tt(D). The code developed here closely follows the example
-provided by Alexandrescu hi(Alexandrescu, H.) (2001, p. 35).
+another clas tt(D) (the tt(is_base_of) template (cf. section ref(TRAITSCPPX))
+also provides an answer to this question). The code developed here closely
+follows the example provided by Alexandrescu hi(Alexandrescu, H.) (2001,
+p. 35).
 
-First, a function is conceived of that will accept a type tt(U) to which
-an alternative type tt(T) will be compared. This function returns a value of
-the as yet unsepcified type tt(Convertible):
+First, a function tt(test) is designed accepting a type tt(U). 
+The function tt(test) returns a value
+of the as yet unknown type tt(Convertible):
         verb(
     Convertible test(U const &);
         )
 
-The function tt(test()) is not implemented; it is merely declared. The idea is
-that if a type tt(T) can be used instead of a type tt(U) it can be passed as
-argument to the above tt(test()) function.
+The function tt(test) is never implemented. It is only declared.  If a type
+tt(T) can be used instead of a type tt(U) then tt(T) can also be passed as
+argument to the above tt(test) function. 
 
-If tt(T) cannot be used where a tt(U) is expected, then the above function
-will not be used by the compiler. Of course, getting a compiler error is not
-the kind of `answer' we're looking for and so the next question is what
-alternative we can offer to the compiler in cases where a tt(T) cannot be used
-as argument to the above function.
+On the other hand, if the alternate type tt(T) cannot be used where a tt(U) is
+expected, then the compiler won't be able to use the above tt(test)
+function. Instead, it will use an alternative function that has a lower
+selection priority but that can em(always) be used with em(any) tt(T) type.
 
 bf(C) (and bf(C++)) offer a very general parameter list, a parameter list that
-will always be considered acceptable. This parameter list consists of the
-        emi(ellipsis)
-    which actually is the em(worst) situation the compiler may encounter: if
-everything else fails, then the function defining an ellipsis as its parameter
-list is selected. Normally that's not a productive and i(type-safe)
-alternative, but in the current situation it is em(exactly) what is
-needed. When confronted with two alternative function calls, one of which
-defines the ellipsis parameter list, the compiler will only select the
-function defining the ellipsis if the alternative(s) can't be used. So we
-declare an alternative function tt(test()), having the ellipsis as its
-parameter list, and returning another type, e.g., tt(NotConvertible):
+will always be considered acceptable. This parameter list is the familiar
+  emi(ellipsis) which represents the em(worst) case the compiler may
+encounter.  If everything else fails, then the function defining an ellipsis
+as its parameter list is selected.
+
+Usually that's not a productive alternative, but in the current situation it
+is em(exactly) what is needed. When confronted with two candidate functions,
+one of which defines an ellipsis parameter, the compiler will select the
+function defining the ellipsis parameter only if the alternative(s) can't be
+used.
+
+Following the above reasoning an alternative function tt(test(...)) is
+declared as well. This alternate function does not return a tt(Convertible)
+value but a tt(NotConvertible) value:
         verb(
     NotConvertible test(...);
         )
 
-Now, if code passes a value of type tt(T) to the tt(test) function, the return
-type will be tt(Convertible) if tt(T) can be converted to tt(U), and
-tt(NotConvertible) if conversion is not possible.
+The return type tt(test) provided with a value of type tt(T) will be
+tt(Convertible) if tt(T) can be converted to tt(U).  Otherwise
+tt(NotConvertible) is returned. 
 
-Two problems still need to be solved: how do we obtain a tt(T) argument? The
-problems here are firstly, that it might not be possible to define a tt(T), as
-a type tt(T) might hide all its constructors and secondly, how can the two
-return values be distinguished?
+This situation clearly shows similarities with the situation encountered in
+section ref(CLASSORNOT) where the value tt(isClass) had to be determined
+compile time. Here two related problems must be solved:
+    itemization(
+    it() how do we obtain a tt(T) argument? This is more difficult than might
+be expected at first sight as it might not be possible to define a tt(T). If 
+type tt(T) does not define any constructor then no tt(T) object can be
+defined. 
+    it() how can tt(Convertible) be distinguished from tt(NotConvertible)?
+    )
+    The first problem is solved by realizing that no tt(T) em(needs) to be
+defined. After all, the intent is to decide em(compile-time) whether a type is
+convertible and not to define a tt(T) value or object. Defining objects is not
+a compile-time but a em(run-time) matter.
 
-Although it might be impossoble to construct a tt(T) object, it is fortunately
-not necessary to construct a tt(T). After all, the intent is to decide
-        emi(compile time)
-    whether a type is convertible to another type and not actually to
-construct such a tt(T) value. So another function is em(declared):
+    By simply em(declaring) a function returning a tt(T) we can 
+tell the compiler where it should assume a tt(T):
         verb(
     T makeT();
         )
     This mysterious function has the magical power of enticing the compiler
-into thinking that a tt(T) object will come out of it. So, what will happen
-when the compiler is shown the following code:
+into thinking that a tt(T) object will come out of it. This happens in the
+following code:
         verb(
     test(makeT())
         )
-
-    If tt(T) can be converted to tt(U) the first function tt(Convertible test(U
-const &)) will be selected by the compiler; otherwise the function tt(NotConvertible
-test(...)) will be selected.
-
-    If it is now possible to distinguish tt(Convertible) from
-tt(NotConvertible) compile-time then it is possible to determine whether tt(T)
-is convertible to tt(U).
-
-    Since tt(Convertible) and tt(NotConvertible) are values, their sizes are
-known. If these sizes differ, then the tt(sizeof) operator can be used to
-distinguish the two types; hence it is possible to determine which tt(test())
-function was selected and hence it is known whether tt(T) can be converted to
-tt(U) or not. E.g., if the following expression evaluates as tt(true) tt(T) is
-convertible to tt(U):
+    Now that the compiler sees tt(test) being called with a tt(T) argument it
+will decide that its return value is tt(Convertible) if a conversion is in
+fact possible. Otherwise it will decide that its return value is
+tt(NotConvertible) (as it selected tt(test(...)) in that case).
+ 
+    The second problem, distinguishing tt(Convertible) from tt(NotConvertible)
+is solved exactly the way tt(isClass) could be determined in section
+ref(CLASSORNOT)). em(Viz.) by making their sizes different. Having done so the
+following expression determines whether tt(T) is convertible from tt(U) or
+not: 
         verb(
-    sizeof(test(makeT())) == sizeof(Convertible);
+    isConvertible = sizeof(test(makeT())) == sizeof(Convertible);
         )
+    By using tt(char) for tt(Convertible) and tt(Char2) (cf. section
+ref(CLASSORNOT)) for tt(NotConvertible) the distinction can be made.
 
-    The size of a tt(char) is well known. By definition it is 1. Using a
-tt(typedef) tt(Convertible) can be defined as a synonym of tt(char), thus
-having size 1. Now tt(NotConvertible) must be defined so that it has a
-different type. E.g.,
-        verb(
-    struct NotConvertible
-    {
-        char array[2];
-    };
-        )
-    Note there that a simple tt(typedef char NotConvertible[2]) does not work:
-functions cannot return arrays, but they can return arrays embedded in a
-structs.
-
-    The above can be wrapped up in a template class, having two template type
-parameters:
+    The above can be summarized in a class template tt(LconvertibleToR),
+having two template type parameters:
         verbinsert(CONVERSION)(advancedtemplates/examples/conversion.h)
-
-    The above class em(never) results in em(any) emi(run-time) execution of
-code. When used, it merely defines the values 1 or 0 for its tt(exist) enum
-value, depending whether the conversion exists or not. The following example
-writes tt(1 0 1 0) when run from a tt(main()) function:
+    As the class template deletes its copy constructor no object can be
+created. Only its tt(enum) values can be interrogated. The next example writes
+tt(1 0 1 0) when run from a tt(main) function:
         verbinsert(CONVERSION)(advancedtemplates/examples/conversion.cc)

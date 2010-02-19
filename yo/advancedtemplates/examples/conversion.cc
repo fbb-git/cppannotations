@@ -9,25 +9,25 @@ int main()
 {
 //CONVERSION
     cout <<
-        Conversion<ofstream, ostream>::exists << " " <<
-        Conversion<ostream, ofstream>::exists << " " <<
-        Conversion<int, double>::exists << " " <<
-        Conversion<int, string>::exists << " " <<
-        endl;
+        LconvertibleToR<ofstream, ostream>::yes << " " <<
+        LconvertibleToR<ostream, ofstream>::yes << " " <<
+        LconvertibleToR<int, double>::yes << " " <<
+        LconvertibleToR<int, string>::yes << 
+        "\n";
 //=
 
     cout << "\n" <<
-        Conversion<int, int>::sameType << " " <<
-        Conversion<int, string>::sameType << " " <<
-        endl;
+        LconvertibleToR<int, int>::sameType << " " <<
+        LconvertibleToR<int, string>::sameType << 
+        "\n";
 
 //INHERITANCE
     cout << "\n" <<
-        "1: " << BASE_1st_DERIVED_2nd(ofstream, ostream) << ",  " <<
-        "2: " << BASE_1st_DERIVED_2nd(ostream, ofstream) << ",  " <<
-        "3: " << BASE_1st_DERIVED_2nd(void, ofstream) << ",  " <<
-        "4: " << BASE_1st_DERIVED_2nd(ostream, ostream) << ",  " <<
-        "5: " << BASE_1st_DERIVED_2nd_STRICT(ostream, ostream) << " " <<
-        endl;
+        "1: " << LBaseRDerived<ofstream, ostream>::yes << ",  " <<
+        "2: " << LBaseRDerived<ostream, ofstream>::yes << ",  " <<
+        "3: " << LBaseRDerived<void, ofstream>::yes << ",  " <<
+        "4: " << LBaseRDerived<ostream, ostream>::yes << ",  " <<
+        "5: " << LBaseRtrulyDerived<ostream, ostream>::yes << 
+        "\n";
 //=
 }
