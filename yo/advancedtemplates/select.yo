@@ -1,45 +1,41 @@
-Next the selection of a type from a typelist given its index will be
-discussed. This is the inverse operation from obtaining the index of a
-`searchtype', as covered by section ref(SEARCHTYPE).
+The inverse operation of determining the index of a certain type in a
+tt(TypeList) is retrieving the type given its index. This inverse operation is
+the topic of this section.
 
-Rather than defining an tt(enum) value, the current algorithm should define a
-type equal to the type at a given index position. If the type does not exist,
-the typedef can be made a synonym of tt(NullType) since tt(NullType) cannot
-appear in a typelist.
-
-The following algorithm is used (the implementation of the parts is provided
-immediately following the descriptions of the algorithm's steps):
+The algorithm is implemented using a struct tt(TypeAt). tt(TypeAt) uses a
+tt(typedef) to define the type matching a given index. But the index might be
+out of bounds. In that case we have several options:
     itemization(
-    it() The foundation of the algorithm is provided by a declaration of
-a struct tt(TypeAt), expecting an index and a typelist:
+    it() Use a link(static_assert)(STATICASSERT) to stop the compilation. This
+is an appropriate action if the index should simply not be out of bounds;
+    it() Define a local type (e.g., tt(Null)) that should not be used as a
+type in the tt(TypeList). Using that local type as a type in a tt(TypeList) is
+considered an error as its use in a tt(TypeList) could easily cause confusion
+(was the index invalid? did we actually stumble across tt(Null)?). A
+tt(static_cast) may be used to prevent tt(Null) from being returned as the
+type matching the search index;
+    it() The struct tt(TypeAt) may define a enum value tt(validIndex) set to
+tt(true) if the index was valid and set to tt(false) if not.
+    )
+    The first alternative is implemented below. The other alternatives are not
+difficult to implement and are left as exercises for the reader. Here's how
+tt(TypeAt) works: 
+    itemization(
+    it() The foundation consists of a variadic template struct tt(TypeAt),
+        expecting an index and a tt(TypeList):
             verbinsert(TYPEAT)(advancedtemplates/examples/typeat.h)
 
-    it() If the typelist equals tt(NullType) define the return type as
-tt(NullType) as well:
-            verbinsert(NULLTYPE)(advancedtemplates/examples/typeat.h)
+    it() If the typelist is empty a tt(static_assert) ends the compilation
+            verbinsert(INVALID)(advancedtemplates/examples/typeat.h)
 
-    it() If the search index equals 0, define the return type as the
-typelist's head:
+    it() If the search index equals 0, define tt(Type) as the first type in
+        the tt(TypeList):
             verbinsert(ZERO)(advancedtemplates/examples/typeat.h)
 
-    it() Otherwise, define the return type as the return type of the type at
-offset index - 1 in the typelist's tail. Note the tt(typename) following
-tt(typedef): it is required as the defining type's tt(result) type is a nested
-type:
+    it() Otherwise, tt(Type) is defined as tt(Type) defined by tt(TypeAt<index
+        - 1>) operating on the tt(TypeList)'s tail:
             verbinsert(TYPELIST)(advancedtemplates/examples/typeat.h)
     )
-    Assuming all required headers have been included, the following example
-shows how tt(ListSearch) can be used:
-        verb(
-    int main()
-    {
-        typedef TYPELIST_3(int, char, bool) list3;
-        enum { test = 2 };
-
-        std::cout <<
-            (ListSearch<TypeAt<test, list3>::result, list3>::index == -1 ?
-                "Illegal Index\n"
-            :
-                "Index represents a valid type\n");
-    }
-        )
+    Here is how tt(typeAt) can be used. Uncommenting the first variable
+definition causes a tt(TypeAt index out of bounds) compilation error:
+        verbinsert(EXAMPLE)(advancedtemplates/examples/typeat.cc)

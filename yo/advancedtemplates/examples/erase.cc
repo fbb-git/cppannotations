@@ -1,20 +1,38 @@
 #include <iostream>
+#include <typeinfo>
 
 #include "erase.h"
-#include "listsize.h"
+#include "typeat.h"
 
-    // change Erase to EraseAll to erase all `int' types below
-#define ERASE Erase
+using namespace std;
 
 int main()
 {
-    std::cout <<
-        ListSize<
-            ERASE<TYPELIST_3(int, double, int), int>::Result
-        >::size << "\n" <<
-        ListSize<
-            EraseDuplicates<
-                TYPELIST_5(int, double, int, double, int)
-            >::Result
-        >::size << "\n";
+//ERASE
+    cout << Erase<int, TypeList<int, double, int>>::List::size << '\n' <<
+            Erase<char, TypeList<int, double, int>>::List::size << '\n' <<
+            Erase<int, TypeList<>>::List::size << "\n";
+//=
+
+//ERASEIDX
+    if 
+    (
+        typeid(TypeAt<2, 
+                EraseIdx<1, 
+                   TypeList<int, char, size_t, double, int>>::List
+                >::Type
+        )
+        == typeid(double)
+    )
+        cout << "the third type is now a double\n";
+//=
+
+
+//ERASEIDX
+// <<
+//        ListSize<
+//            EraseDuplicates<
+//                TYPELIST_5(int, double, int, double, int)
+//            >::Result
+//        >::size << "\n";
 }

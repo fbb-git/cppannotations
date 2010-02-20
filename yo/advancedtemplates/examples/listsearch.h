@@ -1,32 +1,38 @@
 #include "typelist.h"
 
 //LISTSEARCH
-    template <typename SearchType, typename TypeList>
-    struct ListSearch;
+    template <typename ... Types>
+    struct ListSearch
+    {
+        ListSearch(ListSearch const &) = delete;
+    };
 //=
 
 //EMPTY
     template <typename SearchType>
-    struct ListSearch<SearchType, NullType>
+    struct ListSearch<SearchType, TypeList<>>
     {
+        ListSearch(ListSearch const &) = delete;
         enum { index = -1 };
     };
 //=
 
 //TAIL
-    template <typename SearchType, typename Tail>
-    struct ListSearch<SearchType, TypeList<SearchType, Tail> >
+    template <typename SearchType, typename ... Tail>
+    struct ListSearch<SearchType, TypeList<SearchType, Tail ...>>
     {
+        ListSearch(ListSearch const &) = delete;
         enum { index = 0 };
     };
 //=
 
-//TYPELIST
-    template <typename SearchType, typename Head, typename Tail>
-    class ListSearch<SearchType, TypeList<Head, Tail> >
+//FULL
+    template <typename SearchType, typename Head, typename ... Tail>
+    struct ListSearch<SearchType, TypeList<Head, Tail ...> >
     {
-        enum { tmp = ListSearch<SearchType, Tail>::index } ;
-        public:
-            enum { index = tmp == -1 ? -1 : 1 + tmp };
+        ListSearch(ListSearch const &) = delete;
+        enum {tmp = ListSearch<SearchType, TypeList<Tail ...>>::index};
+        enum {index = tmp == -1 ? -1 : 1 + tmp};
     };
 //=
+

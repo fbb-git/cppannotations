@@ -1,71 +1,106 @@
 #ifndef INCLUDED_ERASE_H_
 #define INCLUDED_ERASE_H_
 
-#include "typelist.h"
+#include "append.h"
 
 //ERASE
-    template <typename TypeList, typename EraseType>
+    template <typename EraseType, typename TypeList>
     struct Erase;
 //=
 
-//NULLTYPE
+//ERASEEMPTY
     template <typename EraseType>
-    struct Erase<NullType, EraseType>
+    struct Erase<EraseType, TypeList<>>
     {
-        typedef NullType Result;
+        typedef TypeList<> List;
     };
 //=
 
-//MATCH
-    template <typename EraseType, typename Tail>
-    struct Erase<TypeList<EraseType, Tail>, EraseType>
+//ERASEHEAD
+    template <typename EraseType, typename ... Tail>
+    struct Erase<EraseType, TypeList<EraseType, Tail ...>>
     {
-        typedef Tail Result;
+        typedef TypeList<Tail ...> List;
     };
 //=
 
-//TYPELIST
-    template <typename Head, typename Tail, typename EraseType>
-    struct Erase<TypeList<Head, Tail>, EraseType>
+//ERASENEXT
+    template <typename Head, typename EraseType, typename ... Tail>
+    struct Erase<EraseType, TypeList<Head, Tail ...>>
     {
-        typedef TypeList<Head,
-                        typename Erase<Tail, EraseType>::Result> Result;
+        typedef typename Prefix<
+                    Head, 
+                    typename Erase<EraseType, TypeList<Tail ...>>::List
+                >::List List;
     };
+//=
+
+//ERASEIDX
+    template <size_t idx, typename TypeList>
+    struct EraseIdx;
+//=
+
+//ERASEIDXEMPTY
+    template <size_t idx>
+    struct EraseIdx<idx, TypeList<>>
+    {
+        typedef TypeList<> List;
+    };
+//=
+
+//ERASEIDX
+    template <typename EraseType, typename ... Tail>
+    struct EraseIdx<0, TypeList<EraseType, Tail ...>>
+    {
+        typedef TypeList<Tail ...> List;
+    };
+//=
+
+//ERASEIDXNEXT
+    template <size_t idx, typename Head, typename ... Tail>
+    struct EraseIdx<idx, TypeList<Head, Tail ...>>
+    {
+        typedef typename Prefix<
+                    Head, 
+                    typename EraseIdx<idx - 1, TypeList<Tail ...>>::List
+                >::List List;
+    };
+//=
+
+
+////ERASEALL
+//    template <typename TypeList, typename EraseType>
+//    struct EraseAll: public Erase<TypeList, EraseType>
+//    {};
+////=
 //
-
-//ERASEALL
-    template <typename TypeList, typename EraseType>
-    struct EraseAll: public Erase<TypeList, EraseType>
-    {};
-//=
-
-//ALLTYPES
-    template <typename EraseType, typename Tail>
-    struct EraseAll<TypeList<EraseType, Tail>, EraseType>
-    {
-        typedef typename EraseAll<Tail, EraseType>::Result Result;
-    };
-//=
-
-//ERASEDUP
-    template <typename TypeList>
-    struct EraseDuplicates;
-
-    template <>
-    struct EraseDuplicates<NullType>
-    {
-        typedef NullType  Result;
-    };
-
-    template <typename Head, typename Tail>
-    class EraseDuplicates<TypeList<Head, Tail> >
-    {
-        typedef typename EraseDuplicates<Tail>::Result UniqueTail;
-        typedef typename Erase<UniqueTail, Head>::Result  NewTail;
-
-        public:
-            typedef TypeList<Head, NewTail>  Result;
-    };
-//=
+////ALLTYPES
+//    template <typename EraseType, typename Tail>
+//    struct EraseAll<TypeList<EraseType, Tail>, EraseType>
+//    {
+//        typedef typename EraseAll<Tail, EraseType>::Result Result;
+//    };
+////=
+//
+////ERASEDUP
+//    template <typename TypeList>
+//    struct EraseDuplicates;
+//
+//    template <>
+//    struct EraseDuplicates<NullType>
+//    {
+//        typedef NullType  Result;
+//    };
+//
+//    template <typename Head, typename Tail>
+//    class EraseDuplicates<TypeList<Head, Tail> >
+//    {
+//        typedef typename EraseDuplicates<Tail>::Result UniqueTail;
+//        typedef typename Erase<UniqueTail, Head>::Result  NewTail;
+//
+//        public:
+//            typedef TypeList<Head, NewTail>  Result;
+//    };
+////=
 
 #endif

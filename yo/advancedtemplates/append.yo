@@ -1,47 +1,13 @@
-The question of how to add an element to a typelist is handled using the same
-    i(rule of thumb) as used for answering the previous questions: design a
-recursive algorithm and implement the recursion through specializations.
+Prepending or appending a type to a tt(TypeList) is easy and doesn't require
+recursive template meta programs. Two variadic template structs tt(Append) and
+tt(Prefix) and two specializations are all it takes.
 
-    To append a new type to a typelist, the following algorithm can be used:
-    itemization(
-    it() The basic template is a struct expecting a typelist and a type to add
-        to the typelist:
-            verbinsert(APPEND)(advancedtemplates/examples/append.h)
+    Here are the declarations of the two variadic template structs:
+            verbinsert(STRUCT)(advancedtemplates/examples/append.h)
 
-    it() Adding tt(NullType):
-        itemization(
-        it() If the type to add is tt(NullType), and the original type is
-            tt(NullType), the result itself is the tt(NullType):
-        verbinsert(NULLTYPE)(advancedtemplates/examples/append.h)
-
-    Note that the simple alternative:
-        verb(
-    template <typename TypeList>
-    struct Append<TypeList, NullType>
-    {
-        typedef TypeList Result;
-    };
-        )
-    is not a good idea, as it will match all types that are offered as the
-template's first template type parameter. E.g., tt(Append<int, NullType>)
-would be accepted, but would certainly not result in a tt(TypeList).
-        it() When attempting to append tt(NullType) to an existing
-            tt(TypeList), leave the tt(TypeList) as-is:
-        verbinsert(ADDNULL)(advancedtemplates/examples/append.h)
-        )
-
-    it() Appending other types than tt(NullType):
-        itemization(
-        it() If the typelist itself is tt(NullType), the final typelist
-        consists of the typelist containing the new type:
-            verbinsert(NEWTYPE)(advancedtemplates/examples/append.h)
-
-        it() Otherwise, the final typelist consists of the head of the initial
-            typelist and the typelist resulting from appending the new type to
-            the intial typelist's tail:
-            verbinsert(TYPELIST)(advancedtemplates/examples/append.h)
-
-            Once again: note that tt(typename) is required in front of
-            tt(Append) (cf. section ref(DISTINGUISH))
-        )
-    )
+    To append or prefix a new type to a typelist specializations expect a
+typelist and a type to add and simply define a new tt(TypeList) also including
+the new type. The tt(Append) specialization shows that a template pack does
+not have to be used as the first argument when defining another variadic
+template type:
+        verbinsert(ADDTYPE)(advancedtemplates/examples/append.h)

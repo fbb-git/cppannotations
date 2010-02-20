@@ -3,41 +3,25 @@
 
 #include "typelist.h"
 
-//APPEND
-    template <typename TypeList, typename NewType>
+ //STRUCTS
+    template <typename ... Types>
     struct Append;
+
+    template <typename ... Types>
+    struct Prefix;
 //=
 
-//NULLTYPE
-    template <>
-    struct Append<NullType, NullType>
+//ADDTYPE
+    template <typename NewType, typename ... Types>
+    struct Append<TypeList<Types ...>, NewType>
     {
-        typedef NullType TList;
+        typedef TypeList<Types ..., NewType> List;
     };
-//=
 
-//ADDNULL
-    template <typename Head, typename Tail>
-    struct Append<TypeList<Head, Tail>, NullType>
+    template <typename NewType, typename ... Types>
+    struct Prefix<NewType, TypeList<Types ...>>
     {
-        typedef TypeList<Head, Tail>  TList;
-    };
-//=
-
-//NEWTYPE
-    template <typename NewType>
-    struct Append<NullType, NewType>
-    {
-        typedef TYPELIST_1(NewType) TList;
-    };
-//=
-
-//TYPELIST
-    template <typename Head, typename Tail, typename NewType>
-    struct Append<TypeList<Head, Tail>, NewType>
-    {
-        typedef TypeList<Head, typename Append<Tail, NewType>::TList>
-                TList;
+        typedef TypeList<NewType, Types ...> List;
     };
 //=
 

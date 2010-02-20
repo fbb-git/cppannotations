@@ -4,31 +4,32 @@
 #include "typelist.h"
 
 //TYPEAT
-    template <int index, typename Typelist>
+    template <size_t index, typename Typelist>
     struct TypeAt;
 //=
 
-//NULLTYPE
-    template <int index>
-    struct TypeAt<index, NullType>
+//INVALID
+    template <size_t index>
+    struct TypeAt<index, TypeList<>>
     {
-        typedef NullType Type;
+        static_assert(index < 0, "TypeAt index out of bounds");
+        typedef TypeAt Type;
     };
 //=
 
 //ZERO
-    template <typename Head, typename Tail>
-    struct TypeAt<0, TypeList<Head, Tail> >
+    template <typename Head, typename ... Tail>
+    struct TypeAt<0, TypeList<Head, Tail ...>>
     {
         typedef Head Type;
     };
 //=
 
 //TYPELIST
-    template <int index, typename Head, typename Tail>
-    struct TypeAt<index, TypeList<Head, Tail> >
+    template <size_t index, typename Head, typename ... Tail>
+    struct TypeAt<index, TypeList<Head, Tail ...>>
     {
-        typedef typename TypeAt<index - 1, Tail>::Type Type;
+        typedef typename TypeAt<index - 1, TypeList<Tail ...>>::Type Type;
     };
 //=
 

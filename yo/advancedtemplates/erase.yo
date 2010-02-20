@@ -1,69 +1,19 @@
-The opposite from adding, erasing can simply be accomplished as well. Here is
-the algorithm, erasing the first occurrence of a type to erase from a
-typelist:
+It is also possible to erase types from a tt(TypeList). Again, there are
+several possibilities, each resulting in a different algorithm.
     itemization(
-    it() The basic template is a struct expecting a typelist and a type to
-        erase from the typelist:
-            verbinsert(ERASE)(advancedtemplates/examples/erase.h)
-
-    it() If the typelist itself is tt(NullType), there's nothing to erase, and
-        tt(NullType) is the result:
-            verbinsert(NULLTYPE)(advancedtemplates/examples/erase.h)
-
-    it() If the typelist's head equals the type to erase, then the result is
-        the typelist's tail:
-            verbinsert(MATCH)(advancedtemplates/examples/erase.h)
-
-    it() Otherwise, the result is the typelist's head and the result obtained
-        afdter erasing the type to be erased from the typelist's tail:
-            verbinsert(TYPELIST)(advancedtemplates/examples/erase.h)
+    it() The type to erase is specified, and the first
+occurrence of that type is removed from the tt(TypeList);
+    it() The index of the type to erase is specified, and the type at that
+index position  is erased from the tt(TypeList);
+    it() The type to erase is specified, and all
+occurrences of that type are removed from the tt(TypeList).
+    it() As a variant of erasure: we may want to erase all multiply 
+occurring types in a tt(TypeList), keeping each type only once.
     )
+    Doubtlessly there are other ways of erasing types from a
+tt(TypeList). Which ones eventually will be implemented depends of course on
+the circumstances. As template meta programming is very powerful most if not
+all algorithms can probably be implemented. As an illustration of how to erase
+types from a tt(TypeList) the abovementioned algorithms are now developed in
+the upcoming subsections.
 
-    But there's more: what if the intention is to erase all elements from the
-typelist? In that case also apply tt(Erase) to the tail when the type to erase
-matches the typelist's head. E.g., a tt(struct EraseAll) can be defined
-similarly to tt(Erase), except for the case where the typelist's head matches
-the type to be removed: in that case tt(EraseAll) must also be applied to the
-typelist's tail, as there may be additional types to be removed in the tail as
-well.
-
-    Since tt(EraseAll) closely resembles tt(Erase), let's see how we can use
-        hi(template: specialization and derivation)
-        hi(call derivation: and template specialization)
-class derivation in combination with specializations to our benefit.
-
-    itemization(
-    it() First step: note that all alternatives of tt(Erase) but one can be
-used unaltered by tt(EraseAll). So, tt(EraseAll) inherits from tt(Erase),
-using the generic struct's template parameters:
-            verbinsert(ERASEALL)(advancedtemplates/examples/erase.h)
-
-    Thus, tt(EraseAll) is a mere copy of tt(Erase), and it could be used as a
-synonym of tt(Erase) (of course, erasing only the first element).
-    it() Second (and last) step: define a specialization of tt(EraseAll) for
-the case where the type to be removed equals the typelist's head:
-            verbinsert(ALLTYPES)(advancedtemplates/examples/erase.h)
-
-    Note the tt(EraseAll) action on the template's tail.
-    )
-    The above two tt(EraseAll) definitions are all it takes to create a
-template that will do the job of erasing all occurrences of a type from a
-typelist, borrowing most of its code from the already existing tt(Erase)
-template. The effect of tt(EraseAll) vs. tt(Erase) can be seen when defining
-either tt(Erase) or tt(EraseAll) in the following example:
-        verb(
-    #include <iostream>
-    #include "erase.h"
-    #include "listsize.h"
-
-        // change Erase to EraseAll to erase all `int' types below
-    #define ERASE Erase
-
-    int main()
-    {
-        std::cout <<
-            ListSize<
-                ERASE<TYPELIST_3(int, double, int), int>::Result
-            >::size << "\n";
-    }
-        )

@@ -3,7 +3,9 @@
 
 int main()
 {
+//EXAMPLE
     std::cout <<
-        ListSearch<char, TYPELIST_3(int, char, bool)>::index << "\n" <<
-        ListSearch<float, TYPELIST_3(int, char, bool)>::index << "\n";
+        ListSearch<char, TypeList<int, char, bool>>::index << "\n" <<
+        ListSearch<float, TypeList<int, char, bool>>::index << "\n";
+//=
 }
