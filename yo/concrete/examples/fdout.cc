@@ -4,28 +4,27 @@
     #include "fdout.h"
     using namespace std;
 
-    int main(int argc)
+    int main(int argc, char **argv)
     {
-        ofdnstreambuf   fds(STDOUT_FILENO, 500);
+        OFdnStreambuf   fds(STDOUT_FILENO, 500);
         ostream         os(&fds);
 
         switch (argc)
         {
             case 1:
-                os << "COPYING cin LINE BY LINE\n";
                 for (string  s; getline(cin, s); )
-                    os << s << endl;
+                    os << s << '\n';
+                os << "COPIED cin LINE BY LINE\n";
             break;
 
             case 2:
-                os << "COPYING cin BY EXTRACTING TO os.rdbuf()\n";
-
                 cin >> os.rdbuf();      // Alternatively, use:  cin >> &fds;
+                os << "COPIED cin BY EXTRACTING TO os.rdbuf()\n";
             break;
 
             case 3:
-                os << "COPYING cin BY INSERTING cin.rdbuf() into os\n";
                 os << cin.rdbuf();
+                os << "COPIED cin BY INSERTING cin.rdbuf() into os\n";
             break;
         }
     }

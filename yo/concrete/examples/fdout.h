@@ -5,36 +5,35 @@
     #include <streambuf>
 
 //CLASS
-    class ofdnstreambuf: public std::streambuf
+    class OFdnStreambuf: public std::streambuf
     {
         size_t d_bufsize;
         int     d_fd;
         char    *d_buffer;
 
         public:
-            ofdnstreambuf();
-            ofdnstreambuf(int fd, size_t bufsize = 1);
-            ~ofdnstreambuf();
+            OFdnStreambuf();
+            OFdnStreambuf(int fd, size_t bufsize = 1);
+            virtual ~OFdnStreambuf();
             void open(int fd, size_t bufsize = 1);
-            int sync();
-            int overflow(int c);
+            virtual int sync();
+            virtual int overflow(int c);
     };
 //=
 
 //CONS
-    inline ofdnstreambuf::ofdnstreambuf()
+    inline OFdnStreambuf::OFdnStreambuf()
     :
         d_bufsize(0),
         d_buffer(0)
     {}
-
-    inline ofdnstreambuf::ofdnstreambuf(int fd, size_t bufsize)
+    inline OFdnStreambuf::OFdnStreambuf(int fd, size_t bufsize)
     {
         open(fd, bufsize);
     }
 //=
 //DESTR
-    inline ofdnstreambuf::~ofdnstreambuf()
+    inline OFdnStreambuf::~OFdnStreambuf()
     {
         if (d_buffer)
         {
@@ -44,7 +43,7 @@
     }
 //=
 //OPEN
-    inline void ofdnstreambuf::open(int fd, size_t bufsize)
+    inline void OFdnStreambuf::open(int fd, size_t bufsize)
     {
         d_fd = fd;
         d_bufsize = bufsize == 0 ? 1 : bufsize;
@@ -54,7 +53,7 @@
     }
 //=
 //SYNC
-    inline int ofdnstreambuf::sync()
+    inline int OFdnStreambuf::sync()
     {
         if (pptr() > pbase())
         {
@@ -65,7 +64,7 @@
     }
 //=
 //OVERFLOW
-    inline int ofdnstreambuf::overflow(int c)
+    inline int OFdnStreambuf::overflow(int c)
     {
         sync();
         if (c != EOF)
