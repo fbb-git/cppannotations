@@ -9,9 +9,12 @@ using namespace std;
 int main()
 {
 //ERASE
-    cout << Erase<int, TypeList<int, double, int>>::List::size << '\n' <<
-            Erase<char, TypeList<int, double, int>>::List::size << '\n' <<
+    cout << 
+            Erase<int, TypeList<char, double, int>>::List::size << '\n' <<
+            Erase<char, TypeList<int>>::List::size << '\n' <<
+            Erase<int, TypeList<int>>::List::size << '\n' <<
             Erase<int, TypeList<>>::List::size << "\n";
+
 //=
 
 //ERASEIDX
@@ -27,12 +30,28 @@ int main()
         cout << "the third type is now a double\n";
 //=
 
+//ERASEALL
+    cout << 
+        "After erasing size_t from "
+            "TypeList<char, int, size_t, double, size_t>\n"
+            "it contains " << 
+                EraseAll<size_t, 
+                         TypeList<char, int, size_t, double, size_t>
+                >::List::size << " types\n";
+//=
 
-//ERASEIDX
-// <<
-//        ListSize<
-//            EraseDuplicates<
-//                TYPELIST_5(int, double, int, double, int)
-//            >::Result
-//        >::size << "\n";
+//ERASEDUP
+    cout << 
+        "After erasing duplicates from " 
+             "TypeList<double, char, int, size_t, int, double, size_t>\n"
+        "it contains " << 
+        EraseDup<
+            TypeList<double, char, int, size_t, int, double, size_t>
+        >::List::size << " types\n";
+//=
+
 }
+
+
+
+
