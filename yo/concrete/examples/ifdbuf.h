@@ -1,18 +1,18 @@
     #include <unistd.h>
     #include <streambuf>
 //CLASS
-    class ifdstreambuf: public std::streambuf
+    class IFdStreambuf: public std::streambuf
     {
         protected:
             int     d_fd;
             char    d_buffer[1];
         public:
-            ifdstreambuf(int fd);
+            IFdStreambuf(int fd);
             int underflow();
     };
 //=
 //CONS
-    inline ifdstreambuf::ifdstreambuf(int fd)
+    inline IFdStreambuf::IFdStreambuf(int fd)
     :
         d_fd(fd)
     {
@@ -20,7 +20,7 @@
     }
 //=
 //UFLOW
-    inline int ifdstreambuf::underflow()
+    inline int IFdStreambuf::underflow()
     {
         if (gptr() < egptr())
             return *gptr();

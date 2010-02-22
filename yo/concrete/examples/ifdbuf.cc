@@ -6,7 +6,7 @@
 
     int main(int argc)
     {
-        ifdstreambuf fds(STDIN_FILENO);
+        IFdStreambuf fds(STDIN_FILENO);
         istream      is(&fds);
 
         cout << is.rdbuf();

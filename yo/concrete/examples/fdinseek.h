@@ -3,7 +3,7 @@
     #include <ios>
 
 //CLASS
-    class ifdseek: public ifdstreambuf
+    class ifdseek: public IFdStreambuf
     {
         typedef std::streambuf::pos_type        pos_type;
         typedef std::streambuf::off_type        off_type;
@@ -19,7 +19,7 @@
 //CONS
     inline ifdseek::ifdseek(int fd)
     :
-        ifdstreambuf(fd)
+        IFdStreambuf(fd)
     {}
 //=
 //SEEKOFF

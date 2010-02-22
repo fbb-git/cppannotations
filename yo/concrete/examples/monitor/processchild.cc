@@ -2,7 +2,7 @@
 //CHILD
     void Monitor::processChild(int fd)
     {
-        ifdstreambuf ifdbuf(fd);
+        IFdStreambuf ifdbuf(fd);
         istream istr(&ifdbuf);
         string line;
 

@@ -1,15 +1,19 @@
-    When deriving a class (e.g., ti(ifdstreambuf)) from tt(streambuf) using a
-buffer of one character, at least its member tt(streambuf::underflow()) should
-be overridden, as this is the member to which all requests for input are
-eventually directed. Since a buffer is also needed, the member
-ti(streambuf::setg()) is used to inform the tt(streambuf) base class of the
-size of the input buffer, so that it is able to set up its input buffer
-pointers correctly. This will ensure that
-    hi(streambuf::eback()) tt(eback()),
-    hi(streambuf::gptr()) tt(gptr()), and
-    hi(streambuf::egptr()) tt(egptr()) return correct values.
+    When deriving a class (e.g., ti(IFdStreambuf)) from tt(streambuf) using a
+buffer of one character, at least its member
+ hi(underflow)
+    tt(streambuf::underflow) should be overridden, as this member eventually
+receives all requests for input. The member
+ hi(setg)
+    tt(streambuf::setg) is used to inform the tt(streambuf) base class of the
+size and location of the input buffer, so that it is able to set up its input
+buffer pointers accordingly. This will ensure that hi(eback)
+tt(streambuf::eback), hi(gptr) tt(streambuf::gptr), and hi(egptr)
+tt(streambuf::egptr) return correct values.
 
-    The required class shows the following characteristics:
+    The class tt(IFdStreambuf) is designed like this:
+
+>>>>>>>>>> NEXT
+
     itemization(
     it() Like the class designed for output operations, this class is derived
 from ti(std::streambuf) as well.
@@ -36,6 +40,6 @@ to operate the file descriptors, so apart from tt(streambuf) the header file
 ti(unistd.h) must have been read by the compiler before the implementations of
 the member functions can be compiled.
     )
-    This completes the construction of the tt(ifdstreambuf) class. It is used
+    This completes the construction of the tt(IFdStreambuf) class. It is used
 in the following program:
         verbinclude(concrete/examples/ifdbuf.cc)

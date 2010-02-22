@@ -1,48 +1,54 @@
-The interesting part of the exercise is of course the class template
-tt(GenScatter). In its intended form (which actually turns out to be a
-specialization) tt(GenScatter) takes a typelist, a template class and a index
-value that is used to ensure uniqueness of the tt(Wrap) types.
-
-With these ingredients, tt(GenScatter) creates a (fairly complex) class, that
-itself is normally derived from several tt(GenScatter) base classes. Each
-tt(GenScatter) class is eventually derived from a base class which is a
-tt(Wrap) class around the template class instantiated for each of the types in
-the provided typelist.
-
-This complex arrangement itself causes yet another problem: it would be nice
-if the top-level derived class could be initialized by base class
-        hi(base class: initializing indirect base class)
-initializers. However, with normal class derivation indirect base classes
-cannot be initialized using base class initializers. This is a severe problem:
-if indirect base classes cannot be initialized by a tt(GenScat) class or by a
-class derived from tt(GenScat), the types in the provided typelist cannot be
-        hi(reference: initialization)
-refence types, as references em(must) be initialized at i(construction time).
-
-However, an indirect base class em(can) be initialized by a top level derived
-class
-        hi(base class: virtual)
-    if it is a  em(virtual) base class (cf. section
-ref(VIRTUALBASE)). The consequence of a virtual base class is that any
-duplicates of a virtual base class, following different paths in a class
-hierarchy will be merged into one class.
-
-In the tt(GenScat) hierarchy the tt(Wrap) template class wrappers are the
-final (usable) base classes of the hierarchy. By defining these tt(Wrap) base
-classes as em(virtual) base classes they em(can) be initialized by tt(GenScat)
-(or by a class that itself is derived from tt(GenScat)), while em(merging) of
-the tt(Wrap) base classes is prevented due to the fact that all tt(Wrap) base
-classes are unique.
-
-    It's time for some code. The tt(GenScatter) class performs the
-following tasks:
+The class template tt(GenScatter) is tt(GenScat)'s base class. Its
+responsibility is to construct a class from its constituent types. It has
+three template parameters:
     itemization(
-    it() It creates a class hierarchy, having unique tt(Wrap) template
-classes at its final nodes;
+    itt(size_t idx) is a non-type parameter that is used to identify the
+various tt(Wrap) classes;
+    itt(typename TypeList) represents the list of types to become
+tt(GenScat)'s base classes;
+    itt(template <typename> class Policy) is the data storage policy class
+to be used by tt(GenScatter).
+    )
+    Here is tt(GenScatter)'s generic class declaration:
+    verbinsert(GENSCATTER)(advancedtemplates/examples/genscatter.h)
+
+    tt(GenScatter)'s complex organization causes a problem of its own.  While
+it would be nice if tt(GenScat) objects could be initialized by base class
+initializers. But there is a complication to that. In a normal inheritance
+tree
+        hi(base class: initialize indirect base class) initializers. 
+ indirect base classes cannot be initialized by indirect base class
+initializers. This is a serious problem threatening to reduce the usefulness
+of tt(GenScat). If tt(GenScat) cannot initialize its indirect base classes,
+then the types in the tt(TypeList) cannot be refence types (as
+    hi(reference: initialization)
+ references em(must) be initialized at object construction time).
+
+bf(C++) offers a solution in its 
+        hi(base class: virtual)
+ virtual base class concept (cf. section ref(VIRTUALBASE)). If an indirect
+base class is defined as a virtual base class it em(can) be initialized by a
+top level derived class. The consequence of using virtual base classes is that
+duplicates of a virtual base class, reached by following different paths in a
+class hierarchy tree are merged into one class. This never is a problem for
+tt(GenScatter)'s base classes which are all unique (as they are derived from
+unique tt(Wrap) classes.
+
+////////// CHECK ///////////////
+
+    Now that we've solved the base class initialization problem let's
+concentrate on tt(GenScatter)'s main tasks:
+    itemization(
+    it() It must create the eventual class hierarchy. The final nodes of this
+hierarchy must be unique tt(Wrap) class template objects;
+
+////////////////////////////////////
+
     it() It creates a typelist containing all tt(Wrap) base class types in the
 order in which they were constructed, to allow clients to obtain the tt(Wrap)
 template class wrapper matching a specific type in the provided typelist.
     )
+
     An illustration showing the layout of the final tt(GenScatter) class
 hierarchy and its subclasses is provided in figure ref(GenScatterFig).
 
@@ -50,29 +56,33 @@ hierarchy and its subclasses is provided in figure ref(GenScatterFig).
             (Layout of a GenScatter class hierarchy)
             (GenScatterFig)
 
-    The core definition of tt(GenScatter) expects a typelist, a template class
-and an index:
-    verbinsert(GENCORE)(advancedtemplates/examples/genscatter.h)
+    The class template tt(GenScatter) defines three template parameters: a
+tt(size_t index), a tt(TypeList), and a tt(Policy) template template
+parameter.
     itemization(
-    it() Since the typelist's head is a plain type, it can immediately be used
-to define a tt(TemplateClass) type, which itself is wrapped in a tt(Wrap)
-template class wrapper using the unique index value that was passed to
-tt(GenScatter).
-    it() The tt(Wrap) template class wrapper is then defined as a em(virtual)
-base class.
-    it() A second hierarchal line starts at the typelist's tail, at the same
-time incrementing the index, thus ensuring that the next tt(Wrap) class will
-receive the next index value.
-    it() At the end of the class definition the tt(WrapList) type is defined
-as the typelist consisting of the current tt(Wrap) wrapper as its head, and
-the base tt(GenScatter) class's tt(WrapList) as its tail.
-    )
+    it() Since the tt(TypeList)'s head is a plain type, it can be passed to
+the tt(Policy) class template. tt(Policy<Head>) is then wrapped in a tt(Wrap)
+class template using the unique index value that was passed to
+tt(GenScatter). The tt(Wrap<idx, Policy<Head>>) type is then used as virtual
+base class of tt(GenScatter). This effectively turns the first type in the
+tt(TypeList) into tt(GenScatter)'s first base class.
+    it() A second hierarchy tree handles all the types in the tt(TypeList)'s
+tail. Of course, there may not be a type in the tt(TypeList)'s tail, but that
+limiting case is handled below. All remaining types are handled by a recursive
+tt(GenScatter) call, passing it an incremented tt(idx) and a tt(TypeList)
+containing the original tt(TypeList)'s tail.
 
-    tt(GenScatter)'s main template definition expects a simple type as its
-first template parameter. Since this is a plain type, the class can
-immediately define a virtual tt(Wrap) template class wrapper as its base
-class, and it can immediately define the tt(WrapList) type as a typelist
-containing the class's base class:
+
+>>>>>>>>>> TODO    
+    it() At the end of the class definition the tt(WrapList) type is defined
+as the tt(TypeList) consisting of the current tt(Wrap) wrapper as its head, and
+the base tt(GenScatter) class's tt(WrapList) as its tail.
+>>>>>>>>>>>>
+
+    )
+    Here is the generic definition of tt(GenScatter):
+        verbinsert(GENCORE)(advancedtemplates/examples/genscatter.h)
+
     verbinsert(GENMAIN)(advancedtemplates/examples/genscatter.h)
 
     Finally, a specialization to handle the ending tt(NullType) is required:
