@@ -8,6 +8,7 @@
             char    d_buffer[1];
         public:
             IFdStreambuf(int fd);
+        private:
             int underflow();
     };
 //=
@@ -22,9 +23,6 @@
 //UFLOW
     inline int IFdStreambuf::underflow()
     {
-        if (gptr() < egptr())
-            return *gptr();
-
         if (read(d_fd, d_buffer, 1) <= 0)
             return EOF;
 

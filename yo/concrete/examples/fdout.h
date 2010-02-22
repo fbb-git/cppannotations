@@ -16,6 +16,7 @@
             OFdnStreambuf(int fd, size_t bufsize = 1);
             virtual ~OFdnStreambuf();
             void open(int fd, size_t bufsize = 1);
+        private:
             virtual int sync();
             virtual int overflow(int c);
     };

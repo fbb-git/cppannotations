@@ -3,30 +3,33 @@
 
     #include <unistd.h>
     #include <streambuf>
+    #include <cstring>
+
 //CLASS
-    class ifdnstreambuf: public std::streambuf
+    class IFdNStreambuf: public std::streambuf
     {
         protected:
             int         d_fd;
-            size_t    d_bufsize;
+            size_t      d_bufsize;
             char*       d_buffer;
         public:
-            ifdnstreambuf();
-            ifdnstreambuf(int fd, size_t bufsize = 1);
-            ~ifdnstreambuf();
+            IFdNStreambuf();
+            IFdNStreambuf(int fd, size_t bufsize = 1);
+            virtual ~IFdNStreambuf();
             void open(int fd, size_t bufsize = 1);
-            int underflow();
-            std::streamsize xsgetn(char *dest, std::streamsize n);
+        private:
+            virtual int underflow();
+            virtual std::streamsize xsgetn(char *dest, std::streamsize n);
     };
 //=
 
 //CONS
-    inline ifdnstreambuf::ifdnstreambuf()
+    inline IFdNStreambuf::IFdNStreambuf()
     :
         d_bufsize(0),
         d_buffer(0)
     {}
-    inline ifdnstreambuf::ifdnstreambuf(int fd, size_t bufsize)
+    inline IFdNStreambuf::IFdNStreambuf(int fd, size_t bufsize)
     {
         open(fd, bufsize);
     }
@@ -36,7 +39,7 @@
     // source files. Headers should not have external linkage.
 
 //DESTR
-    ifdnstreambuf::~ifdnstreambuf()
+    IFdNStreambuf::~IFdNStreambuf()
     {
         if (d_bufsize)
         {
@@ -46,7 +49,7 @@
     }
 //=
 //OPEN
-    void ifdnstreambuf::open(int fd, size_t bufsize)
+    void IFdNStreambuf::open(int fd, size_t bufsize)
     {
         d_fd = fd;
         d_bufsize = bufsize;
@@ -55,7 +58,7 @@
     }
 //=
 //UFLOW
-    int ifdnstreambuf::underflow()
+    int IFdNStreambuf::underflow()
     {
         if (gptr() < egptr())
             return *gptr();
@@ -70,7 +73,7 @@
     }
 //=
 //XSGETN
-    std::streamsize ifdnstreambuf::xsgetn(char *dest, std::streamsize n)
+    std::streamsize IFdNStreambuf::xsgetn(char *dest, std::streamsize n)
     {
         int nread = 0;
 

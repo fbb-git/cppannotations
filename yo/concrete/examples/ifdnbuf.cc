@@ -4,10 +4,10 @@
     #include "ifdnbuf.h"
     using namespace std;
 
-    int main(int argc)
+    int main()
     {
                                     // internally: 30 char buffer
-        ifdnstreambuf fds(STDIN_FILENO, 30);
+        IFdNStreambuf fds(STDIN_FILENO, 30);
 
         char buf[80];               // main() reads blocks of 80
                                     // chars
