@@ -3,7 +3,7 @@
     #include <ios>
 
 //CLASS
-    class ifdseek: public IFdStreambuf
+    class IFdSeek: public IFdStreambuf
     {
         typedef std::streambuf::pos_type        pos_type;
         typedef std::streambuf::off_type        off_type;
@@ -11,19 +11,20 @@
         typedef std::ios::openmode              openmode;
 
         public:
-            ifdseek(int fd);
+            IFdSeek(int fd);
+        private:
             pos_type seekoff(off_type offset, seekdir dir, openmode);
             pos_type seekpos(pos_type offset, openmode mode);
     };
 //=
 //CONS
-    inline ifdseek::ifdseek(int fd)
+    inline IFdSeek::IFdSeek(int fd)
     :
         IFdStreambuf(fd)
     {}
 //=
 //SEEKOFF
-    ifdseek::pos_type ifdseek::seekoff(off_type off, seekdir dir, openmode)
+    IFdSeek::pos_type IFdSeek::seekoff(off_type off, seekdir dir, openmode)
     {
         pos_type pos =
             lseek
@@ -42,7 +43,7 @@
     }
 //=
 //SEEKPOS
-    inline ifdseek::pos_type ifdseek::seekpos(pos_type off, openmode mode)
+    inline IFdSeek::pos_type IFdSeek::seekpos(pos_type off, openmode mode)
     {
         return seekoff(off, std::ios::beg, mode);
     }

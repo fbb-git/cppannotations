@@ -5,9 +5,9 @@
     #include <iomanip>
     using namespace std;
 
-    int main(int argc)
+    int main()
     {
-        ifdseek fds(0);
+        IFdSeek fds(0);
         istream is(&fds);
         string  s;
 
