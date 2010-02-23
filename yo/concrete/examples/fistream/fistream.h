@@ -5,6 +5,7 @@
 #include <istream>
 #include <sstream>
 #include <fstream>
+#include <memory>
 
 /*
     fis >> field(3) >> x    extracts x over max 3 positions.
@@ -26,7 +27,7 @@ namespace FBB
 //INITIAL
     class Fistream: public std::istream
     {
-        std::auto_ptr<std::filebuf> d_filebuf;
+        std::shared_ptr<std::filebuf> d_filebuf;
         std::streambuf *d_streambuf;
         std::istringstream d_iss;
         size_t d_width;
