@@ -4,9 +4,9 @@
     #include <istream>
     using namespace std;
 
-    int main(int argc)
+    int main()
     {
-        fdunget fds(0, 3, 2);
+        FdUnget fds(0, 3, 2);
         istream is(&fds);
         char    c;
 

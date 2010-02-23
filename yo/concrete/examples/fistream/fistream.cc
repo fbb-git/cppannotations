@@ -3,12 +3,12 @@
 //OPEX
 istream &std::operator>>(istream &str, field const &params)
 {
-    return reinterpret_cast<fistream *>(&str)->setField(params);
+    return reinterpret_cast<Fistream *>(&str)->setField(params);
 }
 //=
 
 //CONS1
-fistream::fistream(istream &stream)
+Fistream::Fistream(istream &stream)
 :
     istream(stream.rdbuf()),
     d_streambuf(rdbuf()),
@@ -16,7 +16,7 @@ fistream::fistream(istream &stream)
 {}
 //=
 //CONS2
-fistream::fistream(char const *name, ios::openmode mode)
+Fistream::Fistream(char const *name, ios::openmode mode)
 :
     istream(new filebuf()),
     d_filebuf(reinterpret_cast<filebuf *>(rdbuf())),
@@ -27,7 +27,7 @@ fistream::fistream(char const *name, ios::openmode mode)
 }
 //=
 //SETFIELD
-std::istream &fistream::setField(field const &params)
+std::istream &Fistream::setField(field const &params)
 {
     if (params.d_newWidth)                  // new field size requested
         d_width = params.d_width;           // set new width
@@ -41,7 +41,7 @@ std::istream &fistream::setField(field const &params)
 }
 //=
 //SETBUFFER
-void fistream::setBuffer()
+void Fistream::setBuffer()
 {
     char *buffer = new char[d_width + 1];
 

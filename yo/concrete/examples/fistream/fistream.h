@@ -24,7 +24,7 @@ namespace FBB
     class field;
 
 //INITIAL
-    class fistream: public std::istream
+    class Fistream: public std::istream
     {
         std::auto_ptr<std::filebuf> d_filebuf;
         std::streambuf *d_streambuf;
@@ -33,8 +33,8 @@ namespace FBB
 //=
         public:
 //CONS
-            fistream(std::istream &stream);
-            fistream(char const *name,
+            Fistream(std::istream &stream);
+            Fistream(char const *name,
                 std::ios::openmode mode = std::ios::in);
 //=
             std::istream &setField(field const &params);
@@ -44,7 +44,7 @@ namespace FBB
 //FIELD
     class field
     {
-        friend class fistream;
+        friend class Fistream;
         size_t d_width;
         bool     d_newWidth;
 

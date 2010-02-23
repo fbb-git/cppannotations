@@ -7,7 +7,7 @@ using namespace FBB;
 //MAIN
     int main()
     {
-        fistream fis(cin);
+        Fistream fis(cin);
 
         fis >> hex;
         while (true)

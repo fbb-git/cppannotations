@@ -2,24 +2,25 @@
     #include <streambuf>
     #include <ios>
     #include <algorithm>
+    #include <cstring>
 
 //CLASS
-    class fdunget: public std::streambuf
+    class FdUnget: public std::streambuf
     {
-        int         d_fd;
-        size_t    d_bufsize;
-        size_t    d_reserved;
-        char*       d_buffer;
-        char*       d_base;
-
+        int     d_fd;
+        size_t  d_bufsize;
+        size_t  d_reserved;
+        char   *d_buffer;
+        char   *d_base;
         public:
-            fdunget(int fd, size_t bufsz, size_t unget);
-            ~fdunget();
+            FdUnget(int fd, size_t bufsz, size_t unget);
+            virtual ~FdUnget();
+        private:
             int underflow();
     };
 //=
 //CONS
-    fdunget::fdunget(int fd, size_t bufsz, size_t unget)
+    FdUnget::FdUnget(int fd, size_t bufsz, size_t unget)
     :
         d_fd(fd),
         d_reserved(unget)
@@ -39,17 +40,14 @@
     }
 //=
 //DESTR
-    inline fdunget::~fdunget()
+    inline FdUnget::~FdUnget()
     {
         delete[] d_buffer;
     }
 //=
 //UNDERFLOW
-    int fdunget::underflow()
+    int FdUnget::underflow()
     {
-        if (gptr() < egptr())
-            return *gptr();
-
         size_t ungetsize = gptr() - eback();
         size_t move = std::min(ungetsize, d_reserved);
 
