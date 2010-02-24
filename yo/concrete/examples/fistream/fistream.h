@@ -27,7 +27,7 @@ namespace FBB
 //INITIAL
     class Fistream: public std::istream
     {
-        std::shared_ptr<std::filebuf> d_filebuf;
+        std::unique_ptr<std::filebuf> d_filebuf;
         std::streambuf *d_streambuf;
         std::istringstream d_iss;
         size_t d_width;
