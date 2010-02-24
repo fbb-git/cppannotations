@@ -4,23 +4,20 @@
         int d_pid;
 
         public:
-            virtual ~Fork();
+            virtual ~Fork() = default;
             void fork();
 
         protected:
             int pid() const;
+            int waitForChild();                 // returns the status
+
+        private:
             virtual void childRedirections();
             virtual void parentRedirections();
 
-            virtual void childProcess() = 0;    // both MUST be implemented
+            virtual void childProcess() = 0;    // pure virtual members
             virtual void parentProcess() = 0;
-
-            int waitForChild();                 // returns the status
     };
-//=
-//DES
-    inline Fork::~Fork()
-    {}
 //=
 //PID
     inline int Fork::pid() const

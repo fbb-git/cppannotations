@@ -1,16 +1,17 @@
     #include <iostream>
     #include <fstream>
     #include <cstdlib>
-    using namespace::std;
+    using namespace std;
 
     int main()
     {
         ofstream of("outfile");
 
-        cout.rdbuf(of.rdbuf());
-        cout << "To the of stream" << endl;
+        streambuf *buf = cout.rdbuf(of.rdbuf());
+        cout << "To the of stream\n";
         system("echo hello world");
-        cout << "To the of stream" << endl;
+        cout << "To the of stream\n";
+        cout.rdbuf(buf);
     }
     /*
         Generated output: on the file `outfile'

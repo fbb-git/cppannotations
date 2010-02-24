@@ -9,10 +9,8 @@
         {
             childRedirections();
             childProcess();
-
             exit(1);                    // we shouldn't come here:
-                                        // childProcess() should exit
-        }
+        }                               // childProcess() should exit
 
         parentRedirections();
         parentProcess();
