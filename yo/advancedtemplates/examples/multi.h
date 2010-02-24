@@ -63,7 +63,7 @@ struct TypeList
     struct Multi: public MultiBase<0, Policy<Types> ...>
     {
         typedef TypeList<Types ...> PlainTypes;
-        typedef MultiBase<0, Policy<Types> ...> Inherit;
+        typedef MultiBase<0, Policy<Types> ...> Base;
 
         enum { size = PlainTypes::size };
     
@@ -86,24 +86,24 @@ struct st
     class typeAt
     {
         template <size_t idx, typename MultiBase>
-        struct typeX;
+        struct PolType;
     
         template <size_t idx, 
                   size_t nr, typename PolicyT1, typename ... PolicyTypes>
-        struct typeX<idx, MultiBase<nr, PolicyT1, PolicyTypes ...>>
+        struct PolType<idx, MultiBase<nr, PolicyT1, PolicyTypes ...>>
         {
-            typedef typename typeX<
+            typedef typename PolType<
                 idx - 1, MultiBase<nr + 1, PolicyTypes ...>>::Type Type;
         };
         
         template <size_t nr, typename PolicyT1, typename ... PolicyTypes>
-        struct typeX<0, MultiBase<nr, PolicyT1, PolicyTypes ...>>
+        struct PolType<0, MultiBase<nr, PolicyT1, PolicyTypes ...>>
         {
             typedef PolicyT1 Type;
         };
     public:
         typeAt(typeAt const &) = delete;
-        typedef typename typeX<index, typename Multi::Inherit>::Type Type;
+        typedef typename PolType<index, typename Multi::Base>::Type Type;
     };
 //=
 
