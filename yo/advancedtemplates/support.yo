@@ -1,18 +1,54 @@
-Since the tt(GenScatter) class returns a typelist containing all tt(Wrap) base
-classes matching the types in the order in which they appeared in
-tt(GenScat)'s typelist, it is attractive to be able to obtain these tt(Wrap)
-base class types by their index numbers. Being able to reach these types by
-their indices allows, e.g., base class intializations as well as quick access
-to their respective members.
+The tt(Multi) class template defines tt(PlainTypes) as the tt(TypeList)
+holding all the types of its parameter pack. Each tt(MultiType) derived from a
+tt(UWrap) type also defines a type tt(Type) representing the policy type that
+was used to define the tt(UWrap) type and a type tt(Base) representing the
+type of its nested tt(MultiType) class.
 
-The class template tt(BaseClass) was designed with these thoughts in mind. It
-uses tt(AtIndex) (cf. section ref(ATINDEX)) to obtain a particular tt(Wrap)
-base class and returns the latter type as its tt(Type) type definition:
-    verbinsert(BASECLASS)(advancedtemplates/examples/genscatter.h)
+These three type definitions allow us to access the types from which the
+tt(Multi) object was created as well as the values of those types. 
 
-Once a tt(GenScatter) object is available, the following function template can
-be used to obtain a cast-less reference to any of its tt(Wrap) policy classes,
-given its index. Since the index can be matched one-to-one with the
-tt(GenScatter)'s typelist, clients should have no problem finding the
-appropriate index values for a particular problem at hand:
-    verbinsert(BASE)(advancedtemplates/examples/genscatter.h)
+The class template tt(typeAt), is a pure template meta program class template
+(it has no run-time executable code). It expects a tt(size_t idx) template
+argument specifying the index of the policy type in a tt(Multi) type object as
+well as a tt(Multi) class type. It defines the type tt(Type) as the tt(Type)
+defined by tt(Multi)'s tt(MultiBase<idx, ...) base class. Example:
+        verb(
+    typeAt<0, Multi<Vector, int, double>>::Type // Type is vector<double>
+        )
+
+The class template tt(typeAt) has a generic (recursive) definition and a
+specialization. The generic definition defines tt(Type) as the type returned
+by tt(typeAt) applied to tt(Multi)'s tt(Base) type (since tt(Multi) is a 
+tt(MultiBase), tt(Base) types defined by tt(Multi)'s base classes are also
+available to tt(Multi) itself. Here is tt(typeAt)'s definition:
+        verbinsert(TYPEAT)(advancedtemplates/examples/multi.h)
+
+The types specified by tt(Multi)'s parameter pack can also be retrieved using
+a second helper class template: tt(plainTypeAt). Example:
+        verb(
+    plainTypeAt<0, Multi<Vector, int, double>>::Type // Type is double
+        )
+
+The class template tt(plainTypeAt) uses a slightly different implementation
+than tt(typeAt). It is also a pure template meta program class template
+defining a nested class template tt(At). tt(At) is implemented like tt(typeAt)
+but it visits the types of the original template pack that was passed to
+tt(Multi), and made available by tt(Multi) as its tt(PlainTypes) type. Here is
+tt(plainTypeAt)'s definition:
+        verbinsert(PLAINAT)(advancedtemplates/examples/multi.h)
+
+Arguably the neatest support template is tt(get). This is a function template
+defining tt(size_t idx) as its first template parameter and tt(typename Multi)
+as its second template parameter. tt(Get) defines one function parameter: a
+reference to a tt(Multi), so it can deduct tt(Multi)'s type by itself. Knowing
+that it's a tt(Multi), we reason that it is also a tt(UWrap<nr, PolicyType>)
+and therefore also a tt(PolicyType), as the latter class is defined as a base
+class of tt(UWrap). Since class type objects can initialize references to
+their base classes the tt(PolicyType &) can be initialized from a tt(Multi)
+object. And since we can determine tt(PolicyType) using tt(TypeAt) (note that
+evaluating tt(typename typeAt<idx, Multi>::Type) is a purely compile-time
+matter), the tt(get) function can very well be implemented em(inline) by a
+single tt(return) statement:
+        verbinsert(GET)(advancedtemplates/examples/multi.h)
+
+

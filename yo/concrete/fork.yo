@@ -1,34 +1,34 @@
-From  the bf(C) programming language, the ti(fork()) i(system call) is well
-known. When a program needs to start a new process, ti(system()) can be used,
+From  the bf(C) programming language, the ti(fork) i(system call) is well
+known. When a program needs to start a new process, ti(system) can be used,
 but this requires the program to wait for the emi(child process) to
-terminate. The more general way to spawn subprocesses is to call tt(fork()).
+terminate. The more general way to spawn subprocesses is to call tt(fork).
 
 In this section we will see how bf(C++) can be used to wrap classes around a
-complex system call like tt(fork()). Much of what follows in this section
+complex system call like tt(fork). Much of what follows in this section
 directly applies to the i(Unix) i(operating system), and the discussion will
 therefore focus on that operating system. However, other systems usually
 provide comparable facilities. The following discussion is based heavily on
 the notion of emi(design patterns) (cf. em(Gamma et al.) (1995)
     hi(Gamma, E.) i(Design Patterns), Addison-Wesley)
 
-   When tt(fork()) is called, the current program is duplicated in memory,
+   When tt(fork) is called, the current program is duplicated in memory,
 thus creating a new process, and both processes continue their execution just
-below the tt(fork()) system call. The two processes may, however, inspect the
-return value of tt(fork()): the return value in the original process (called
+below the tt(fork) system call. The two processes may, however, inspect the
+return value of tt(fork): the return value in the original process (called
 the emi(parent process)) differs from the return value in the newly created
 process (called the emi(child process)):
     itemization(
-    it() In the em(parent process) tt(fork()) returns the emi(process ID) of
-the child process created by the tt(fork()) system call. This is a positive
+    it() In the em(parent process) tt(fork) returns the emi(process ID) of
+the child process created by the tt(fork) system call. This is a positive
 integer value.
-    it() In the em(child process) tt(fork()) returns 0.
-    it() If tt(fork()) fails, -1 is returned.
+    it() In the em(child process) tt(fork) returns 0.
+    it() If tt(fork) fails, -1 is returned.
     )
 
     A basic tt(Fork) class should hide all bookkeeping details of a system
-call like tt(fork()) from its users. The class tt(Fork) developed here will do
+call like tt(fork) from its users. The class tt(Fork) developed here will do
 just that. The class itself only needs to take care of the proper execution of
-the tt(fork()) system call. Normally, tt(fork()) is called to start a child
+the tt(fork) system call. Normally, tt(fork) is called to start a child
 process, usually boiling down to the execution of a separate process. This
 child process may expect input at its standard input stream and/or may
 generate output to its standard output and/or standard error streams. tt(Fork)
@@ -52,9 +52,9 @@ pattern)
 
     This design pattern allows us to define an emi(abstract base class)
         hi(base class)
-    already providing the essential steps related to the tt(fork()) system
+    already providing the essential steps related to the tt(fork) system
 call and deferring the implementation of certain normally used parts of the
-tt(fork()) system call to subclasses.
+tt(fork) system call to subclasses.
 
     The tt(Fork) abstract base class itself has the following characteristics:
     itemization(
@@ -62,9 +62,9 @@ tt(fork()) system call to subclasses.
 the child's emi(process id) (in the parent process) and the value 0 in the
 child process. Its public interface declares but two members:
         itemization(
-        it() a ti(fork()) member function, performing the actual forking
+        it() a ti(fork) member function, performing the actual forking
             (i.e., it will create the (new) child process);
-        it() an em(empty) tt(virtual) destructor tt(~Fork()), which will be
+        it() an em(empty) tt(virtual) destructor tt(~Fork), which will be
         overridden by derived classes defining their own destructors.
                 verbinsert(DES)(concrete/examples/fork.h)
         )
@@ -74,25 +74,26 @@ child process. Its public interface declares but two members:
 tt(protected) section and can thus em(only) be used by derived classes. They
 are:
         itemization(
-        it() The member function tt(pid()), allowing derived classes to
-            access the system tt(fork())'s return value:
+        itt(pid()): The member function tt(pid) allows derived classes to
+            access the system tt(fork)'s return value:
                 verbinsert(PID)(concrete/examples/fork.h)
-        it() A member tt(int waitForChild()), which can be called by parent
-processes to wait for the completion of their child processes (as discussed
-below). This member is declared in the class interface. Its implementation is:
+        itt(waitForChild()): The member tt(int waitForChild) can be called by
+parent processes to wait for the completion of their child processes (as
+discussed below). This member is declared in the class interface. Its
+implementation is:
                 verbinclude(concrete/examples/waitforchild.cc)
             This simple implementation returns the child's emi(exit status) to
-the parent. The called system function ti(waitpid()) em(blocks) until the
+the parent. The called system function ti(waitpid) em(blocks) until the
 child terminates.
-        it() When tt(fork()) system calls are used,
+        it() When tt(fork) system calls are used,
     em(parent processes) hi(parent process) and
     emi(child processes) hi(child process) must always be distinguished. The
 main distinction between these processes is that tt(d_pid) will be equal to
 the child's process-id in the parent process, while tt(d_pid) will be equal to
 0 in the child process itself. Since these two processes must always be
 distinguished (and present), their implementation by classes derived from
-tt(Fork) is enforced by tt(Fork)'s interface: the members tt(childProcess()),
-defining the child process' actions and tt(parentProcess()), defining the
+tt(Fork) is enforced by tt(Fork)'s interface: the members tt(childProcess),
+defining the child process' actions and tt(parentProcess), defining the
 parent process' actions were defined as pure virtual functions.
         it() In addition, communication between parent- and child processes
 may use standard streams or other facilities, like em(pipes) (cf. section
@@ -112,15 +113,15 @@ Here are their default definitions provided by the class's interface:
             verbinsert(REDIRECT)(concrete/examples/fork.h)
         )
     )
-    The member function tt(fork()) calls the system function tt(fork())
-(Caution: since the system function tt(fork()) is called by a member
+    The member function tt(fork) calls the system function tt(fork)
+(Caution: since the system function tt(fork) is called by a member
 function having the same name, the tt(::) scope resolution operator must be
 used to prevent a recursive call of the member function itself). After calling
-tt(::fork()), depending on its return value, either tt(parentProcess())
-or  tt(childProcess()) is called. Maybe redirection is
-necessary. tt(Fork::fork())'s implementation calls tt(childRedirections())
-just before calling tt(childProcess()), and tt(parentRedirections()) just
-before calling tt(parentProcess()):
+tt(::fork()), depending on its return value, either tt(parentProcess)
+or  tt(childProcess) is called. Maybe redirection is
+necessary. tt(Fork::fork())'s implementation calls tt(childRedirections)
+just before calling tt(childProcess), and tt(parentRedirections) just
+before calling tt(parentProcess):
         verbinclude(concrete/examples/fork.cc)
     In tt(fork.cc) the class's emi(internal header file) tt(fork.ih) is
 included. This header file takes care of the inclusion of the necessary system
@@ -130,18 +131,18 @@ implementation is:
 
     Child processes should not return: once they have completed their tasks,
 they should terminate. This happens automatically when the child process
-performs a call to a member of the ti(exec...()) family, but if the child
+performs a call to a member of the ti(exec...) family, but if the child
 itself remains active, then it must make sure that it terminates properly. A
-child process normally uses ti(exit()) to terminate itself, but note that
-tt(exit()) prevents the activation of destructors of objects
-        hi(destructor: called at exit())
-        hi(exit(): calling destructors)
+child process normally uses ti(exit) to terminate itself, but note that
+tt(exit) prevents the activation of destructors of objects
+        hi(destructor: called at exit)
+        hi(exit: calling destructors)
     defined at the same or more superficial nesting levels than the level at
-which tt(exit()) is called. Destructors of globally defined objects em(are)
-activated when tt(exit()) is used. When using tt(exit()) to terminate
-tt(childProcess()), it should either itself call a support member function
+which tt(exit) is called. Destructors of globally defined objects em(are)
+activated when tt(exit) is used. When using tt(exit) to terminate
+tt(childProcess), it should either itself call a support member function
 defining all nested objects it needs, or it should define all its objects in a
-compound statement (e.g., using a tt(throw) block) calling tt(exit()) beyond
+compound statement (e.g., using a tt(throw) block) calling tt(exit) beyond
 the compound statement.
 
     Parent processes should normally wait for their children to complete. The
@@ -152,7 +153,7 @@ those signal then such child processes remain visible as so-called emi(zombie)
 processes.
 
     If parent processes must wait for their children to complete, they may
-call the member tt(waitForChild()). This member returns the exit status of a
+call the member tt(waitForChild). This member returns the exit status of a
 child process to its parent.
 
     There exists a situation where the em(child) process em(continues) to
