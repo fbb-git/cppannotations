@@ -1,5 +1,8 @@
     #include <string>
     #include <map>
+
+	#include <memory>
+
     #include "../selector.h"
     #include "child.h"
 
@@ -16,20 +19,23 @@
             sizeofCommands
         };
 
+        typedef std::map<int, std::shared_ptr<Child>> MapIntChild;
+
+        friend class Find;
         class Find
         {
             int     d_nr;
             public:
                 Find(int nr);
-                bool operator()(std::map<int, Child *>::value_type &vt)
-                                                                  const;
+                bool operator()(MapIntChild::value_type &vt) const;
         };
 
-        Selector                d_selector;
-        int                     d_nr;
-        std::map<int, Child *>  d_child;
+        Selector    d_selector;
+        int         d_nr;
+        MapIntChild d_child;
 
         static void (Monitor::*s_handler[])(int, std::string const &);
+        static int s_initialize;
 
         public:
             enum Done
@@ -39,8 +45,8 @@
             void run();
 
         private:
-            static void killChild(std::map<int, Child *>::value_type it);
-            static void initialize();
+            static void killChild(MapIntChild::value_type it);
+            static int initialize();
 
             Commands    next(int *value, std::string *line);
             void    processInput();
@@ -58,9 +64,7 @@
     inline Monitor::Monitor()
     :
         d_nr(0)
-    {
-        initialize();
-    }
+    {}
 //=
 
 //FINDIMP
@@ -68,8 +72,7 @@
     :
         d_nr(nr)
     {}
-    inline bool Monitor::Find::operator()(
-                            std::map<int, Child *>::value_type &vt) const
+    inline bool Monitor::Find::operator()(MapIntChild::value_type &vt) const
     {
         return d_nr == vt.second->nr();
     }

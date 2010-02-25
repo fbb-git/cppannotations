@@ -1,5 +1,6 @@
     #include "monitor.h"
 
+//MAIN
     int main()
     try
     {
@@ -9,6 +10,7 @@
     {
         return exitValue;
     }
+//=
 
     /*
         Example of a session:

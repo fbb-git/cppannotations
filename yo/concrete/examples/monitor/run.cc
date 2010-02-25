@@ -1,5 +1,7 @@
     #include "monitor.ih"
 
+    int Monitor::s_initialize = Monitor::initialize();
+
     void Monitor::run()
     {
         d_selector.addReadFd(STDIN_FILENO);
@@ -20,7 +22,6 @@
                         processChild(fd);
                 }
                 cout << "NEXT ...\n";
-
             }
             catch (char const *msg)
             {

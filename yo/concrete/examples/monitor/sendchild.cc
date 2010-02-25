@@ -2,8 +2,7 @@
 //SEND
     void Monitor::sendChild(int nr, string const &line)
     {
-        map<int, Child *>::iterator it =
-            find_if(d_child.begin(), d_child.end(), Find(nr));
+        auto it = find_if(d_child.begin(), d_child.end(), Find(nr));
 
         if (it == d_child.end())
             cerr << "No child number " << nr << '\n';
