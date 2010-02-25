@@ -3,14 +3,14 @@
 //  void Monitor::killChild(map<int, Child *>::value_type it)
 //  {
 //      if (kill(it.second->pid(), SIGTERM))
-//          cerr << "Couldn't kill process " << it.second->pid() << endl;
+//          cerr << "Couldn't kill process " << it.second->pid() << '\n';
 //  }
 
 //KILL
     void Monitor::killChild(map<int, Child *>::value_type it)
     {
         if (kill(it.second->pid(), SIGTERM))
-            cerr << "Couldn't kill process " << it.second->pid() << endl;
+            cerr << "Couldn't kill process " << it.second->pid() << '\n';
 
         // reap defunct child process
         int status = 0;
@@ -23,7 +23,7 @@
     {
         for_each(d_child.begin(), d_child.end(), killChild);
         if (msg.length())
-            cerr << msg << endl;
+            cerr << msg << '\n';
         throw value;
     }
 //=

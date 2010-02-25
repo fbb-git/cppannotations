@@ -1,3 +1,6 @@
+
+// compile with 'g++ parentslurp.cc fork.cc waitforchild.cc pipe.cc'
+
     #include "fork.h"
     #include "pipe.h"
     #include <unistd.h>
@@ -6,11 +9,10 @@
     {
         Pipe    d_pipe;
 
-        protected:
-            virtual void childRedirections();
-            virtual void parentRedirections();
-            virtual void childProcess();
-            virtual void parentProcess();
+        virtual void childRedirections();
+        virtual void parentRedirections();
+        virtual void childProcess();
+        virtual void parentProcess();
     };
 //=
 
@@ -29,6 +31,6 @@
 //CHILDPROC
     inline void ParentSlurp::childProcess()
     {
-        execl("/bin/ls", "/bin/ls", static_cast<char *>(0));
+        execl("/bin/ls", "/bin/ls", 0);
     }
 //=

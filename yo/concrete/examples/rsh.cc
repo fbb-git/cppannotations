@@ -42,7 +42,7 @@
                     status;
                 wait(&status);
                 if ((status = WEXITSTATUS(status)))
-                    cerr << cmd << " returned exit status " << status << endl;
+                    cerr << cmd << " returned exit status " << status << '\n';
             }
             else
                 cout << "Command " << cmd << " disallowed\n";

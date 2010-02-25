@@ -11,23 +11,23 @@
         public:
             void handler(std::string const &str)
             {
-                std::cout << str << std::endl;
+                std::cout << str << '\n';
             }
             void handler(std::string const &str) const
             {
-                std::cout << "const: " << str << std::endl;
+                std::cout << "const: " << str << '\n';
             }
             void constMember(std::string const &str) const
             {
-                std::cout << "const member: " << str << std::endl;
+                std::cout << "const member: " << str << '\n';
             }
             void nonConstMember(std::string const &str)
             {
-                std::cout << "non-const member: " << str << std::endl;
+                std::cout << "non-const member: " << str << '\n';
             }
             void operator()(std::string const &str) const
             {
-                std::cout << "op()() cons " << str << std::endl;
+                std::cout << "op()() cons " << str << '\n';
             }
     };
 

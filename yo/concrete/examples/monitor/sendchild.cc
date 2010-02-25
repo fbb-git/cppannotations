@@ -6,13 +6,13 @@
             find_if(d_child.begin(), d_child.end(), Find(nr));
 
         if (it == d_child.end())
-            cerr << "No child number " << nr << endl;
+            cerr << "No child number " << nr << '\n';
         else
         {
-            ofdnstreambuf ofdn(it->second->writeFd());
+            OFdnStreambuf ofdn(it->second->writeFd());
             ostream out(&ofdn);
 
-            out << line << endl;
+            out << line << '\n';
         }
     }
 //=

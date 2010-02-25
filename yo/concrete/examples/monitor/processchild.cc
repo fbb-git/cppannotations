@@ -7,6 +7,6 @@
         string line;
 
         getline(istr, line);
-        cout << d_child[fd]->pid() << ": " << line << endl;
+        cout << d_child[fd]->pid() << ": " << line << '\n';
     }
 //=

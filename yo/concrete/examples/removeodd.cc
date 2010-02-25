@@ -17,7 +17,7 @@
             remove_if(vi.begin(), vi.end(), bind2nd(bit_and<int>(), 1)),
             ostream_iterator<int>(cout, " ")
         );
-        cout << endl;
+        cout << '\n';
     }
     /*
         Generated output:

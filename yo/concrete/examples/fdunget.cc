@@ -37,7 +37,7 @@
                 cout << " reached\n";
                 break;
             }
-            cout << "Next character: " << c << endl;
+            cout << "Next character: " << c << '\n';
         }
     }
     /*

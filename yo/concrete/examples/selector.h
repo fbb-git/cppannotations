@@ -25,19 +25,19 @@
         public:
             Selector();
 
-            int wait();
+            int exceptFd();
             int nReady();
             int readFd();
+            int wait();
             int writeFd();
-            int exceptFd();
-            void setAlarm(int sec, int usec = 0);
-            void noAlarm();
+            void addExceptFd(int fd);
             void addReadFd(int fd);
             void addWriteFd(int fd);
-            void addExceptFd(int fd);
+            void noAlarm();
+            void rmExceptFd(int fd);
             void rmReadFd(int fd);
             void rmWriteFd(int fd);
-            void rmExceptFd(int fd);
+            void setAlarm(int sec, int usec = 0);
 
         private:
             int checkSet(int *index, fd_set &set);
@@ -75,7 +75,7 @@
 //NOALARM
     inline void Selector::noAlarm()
     {
-        setAlarm(INT_MAX, INT_MAX);
+        setAlarm(-1, -1);
     }
 //=
 //ADDREAD

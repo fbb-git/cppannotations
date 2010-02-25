@@ -3,9 +3,7 @@
     int main()
     try
     {
-        Monitor monitor;
-
-        monitor.run();
+        Monitor().run();
     }
     catch (int exitValue)
     {

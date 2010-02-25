@@ -22,7 +22,7 @@
         StringVector vs(argv, argv + argc);
 
         ForEach(vs.begin(), vs.end(), vs, &StringVector::display);
-        cout << endl;
+        cout << '\n';
     }
     /*
         Output generated when running a.out alpha bravo charley

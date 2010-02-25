@@ -25,7 +25,7 @@
         cout << "Ok, ";
         of << "That's all, folks\n";
 
-        of.form("%s\n", "Hello world of C++") << endl;
+        of.form("%s\n", "Hello world of C++") << '\n';
     };
 
 /*

@@ -39,13 +39,13 @@
                     string  line;
                     getline(cin, line);
                     cout << "Child " << d_nr << ":" << ++message << ": " <<
-                                                        line << endl;
+                                                        line << '\n';
                 }
             }
             catch (...)
             {
                     cout << "Child " << d_nr << ":" << ++message << ": " <<
-                                "select() failed" << endl;
+                                "select() failed" << '\n';
             }
         }
         exit(0);

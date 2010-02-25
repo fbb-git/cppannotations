@@ -32,7 +32,7 @@
     {
         ForEach(row.begin(), row.end(), *this,
                                         &Vector2<Type>::columns);
-        std::cout << std::endl;
+        std::cout << '\n';
     }
 
     template <typename Type>

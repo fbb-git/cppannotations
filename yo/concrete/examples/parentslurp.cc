@@ -10,7 +10,7 @@
         size_t    nr = 1;
 
         while (getline(std::cin, line))
-            std::cout << nr++ << ": " << line << std::endl;
+            std::cout << nr++ << ": " << line << '\n';
 
         waitForChild();
     }
@@ -18,10 +18,7 @@
 //MAIN
     int main()
     {
-        ParentSlurp ps;
-
-        ps.fork();
-        return 0;
+        ParentSlurp().fork();
     }
     /*
         Generated Output (example only, actually obtained output may differ):
