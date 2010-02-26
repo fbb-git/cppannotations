@@ -25,6 +25,7 @@
             int writeFd() const;
             int pid() const;
             int nr() const;
+        private:
             virtual void childRedirections();
             virtual void parentRedirections();
             virtual void childProcess();
