@@ -1,1 +1,90 @@
-(ISN, see concrete/lvalues/lvalues.cc)
+A problem with ti(operator[]) is that the operator can't distinguish between
+it being used as an em(lvalue) from it being used as an em(rvalue). It is a
+familiar misconception to think that since
+        verb(
+    Type const &operator[](size_t index) const
+        )
+ is used as em(rvalue) (since the object isn't modified) that
+    that 
+        verb(
+    Type &operator[](size_t index)
+        )
+ is used as em(lvalue) (since the returned value can be modified).  In fact,
+the compiler distinguishes between the two operators only by the
+tt(const)-status of the object for which tt(operator[]) is called. With
+tt(const) objects the former operator is called, with non-tt(const) objects
+the latter is always used. It is always used, irrespective of it being  used as
+lvalue or rvalue.
+
+Being able to distinguish lvalues from rvalues can be very useful. Consider
+the situation where a class supporting tt(operator[]) stores data of a type
+that is very hard to copy. With data like that reference counting (e.g., using
+tt(shared_ptr)s) is probably used to prevent needless copying.
+
+As long as tt(operator[]) is used as rvalue there's no need to copy the data,
+but the information em(must) be copied if it is used as lvalue.
+
+The emi(Proxy Design Pattern) (cf. hi(Gamma, E.)em(Gamma et al.) (1995)) can
+be used to distinguish between lvalues and rvalues. With the Proxy Design
+Pattern an object of another class (the Proxy class) is used to acts as a
+em(stand in) for the `real thing'. The proxy class offers functionality that
+cannot be offered by the data themselves, like distinguishing between its
+object being used as lvalue or rvalue. A proxy class can be used in many
+situations where access to the real date cannot or should not be directly
+provided. In this regard em(iterator) types are examples of proxy classes as
+they create a layer between the real data and the software using the
+data. Proxy classes could also dereference pointers in a class storing its
+data by pointers.
+
+In this section we concentrate on the distinction between using tt(operator[])
+as lvalue and rvalue. Let's assume we have a class tt(Lines) storing lines
+from a file. It's constructor expects the name of a stream from which the
+lines are read and it offers a non-const tt(operator[]) that can be used as
+lvalue or rvalue (the tt(const) version of tt(operator[]) is omitted as it
+offers no problem because it is always used as rvalue):
+        verbinsert(LINES)(concrete/examples/lines0.h)
+
+To distinguish between lvalues and rvalues we must find distinguishing
+characteristics of lvalues and rvalues that we can exploit. Such
+distinguishing characteristics are tt(operator=) (which is always used as
+lvalue) and the conversion operator (which is always used as rvalue). Rather
+than having tt(operator[]) return a tt(string &) we can let it return a
+tt(Proxy) object that is able to distinguish between it being used as lvalue
+and rvalue. 
+
+The class tt(Proxy) thus needs tt(operator=(string const &other)) (acting as
+lvalue) and tt(operator std::string const &() const) (acting as rvalue). Do we
+need more operators? The tt(std::string) class also offers tt(operator+=), so
+we should probably implement that operator as well. Plain characters can also
+be assigned to tt(string) objects (even using their numeric values). As
+tt(string) objects cannot be em(constructed) from plain characters
+em(promotion) cannot be used with tt(operator=(string const &other)) if the
+right-hand side argument is a character. Implementing tt(operator=(char
+value)) could therefore also be considered. These additional operators are
+left out of the current implementation but `real life' proxy classes should
+consider implementing these additional operators as well. Another subtlety is
+  hi(Proxy: stream insertion and extraction)
+that tt(Proxy)'s tt(operator std::string const &() const) will not be used
+when using tt(ostream)'s insertion operator or tt(istream)'s extraction
+operator as these operators are implemented as templates not recognizing our
+tt(Proxy) class type. So when stream insertion and extraction is required (it
+probably is) then tt(Proxy) must be given its own overloaded insertion and
+extraction operator.
+
+There's no need for any code (except tt(Lines)) to create or copy tt(Proxy)
+objects. tt(Proxy)'s constructor should therefore be made private, and
+tt(Proxy) can declare tt(Lines) to be its friend. In fact, tt(Proxy) is
+intimately related to tt(Lines) and can be defined as a nested class. In the
+revised tt(Lines) class tt(operator[]) no longer returns a tt(string) but
+instead a tt(Proxy) is returned. Here is the revised tt(Lines) class,
+including its nested tt(Proxy) class:
+        verbinsert(LINES)(concrete/examples/lines.h)
+
+tt(Proxy)'s members are very lightweight and can usually be implemented
+inline:
+        verbinsert(MEMBERS)(concrete/examples/lines.h)
+
+The member tt(Lines::operator[]) can also be implemented inline: it merely
+returns a tt(Proxy) object initialized with the tt(idx)+sup(th) tt(string).
+
+
