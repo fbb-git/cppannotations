@@ -1,6 +1,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <iostream>
 
 //LINES
     class Lines
@@ -38,10 +39,12 @@
     }
 //=
 
+//INSERT
 inline std::ostream &operator<<(std::ostream &out, Lines::Proxy const &proxy)
 {
     return out << static_cast<std::string const &>(proxy);
 }
+//=
 
 //OPIDX
     inline Lines::Proxy Lines::operator[](size_t idx)
@@ -50,3 +53,7 @@ inline std::ostream &operator<<(std::ostream &out, Lines::Proxy const &proxy)
         return ret;
     }
 //=
+
+
+
+

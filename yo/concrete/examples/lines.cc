@@ -10,12 +10,16 @@ Lines::Lines(std::istream &in)
 
 using namespace std;
 
-int main()
-{
-    ifstream in("lines.cc");
-    Lines lines(in);
-
-    cout << lines[0] << '\n';
-    lines[0] = "hello world";
-    cout << lines[0] << '\n';
-}
+//MAIN
+    int main()
+    {
+        ifstream in("lines.cc");
+        Lines lines(in);
+    
+        string s = lines[0];        // rvalue use
+        lines[0] = s;               // lvalue use
+        cout << lines[0] << '\n';   // rvalue use
+        lines[0] = "hello world";   // lvalue use
+        cout << lines[0] << '\n';   // rvalue use
+    }
+//=

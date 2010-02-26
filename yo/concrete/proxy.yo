@@ -1,6 +1,7 @@
-A problem with ti(operator[]) is that the operator can't distinguish between
-it being used as an em(lvalue) from it being used as an em(rvalue). It is a
-familiar misconception to think that since
+A problem with ti(operator[]) is that it can't distinguish between its
+    hi(lvalue: distinguish from rvalue)hi(rvalue: distinguish from lvalue)
+ use as an em(lvalue) and as an em(rvalue). It is a familiar misconception to
+think that since
         verb(
     Type const &operator[](size_t index) const
         )
@@ -16,10 +17,11 @@ tt(const) objects the former operator is called, with non-tt(const) objects
 the latter is always used. It is always used, irrespective of it being  used as
 lvalue or rvalue.
 
-Being able to distinguish lvalues from rvalues can be very useful. Consider
-the situation where a class supporting tt(operator[]) stores data of a type
-that is very hard to copy. With data like that reference counting (e.g., using
-tt(shared_ptr)s) is probably used to prevent needless copying.
+Being able to distinguish between lvalues and rvalues can be very
+useful. Consider the situation where a class supporting tt(operator[]) stores
+data of a type that is very hard to copy. With data like that reference
+counting (e.g., using tt(shared_ptr)s) is probably used to prevent needless
+copying.
 
 As long as tt(operator[]) is used as rvalue there's no need to copy the data,
 but the information em(must) be copied if it is used as lvalue.
@@ -28,13 +30,12 @@ The emi(Proxy Design Pattern) (cf. hi(Gamma, E.)em(Gamma et al.) (1995)) can
 be used to distinguish between lvalues and rvalues. With the Proxy Design
 Pattern an object of another class (the Proxy class) is used to acts as a
 em(stand in) for the `real thing'. The proxy class offers functionality that
-cannot be offered by the data themselves, like distinguishing between its
-object being used as lvalue or rvalue. A proxy class can be used in many
-situations where access to the real date cannot or should not be directly
-provided. In this regard em(iterator) types are examples of proxy classes as
-they create a layer between the real data and the software using the
-data. Proxy classes could also dereference pointers in a class storing its
-data by pointers.
+cannot be offered by the data themselves, like distinguishing between its use
+as lvalue or rvalue. A proxy class can be used in many situations where access
+to the real date cannot or should not be directly provided. In this regard
+em(iterator) types are examples of proxy classes as they create a layer
+between the real data and the software using the data. Proxy classes could
+also dereference pointers in a class storing its data by pointers.
 
 In this section we concentrate on the distinction between using tt(operator[])
 as lvalue and rvalue. Let's assume we have a class tt(Lines) storing lines
@@ -49,7 +50,7 @@ characteristics of lvalues and rvalues that we can exploit. Such
 distinguishing characteristics are tt(operator=) (which is always used as
 lvalue) and the conversion operator (which is always used as rvalue). Rather
 than having tt(operator[]) return a tt(string &) we can let it return a
-tt(Proxy) object that is able to distinguish between it being used as lvalue
+tt(Proxy) object that is able to distinguish between its use as lvalue
 and rvalue. 
 
 The class tt(Proxy) thus needs tt(operator=(string const &other)) (acting as
@@ -69,7 +70,9 @@ when using tt(ostream)'s insertion operator or tt(istream)'s extraction
 operator as these operators are implemented as templates not recognizing our
 tt(Proxy) class type. So when stream insertion and extraction is required (it
 probably is) then tt(Proxy) must be given its own overloaded insertion and
-extraction operator.
+extraction operator. Here is an implementation of the overloaded insertion
+operator inserting the object for which tt(Proxy) is a stand-in:
+        verbinsert(INSERT)(concrete/examples/lines.h)
 
 There's no need for any code (except tt(Lines)) to create or copy tt(Proxy)
 objects. tt(Proxy)'s constructor should therefore be made private, and
@@ -87,4 +90,10 @@ inline:
 The member tt(Lines::operator[]) can also be implemented inline: it merely
 returns a tt(Proxy) object initialized with the tt(idx)+sup(th) tt(string).
 
-
+Now that the class tt(Proxy) has been developed it can be used in a
+program. Here is an example using the tt(Proxy) object as lvalue or rvalue. On
+the surface tt(Lines) objects won't behave differently from tt(Lines) objects
+using the original implementation, but adding an identifying tt(cout)
+statement to tt(Proxy)'s members will show that tt(operator[]) will behave
+differently when used as lvalue or as rvalue:
+        verbinsert(MAIN)(concrete/examples/lines.cc)
