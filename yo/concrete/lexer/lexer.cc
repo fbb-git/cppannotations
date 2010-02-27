@@ -2,6 +2,7 @@
     using namespace std;
 
     int main(int argc, char **argv)
+    try
     {
         if (argc == 1)
         {
@@ -12,7 +13,7 @@
         ifstream yyin(argv[1]);
         if (!yyin)
         {
-            cerr << "Can't read " << argv[1] << endl;
+            cerr << "Can't read " << argv[1] << '\n';
             return 1;
         }
 
@@ -31,9 +32,9 @@
                 "Read",
             };
             cerr << msg[err] << " error in " << scanner.lastFile() <<
-                                ", line " << scanner.lineno() << endl;
+                                ", line " << scanner.lineno() << '\n';
             scanner.stackTrace();
             return 1;
         }
-        return 0;
     }
+
