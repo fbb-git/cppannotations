@@ -1,9 +1,9 @@
-    The i(declaration section) contains several declarations, among which all
-tokens used in the grammar and the i(priority rules) of the mathematical
-operators. Moreover, several new and important specifications can be used
-here. Those that are relevant to our current example and only available in
-tt(bisonc++) are discussed here. The readery is referred to tt(bisonc++)'s
-em(man-page) hi(bisonc++: man-page) for a full description.
+    The i(declaration section) contains several sets of declarations, among
+which definitions of all the tokens used in the grammar and the priorities and
+associativities of the mathematical operators. Moreover, several new and
+important specifications can be used here as well. Those relevant to our
+current example and only available in tt(bisonc++) are discussed here. The
+reader is referred to tt(bisonc++)'s man-page for a full description.
     itemization(
     it() bi(%baseclass-header) tt(header) nl()
           Defines the pathname of the file to contain (or containing) the
@@ -13,7 +13,7 @@ em(man-page) hi(bisonc++: man-page) for a full description.
           Use tt(header) as the pathname to the file pre-included in the
            parser's base-class header.  This declaration is useful in
            situations where the base class header file refers to types which
-           might not yet be known. E.g., with tt(%union) a tt(std::string *)
+           might not yet be known. E.g., with ti(%union) a tt(std::string *)
            field might be used. Since the class tt(std::string) might not yet
            be known to the compiler once it processes the base class header
            file we need a way to inform the compiler about these classes and
@@ -30,7 +30,7 @@ em(man-page) hi(bisonc++: man-page) for a full description.
            suffix tt(.h)
     it() bi(%class-name) tt(parser-class-name) nl()
           Declares the class name of this parser. This declaration replaces
-           the tt(%name) declaration previously used by tt(bison++). It
+           the ti(%name) declaration previously used by tt(bison++). It
            defines the name of the bf(C++) class that will be
            generated. Contrary to bf(bison++)'s tt(%name) declaration,
            tt(%class-name) may appear anywhere in the first section of the
@@ -38,7 +38,7 @@ em(man-page) hi(bisonc++: man-page) for a full description.
            tt(%class-name) is specified the default class name tt(Parser) will
            be used.
     it() bi(%debug) nl()
-           Provides tt(parse()) and its support functions with debugging code,
+           Provides tt(parse) and its support functions with debugging code,
             showing the actual parsing process on the standard output
             stream. When included, the debugging output is active by default,
             but its activity may be controlled using the tt(setDebug(bool
@@ -57,14 +57,14 @@ em(man-page) hi(bisonc++: man-page) for a full description.
            contain all directives and declarations em(only) used by the
            implementations of the parser's member functions. It is the only
            header file that is included by the source file containing
-           tt(parse())'s implementation. It is suggested that user defined
+           tt(parse)'s implementation. It is suggested that user defined
            implementations of other class members use the same convention,
            thus concentrating all directives and declarations that are
            required for the compilation of other source files belonging to the
            parser class in one header file.
     it() bi(%parsefun-source) tt(source) nl()
            Defines the pathname of the file containing the parser member
-            tt(parse()). Defaults to tt(parse.cc).
+            tt(parse). Defaults to tt(parse.cc).
     it() bi(%scanner) tt(header)nl()
            Use tt(header) as the pathname to the file pre-included in the
             parser's class header. This file should define a class
@@ -88,7 +88,7 @@ em(man-page) hi(bisonc++: man-page) for a full description.
             be surrounded by double quotes (using, e.g., tt(#include
             "header")).  When the argument is surrounded by angle brackets
             tt(#include <header>) will be included.
-    it() bi(%stype typename) nl()
+    it() bi(%stype) tt(typename) nl()
            The type of the semantic value of tokens.  The specification
             tt(typename) should be the name of an unstructured type (e.g.,
             tt(size_t)). By default it is tt(int). See tt(YYSTYPE) in
@@ -111,20 +111,21 @@ em(man-page) hi(bisonc++: man-page) for a full description.
         double  d;
     };
         )
-    COMMENT(NO LONGER IN c++0x)
-    A union hi(union: without objects) cannot contain objects as its fields,
-as hi(union: and constructors) hi(constructors: and unions) constructors
-cannot be called when a union is created. This means that
+    In pre-C++0x code a i(union) cannot contain objects as its fields, as
+constructors cannot be called when a union is created.  This means that
     hi(string: as union member) a tt(string) cannot be a member of the
-union. A tt(string *), however, em(is) a possible union member. By the way:
-the i(lexical scanner) does not have to know about such a union. The scanner
-can simply pass its scanned text to the parser through its ti(YYText())
-hi(bisonc++: using YYText()) member function. For example using
-a statement like
+union. A tt(string *), however, em(is) a possible union member. In time C++0x
+will offer em(unrestricted unions) (cf. section ref(UNIONS)) allowing class
+type objects to become fields in union definitions, but these unrestricted
+unions have  not yet been implemented by compilers.
+
+As an aside: the scanner does not have to know about such a union. It
+can simply pass its scanned text to the parser through its ti(YYText) member
+function. For example using a statement like
         verb(
     $$.i = A2x(scanner.YYText());
         )
-    i(matched text) may be converted to a value of an appropriate type.
+    matched text may be converted to a value of an appropriate type.
 
     Tokens and non-terminals can be associated with union fields. This is
 strongly advised, as it prevents type mismatches, since the compiler will be
@@ -132,46 +133,34 @@ able to check for type correctness. At the same time, the bison specific
 variabels tt($$), tt($1), tt($2), etc. may be used, rather than the full field
 specification (like tt($$.i)).  A non-terminal or a token may be associated
 with a union field using the
-        hi(bisonc++: <fieldname>)
-        hi(bisonc++: %token)
-        hi(bisonc++: %type)
     tt(<fieldname>) specification. E.g.,
         verb(
     %token <i> INT          // token association (deprecated, see below)
            <d> DOUBLE
     %type  <i> intExpr      // non-terminal association
         )
-    In the example developed here, note that both the tokens and the
-non-terminals can be associated with a field of the union. However, as noted
-before, the lexical scanner does not have to know about all this. In our
-opinion, it is cleaner to let the scanner do just one thing: scan texts. The
-em(parser), knowing what the input is all about, may then convert strings like
-tt("123") to an integer value. Consequently, the association of a union field
-and a token is discouraged.
-        hi(bisonc++: associating token and union field)
-    In the upcoming description of the rules of the grammar this will be
+    In the example developed here, both the tokens and the non-terminals can
+be associated with a field of the union. However, as noted before, the scanner
+does not have to know about all this. In our opinion, it is cleaner to let the
+scanner do just one thing: scan texts. The em(parser), knowing what the input
+is all about, may then convert strings like tt("123") to an integer
+value. Consequently, the association of a union field and a token is
+discouraged.
+    When describing the rules of the grammar this will be
 illustrated further.
 
-    In the tt(%union) discussion the
-        hi(bisonc++: %token)
-        hi(bisonc++: %type)
-    tt(%token) and tt(%type) specifications should be noted. They are used to
-specify the tokens (i(terminal symbols)) that can be returned by
-the lexical scanner, and to specify the return types of
-non-terminals.  Apart from tt(%token) the i(token indicators)
-        hi(bisonc++: %left) tt(%left),
-        hi(bisonc++: %right) tt(%right) and
-        hi(bisonc++: %nonassoc) tt(%nonassoc)
-        hi(operators: associativity)
-    may be used to specify the i(associativity of operators). The tokens
-mentioned at these indicators are interpreted as tokens indicating operators,
-associating in the indicated direction. The i(precedence of operators)
-        hi(operators: precedence)hi(priority rules)hi(operators: priority)
- is given by their order: the first specification has the lowest priority. To
-overrule a certain precedence in a certain context, hi(bisonc++: %prec)
-tt(%prec) can be used. As all this is standard tt(bisonc++) practice, it isn't
-further elaborated here. The documentation provided with tt(bisonc++)'s
-distribution should be consulted for further reference.
+    In the tt(%union) discussion the ti(%token) and ti(%type) specifications
+should be noted. They are used to specify the tokens (terminal symbols) that
+can be returned by the scanner, and to specify the return types of
+non-terminals.  Apart from tt(%token) the token declarators ti(%left),
+ti(%right), and ti(%nonassoc) can be used to specify the associativity of
+operators. The tokens mentioned at these indicators are interpreted as tokens
+indicating operators, associating in the indicated direction. The precedence
+of operators is defined by their order: the first specification has the lowest
+priority. To overrule a certain precedence in a certain context ti(%prec) can
+be used. As all this is standard tt(bisonc++) practice, it isn't further
+elaborated here. The documentation provided with tt(bisonc++)'s distribution
+should be consulted for further reference.
 
     Here is the specification of the calculator's declaration section:
         verbinsert(DECLARATION)(concrete/bisonc++/parser/grammar)
