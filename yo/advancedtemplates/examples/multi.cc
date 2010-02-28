@@ -21,7 +21,7 @@ int main()
 {
 //ONE
     Multi<Policy, string> ms(Policy<string>("hello"));
-    Multi<Policy, string, string> ms2s(Policy<string>("hello"), 
+    Multi<Policy, string, string> ms2s(Policy<string>("hello"),
                                        Policy<string>("world"));
 
 
@@ -30,7 +30,7 @@ int main()
 //=
 
 //TWO
-    cout << "There are " << MPSI::size << " types in MPSI\n" 
+    cout << "There are " << MPSI::size << " types in MPSI\n"
             "There are " << mpsi.size << " types in mpsi\n";
 //=
 

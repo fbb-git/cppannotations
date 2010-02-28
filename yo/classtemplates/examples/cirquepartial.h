@@ -19,7 +19,7 @@ class CirQue<std::vector<Data>>
     public:
         typedef Data value_type;
         typedef value_type const &const_reference;
-    
+
         enum Exception
         {
             EMPTY,
@@ -31,7 +31,7 @@ class CirQue<std::vector<Data>>
         CirQue(CirQue<DataVect> const &other);
 
         CirQue &operator=(CirQue<DataVect> const &other);
-    
+
         Data &back();
         Data &front();
         bool empty() const;
@@ -43,7 +43,7 @@ class CirQue<std::vector<Data>>
         void swap(CirQue<DataVect> &other);
 
     private:
-        iterator inc(iterator const &iter); 
+        iterator inc(iterator const &iter);
 };
 
 template <typename Data>

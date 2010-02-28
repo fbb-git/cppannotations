@@ -34,15 +34,15 @@ class CirQue
         CirQue(CirQue<Data> const &&tmp);
         template <size_t Size>
         explicit CirQue(Data const (&arr)[Size]);
- 
-        template <typename Data2> 
+
+        template <typename Data2>
         explicit CirQue(Data2 const *data);
- 
+
         ~CirQue();
 
         CirQue &operator=(CirQue<Data> const &other);
         CirQue &operator=(CirQue<Data> const &&tmp);
-    
+
         Data &back();
         Data &front();
         bool empty() const;
@@ -54,7 +54,7 @@ class CirQue
         void swap(CirQue<Data> &other);
 
     private:
-        Data *inc(Data *ptr); 
+        Data *inc(Data *ptr);
 };
 
 //CIRQUE
@@ -63,7 +63,7 @@ class CirQue
     :
         d_size(0),
         d_maxSize(maxSize),
-        d_data(maxSize == 0 ? 0 : 
+        d_data(maxSize == 0 ? 0 :
                 static_cast<Data *>(operator new(maxSize * sizeof(Data)))),
         d_front(d_data),
         d_back(d_data)
@@ -76,7 +76,7 @@ class CirQue
     :
         d_size(other.d_size),
         d_maxSize(other.d_maxSize),
-        d_data(d_maxSize == 0 ? 0 : 
+        d_data(d_maxSize == 0 ? 0 :
                 static_cast<Data *>(operator new(d_maxSize * sizeof(Data)))),
         d_front(d_data + (other.d_front - other.d_data))
     {
@@ -245,8 +245,3 @@ class CirQue
 //=
 
 #endif
-
-
-
-
-

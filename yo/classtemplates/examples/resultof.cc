@@ -24,8 +24,8 @@ struct Convert      // if there's just one ReturnType operator()(...), simply
     struct result;
 
     double operator()(int x) const
-    { 
-        return 12.5; 
+    {
+        return 12.5;
     }
     template <typename Class>
     struct result<Class(int)>
@@ -34,8 +34,8 @@ struct Convert      // if there's just one ReturnType operator()(...), simply
     };
 
     string operator()(double x) const
-    { 
-        return string("hello world"); 
+    {
+        return string("hello world");
     }
     template <typename Class>
     struct result<Class(double)>

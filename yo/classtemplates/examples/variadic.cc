@@ -28,7 +28,7 @@ void printcpp(std::string const &format, First value, Params ... params)
     size_t left = 0;
     size_t right = 0;
     while (true)
-    {                                              
+    {
         if ((right = format.find('%', right)) == string::npos)      // 1
             throw std::logic_error("printcpp: too many arguments");
 

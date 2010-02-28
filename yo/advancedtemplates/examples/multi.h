@@ -36,13 +36,13 @@ struct TypeList
 
 //MULTIBASEREC
     template <size_t nr, typename PolicyT1, typename ... PolicyTypes>
-    struct MultiBase<nr, PolicyT1, PolicyTypes ...> : 
+    struct MultiBase<nr, PolicyT1, PolicyTypes ...> :
                                 public UWrap<nr, PolicyT1>,
                                 public MultiBase<nr + 1, PolicyTypes ...>
     {
         typedef PolicyT1 Type;
         typedef MultiBase<nr + 1, typename PolicyTypes ...> Base;
-    
+
         MultiBase(PolicyT1 && policyt1, PolicyTypes &&... policytypes)
         :
             UWrap<nr, PolicyT1>(std::forward<PolicyT1>(policyt1)),
@@ -66,7 +66,7 @@ struct TypeList
         typedef MultiBase<0, Policy<Types> ...> Base;
 
         enum { size = PlainTypes::size };
-    
+
         Multi(Policy<Types> &&... types)
         :
             MultiBase<0, Policy<Types> ...>(
@@ -87,15 +87,15 @@ struct st
     {
         template <size_t idx, typename MultiBase>
         struct PolType;
-    
-        template <size_t idx, 
+
+        template <size_t idx,
                   size_t nr, typename PolicyT1, typename ... PolicyTypes>
         struct PolType<idx, MultiBase<nr, PolicyT1, PolicyTypes ...>>
         {
             typedef typename PolType<
                 idx - 1, MultiBase<nr + 1, PolicyTypes ...>>::Type Type;
         };
-        
+
         template <size_t nr, typename PolicyT1, typename ... PolicyTypes>
         struct PolType<0, MultiBase<nr, PolicyT1, PolicyTypes ...>>
         {
@@ -122,27 +122,21 @@ struct st
     {
         template <size_t idx, typename List>
         struct At;
-    
+
         template <size_t idx, typename Head, typename ... Tail>
         struct At<idx, TypeList<Head, Tail...>>
         {
             typedef typename At<idx - 1, TypeList<Tail ...>>::Type Type;
         };
-    
+
         template <typename Head, typename ... Tail>
         struct At<0, TypeList<Head, Tail...>>
         {
             typedef Head Type;
         };
-    
+
     public:
         plainTypeAt(plainTypeAt const &) = delete;
         typedef typename At<index, typename Multi::PlainTypes>::Type Type;
     };
 //=
-
-
-
-
-
-

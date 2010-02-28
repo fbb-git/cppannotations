@@ -6,6 +6,6 @@
     int main()
     {
         cin.unsetf(ios::skipws);
-        copy(istream_iterator<char>(cin), istream_iterator<char>(), 
+        copy(istream_iterator<char>(cin), istream_iterator<char>(),
              ostream_iterator<char>(cout));
     }

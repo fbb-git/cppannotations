@@ -56,8 +56,3 @@ int main(int argc, char **argv)
     cout << "========> " << count << '\n';
     cout << get<1>(multi.d_tup) << '\n';
 }
-
-
-
-
-

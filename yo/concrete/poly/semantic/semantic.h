@@ -24,7 +24,7 @@ inline std::ostream &operator<<(std::ostream &out, Semantic const &obj)
 {
     if (obj)
         return out << *obj;
-    
+
     return out << "<UNDEFINED>";
 }
 

@@ -34,8 +34,8 @@
     {
         LBaseRDerived(LBaseRDerived const &) = delete;
         enum {
-            yes = 
-                LconvertibleToR<Derived const *, Base const *>::yes && 
+            yes =
+                LconvertibleToR<Derived const *, Base const *>::yes &&
                 not LconvertibleToR<Base const *, void const *>::sameType
         };
     };
@@ -46,8 +46,8 @@
     {
         LBaseRtrulyDerived(LBaseRtrulyDerived const &) = delete;
         enum {
-            yes = 
-                LBaseRDerived<Base, Derived>::yes && 
+            yes =
+                LBaseRDerived<Base, Derived>::yes &&
                 not LconvertibleToR<Base const *, Derived const *>::sameType
         };
     };

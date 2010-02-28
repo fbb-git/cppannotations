@@ -25,7 +25,7 @@
         string set3[] = { "PAPA", "QUEBEC", "ROMEO"};
 
         copy(result,
-            set_intersection(set1, set1 + 7, set3, set3 + 3, result, 
+            set_intersection(set1, set1 + 7, set3, set3 + 3, result,
                                                              caseless),
             ostream_iterator<string>(cout, " "));
         cout << '\n';

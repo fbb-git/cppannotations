@@ -14,7 +14,7 @@
 
         copy
         (
-            find(sarr, last, "delta"), last, 
+            find(sarr, last, "delta"), last,
                                        ostream_iterator<string>(cout, " ")
         );
         cout << '\n';

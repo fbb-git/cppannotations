@@ -70,7 +70,7 @@ but otherwise completely disregarding efficiency considerations) might be:
 currently allocated tt(Person) objects, including the data of the next
 tt(Person) object. Its tt(catch) handler catches any exception that might be
 thrown during the allocation or copy process and will return all memory
-allocated so far, rethrowing the exception. The function is 
+allocated so far, rethrowing the exception. The function is
  emi(exception neutral) as it propagates all its exceptions to its caller. The
 function also doesn't modify the tt(PersonDb) object's data, so it meets the
 strong exception guarantee. Returning from tt(newAppend) tt(addPerson) may now
@@ -81,7 +81,7 @@ too meets the strong guarantee.
 
     The second rule of thumb (member functions modifying their object's data
 should not return original (contained) objects by value) may be illustrated
-using a member tt(PersonDb::erase(size_t idx)). Here is an implementation 
+using a member tt(PersonDb::erase(size_t idx)). Here is an implementation
 attempting to return the original tt(d_data[idx]) object:
         verb(
     Person PersonData::erase(size_t idx)
@@ -120,15 +120,8 @@ member returning the original object. However, both functions suffer from a
 task overload as they modify tt(PersonDb)'s data and also return an original
 object. In situations like these the em(one-function-one-responsibility)
 i(rule of thumb) should be kept in mind: a function should have a single, well
-defined responsibility. 
+defined responsibility.
 
 The preferred approach therefore is to retrieve tt(PersonDb)'s objects using a
 member like tt(Person const &at(size_t idx) const) and to erase an object
 using a separate member like tt(void PersonData::erase(size_t idx)).
-
-
-
-
-
-
-

@@ -36,7 +36,7 @@ Perfect forwarding is easily implemented:
     itemization(
     it() The forwarding function is defined as a variadic template;
     it() The forwarding function's parameter list is an
-        hi(parameter pack: rvalue reference) 
+        hi(parameter pack: rvalue reference)
         em(rvalue reference parameter pack) (e.g., tt(Params && ... params));
     itht(forward)(std::forward) is used to forward the forwarding function's
         arguments to the nested function, keeping track of their types and
@@ -55,8 +55,8 @@ tt(Inserter::insert):
         std::string d_str;  // somehow initialized
         public:
                             // constructors not implemented,
-                            // but see below     
-            Inserter();     
+                            // but see below
+            Inserter();
             Inserter(std::string const &str);
             Inserter(Inserter const &other);
             Inserter(Inserter const &&other);
@@ -82,7 +82,7 @@ function:
         return Class(std::forward<Params>(params) ...);
     }
         )
-Here are some examples showing its use:    
+Here are some examples showing its use:
         verb(
     Inserter inserter(factory<Inserter>("hello"));
     string delimiter(factory<string>(10, '='));
@@ -95,7 +95,7 @@ way it acts like tt(std::move) that also removes the name from an object,
 returning it as a nameless object. The unpack operator has nothing to do with
 the use of tt(forward) but merely tells the compiler to apply tt(forward) to
 each of the arguments in turn. Thus it behaves similarly to bf(C)'s ellipsis
-operator used by variadic functions. 
+operator used by variadic functions.
 
 Perfect forwarding was introduced in section ref(CONTRACTIONS): a template
 function defining a tt(Type &&param), with tt(Type) being a template type
@@ -103,7 +103,7 @@ parameter will convert tt(Type &&) to tt(Tp &) if the function is called with
 an argument of type tt(Tp &). Otherwise it will bind tt(Type) to tt(Tp),
 with tt(param) being defined as  tt(Tp &&param). As a result an em(lvalue)
 argument will bind to an lvalue-type (tt(Tp &)), while an em(rvalue) argument
-will bind to an rvalue-type (tt(Tp &&)). 
+will bind to an rvalue-type (tt(Tp &&)).
 
 The function tt(std::forward) merely passes the argument (and its type) on to
 the called function or object. Here is its simplified implementation:
@@ -112,17 +112,17 @@ the called function or object. Here is its simplified implementation:
     T &&forward(T &&a)
     {
         return a;
-    }   
+    }
         )
     Since tt(T &&) turns into an lvalue reference when tt(forward) is called
 with an lvalue (or lvalue reference) and remains an rvalue reference if
 tt(forward) is called with an rvalue reference and since tt(forward) (like
 tt(std::move)) anonymizes the variable passed as argument to tt(forward) the
-argument value is forwarded while keeping its type 
+argument value is forwarded while keeping its type
 from the function's parameter to the called function's argument. This is
 called em(perfect forwarding) as the called function will only be called if
 the types of the arguments used when calling the `outer' function (e.g.,
-tt(factory) exactly match the types of the parameters of the called function
+tt(factory)) exactly match the types of the parameters of the called function
 (e.g., tt(Class)'s constructor). Perfect forwarding therefore is a tool to
 uphold type safety.
 
@@ -147,7 +147,7 @@ an explanation of the use of tt(typename)):
     T &&forward(typename identity<T>::type&& a)
     {
         return a;
-    }   
+    }
         )
     Now tt(forward) must explicitly state the tt(a)'s plain type, as in:
         verb(

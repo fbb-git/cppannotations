@@ -12,13 +12,13 @@ int main()
         LconvertibleToR<ofstream, ostream>::yes << " " <<
         LconvertibleToR<ostream, ofstream>::yes << " " <<
         LconvertibleToR<int, double>::yes << " " <<
-        LconvertibleToR<int, string>::yes << 
+        LconvertibleToR<int, string>::yes <<
         "\n";
 //=
 
     cout << "\n" <<
         LconvertibleToR<int, int>::sameType << " " <<
-        LconvertibleToR<int, string>::sameType << 
+        LconvertibleToR<int, string>::sameType <<
         "\n";
 
 //INHERITANCE
@@ -27,7 +27,7 @@ int main()
         "2: " << LBaseRDerived<ostream, ofstream>::yes << ",  " <<
         "3: " << LBaseRDerived<void, ofstream>::yes << ",  " <<
         "4: " << LBaseRDerived<ostream, ostream>::yes << ",  " <<
-        "5: " << LBaseRtrulyDerived<ostream, ostream>::yes << 
+        "5: " << LBaseRtrulyDerived<ostream, ostream>::yes <<
         "\n";
 //=
 }

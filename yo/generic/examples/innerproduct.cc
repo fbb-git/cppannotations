@@ -59,5 +59,3 @@
                 Karel Kubat
                 Piet Plomp
     */
-
-

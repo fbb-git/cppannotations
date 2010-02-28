@@ -21,7 +21,7 @@
         d_data += d_data;
     }
 
-    // the following members should be commented out before 
+    // the following members should be commented out before
     // compiling for the 2nd time:
 
     template <typename Type>

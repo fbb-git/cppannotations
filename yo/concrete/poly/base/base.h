@@ -19,5 +19,5 @@
     {
         return obj.insert(out);
     }
-    
+
     #endif

@@ -11,18 +11,18 @@ a variadic class template using a template pack tt(... Types).
 interesting. They primarily serve to `seed' the class tt(Policy)
 with. Thererfore, rather than forwarding tt(Multi)'s types to tt(MultiBase)
 they are passed to tt(Policy) and the sequence of tt(Policy<Type>) types is
-then forwarded to tt(MultiBase). tt(Multi)'s constructor expects 
+then forwarded to tt(MultiBase). tt(Multi)'s constructor expects
 initialization values for its various tt(Policy<Type>)s which are perfectly
-forwarded to tt(MultiBase). 
+forwarded to tt(MultiBase).
 
     The class tt(Multi) (implementing its constructor in-class to save some
-space) shows how a 
+space) shows how a
     hi(template pack: and template template parameters)
     hi(template template parameter: and template packs)
  template pack can be wrapped into a policy. Here is tt(Multi)'s definition:
     verbinsert(MULTI)(advancedtemplates/examples/multi.h)
 
-Unfortunately, the design as described contains some flaws.  
+Unfortunately, the design as described contains some flaws.
     itemization(
     it() As the tt(Policy) template template parameter is defined as
 tt(template <typename> class Policy) it can only accept policies expecting one
@@ -47,12 +47,13 @@ tt(MultiBase) would inherit from em(two) tt(vector<int>) classes. Classes
 cannot be derived from identical base classes as that would make it impossible
 to distinguish among their members Regarding this, Alexandrescu (2001)
     hi(Alexandrescu, A.) writes (p.67):
-    quote( 
+    quote(
    em(There is one major source of annoyance...: you cannot use it when you
     have duplicate types in your tt(TypeList).nl()
    .... There is no easy way to solve the ambiguity, [as the eventually
     derived class/FBB] ends up inheriting [the same base class/FBB] twice.)
    )
+    )
     There is a way around the problem of duplicate base class types. If
 instead of inheriting directly from base classes these base classes are first
 wrapped in unique type defining classes, then these unique classes can be used
@@ -71,7 +72,7 @@ class tt(MultiBase):
     Using tt(UWrap) it's easy to distinguish, e.g., two tt(vector<int>)
 classes: tt(UWrap<0, vector<int>>) could refer to the first tt(vector<int>),
 tt(UWrap<1, vector<int>>) to the second vector.
-    
+
     Uniqueness of the various tt(UWrap) types is assured by the class
 template tt(MultiBase) as discussed in the next section.
 
@@ -82,4 +83,3 @@ constructor can receive the matching initialization values. E.g.,
         verb(
     Multi<Vector, int, string> mvis({1, 2, 3}, {"one", "two", "three"});
         )
-

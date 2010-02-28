@@ -15,7 +15,7 @@ using namespace std;
     {
         ifstream in("lines.cc");
         Lines lines(in);
-    
+
         string s = lines[0];        // rvalue use
         lines[0] = s;               // lvalue use
         cout << lines[0] << '\n';   // rvalue use

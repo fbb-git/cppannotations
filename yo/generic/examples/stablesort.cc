@@ -42,7 +42,7 @@
 
         sort(namecity.begin(), namecity.end(), Sortby(&Pss::first));    // 6
 
-        cout << "sorted by names:\n";                               
+        cout << "sorted by names:\n";
         copy(namecity.begin(), namecity.end(), ostream_iterator<Pss>(cout));
 
                                                                         // 7

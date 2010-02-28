@@ -29,7 +29,7 @@
     struct EraseIdx<idx, TypeList<Head, Tail ...>>
     {
         typedef typename Prefix<
-                    Head, 
+                    Head,
                     typename EraseIdx<idx - 1, TypeList<Tail ...>>::List
                 >::List List;
     };
@@ -60,8 +60,8 @@
     template <typename EraseType, typename Head, typename ... Tail>
     struct Erase<EraseType, TypeList<Head, Tail ...>>
     {
-        typedef typename 
-            Prefix<Head, 
+        typedef typename
+            Prefix<Head,
                 typename Erase<EraseType, TypeList<Tail ...>>::List
             >::List List;
     };

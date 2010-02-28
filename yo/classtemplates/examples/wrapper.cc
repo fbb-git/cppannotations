@@ -6,9 +6,9 @@
 
 using namespace std;
 
-// The Aux struct receives 
+// The Aux struct receives
 //  1. an index that reduces to zero initially representing the number of
-//      elements in a tuple (int t_size); 
+//      elements in a tuple (int t_size);
 //  2. the tuple itself (tuple, typename Tuple)
 //  3. the address of the function to call (fun, typename Fun)
 //  4. the first argument to the function (received from the wrapper's
@@ -26,38 +26,38 @@ namespace IUO
 // Wrap1<size, ... degenerates to Wrap1<0, .... Wrap1<0 calls the unary
 // function, receiving its initial argument from the STL algorithm and
 // optional other arguments from Wrap1 itself
-// 
+//
 
-template <  int size, 
+template <  int size,
             typename Return, typename Tuple,
             typename Fun, typename Arg1, typename ... Params>
 struct Wrap1
 {
     typedef typename std::tuple_element<size - 1, Tuple>::type ElType;
 
-    inline Wrap1(Return &ret, 
+    inline Wrap1(Return &ret,
                 Tuple &&tuple, Fun fun, Arg1 &&arg, Params && ... params)
     {
         Wrap1<size - 1, Return, Tuple, Fun, Arg1, ElType, Params ...>
         (
             ret,
-            std::forward<Tuple>(tuple), 
+            std::forward<Tuple>(tuple),
             fun,
             std::forward<Arg1>(arg),
-            std::forward<ElType>(std::get<size - 1>(tuple)), 
+            std::forward<ElType>(std::get<size - 1>(tuple)),
             std::forward<Params>(params) ...
         );
     }
 };
-    
-template < typename Return, typename Tuple, 
+
+template < typename Return, typename Tuple,
            typename Fun, typename Arg1, typename ... Params>
 struct Wrap1<0, Return, Tuple, Fun, Arg1, Params ...>
 {
-    inline Wrap1(Return &ret, 
+    inline Wrap1(Return &ret,
                 Tuple &&tuple, Fun fun, Arg1 &&arg, Params && ... params)
     {
-        ret = 
+        ret =
             fun(std::forward<Arg1>(arg), std::forward<Params>(params) ...);
     }
 };
@@ -72,16 +72,16 @@ struct Wrap1<size, void, Tuple, Fun, Arg1, Params ...>
     {
         Wrap1<size - 1, void, Tuple, Fun, Arg1, ElType, Params ...>
         (
-            std::forward<Tuple>(tuple), 
+            std::forward<Tuple>(tuple),
             fun,
             std::forward<Arg1>(arg),
-            std::forward<ElType>(std::get<size - 1>(tuple)), 
+            std::forward<ElType>(std::get<size - 1>(tuple)),
             std::forward<Params>(params) ...
         );
     }
 };
-    
-template <  typename Tuple, 
+
+template <  typename Tuple,
             typename Fun, typename Arg1, typename ... Params>
 struct Wrap1<0, void, Tuple, Fun, Arg1, Params ...>
 {
@@ -93,47 +93,47 @@ struct Wrap1<0, void, Tuple, Fun, Arg1, Params ...>
 
 // ======================================================================
 
-template <  int size, 
+template <  int size,
             typename Return, typename Tuple,
             typename Fun, typename Arg1, typename Arg2, typename ... Params>
 struct Wrap2
 {
     typedef typename std::tuple_element<size - 1, Tuple>::type ElType;
 
-    inline Wrap2(Return &ret, 
-                Tuple &&tuple, Fun fun, Arg1 &&arg1, Arg2 &&arg2, 
+    inline Wrap2(Return &ret,
+                Tuple &&tuple, Fun fun, Arg1 &&arg1, Arg2 &&arg2,
                                                     Params && ... params)
     {
         Wrap2<size - 1, Return, Tuple, Fun, Arg1, Arg2, ElType, Params ...>
         (
             ret,
-            std::forward<Tuple>(tuple), 
+            std::forward<Tuple>(tuple),
             fun,
             std::forward<Arg1>(arg1),
             std::forward<Arg2>(arg2),
-            std::forward<ElType>(std::get<size - 1>(tuple)), 
+            std::forward<ElType>(std::get<size - 1>(tuple)),
             std::forward<Params>(params) ...
         );
     }
 };
 
-template < typename Return, typename Tuple, 
+template < typename Return, typename Tuple,
            typename Fun, typename Arg1, typename Arg2, typename ... Params>
 struct Wrap2<0, Return, Tuple, Fun, Arg1, Arg2, Params ...>
 {
-    inline Wrap2(Return &ret, 
-                Tuple &&tuple, Fun fun, Arg1 &&arg1, Arg2 &&arg2, 
+    inline Wrap2(Return &ret,
+                Tuple &&tuple, Fun fun, Arg1 &&arg1, Arg2 &&arg2,
                                                     Params && ... params)
     {
         ret =
-            fun(std::forward<Arg1>(arg1), std::forward<Arg2>(arg2), 
+            fun(std::forward<Arg1>(arg1), std::forward<Arg2>(arg2),
                 std::forward<Params>(params) ...);
     }
 };
-    
+
 // ======================================================================
 
-template <  int size, 
+template <  int size,
             typename Tuple,
             typename Fun, typename Arg1, typename Arg2, typename ... Params>
 struct Wrap2<size, void, Tuple, Fun, Arg1, Arg2, Params ...>
@@ -141,31 +141,31 @@ struct Wrap2<size, void, Tuple, Fun, Arg1, Arg2, Params ...>
     typedef typename std::tuple_element<size - 1, Tuple>::type ElType;
 
     inline Wrap2(
-                Tuple &&tuple, Fun fun, Arg1 &&arg1, Arg2 &&arg2, 
+                Tuple &&tuple, Fun fun, Arg1 &&arg1, Arg2 &&arg2,
                                                     Params && ... params)
     {
         Wrap2<size - 1, void, Tuple, Fun, Arg1, Arg2, ElType, Params ...>
         (
-            std::forward<Tuple>(tuple), 
+            std::forward<Tuple>(tuple),
             fun,
             std::forward<Arg1>(arg1),
             std::forward<Arg2>(arg2),
-            std::forward<ElType>(std::get<size - 1>(tuple)), 
+            std::forward<ElType>(std::get<size - 1>(tuple)),
             std::forward<Params>(params) ...
         );
     }
 };
 
 template <
-            typename Tuple, 
+            typename Tuple,
             typename Fun, typename Arg1, typename Arg2, typename ... Params>
 struct Wrap2<0, void, Tuple, Fun, Arg1, Arg2, Params ...>
 {
     inline Wrap2(
-                Tuple &&tuple, Fun fun, Arg1 &&arg1, Arg2 &&arg2, 
+                Tuple &&tuple, Fun fun, Arg1 &&arg1, Arg2 &&arg2,
                                                     Params && ... params)
     {
-        fun(std::forward<Arg1>(arg1), std::forward<Arg2>(arg2), 
+        fun(std::forward<Arg1>(arg1), std::forward<Arg2>(arg2),
             std::forward<Params>(params) ...);
     }
 };
@@ -178,7 +178,7 @@ struct RetType<Ret (*)(Par ...)>
 {
     typedef Ret type;
 };
-    
+
 } // IUO
 
 template <int unary, typename Return, typename Fun, typename ... Params>
@@ -186,7 +186,7 @@ class Wrap
 {
     Fun d_fun;
     std::tuple<Params ...> d_tuple;
-    
+
     public:
         Wrap(Fun fun, Params && ... params)
         :
@@ -199,11 +199,11 @@ class Wrap
         {
             Return ret;
             IUO::Wrap1<
-                std::tuple_size<std::tuple<Params ...>>::value, 
-                Return &, 
-                std::tuple<Params ...>, 
-                Fun, 
-                Arg1                
+                std::tuple_size<std::tuple<Params ...>>::value,
+                Return &,
+                std::tuple<Params ...>,
+                Fun,
+                Arg1
                 >
                 (ret, d_tuple, d_fun, arg1);
             return ret;
@@ -216,7 +216,7 @@ class Wrap<unary, void, Fun, Params ...>
 {
     Fun d_fun;
     std::tuple<Params ...> d_tuple;
-    
+
     public:
         Wrap(Fun fun, Params && ... params)
         :
@@ -228,11 +228,11 @@ class Wrap<unary, void, Fun, Params ...>
         void operator()(Arg1 &&arg1)
         {
             IUO::Wrap1<
-                std::tuple_size<std::tuple<Params ...>>::value, 
-                void, 
-                std::tuple<Params ...>, 
-                Fun, 
-                Arg1                
+                std::tuple_size<std::tuple<Params ...>>::value,
+                void,
+                std::tuple<Params ...>,
+                Fun,
+                Arg1
                 >
                 (d_tuple, d_fun, arg1);
         }
@@ -246,7 +246,7 @@ class Wrap<2, Return, Fun, Params ...>
 {
     Fun d_fun;
     std::tuple<Params ...> d_tuple;
-    
+
     public:
         Wrap(Fun fun, Params && ... params)
         :
@@ -259,12 +259,12 @@ class Wrap<2, Return, Fun, Params ...>
         {
             Return ret;
             IUO::Wrap2<
-                std::tuple_size<std::tuple<Params ...>>::value, 
-                Return &, 
-                std::tuple<Params ...>, 
-                Fun, 
+                std::tuple_size<std::tuple<Params ...>>::value,
+                Return &,
+                std::tuple<Params ...>,
+                Fun,
                 Arg1,
-                Arg2              
+                Arg2
                 >
                 (ret, d_tuple, d_fun, arg1, arg2);
             return ret;
@@ -277,7 +277,7 @@ class Wrap<2, void, Fun, Params ...>
 {
     Fun d_fun;
     std::tuple<Params ...> d_tuple;
-    
+
     public:
         Wrap(Fun fun, Params && ... params)
         :
@@ -289,11 +289,11 @@ class Wrap<2, void, Fun, Params ...>
         void operator()(Arg1 &&arg1)
         {
             IUO::Wrap1<
-                std::tuple_size<std::tuple<Params ...>>::value, 
-                void, 
-                std::tuple<Params ...>, 
-                Fun, 
-                Arg1                
+                std::tuple_size<std::tuple<Params ...>>::value,
+                void,
+                std::tuple<Params ...>,
+                Fun,
+                Arg1
                 >
                 (d_tuple, d_fun, arg1);
         }
@@ -305,27 +305,27 @@ class Wrap<2, void, Fun, Params ...>
 struct Wrapper
 {
     template <typename Func, typename ... Param>
-    static Wrap<1, 
-                typename IUO::RetType<Func>::type /*Return*/, 
-                Func, Param ...> 
+    static Wrap<1,
+                typename IUO::RetType<Func>::type /*Return*/,
+                Func, Param ...>
         unary(Func fun, Param && ... param)
         {
-            Wrap<1, 
-                typename IUO::RetType<Func>::type /*Return*/, 
-                        Func, Param ...> 
+            Wrap<1,
+                typename IUO::RetType<Func>::type /*Return*/,
+                        Func, Param ...>
                 wrap(fun, std::forward<Param>(param) ... );
             return wrap;
         }
 
     template <typename Func, typename ... Param>
-    static Wrap<2, 
-                typename IUO::RetType<Func>::type /*Return*/, 
-                Func, Param ...> 
+    static Wrap<2,
+                typename IUO::RetType<Func>::type /*Return*/,
+                Func, Param ...>
         binary(Func fun, Param && ... param)
         {
-            Wrap<2, 
-                typename IUO::RetType<Func>::type /*Return*/, 
-                Func, Param ...> 
+            Wrap<2,
+                typename IUO::RetType<Func>::type /*Return*/,
+                Func, Param ...>
                 wrap(fun, std::forward<Param>(param) ... );
             return wrap;
         }
@@ -375,7 +375,7 @@ class Strings
         }
 
     private:
-        static bool cmpfun2(string const &str1, string const &str2, 
+        static bool cmpfun2(string const &str1, string const &str2,
                         size_t &nr, ostream &out)
         {
             out << nr++ << " " << str1 << " and " << str2 << '\n';
@@ -413,9 +413,3 @@ int main()
     cout << "========\n";
     s.accu(cout);
 }
-
-
-
-
-
-

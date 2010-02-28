@@ -7,7 +7,7 @@
     class Lines
     {
         std::vector<std::string> d_line;
-    
+
         public:
             class Proxy;
             Proxy operator[](size_t idx);
@@ -19,7 +19,7 @@
                 public:
                     std::string &operator=(std::string const &rhs);
                     operator std::string const &() const;
-            };                
+            };
             Lines(std::istream &in);
     };
 //=
@@ -53,7 +53,3 @@ inline std::ostream &operator<<(std::ostream &out, Lines::Proxy const &proxy)
         return ret;
     }
 //=
-
-
-
-

@@ -8,7 +8,7 @@
         {}
         virtual void childProcess()         // actions by the child
         {
-            sleep(3);                       
+            sleep(3);
                                             // just a message...
             std::cout << "Hello from the child process\n";
             throw 0;                        // The child process ends

@@ -46,7 +46,7 @@ int main()
 {
     fun(3, 3);      // two ints
 }
-    // first run: 5 is selected. 
+    // first run: 5 is selected.
     // 2nd run: drop 5, 3 is selected
     // 3rd run: drop 3, 4 is selected
     // 4th run: drop 4, 1 is selected
@@ -58,10 +58,3 @@ int main()
     //          drop 7 solves the ambiguity: ordinary 1st arg of 6 wins
     // 6th run: drop 6, 2 is selected
     // 7th run: drop 2, 8 is selected
-
-
-
-
-
-
-

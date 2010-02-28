@@ -23,5 +23,3 @@
 
         Deleter &obj = sp2.get_deleter();
     }
-
-
