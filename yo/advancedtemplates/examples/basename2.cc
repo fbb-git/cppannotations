@@ -4,7 +4,7 @@
     class Base
     {
         public:
-            void member();
+            virtual void member();
     };
     template <typename T>
     void Base<T>::member()
@@ -21,8 +21,14 @@
     {
         public:
             Derived();
+virtual void member();
     };
-    template <typename T>
+template <typename T>
+void Derived<T>::member()
+{
+    std::cout << "This is Derived<T>::member()\n";
+}
+template <typename T>
     Derived<T>::Derived()
     {
         this->member();         // Using `this' implies <T> at

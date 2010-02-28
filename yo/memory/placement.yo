@@ -19,8 +19,8 @@ indicate the used data type):
         verb(
     Type *new(void *memory) Type(arguments);
         )
-    Here, tt(memory) is block of memory of at least tt(sizeof(Type)) bytes
-large and tt(Type(arguments)) is any constructor of the class tt(Type).
+    Here, tt(memory) is a block of memory of at least tt(sizeof(Type)) bytes
+and tt(Type(arguments)) is any constructor of the class tt(Type).
 
     The placement tt(new) operator is useful in situations where classes set
 aside memory to be used later. This is used, e.g., by tt(std::string) to
@@ -37,7 +37,8 @@ memory. Assuming that a default constructor initializes tt(d_capacity) to 1,
 doubling tt(d_capacity) whenever an additional tt(string) must be stored, the
 class must support the following essential operations:
     itemization(
-    it() doubling its capacity when all its reserve memory has been consumed;
+    it() doubling its capacity when all its spare memory (e.g., made available
+by tt(reserve)) has been consumed;
     it() adding another tt(string) object
     it() properly deleting the installed strings and memory when a
 tt(Strings) object ceases to exist.
@@ -76,7 +77,7 @@ The destructor is declared as a member having the class preceded by a tilde as
 its name, not using any arguments. So, tt(std::string)'s destructor is named
 tt(~string). The memory allocated by our class tt(Strings) is therefore
 properly destroyed as follows (in the example assume that tt(using namespace
-std) was specfied):
+std) was specified):
     verbinsert(DESTROY)(memory/examples/strings.cc)
 
     So far, so good. All is well as long as we're using but one object. What

@@ -21,6 +21,7 @@ class StringPtr: public std::vector<std::string *>
             iterator &operator--();
             iterator const operator--(int);
             iterator &operator++();
+            iterator &operator++(int);
             bool operator==(iterator const &other) const;
             bool operator!=(iterator const &other) const;
             int operator-(iterator const &rhs) const;
@@ -70,6 +71,12 @@ inline StringPtr::iterator &StringPtr::iterator::operator++()
 {
     ++d_current;
     return *this;
+}
+//=
+//POSTINC
+inline StringPtr::iterator const StringPtr::iterator::operator++(int)
+{
+    return iterator(d_current++);
 }
 //=
 //OPEQ
