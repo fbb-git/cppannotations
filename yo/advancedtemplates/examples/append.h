@@ -3,7 +3,7 @@
 
 #include "typelist.h"
 
- //STRUCTS
+//STRUCTS
     template <typename ... Types>
     struct Append;
 

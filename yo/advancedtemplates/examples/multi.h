@@ -7,7 +7,7 @@ struct TypeList
     enum { size = sizeof ... (Types) };
 };
 
-//=VECTOR
+//VECTOR
     template <class Type>
     struct Vector: public std::vector<Type>
     {
@@ -52,7 +52,7 @@ struct TypeList
     };
 //=
 
-//=MULTIBASEDONE
+//MULTIBASEDONE
     template <size_t nr>
     struct MultiBase<nr>
     {};
