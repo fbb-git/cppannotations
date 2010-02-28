@@ -5,18 +5,19 @@
 
     class Base
     {
+        friend std::ostream &operator<<(std::ostream &out, Base const &obj);
+
         public:
-            virtual ~Base();
-            virtual Base *clone() const = 0;
+            virtual ~Base() = default;
+            Base *clone() const;
+        private:
+            virtual Base *ownClone() const = 0;
             virtual std::ostream &insert(std::ostream &os) const = 0;
     };
-
-    inline Base::~Base()
-    {}
 
     inline std::ostream &operator<<(std::ostream &out, Base const &obj)
     {
         return obj.insert(out);
     }
-
+    
     #endif

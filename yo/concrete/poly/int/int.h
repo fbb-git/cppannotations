@@ -14,8 +14,9 @@ class Int: public Base
     public:
         Int(char const *text);
         Int(int v);
-        virtual Base *clone() const;
         int value() const;                // directly access the value
+    private:
+        virtual Base *ownClone() const;
         virtual std::ostream &insert(std::ostream &os) const;
 };
 
@@ -29,7 +30,7 @@ inline Int::Int(int v)
     d_value(v)
 {}
 
-inline Base *Int::clone() const
+inline Base *Int::ownClone() const
 {
     return new Int(*this);
 }

@@ -12,8 +12,9 @@ class Text: public Base
 
     public:
         Text(char const *id);
-        virtual Base *clone() const;
         std::string const &id() const;          // directly access the name.
+    private:
+        virtual Base *ownClone() const;
         virtual std::ostream &insert(std::ostream &os) const;
 };
 
@@ -22,7 +23,7 @@ inline Text::Text(char const *id)
     d_text(id)
 {}
 
-inline Base *Text::clone() const
+inline Base *Text::ownClone() const
 {
     return new Text(*this);
 }
