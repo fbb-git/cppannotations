@@ -20,7 +20,7 @@ int main(int argc)
         c;
 
     while (is >> c)
-        cerr << "\t\tGOT " << c << endl;
+        cerr << "\t\tGOT " << c << '\n';
 
     cerr << "Using fds(0)\n";
 }

@@ -24,5 +24,5 @@ using namespace std;
 
 int main()
 {
-    cout << chop<string>("hello world") << endl;
+    cout << chop<string>("hello world") << '\n';
 }

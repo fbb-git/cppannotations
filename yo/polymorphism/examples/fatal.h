@@ -18,7 +18,7 @@
 
     inline void Fatal::action() const
     {
-        std::cout << "Fatal::action() terminates" << std::endl;
+        std::cout << "Fatal::action() terminates" << '\n';
         std::terminate();
     }
 

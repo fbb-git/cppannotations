@@ -17,13 +17,13 @@ using namespace std;
         :
             d_value(other.d_value)
         {
-            cout << "copy " << d_value << endl;
+            cout << "copy " << d_value << '\n';
         }
         Data(Data &&other)
         :
             d_value(other.d_value)
         {
-            cout << "move " << other.d_value << " to " << d_value << endl;
+            cout << "move " << other.d_value << " to " << d_value << '\n';
         }
     };
 
@@ -36,7 +36,7 @@ using namespace std;
     int main()
     {
         Data &&ref = makeData(1);
-        cout << ref.d_value << endl;
+        cout << ref.d_value << '\n';
 
         return 0;
     }

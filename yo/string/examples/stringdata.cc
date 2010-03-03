@@ -9,21 +9,21 @@
 
         stringOne.resize(20, 'z');
 
-        cout << "World at: " << stringOne.find("World") << endl;
+        cout << "World at: " << stringOne.find("World") << '\n';
 
-        cout << stringOne << endl;
+        cout << stringOne << '\n';
 
         stringTwo.append("hello world", 3, 5);
 
         stringTwo.insert(1, "...");
 
-        cout << stringTwo << endl;
-        cout << (stringOne.data() ? "not a 0 ptr." : "0 ptr.") << endl;
-        cout << (stringTwo.data() ? "not a 0 ptr." : "0 ptr.") << endl;
-        cout << stringOne.data() << endl << "'" << stringTwo.data() << "'"
-                << endl;
+        cout << stringTwo << '\n';
+        cout << (stringOne.data() ? "not a 0 ptr." : "0 ptr.") << '\n';
+        cout << (stringTwo.data() ? "not a 0 ptr." : "0 ptr.") << '\n';
+        cout << stringOne.data() << '\n' << "'" << stringTwo.data() << "'"
+                << '\n';
 
-        cout << stringOne.max_size() << ", " << stringOne.capacity() << endl;
-        cout << stringTwo.max_size() << ", " << stringTwo.capacity() << endl;
+        cout << stringOne.max_size() << ", " << stringOne.capacity() << '\n';
+        cout << stringTwo.max_size() << ", " << stringTwo.capacity() << '\n';
         return (0);
     }

@@ -29,5 +29,5 @@ double _kmh(char c, Chars ...chars)
 
 int main()
 {
-    cout << _kmh('1', '2', '3') << endl;
+    cout << _kmh('1', '2', '3') << '\n';
 }

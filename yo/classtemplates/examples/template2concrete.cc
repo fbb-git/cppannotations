@@ -53,7 +53,7 @@
                 return;
             }
         }
-        cout << "Unknown command: " << line << endl;
+        cout << "Unknown command: " << line << '\n';
     }
 //=
     void Handler::list(std::string const &line)

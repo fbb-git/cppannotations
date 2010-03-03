@@ -8,14 +8,14 @@
 
         Matrix<1, 2> colMargins(matrix);
         cout << "Column marginals:\n";
-        cout << colMargins[0] << " " << colMargins[1] << endl;
+        cout << colMargins[0] << " " << colMargins[1] << '\n';
 
         Matrix<3, 1> rowMargins(matrix);
         cout << "Row marginals:\n";
         for (size_t idx = 0; idx < 3; idx++)
-            cout << rowMargins[idx] << endl;
+            cout << rowMargins[idx] << '\n';
 
-        cout << "Sum total: " << Matrix<1, 1>(matrix) << endl;
+        cout << "Sum total: " << Matrix<1, 1>(matrix) << '\n';
         return 0;
     }
     /*

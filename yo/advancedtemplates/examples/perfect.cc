@@ -133,7 +133,7 @@ int main()
     int x = 0;
     caller(cout);
     caller(x);
-    cout << x << endl;
+    cout << x << '\n';
 
 //    int arg;
 //    X x;
@@ -146,7 +146,7 @@ int main()
 //
 //    factory<Two>(two);
 //
-//    cout << out << endl;
+//    cout << out << '\n';
 
 //    forwarder.function(x, 0);
 //    forwarder.function(x, 0.0);

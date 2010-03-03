@@ -8,7 +8,7 @@
 
         stringOne.erase(5, 6);
 
-        cout << stringOne << endl;
+        cout << stringOne << '\n';
 
         stringOne.erase();
 

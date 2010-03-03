@@ -16,7 +16,7 @@ using namespace FBB;
             switch (x = fis.get())
             {
                 case '\n':
-                    cout << endl;
+                    cout << '\n';
                 break;
                 case '+':
                     cout << ' ';

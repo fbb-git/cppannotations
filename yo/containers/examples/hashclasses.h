@@ -103,7 +103,7 @@
     extern FBB::StringHash<int> dh;
 
     for (FBB::StringHash<int>::iterator it = dh.begin(); it != dh.end(); it++)
-        std::cout << it->first << " - " << it->second << std::endl;
+        std::cout << it->first << " - " << it->second << '\n';
     --------------------------------------------------------------------------
 
     Feb. 2001 - April 2002

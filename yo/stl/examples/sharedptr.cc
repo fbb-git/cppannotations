@@ -7,15 +7,15 @@ int main()
 {
     si ip(new int(12));
 
-    cout << ip.unique() << endl;
+    cout << ip.unique() << '\n';
 
     si ip2(ip);
 
-    cout << ip.unique() << endl;
+    cout << ip.unique() << '\n';
 
     si ip3 = ip;
     si ip4;
-    cout << *ip << ip.use_count() << endl;
+    cout << *ip << ip.use_count() << '\n';
 
     return 0;
 }

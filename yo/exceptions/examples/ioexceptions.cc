@@ -12,11 +12,11 @@
                 cout << "enter a number: ";
                 int value;
                 cin >> value;
-                cout << "you entered " << value << endl;
+                cout << "you entered " << value << '\n';
             }
             catch (ios::failure const &problem)
             {
-                cout << problem.what() << endl;
+                cout << problem.what() << '\n';
                 cin.clear();
                 cin.ignore(INT_MAX, '\n');  // ignore the faulty line
             }

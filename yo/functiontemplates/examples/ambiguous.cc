@@ -6,6 +6,6 @@
 
     int main()
     {
-        std::cout << fun(add) << std::endl;
+        std::cout << fun(add) << '\n';
         return 0;
     }

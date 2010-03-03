@@ -131,14 +131,14 @@ int main()
     cout << "==\n";
 
     Derived1 dp = &vb[0].ref();
-    cout << dp << endl;
+    cout << dp << '\n';
     cout << "==\n";
 
     vb[0] = Base();
     cout << "==\n";
 
-    cout << typeid(vb[0].base()).name() << endl;
-    cout << typeid(vb[1].base()).name() << endl;
+    cout << typeid(vb[0].base()).name() << '\n';
+    cout << typeid(vb[1].base()).name() << '\n';
     cout << "==\n";
 */
 }

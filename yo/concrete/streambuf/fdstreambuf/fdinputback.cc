@@ -19,7 +19,7 @@ int main(int argc)
 
     is.get(c);
 
-    cout << c << endl;
+    cout << c << '\n';
 
     is.unget();
 

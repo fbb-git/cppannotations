@@ -1879,7 +1879,7 @@ void yyFlexLexer::yyensure_buffer_stack(void)
 /* %if-c++-only */
 void yyFlexLexer::LexerError( yyconst char msg[] )
 {
-        std::cerr << msg << std::endl;
+        std::cerr << msg << '\n';
         exit( YY_EXIT_FAILURE );
 }
 /* %endif */

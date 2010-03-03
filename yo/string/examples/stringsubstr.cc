@@ -6,7 +6,7 @@
     {
         string stringOne("Hello World");
 
-        cout << stringOne.substr(0, 5)  << endl
-             << stringOne.substr(6)     << endl
-             << stringOne.substr()      << endl;
+        cout << stringOne.substr(0, 5)  << '\n'
+             << stringOne.substr(6)     << '\n'
+             << stringOne.substr()      << '\n';
     }

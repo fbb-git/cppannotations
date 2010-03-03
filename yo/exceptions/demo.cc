@@ -30,11 +30,11 @@
         }
         catch (char *message)
         {
-            cout << "Text exception: " << message << endl;
+            cout << "Text exception: " << message << '\n';
         }
         catch (int value)
         {
-            cout << "Int exception: " << value << endl;
+            cout << "Int exception: " << value << '\n';
         }
         return (0);
     }

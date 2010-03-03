@@ -49,7 +49,7 @@
             en = theVector.enumeration();
 
         cout << (en.hasMoreElements() ? "has more elements" :
-                                        "no more elements") << endl;
+                                        "no more elements") << '\n';
 
         return (0);
     }

@@ -2,7 +2,7 @@
 
 void Parser::display(double x)
 {
-    cerr << "RPN: " << d_rpn.str() << endl;
-    cerr << "double: " << x << endl;
+    cerr << "RPN: " << d_rpn.str() << '\n';
+    cerr << "double: " << x << '\n';
     d_rpn.str(string());
 }

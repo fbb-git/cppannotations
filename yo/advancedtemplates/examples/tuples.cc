@@ -14,7 +14,7 @@ int main()
     tuple_idsc idsc(59, pi, "hello", "fixed");
     tuple_idsc empty;
 
-    cout << tuple_size<tuple_idsc>::value << endl;
+    cout << tuple_size<tuple_idsc>::value << '\n';
     tuple_element<2, tuple_idsc>::type text("hi");
 
     // access a field:

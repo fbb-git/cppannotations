@@ -28,11 +28,11 @@ class X
     public:
         X()
         {
-            cerr << "X constructor called" << endl;
+            cerr << "X constructor called" << '\n';
         }
         ~X()
         {
-            cerr << "X destructor called" << endl;
+            cerr << "X destructor called" << '\n';
         }
 };
 

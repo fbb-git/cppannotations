@@ -31,7 +31,7 @@ class Finder
     public:
         bool operator()(pair<char const *, int> const &it)
         {
-            cout << "Saw " << it.first << endl;
+            cout << "Saw " << it.first << '\n';
             return *it.first == 'a' || *it.first == 'e';
         }
 };
@@ -41,7 +41,7 @@ class List
     public:
         void operator()(pair<char const *, int> const &it)
         {
-            cout << "Element [" << it.first << "] = " << it.second << endl;
+            cout << "Element [" << it.first << "] = " << it.second << '\n';
         }
 };
 
@@ -65,7 +65,7 @@ int main(int argc, char **argv)
 
     while ((found = find_if(found, end, Finder())) != end)
     {
-        cout << "Removing " << found->first << " " << found->second << endl;
+        cout << "Removing " << found->first << " " << found->second << '\n';
         hm.erase(found++);
     }
 

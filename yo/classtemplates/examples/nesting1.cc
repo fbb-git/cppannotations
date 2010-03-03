@@ -53,6 +53,6 @@
 
         PtrVector<int>::iterator begin = vi.begin();
 
-        std::cout << *begin << endl;
+        std::cout << *begin << '\n';
     }
 //=

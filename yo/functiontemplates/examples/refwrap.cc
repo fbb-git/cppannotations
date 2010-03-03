@@ -29,7 +29,7 @@ using namespace std;
     void call(Fun fun, Arg arg)
     {
         fun(arg);
-        cout << "In call: arg = " << arg << endl;
+        cout << "In call: arg = " << arg << '\n';
     }
 //=
 
@@ -38,10 +38,10 @@ using namespace std;
     {
         double value = 3;
         call(sqrtArg, value);
-        cout << "Passed value, returns: " << value << endl;
+        cout << "Passed value, returns: " << value << '\n';
 
         call(sqrtArg, ref(value));
-        cout << "Passed ref(value), returns: " << value << endl;
+        cout << "Passed ref(value), returns: " << value << '\n';
     }
     /*
         Displays:

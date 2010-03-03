@@ -81,11 +81,11 @@
             bv.push_back(d1);
         }
         cout << "==\n";
-        cout << typeid(bv[0].get()).name() << endl;
+        cout << typeid(bv[0].get()).name() << '\n';
         cout << "==\n";
 
         vector<Clonable> v2(bv);
-        cout << typeid(v2[0].get()).name() << endl;
+        cout << typeid(v2[0].get()).name() << '\n';
         cout << "==\n";
 
     }

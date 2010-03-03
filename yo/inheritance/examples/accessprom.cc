@@ -19,5 +19,5 @@ int main()
 {
     RandBuf rb;
 
-    cout << rb.in_avail() << endl;
+    cout << rb.in_avail() << '\n';
 }

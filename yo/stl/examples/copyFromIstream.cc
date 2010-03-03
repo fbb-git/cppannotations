@@ -22,7 +22,7 @@ class Ostream
     public:
         Ostream &operator=(string const &item)
         {
-            cerr << "assigning " << item << endl;
+            cerr << "assigning " << item << '\n';
         }
 };
 

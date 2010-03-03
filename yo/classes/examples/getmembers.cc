@@ -12,7 +12,7 @@
     {
        return d_phone;
     }
-    size_t Person::weight() const
+    size_t Person::mass() const
     {
-       return d_weight;
+       return d_mass;
     }

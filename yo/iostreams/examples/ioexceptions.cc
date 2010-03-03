@@ -14,7 +14,7 @@
         }
         catch(ios::failure failure)
         {
-            cout << "Here's what: " << failure.what() << endl;
+            cout << "Here's what: " << failure.what() << '\n';
         }
     }
     /*

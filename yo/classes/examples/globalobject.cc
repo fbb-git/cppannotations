@@ -21,7 +21,7 @@
         Test                    // local object
             l;                  // in function func()
 
-        cout << "here's function func()" << endl;
+        cout << "here's function func()" << '\n';
     }
 
     int main()
@@ -29,7 +29,7 @@
         Test                    // local object
             x;                  // in function main()
 
-        cout << "main() function" << endl;
+        cout << "main() function" << '\n';
         func();
         return (0);
     }

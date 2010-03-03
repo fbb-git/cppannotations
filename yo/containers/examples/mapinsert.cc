@@ -25,7 +25,7 @@
 
         cout << ret.first->first << " " <<
             ret.first->second << " " <<
-            ret.second << " " << object["four"] << endl;
+            ret.second << " " << object["four"] << '\n';
 
                 // {four, 40} and `false' is returned
         ret = object.insert
@@ -36,7 +36,7 @@
 
         cout << ret.first->first << " " <<
             ret.first->second << " " <<
-            ret.second << " " << object["four"] << endl;
+            ret.second << " " << object["four"] << '\n';
     }
     /*
         Generated output:

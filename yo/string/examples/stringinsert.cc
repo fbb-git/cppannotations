@@ -13,5 +13,5 @@
                             // insert "World" into stringOne
         stringOne.insert(6, world, 4, 5);
 
-        cout << "Guess what ? It is: " << stringOne << endl;
+        cout << "Guess what ? It is: " << stringOne << '\n';
     }

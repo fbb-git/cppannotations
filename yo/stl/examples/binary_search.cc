@@ -33,7 +33,7 @@ int main(int argc, char **argv)
         comp(value, ip);
 
     if (binary_search(x, x + 9, value, comp))
-        cout << "found it: element " << (ip - x) << endl;
+        cout << "found it: element " << (ip - x) << '\n';
     else
         cout << "didn't find it\n";
 }

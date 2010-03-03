@@ -15,11 +15,11 @@
                                         // append 5 characters:
         stringOne.append(" ok. >This is not used<", 5);
 
-        cout << stringOne << endl;
+        cout << stringOne << '\n';
 
         string stringThree("Hello");
                                         // append " world":
         stringThree.append(stringOne, 5, 6);
 
-        cout << stringThree << endl;
+        cout << stringThree << '\n';
     }

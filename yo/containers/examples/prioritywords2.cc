@@ -34,7 +34,7 @@ int main()
     while (q.size())
     {
         word = q.top();
-        cout << word << endl;
+        cout << word << '\n';
         q.pop();
     }
 }

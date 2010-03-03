@@ -7,7 +7,7 @@
         cout << "hel" << flush;
         printf("lo wo");
         fflush(stdout);
-        cout << "rld" << endl;
+        cout << "rld" << '\n';
     }
     /*
         Generated output:

@@ -28,5 +28,5 @@
             if (d_letters.find(*strIter) != std::string::npos)
                 *strIter = toupper(*strIter);
         }
-        d_out << str << std::endl;
+        d_out << str << '\n';
     }

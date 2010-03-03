@@ -10,7 +10,7 @@
 
         string::size_type pos;
 
-        cout << "Line: " << line << endl
+        cout << "Line: " << line << '\n'
             << "Starting at the first vowel:\n"
             << "'"
                 << (

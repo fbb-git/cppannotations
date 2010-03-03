@@ -35,7 +35,7 @@
                 line.replace(idx, search.size(), replace);
                 idx += replace.length();     // don't change the replacement
             }
-            cout << line << endl;
+            cout << line << '\n';
         }
         return 0;
     }

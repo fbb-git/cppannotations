@@ -30,7 +30,7 @@ int main(int argc, char **argv)
             continue;
         }
         if (print)
-            cout << line << endl;
+            cout << line << '\n';
     }
     cout << "        )\n";
     if (!print)

@@ -16,13 +16,13 @@ struct Data
     char *text;
     void copy(Data const &other)
     {
-        cout << "A " << (void *)other.text << endl;
+        cout << "A " << (void *)other.text << '\n';
         text = strdup(other.text);
-        cout << "B " << (void *)text << endl;
+        cout << "B " << (void *)text << '\n';
     }
     void copy(Data &&other)
     {
-        cout << "D " << (void *)other.text << endl;
+        cout << "D " << (void *)other.text << '\n';
         text = other.text;
         other.text = 0;
     }
@@ -32,7 +32,7 @@ Data makeData(char const *txt)
 {
     Data ret;
     ret.text = strdup(txt);
-    cout << "C " << (void *)ret.text << endl;
+    cout << "C " << (void *)ret.text << '\n';
     return ret;
 }
 
@@ -60,7 +60,7 @@ int main()
 {
     int &&i = int(3);
     ++i;
-    cout << i << endl;
+    cout << i << '\n';
 
     Data d1 = {strdup("hello")};
     Data d2;

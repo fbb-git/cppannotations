@@ -16,7 +16,7 @@ int main(int argc)
 
     for (size_t line = 0; getline(is, s); line++)
     {
-        cout <<  s << endl;
+        cout <<  s << '\n';
         if ((line & 3) == 0)
         {
             is.unget();

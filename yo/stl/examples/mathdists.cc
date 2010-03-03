@@ -25,7 +25,7 @@ struct rng
         d_slope((d_max - static_cast<double>(d_min)) / (rg.max() - d_oldmin))
     {
 //        cout << d_min << " " << d_max << " " << d_oldmin << " " << d_slope <<
-//                " " << rg.max() << endl << endl;
+//                " " << rg.max() << '\n' << '\n';
     }
 
     result_type operator()()
@@ -53,5 +53,5 @@ int main()
 
     for (int idx = 0; idx < 20; ++idx)
         cout << bd(rg) << (idx + 1 == 10 ? '\n' : ' ');
-    cout << endl;
+    cout << '\n';
 }

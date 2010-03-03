@@ -12,7 +12,7 @@
     {
         d_phone = phone;
     }
-    void Person::setWeight(size_t weight)
+    void Person::setMass(size_t mass)
     {
-        d_weight = weight;
+        d_mass = mass;
     }

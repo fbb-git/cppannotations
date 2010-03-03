@@ -22,6 +22,6 @@
             )
                 continue;
 
-            opb << line << endl;
+            opb << line << '\n';
         }
     }

@@ -3,16 +3,16 @@ constructors to be defined with or without parameter lists. The arguments are
 supplied when an object is defined.
 
 For the class tt(Person) a constructor expecting three strings and a
-tt(size_t) might be useful. Represening, respectively, the
-person's name, address, phone number and weight. This constructor is:
+tt(size_t) might be useful. Representing, respectively, the
+person's name, address, phone number and mass. This constructor is:
         verb(
     Person::Person(string const &name, string const &address,
-                   string const &phone, size_t weight)
+                   string const &phone, size_t mass)
     {
         d_name = name;
         d_address = address;
         d_phone = phone;
-        d_weight = weight;
+        d_mass = mass;
     }
         )
     It must of course also be declared in the class interface:
@@ -23,7 +23,7 @@ person's name, address, phone number and weight. This constructor is:
 
         public:
             Person(std::string const &name, std::string const &address,
-                   std::string const &phone, size_t weight);
+                   std::string const &phone, size_t mass);
 
             // rest of the class interface (not altered)
     };
@@ -40,7 +40,7 @@ part declaring the constructors now becomes:
         public:
             Person();
             Person(std::string const &name, std::string const &address,
-                   std::string const &phone, size_t weight);
+                   std::string const &phone, size_t mass);
 
             // additional members
     };
@@ -51,7 +51,7 @@ object. As these data members are objects themselves, they are initialized to
 empty strings by their own default constructor.  However, there is also a
 tt(size_t) data member. That member is a variable of a built-in type and such
 variabes do not have constructors and so are not initialized automatically.
-Therefore, unless the value of the tt(d_weight) data member is explicitly
+Therefore, unless the value of the tt(d_mass) data member is explicitly
 initialized it will be
     itemization(
     it() a em(random) value for local tt(Person) objects;
@@ -64,7 +64,7 @@ automatically. Its implementation can be:
         verb(
     Person::Person()
     {
-        d_weight = 0;
+        d_mass = 0;
     }
         )
     Using constructors with and without arguments is illustrated next. The
@@ -84,7 +84,7 @@ em(local) objects, living only for as long as tt(main) is active.
     If tt(Person) objects must be definable using other arguments,
 corresponding constructors must be added to tt(Person)'s interface. Apart from
 overloading class constructors it is also possible to provide constructors
-with default argument values. These default arugments must be specified with
+with default argument values. These default arguments must be specified with
 the constructor declarations in the class interface, like so:
         verb(
     class Person
@@ -93,16 +93,16 @@ the constructor declarations in the class interface, like so:
             Person(std::string const &name,
                    std::string const &address = "--unknown--",
                    std::string const &phone   = "--unknown--",
-                   size_t weight = 0);
+                   size_t mass = 0);
 
     };
         )
     Often, constructors use highly similar  implementions. This results
 from the fact that the constructor's parameters are often defined for
 convenience: a constructor not requiring a tt(phone) number but requiring a
-tt(weight) cannot be defined using default arguments, since tt(phone) is not
-the constructor's last parameter. Consequently as special constructor is
-required lacking tt(phone) in its parameter list.
+tt(mass) cannot be defined using default arguments, since tt(phone) is not
+the constructor's last parameter. Consequently a special constructor is
+required not having tt(phone) in its parameter list.
 
     In pre C++0x bf(C++) this situation is commonly tackled as follows: all
 constructors em(must) initialize their reference and tt(const) data members,

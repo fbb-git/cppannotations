@@ -75,7 +75,7 @@ Type Parser::convert()
 
 inline void Parser::error(char const *msg)
 {
-    std::cerr << msg << std::endl;
+    std::cerr << msg << '\n';
 }
 
 inline int Parser::lex()

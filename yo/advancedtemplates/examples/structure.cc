@@ -35,9 +35,9 @@ using namespace std;
 int main()
 {
     Wrapper<int, vector> wiv;
-    cout << wiv.size() << endl;
+    cout << wiv.size() << '\n';
 
     Wrapper<int, Plain> wis;
-    cout << wis.size() << endl;
+    cout << wis.size() << '\n';
 
 }

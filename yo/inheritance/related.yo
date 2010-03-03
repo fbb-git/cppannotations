@@ -5,28 +5,28 @@ special case of a tt(Vehicle).
 
 The class tt(Vehicle) represents the `greatest common divisor' in the
 classification system. tt(Vehicle) is given limited functionality: it can
-store and retrieve a vehicle's weight:
+store and retrieve a vehicle's mass:
         verb(
     class Vehicle
     {
-        size_t d_weight;
+        size_t d_mass;
 
         public:
             Vehicle();
-            Vehicle(size_t weight);
+            Vehicle(size_t mass);
 
-            size_t weight() const;
-            void setWeight(size_t weight);
+            size_t mass() const;
+            void setMass(size_t mass);
     };
         )
-    Using this class, the vehicle's weight can be defined as soon as the
-corresponding object has been created. At a later stage the weight can be
+    Using this class, the vehicle's mass can be defined as soon as the
+corresponding object has been created. At a later stage the mass can be
 changed or retrieved.
 
 To represent vehicles travelling over land, a new class tt(Land) can be
 defined offering tt(Vehicle)'s functionality and adding its own specific
 functionality. Assume we are interested in the speed of land vehicles em(and)
-in their weight. The relationship between tt(Vehicle)s and tt(Land)s could of
+in their mass. The relationship between tt(Vehicle)s and tt(Land)s could of
 course be represented by composition but that would be awkward: composition
 suggests that a tt(Land) vehicle em(is-implemented-in-terms-of), i.e.,
 em(contains), a tt(Vehicle), while the natural relationship clearly is that
@@ -34,23 +34,23 @@ the tt(Land) vehicle em(is) a kind of tt(Vehicle).
 
 A relationship in terms of composition would also somewhat complicate our
 tt(Land) class's design.  Consider the following example showing a class
-tt(Land) using composition (only the tt(setWeight) functionality is shown):
+tt(Land) using composition (only the tt(setMass) functionality is shown):
         verb(
     class Land
     {
         Vehicle d_v;        // composed Vehicle
         public:
-            void setWeight(size_t weight);
+            void setMass(size_t mass);
     };
 
-    void Land::setWeight(size_t weight)
+    void Land::setMass(size_t mass)
     {
-        d_v.setWeight(weight);
+        d_v.setMass(mass);
     }
         )
-    Using composition, the tt(Land::setWeight) function only passes its
-argument on to tt(Vehicle::setWeight). Thus, as far as weight handling is
-concerned, tt(Land::setWeight) introduces no extra functionality, just extra
+    Using composition, the tt(Land::setMass) function only passes its
+argument on to tt(Vehicle::setMass). Thus, as far as mass handling is
+concerned, tt(Land::setMass) introduces no extra functionality, just extra
 code. Clearly this code duplication is superfluous: a tt(Land) object em(is) a
 tt(Vehicle); to state that a tt(Land) object em(contains) a tt(Vehicle) is at
 least somewhat peculiar.
@@ -71,7 +71,7 @@ tt(Vehicle):
         size_t d_speed;
         public:
             Land();
-            Land(size_t weight, size_t speed);
+            Land(size_t mass, size_t speed);
 
             void setspeed(size_t speed);
             size_t speed() const;
@@ -92,20 +92,20 @@ tt(Land):
 
     int main()
     {
-        cout << "Vehicle weighs " << veh.weight() << ";\n"
+        cout << "Vehicle weighs " << veh.mass() << ";\n"
                 "its speed is " << veh.speed() << '\n';
     }
         )
     This example illustrates two features of derivation.
     itemization(
-    it() First, tt(weight) is not mentioned as a member in tt(Land)'s
-interface. Nevertheless it is used in tt(veh.weight).  This member function is
+    it() First, tt(mass) is not mentioned as a member in tt(Land)'s
+interface. Nevertheless it is used in tt(veh.mass).  This member function is
 an implicit part of the class, inherited from its `parent' vehicle.
     it() Second, although the derived class tt(Land) contains the
 functionality of tt(Vehicle), the tt(Vehicle)'s private members remain
 private: they can only be accessed by tt(Vehicle)'s own member functions. This
 means that tt(Land)'s member functions em(must) use tt(Vehicle)'s member
-functions (like tt(weight) and tt(setWeight)) to address the tt(weight)
+functions (like tt(mass) and tt(setMass)) to address the tt(mass)
 field. Here there's no difference between the access rights granted to
 tt(Land) and the access rights granted to other code outside of the class
 tt(Vehicle). The class tt(Vehicle) hi(encapsulation) em(encapsulates) the
@@ -147,7 +147,7 @@ an tt(Auto) has a brand name it's easy to design the class tt(Auto):
 
         public:
             Auto();
-            Auto(size_t weight, size_t speed, std::string const &name);
+            Auto(size_t mass, size_t speed, std::string const &name);
 
             std::string const &brandName() const;
     };

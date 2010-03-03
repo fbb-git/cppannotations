@@ -39,11 +39,11 @@
         }
         catch (char const *message)
         {
-            cerr << "Text exception: " << message << endl;
+            cerr << "Text exception: " << message << '\n';
         }
         catch (int value)
         {
-            cerr << "Int exception: " << value << endl;
+            cerr << "Int exception: " << value << '\n';
         }
         try
         {

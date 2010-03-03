@@ -64,6 +64,6 @@ class TypeTrait
 int main()
 {
     string s;
-    cout << TypeTrait<string>::isClass << endl;
-    cout << TypeTrait<int>::isClass << endl;
+    cout << TypeTrait<string>::isClass << '\n';
+    cout << TypeTrait<int>::isClass << '\n';
 }

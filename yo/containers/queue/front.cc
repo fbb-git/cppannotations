@@ -10,7 +10,7 @@ int main()
     q.push("Hello");
     q.front() = "Hello World";
 
-    cout << q.front() << endl;
+    cout << q.front() << '\n';
 
     return (0);
 }

@@ -31,7 +31,7 @@
 //
 //    void initialExceptionHandler(Exception const *e)
 //    {
-//        cout << *e << endl;         // show the plain-text information
+//        cout << *e << '\n';         // show the plain-text information
 //
 //        if
 //        (

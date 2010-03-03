@@ -12,11 +12,11 @@ int main()
     caseString
         hello("Hello World");
 
-    cout << hello << endl;
+    cout << hello << '\n';
     hello.setMode(caseString::LOWER);
-    cout << hello << endl;
+    cout << hello << '\n';
     hello.setMode(caseString::UPPER);
-    cout << hello << endl;
+    cout << hello << '\n';
     hello.setMode(caseString::ORIGINAL);
-    cout << hello << endl;
+    cout << hello << '\n';
 }

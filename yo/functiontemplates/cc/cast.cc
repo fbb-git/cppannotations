@@ -8,7 +8,7 @@
     {
         std::cout
             << fun(static_cast<double (*)(double *, size_t)>(add))
-            << std::endl;
+            << '\n';
 
         return 0;
     }

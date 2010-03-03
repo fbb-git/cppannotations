@@ -12,9 +12,9 @@
 
             first.reset(second.release());
 
-            cout << "Second auto_ptr still points at: " << *second << endl
-                << "First auto_ptr also points to: " << *first << endl;
+            cout << "Second auto_ptr still points at: " << *second << '\n'
+                << "First auto_ptr also points to: " << *first << '\n';
         }
         cout << "Second object now out of scope. First auto_ptr\n"
-            "still points at: " << *first << endl;
+            "still points at: " << *first << '\n';
     }

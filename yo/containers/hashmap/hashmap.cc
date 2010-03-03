@@ -47,11 +47,11 @@
         months["november"] = 30;
         months["december"] = 31;
 
-        cout << "february -> " << months["february"] << endl <<
-                "april     -> " << months["april"] << endl <<
-                "june      -> " << months["june"] << endl <<
-                "november  -> " << months["november"] << endl <<
-                "december  -> " << months["december"] << endl;
+        cout << "february -> " << months["february"] << '\n' <<
+                "april     -> " << months["april"] << '\n' <<
+                "june      -> " << months["june"] << '\n' <<
+                "november  -> " << months["november"] << '\n' <<
+                "december  -> " << months["december"] << '\n';
 
         return (0);
     }

@@ -6,7 +6,7 @@
         cout << "Name    : " << p.name()     << "\n"
                 "Address : " << p.address()  << "\n"
                 "Phone   : " << p.phone()    << "\n"
-                "Weight  : " << p.weight()   << '\n';
+                "Mass  : " << p.mass()   << '\n';
     }
 
     int main()
@@ -16,7 +16,7 @@
         p.setName("Linus Torvalds");
         p.setAddress("E-mail: Torvalds@cs.helsinki.fi");
         p.setPhone(" - not sure - ");
-        p.setWeight(75);           // kg.
+        p.setMass(75);           // kg.
 
         printperson(p);
     }
@@ -26,6 +26,6 @@
 Name    : Linus Torvalds
 Address : E-mail: Torvalds@cs.helsinki.fi
 Phone   :  - not sure -
-Weight  : 75
+Mass  : 75
 
 */

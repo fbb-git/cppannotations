@@ -17,20 +17,20 @@ int main()
     bv[4] = 373;
 
     copy(bv.begin(), bv.end(), ostream_iterator<int>(cout, " "));
-    cout << endl;
+    cout << '\n';
 
     Vector<int>::reverse_iterator
             rit  = bv.rbegin();
 
     while (rit != bv.rend())
         cout << *rit++ << ", ";
-    cout << endl;
+    cout << '\n';
 
     bv.push_back(12);
     bv.push_back(5);
 
     copy(bv.begin(), bv.end(), ostream_iterator<int>(cout, " "));
-    cout << endl;
+    cout << '\n';
 
     bv.sort();
     copy(bv.begin(), bv.end(), ostream_iterator<int>(cout, " "));
@@ -48,5 +48,5 @@ int main()
 
     bstr.sort();
     copy(bstr.begin(), bstr.end(), ostream_iterator<string>(cout, " "));
-    cout << endl;
+    cout << '\n';
 }

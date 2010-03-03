@@ -8,10 +8,10 @@
         string stringTwo("World");
 
         cout << "Before: stringOne: " << stringOne << ", stringTwo: "
-            << stringTwo << endl;
+            << stringTwo << '\n';
 
         stringOne.swap(stringTwo);
 
         cout << "After: stringOne: " << stringOne << ", stringTwo: "
-            << stringTwo << endl;
+            << stringTwo << '\n';
     }

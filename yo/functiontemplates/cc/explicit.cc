@@ -6,5 +6,5 @@
 
     int main(int argc, char **argv)
     {
-        std::cout << fun(sumVector<double>) << std::endl;
+        std::cout << fun(sumVector<double>) << '\n';
     }

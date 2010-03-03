@@ -20,26 +20,26 @@
         msiIterator it = object.lower_bound("brava");
 
         cout << "Lower bound for `brava': " <<
-                it->first << ", " << it->second << endl;
+                it->first << ", " << it->second << '\n';
 
         it = object.upper_bound("bravu");
 
         cout << "Upper bound for `bravu': " <<
-                it->first << ", " << it->second << endl;
+                it->first << ", " << it->second << '\n';
 
         pair<msiIterator, msiIterator>
             itPair = object.equal_range("bravo");
 
         cout << "Equal range for `bravo':\n";
         for (it = itPair.first; it != itPair.second; ++it)
-            cout << it->first << ", " << it->second << endl;
-        cout << "Upper bound: " << it->first << ", " << it->second << endl;
+            cout << it->first << ", " << it->second << '\n';
+        cout << "Upper bound: " << it->first << ", " << it->second << '\n';
 
         cout << "Equal range for `brav':\n";
         itPair = object.equal_range("brav");
         for (it = itPair.first; it != itPair.second; ++it)
-            cout << it->first << ", " << it->second << endl;
-        cout << "Upper bound: " << it->first << ", " << it->second << endl;
+            cout << it->first << ", " << it->second << '\n';
+        cout << "Upper bound: " << it->first << ", " << it->second << '\n';
     }
     /*
         Generated output:

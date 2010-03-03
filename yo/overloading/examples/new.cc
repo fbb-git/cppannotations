@@ -12,7 +12,7 @@
             {
                 if (count == 2)
                     throw 1;
-                cout << "Object " << ++count << endl;
+                cout << "Object " << ++count << '\n';
             }
             ~X()
             {
@@ -35,7 +35,7 @@
     try
     {
         X *xp = new X[5];
-        cout << "Memory at " << xp << endl;
+        cout << "Memory at " << xp << '\n';
         delete[] xp;
     }
     catch (...)

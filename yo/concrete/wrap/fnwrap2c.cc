@@ -32,7 +32,7 @@
                         FnWrap2c<string const &, string const &,
                                  SContext &, string>(&show, c)
                     ) <<
-                    endl;
+                    '\n';
             }
 
         private:
@@ -47,7 +47,7 @@
                                     SContext &c)
             {
                 c.out << c.nr++ << " " << str1 << " " << str2 <<
-                         endl;
+                         '\n';
                 return str1 + " " + str2;
             }
     };

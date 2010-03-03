@@ -35,7 +35,7 @@ int main(int argc, char **argv)
         {
             if (!(istr.read(&d, sizeof(d))))
             {
-                cout << "read stopped at " << idx << endl;
+                cout << "read stopped at " << idx << '\n';
                 return (1);
             }
         }

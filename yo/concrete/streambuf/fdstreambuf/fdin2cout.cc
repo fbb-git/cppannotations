@@ -20,7 +20,7 @@ int main(int argc)
         c;
 
     while (is.get(c))
-        cout << "GOT " << c << endl;
+        cout << "GOT " << c << '\n';
 
     cout << "Using fds(0)\n";
 }

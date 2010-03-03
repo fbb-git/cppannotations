@@ -14,14 +14,14 @@
         char buffer[100];                   // or: char *buffer = new char[100]
         char c;
                                             // read the first `hello'
-        cout << f.get(buffer, sizeof(buffer), 0).tellg() << endl;;
+        cout << f.get(buffer, sizeof(buffer), 0).tellg() << '\n';
         f >> c;                             // read the ascii-z delim
 
                                             // and read the second `hello'
-        cout << f.get(buffer + 6, sizeof(buffer) - 6, 0).tellg() << endl;
+        cout << f.get(buffer + 6, sizeof(buffer) - 6, 0).tellg() << '\n';
 
         buffer[5] = ' ';                    // change asciiz to ' '
-        cout << buffer << endl;             // show 2 times `hello'
+        cout << buffer << '\n';             // show 2 times `hello'
     }
     /*
         Generated output:

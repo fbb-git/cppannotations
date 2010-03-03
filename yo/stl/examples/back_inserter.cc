@@ -9,7 +9,7 @@ class MyClass
 
         void push_back(value_type i)    // int or value_type: both ok
         {
-            cerr << "Inserting " << i << endl;
+            cerr << "Inserting " << i << '\n';
         }
 };
 */
@@ -22,7 +22,7 @@ class MyClass
 
         void push_back(value_type const & i)    // int or value_type: both ok
         {
-            cerr << "Inserting " << i << endl;
+            cerr << "Inserting " << i << '\n';
         }
 };
 

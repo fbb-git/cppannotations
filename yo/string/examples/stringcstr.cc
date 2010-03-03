@@ -7,7 +7,7 @@
         string stringOne("Hello World");
         char const *cString = stringOne.c_str();
 
-        cout << cString << endl;
+        cout << cString << '\n';
 
         return 0;
     }

@@ -10,7 +10,7 @@
 
     Test::Test(string const &name)
     {
-        cout << "Test object " << name << " created" << endl;
+        cout << "Test object " << name << " created" << '\n';
     }
 
     Test globaltest("global");

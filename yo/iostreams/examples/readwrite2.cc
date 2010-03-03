@@ -50,6 +50,6 @@
             else if (cmd == "w")
                 write(index_out, strings_out);
             else
-                cout << "Unknown command: " << cmd << endl;
+                cout << "Unknown command: " << cmd << '\n';
         }
     }

@@ -8,8 +8,8 @@
         int     x[] = {1, 2};
         double  y[] = {1.1, 2.2};
 
-        cout << sumVector(x, 2) << endl
-            << sumVector(y, 2) << endl;
+        cout << sumVector(x, 2) << '\n'
+            << sumVector(y, 2) << '\n';
 
         return 0;
     }

@@ -60,7 +60,7 @@ class List
     public:
         bool operator()(pair<char const *, int> const &it)
         {
-            cerr << it.first << " = " << it.second << endl;
+            cerr << it.first << " = " << it.second << '\n';
             return true;
         }
 };

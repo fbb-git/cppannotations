@@ -6,7 +6,7 @@
     {
         public:
             size_t length() const;
-            size_t weight() const;
+            size_t mass() const;
             char const *name() const;
             char const *city() const;
             Date const &birthdate() const;
@@ -21,7 +21,7 @@
             enum Listtype
             {
                 list_by_length,
-                list_by_weight,
+                list_by_mass,
                 list_by_name,
                 list_by_city,
                 list_by_birthday,
@@ -97,10 +97,10 @@
                         ccp(&Person::length),
             },
 
-            {       // same for weight
+            {       // same for mass
                 cmpint,
                 reinterpret_cast<char const *(Person::*)() const>
-                (&Person::weight)
+                (&Person::mass)
             },
 
             {       // same for name

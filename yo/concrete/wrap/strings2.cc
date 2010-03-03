@@ -39,7 +39,7 @@
             FnWrap1c<char &, std::string const &>(
                                         foundToUpper, context.letters));
 
-        context.out << str << std::endl;
+        context.out << str << '\n';
     }
 
     void Strings::foundToUpper(char &ch, std::string const &letters)

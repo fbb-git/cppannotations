@@ -22,7 +22,7 @@
             if (line[0] == 'd')
                 dirs += line + '\n';
             else
-                cout << line << endl;
+                cout << line << '\n';
         }
         cout << "Directories:\n" << dirs;
     }

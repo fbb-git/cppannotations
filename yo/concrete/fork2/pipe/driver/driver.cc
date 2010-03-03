@@ -17,8 +17,8 @@ int main(int argc, char **argv)
 {
     Pipe p;                         // construct a pipe
 
-    cout << "Read file descriptor: " << p.readFd() << endl;
-    cout << "Write file descriptor: " << p.writeFd() << endl;
+    cout << "Read file descriptor: " << p.readFd() << '\n';
+    cout << "Write file descriptor: " << p.writeFd() << '\n';
 
     int pid = fork();
 
@@ -33,11 +33,11 @@ int main(int argc, char **argv)
 
         getline(cin, s);
 
-        cout << "Got: " << s << endl;
+        cout << "Got: " << s << '\n';
 
         getline(cin, s);
 
-        cout << "Got: " << s << endl;
+        cout << "Got: " << s << '\n';
 
         return 0;
     }
@@ -46,8 +46,8 @@ int main(int argc, char **argv)
 
     p.writeVia(stdfd);      // write to the pipe via cout
 
-    cout << "first line" << endl;
-    cerr << "second line" << endl;
+    cout << "first line" << '\n';
+    cerr << "second line" << '\n';
 
     waitpid(pid, 0, 0);
 

@@ -17,13 +17,13 @@
             mark2(cin.rdbuf());
 
         cout << "The beginning of the second line is at offset  " <<
-            cin.tellg() + mark.delta() <<  endl <<
+            cin.tellg() + mark.delta() <<  '\n' <<
             "The length of the 2nd line, using 2 streammarker objects: " <<
-            mark2.delta(mark) << endl;
+            mark2.delta(mark) << '\n';
 
-        cout << cin.rdbuf()->seekmark(mark) << endl;
+        cout << cin.rdbuf()->seekmark(mark) << '\n';
         getline(cin, line);
-        cout << "rereading: " << line << endl;
+        cout << "rereading: " << line << '\n';
     }
     /*
         Using input:
