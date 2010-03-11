@@ -16,7 +16,7 @@
     };
 //=
 
-//ERASEIDX
+//ERASEIDXZERO
     template <typename EraseType, typename ... Tail>
     struct EraseIdx<0, TypeList<EraseType, Tail ...>>
     {
@@ -35,7 +35,7 @@
     };
 //=
 
-//ERASE
+//ERASEPLAIN
     template <typename EraseType, typename TypeList>
     struct Erase;
 //=
