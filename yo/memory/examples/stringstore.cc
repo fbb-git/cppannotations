@@ -1,13 +1,13 @@
-    #include "stringstore.ih"
+    #include "strings.ih"
 
 //CONS
-    StringStore::StringStore()
+    Strings::Strings()
     :
         d_string(0),
         d_size(0)
     {}
 
-    StringStore::StringStore(char const *const *cStrings, size_t size)
+    Strings::Strings(char const *const *cStrings, size_t size)
     :
         d_string(new string[size]),
         d_size(size)
@@ -18,7 +18,7 @@
 //=
 
 //DESTR
-    StringStore::~StringStore()
+    Strings::~Strings()
     {
         delete[] d_string;
     }

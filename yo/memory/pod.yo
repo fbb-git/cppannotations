@@ -1,12 +1,17 @@
-bf(C++) inherited the struct concept from bf(C) and extended it with the
-class concept. Structs are still used in bf(C++), mainly to store and pass
-around aggregates of different data types. A commonly term for these structs
-is emi(plain old data) (i(pod)).
-
-The standard pod concept in bf(C++) completely matches bf(C)'s struct
-concept. The C++0x standard, however, relaxes these requirements to some
-extent. In the C++0x standard pod is considerd to be a class or struct
-having the following characteristics:
+bf(C++) inherited the struct concept from bf(C) and extended it with the class
+concept. Structs are still used in bf(C++), mainly to store and pass around
+aggregates of different data types. A commonly term for these structs is
+emi(plain old data) (i(pod)). Plain old data is commonly used in bf(C++)
+programs to aggregate data. E.g., when a function needs to return a tt(double,
+bool) and tt(std::string) these three different data types may be aggregated
+using a tt(struct) that merely exists to pass along values. Data protection
+and functionality is hardly ever an issue. For such cases bf(C) and bf(C++)
+use tt(structs). But as a bf(C++) tt(struct) is just a tt(class) with special
+access rights some members (constructors, destructor, overloaded assignment
+operator) may implicitly be defined. The plain old data capitalizes on this
+concept by requiring that its definition remains as simple as
+possible. Specifically the C++0x standard considers pod to be a class or
+struct having the following characteristics:
     itemization(
     it() it has a i(trivial default constructor).nl()
        If a type has some emi(trivial member) then the type (or its base
@@ -32,20 +37,29 @@ having the following characteristics:
         right-hand class object;
     it() it has a i(trivial destructor).nl()
        A trivial destructor calls the destructors of its base class(es) and
-        class-type data members.
+        class-type data members;
+    it() it has a emi(standard layout).
     )
 
-A emi(standard-layout) class or struct
+A em(standard-layout) class or struct
     itemization(
     it() has only non-static data members that are themselves showing
         the standard-layout;
     it() has identical access control (public, private, protected) for all its
         non-static members;
-    it() has no virtual functions (cf. chapter ref(POLYMORPHISM));
-    it() has no virtual base classes (cf. chapter ref(POLYMORPHISM));
-    it() has only base classes (cf. chapter ref(INHERITANCE)) that are of
-        standard-layout type;
-    it() has no base classes of the same type as the first defined non-static
-        member;
-    it() has only one (in)direct base class having non-static members.
     )
+
+Furthermore, in the context of class derivation (cf. chapters
+ref(POLYMORPHISM) and ref(INHERITANCE)), a emi(standard-layout) class or
+struct:
+    itemization(
+    it() has only base classes that themselves show the standard-layout;
+    it() has at most one (in)direct base class having non-static members;
+    it() has no base classes of the same type as its first non-static
+        data member;
+    it() has no virtual base classes;
+    it() has no virtual members.
+    )
+
+
+

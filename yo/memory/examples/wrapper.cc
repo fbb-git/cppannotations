@@ -1,20 +1,20 @@
     #include <iostream>
     using namespace std;
 
-    class StringStore   // partially implemented
+    class Strings   // partially implemented
     {
         public:
-            ~StringStore();
+            ~Strings();
     };
 
-    inline StringStore::~StringStore()
+    inline Strings::~Strings()
     {
         cout << "destructor called\n";
     }
 
     class Wrapper
     {
-        StringStore *d_stringStore;
+        Strings *d_strings;
 
         public:
             Wrapper();
@@ -23,16 +23,16 @@
 
     inline Wrapper::Wrapper()
     :
-        d_stringStore(new StringStore())
+        d_strings(new Strings())
     {}
     inline Wrapper::~Wrapper()
     {
-        delete d_stringStore;
+        delete d_strings;
     }
 
     int main()
     {
-        delete[] new StringStore *[4]; // memory leak: no destructor called
+        delete[] new Strings *[4]; // memory leak: no destructor called
         cout << "===========\n";
         delete[] new Wrapper[4];       // OK: 4 x destructor called
     }

@@ -22,14 +22,14 @@ determined by the type of the pointer whether a pointer to dynamically
 allocated memory points to a single entity or to an array of entities.
 
     What happens if tt(delete) rather than tt(delete[]) is used? Consider the
-following situation, in which the destructor tt(~StringStore) is modified so
+following situation, in which the destructor tt(~Strings) is modified so
 that it tells us that it is called.  In a tt(main) function an array of two
-tt(StringStore) objects is allocated by tt(new), to be deleted by tt(delete
+tt(Strings) objects is allocated by tt(new), to be deleted by tt(delete
 []). Next, the same actions are repeated, albeit that the tt(delete) operator
 is called without tt([]):
         verbinclude(memory/examples/stringstoredelete.cc)
     From the generated output, we see that the destructors of the individual
-tt(StringStore) objects are called when tt(delete[]) is used, while only the
+tt(Strings) objects are called when tt(delete[]) is used, while only the
 first object's destructor is called if the tt([]) is omitted.
 
     Conversely, if tt(delete[]) is called in a situation where tt(delete)
@@ -54,9 +54,9 @@ destructor). Consider the following program:
 is defined as a pointer to a pointer. The dynamically allocated array
 therefore consists of pointer variables and pointers are of a primitive type.
 No destructors exist for  primitive typed variables. Consequently only the
-array itself is returned, and no tt(StringStore) destructor is called.
+array itself is returned, and no tt(Strings) destructor is called.
 
-    Of course, we don't want this, but require the tt(StringStore) objects
+    Of course, we don't want this, but require the tt(Strings) objects
 pointed to by the elements of tt(ptr) to be deleted too. In this case we have
 two options:
     itemization(
@@ -64,10 +64,10 @@ two options:
 calling tt(delete) for each of the array's elements. This procedure was
 demonstrated in the previous section.
     it() A i(wrapper) class is designed around a pointer (to, e.g., an object
-of some class, like tt(StringStore)).  Rather than using a pointer to a
-pointer to tt(StringStore) objects a pointer to an array of wrapper-class
+of some class, like tt(Strings)).  Rather than using a pointer to a
+pointer to tt(Strings) objects a pointer to an array of wrapper-class
 objects is used. As a result tt(delete[] ptr) calls the destructor of each of
-the wrapper class objects, in turn calling the tt(StringStore) destructor for
-their tt(d_stringStore) members. Example:
+the wrapper class objects, in turn calling the tt(Strings) destructor for
+their tt(d_strings) members. Example:
         verbinclude(memory/examples/wrapper.cc)
     )

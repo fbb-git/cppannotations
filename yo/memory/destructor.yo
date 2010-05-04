@@ -16,11 +16,11 @@ Destructors obey the following syntactical requirements:
     )
     Destructors are declared in their class interfaces. Example:
         verb(
-    class StringStore
+    class Strings
     {
         public:
-            StringStore();
-            ~StringStore();     // the destructor
+            Strings();
+            ~Strings();     // the destructor
     };
         )
     By convention the constructors are declared first. The destructor is
@@ -28,13 +28,13 @@ declared next, to be followed by other member functions.
 
     A destructor's hi(destructor: main task) main task is to ensure that
 memory allocated by an object is properly returned when the object ceases to
-exist. Consider the following interface of the class tt(StringStore):
+exist. Consider the following interface of the class tt(Strings):
         verbinsert(STRINGSTORE)(memory/examples/stringstore.h)
 
 The constructor's task is to initialize the data fields of the object. E.g,
 its constructors are defined as follows:
         verbinsert(CONS)(memory/examples/stringstore.cc)
-    As objects of the class tt(StringStore) allocate memory a destructor is
+    As objects of the class tt(Strings) allocate memory a destructor is
 clearly required. Destructors may or may not be called automatically. Here are
 the rules:
     itemization(
@@ -56,20 +56,20 @@ activated  by explicitly calling the object's destructor.
     )
     The destructor's task is to ensure that all memory that is
 dynamically allocated and controlled only by the object
-itself is returned. The task of the tt(StringStore)'s
+itself is returned. The task of the tt(Strings)'s
 destructor would therefore be to delete the memory to which tt(d_string)
 points. Its implementation is:
         verbinsert(DESTR)(memory/examples/stringstore.cc)
 
-    The next example shows tt(StringStore) at work. In tt(process)
-a tt(StringStore store) is created, and its data are displayed. It returns a
-dynamically allocated tt(StringStore) object to tt(main). A
-tt(StringStore *) receives the address of the allocated object and deletes the
-object again. Another tt(StringStore) object is then created in a block of
+    The next example shows tt(Strings) at work. In tt(process)
+a tt(Strings store) is created, and its data are displayed. It returns a
+dynamically allocated tt(Strings) object to tt(main). A
+tt(Strings *) receives the address of the allocated object and deletes the
+object again. Another tt(Strings) object is then created in a block of
 memory made available locally in tt(main), and an
-    hi(destructor: explicit call)explicit call to tt(~StringStore) is required
+    hi(destructor: explicit call)explicit call to tt(~Strings) is required
 to return the memory allocated by that object. In the example only once a
-tt(StringStore) object is automatically destroyed: the local tt(StringStore)
-object defined by tt(process). The other two tt(StringStore) objects require
+tt(Strings) object is automatically destroyed: the local tt(Strings)
+object defined by tt(process). The other two tt(Strings) objects require
 explicit actions to prevent memory leaks.
         verbinclude(memory/examples/stringstoreexample.cc)

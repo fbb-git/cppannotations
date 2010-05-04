@@ -1,27 +1,27 @@
-    #include "stringstore.h"
+    #include "strings.h"
     #include <iostream>
 
     using namespace std;;
 
-    void display(StringStore const &store)
+    void display(Strings const &store)
     {
         for (size_t idx = 0; idx != store.size(); ++idx)
             cout << store.at(idx) << '\n';
     }
 
-    StringStore *process(char *argv[], int argc)
+    Strings *process(char *argv[], int argc)
     {
-        StringStore store(argv, argc);
+        Strings store(argv, argc);
         display(store);
-        return new StringStore(argv, argc);
+        return new Strings(argv, argc);
     }
 
     int main(int argc, char *argv[])
     {
-        StringStore *sp = process(argv, argc);
+        Strings *sp = process(argv, argc);
         delete sp;
 
-        char buffer[sizeof(StringStore)];
-        sp = new (buffer) StringStore(argv, argc);
-        sp->~StringStore();
+        char buffer[sizeof(Strings)];
+        sp = new (buffer) Strings(argv, argc);
+        sp->~Strings();
     }

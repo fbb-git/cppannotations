@@ -1,18 +1,18 @@
     #include <iostream>
-    #include "stringstore.h"
+    #include "strings.h"
     using namespace std;
 
-    StringStore::~StringStore()
+    Strings::~Strings()
     {
-        cout << "StringStore destructor called" << '\n';
+        cout << "Strings destructor called" << '\n';
     }
 
     int main()
     {
-        StringStore **ptr = new StringStore* [2];
+        Strings **ptr = new Strings* [2];
 
-        ptr[0] = new StringStore[2];
-        ptr[1] = new StringStore[2];
+        ptr[0] = new Strings[2];
+        ptr[1] = new Strings[2];
 
         delete[] ptr;
     }

@@ -1,4 +1,4 @@
-Consider the class tt(StringStore), introduced in section ref(DESTRUCTOR),
+Consider the class tt(Strings), introduced in section ref(DESTRUCTOR),
 once again. As it contains several primitive type data members as well as a
 pointer to dynamically allocated memory it needs a constructor, a destructor,
 and an overloaded assignment operator. In fact the class offers two
@@ -10,27 +10,27 @@ discussed following the example:
         verb(
     int main(int argc, char **argv)
     {
-        StringStore s1(argv, argc);     // (1)
-        StringStore s2;                 // (2)
-        StringStore s3(s1);             // (3)
+        Strings s1(argv, argc);     // (1)
+        Strings s2;                 // (2)
+        Strings s3(s1);             // (3)
 
         s2 = s1;                        // (4)
     }
         )
     itemization(
     it() At 1 we see  an i(initialization).  The object
-tt(s1) is initialized using tt(main)'s parameters: tt(StringStore)'s second
+tt(s1) is initialized using tt(main)'s parameters: tt(Strings)'s second
 constructor is used.
-    it() At 2 tt(StringStore)'s emi(default constructor) is used, initializing
-an empty tt(StringStore) object.
-    it() At 3 yet another tt(StringStore) object is created, using a
-constructor accepting an existing tt(StringStore) object. This form of
+    it() At 2 tt(Strings)'s emi(default constructor) is used, initializing
+an empty tt(Strings) object.
+    it() At 3 yet another tt(Strings) object is created, using a
+constructor accepting an existing tt(Strings) object. This form of
 initializations has not yet been discussed. It is called a
  hi(copy constructor) em(copy construction) and the constructor performing the
 initialization is called the em(copy constructor). Copy constructions are also
 encountered in the following form:
         verb(
-    StringStore s3 = s1;
+    Strings s3 = s1;
         )
     This is a em(construction) and therefore an em(initialization). It is not
 an em(assignment) as an assignment needs a left-hand operand that has already
@@ -75,9 +75,9 @@ data. The copy constructor is simpler than the overloaded assignment operator
 in that it doesn't have to delete previously allocated memory. Since the
 object is going to be created no previously allocated memory already exists.
 
-    tt(StringStore)'s copy constructor can be implemented as follows:
+    tt(Strings)'s copy constructor can be implemented as follows:
         verb(
-    StringStore::StringStore(StringStore const &other)
+    Strings::Strings(Strings const &other)
     :
         d_string(new string[other.d_size]),
         d_size(other.d_size)
@@ -96,27 +96,27 @@ used:
 value parameter rather than a pointer or a reference. The function's argument
 initializes the function's parameter using the copy constructor. Example:
         verb(
-    void process(StringStore store) // no pointer, no reference
+    void process(Strings store) // no pointer, no reference
     {
         store.at(3) = "modified";   // doesn't modify `outer'
     }
 
     int main(int argc, char **argv)
     {
-        StringStore outer(argv, argc);
+        Strings outer(argv, argc);
         process(outer);
     }
         )
     it() it is used when a function defines a class type value return type.
 Example:
         verb(
-    StringStore copy(StringStore const &store)
+    Strings copy(Strings const &store)
     {
         return store;
     }
         )
     )
     Here tt(store) is used to initialize tt(copy)'s return value. The returned
-tt(StringStore) object is a temporary, anonymous object that may be
+tt(Strings) object is a temporary, anonymous object that may be
 immediately used by code calling tt(copy) but no assumptions can be made about
 its lifetime thereafter.
