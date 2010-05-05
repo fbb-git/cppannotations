@@ -9,21 +9,21 @@ Example:
         // code to handle the message
     }
         )
-    Primitive types and objects may be thrown as exceptions. It's a
-bad idea to throw a pointer or reference to a local object, but a pointer to a
-em(dynamically) allocated object may be thrown as the exception handler will
-be able to delete the allocated memory thus preventing a
- i(memory leak). Throwing such a pointer is still dangerous as the exception
-handler will not be able to distinguish dynamically allocated memory and
-non-dynamically allocated memory, as illustrated by the next example:
+    Primitive types and objects may be thrown as exceptions. It's a bad idea
+to throw a pointer or reference to a local object, but a pointer to a
+em(dynamically) allocated object may be thrown if the exception handler
+deletes the allocated memory to prevent a i(memory leak). Nevertheless,
+throwing such a pointer is dangerous as the exception handler won't not be
+able to distinguish dynamically allocated memory from non-dynamically
+allocated memory, as illustrated by the next example:
         verb(
     try
     {
-        int x;
+        static int x;
         int *xp = &x;
 
         if (condition1)
-            throw &xp;
+            throw xp;
 
         xp = new int(0);
         if (condition2)
@@ -38,7 +38,7 @@ non-dynamically allocated memory, as illustrated by the next example:
 exception handler, to make sure that when pointers to dynamically allocated
 memory are thrown the memory is returned  once the handler has processed
 the pointer. In general pointers should not be thrown as exceptions. If
-dynamically allocated memory must be passed to a exception handler then the
+dynamically allocated memory must be passed to an exception handler then the
 pointer should be wrapped in a smart pointer, like tt(unique_ptr) or
 tt(shared_ptr) (cf. sections ref(UNIQUEPTR) and ref(SHAREDPTR)).
 
@@ -88,9 +88,8 @@ following cases can be distinguished:
 handler is activated, and execution continues from the last statement in
 the tt(try)-block to the first statement beyond the last tt(catch)-block.
     it() If an exception em(was) thrown within the tt(try)-block but neither
-the current level nor an other level contains an appropriate exception
-handler, the program's default exception handler is called,
-aborting the program.
+the current level nor another level contains an appropriate exception handler,
+the program's default exception handler is called, aborting the program.
     it() If an exception was thrown from the tt(try)-block and an appropriate
 exception handler is available, then the code of that exception handler is
 executed. Following that, the program's execution continues at the first
@@ -99,4 +98,4 @@ statement beyond the last tt(catch)-block.
     All statements in a tt(try) block following an executed
 tt(throw)-statement are ignored. However, objects that were successfully
 constructed within the tt(try) block before executing the tt(throw) statement
-em(are) called before any exception handler's code is executed.
+em(are) destroyed before any exception handler's code is executed.

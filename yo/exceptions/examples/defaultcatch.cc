@@ -27,5 +27,5 @@
     /*
         Generated output:
     Inner level: generic handling of exceptions
-    Outer level may use the thrown the double: 12.25
+    Outer level may use the thrown double: 12.25
     */
