@@ -26,7 +26,7 @@
     IntArray const &IntArray::operator=(IntArray const &other)
     {
         IntArray tmp(other);
-        swap(other);
+        swap(tmp);
         return *this;
     }
 

@@ -21,19 +21,21 @@
     {
         public:
             Derived();
-virtual void member();
+            virtual void member();
     };
-template <typename T>
-void Derived<T>::member()
-{
-    std::cout << "This is Derived<T>::member()\n";
-}
-template <typename T>
+    template <typename T>
+    void Derived<T>::member()
+    {
+        std::cout << "This is Derived<T>::member()\n";
+    }
+    template <typename T>
     Derived<T>::Derived()
     {
-        this->member();         // Using `this' implies <T> at
-                                // instantiation time.
-        Base<T>::member();      // Same.
+        this->member();         // Using `this' implies using the 
+                                // type for which T was instantiated
+        Derived<T>::member();   // Same: calls the Derived member
+        Base<T>::member();      // Same: calls the Base member
+        std::cout << "Derived<T>::Derived() completed\n";
     }
 
     int main()
@@ -44,8 +46,12 @@ template <typename T>
 
     /*
         Generated output:
-        This is Base<T>::member()
-        This is Base<T>::member()
-        This is the int-specialization
-        This is the int-specialization
+    This is Derived<T>::member()
+    This is Derived<T>::member()
+    This is Base<T>::member()
+    Derived<T>::Derived() completed
+    This is Derived<T>::member()
+    This is Derived<T>::member()
+    This is the int-specialization
+    Derived<T>::Derived() completed
     */
