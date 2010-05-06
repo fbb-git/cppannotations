@@ -31,7 +31,7 @@
     template <typename T>
     Derived<T>::Derived()
     {
-        this->member();         // Using `this' implies using the 
+        this->member();         // Using `this' implies using the
                                 // type for which T was instantiated
         Derived<T>::member();   // Same: calls the Derived member
         Base<T>::member();      // Same: calls the Base member

@@ -64,8 +64,8 @@ class CirQue
         d_size(0),
         d_maxSize(maxSize),
         d_data(
-            maxSize == 0 ? 
-                0 
+            maxSize == 0 ?
+                0
             :
                 static_cast<Data *>(
                             operator new(maxSize * sizeof(Data)))
@@ -82,8 +82,8 @@ class CirQue
         d_size(other.d_size),
         d_maxSize(other.d_maxSize),
         d_data(
-            d_maxSize == 0 ? 
-                0 
+            d_maxSize == 0 ?
+                0
             :
                 static_cast<Data *>(
                     operator new(d_maxSize * sizeof(Data)))
