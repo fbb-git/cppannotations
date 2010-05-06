@@ -1,0 +1,25 @@
+In bf(C++) all zero values are coded as tt(0). In bf(C) ti(NULL) is often used
+in the context of pointers. This difference is purely stylistic, though one
+that is widely adopted. In bf(C++) tt(NULL) should be avoided (as it is a
+i(macro), and macros can --and therefore should-- easily be avoided in
+bf(C++)). Instead tt(0) can almost always be used.
+
+Almost always, but not always. As bf(C++) allows function overloading
+(cf. section ref(FunctionOverloading)) the programmer might be confronted with
+an unexpected function selection in the situation shown in section
+ref(FunctionOverloading):
+        verbinclude(intro/examples/overload.cc)
+
+In this situation a programmer intending to call tt(show(char const *)) might
+call tt(show(0)). But this doesn't work, as 0 is interpreted as tt(int) and so
+tt(show(int)) is called. But calling tt(show(NULL)) doesn't work either, as
+bf(C++) usually defines ti(NULL) as 0, rather than tt(((void *)0)). So,
+tt(show(int)) is called once again. To solve these kinds of problems the new
+bf(C++) standard introduces the keyword ti(nullptr) representing the 0
+pointer. In the current example the programmer should call tt(show(nullptr))
+to avoid the selection of the wrong function. The tt(nullptr) value can also
+be used to initialize pointer variables. E.g.,
+        verb(
+    int *ip = nullptr;      // OK
+    int value = nullptr;    // error: value is no pointer
+        )

@@ -1,0 +1,64 @@
+The hi(ifstream)tt(std::ifstream) class is derived from the tt(istream) class:
+it has the same capabilities as the tt(istream) class, but can be used to
+i(access files)  for reading.
+
+In order to use the tt(ifstream) class  in bf(C++) sources, the
+    ti(fstream) header file must be included. Including tt(fstream) will not
+automatically make available the standard streams tt(cin), tt(cout) and
+tt(cerr). Include ti(iostream) to declare these standard streams.
+
+The following hi(ifstream constructors) constructors are available for
+tt(ifstream) objects:
+    itemization(
+    itt(ifstream object):
+        quote(this is the basic constructor. It defines an tt(ifstream) object
+which may be associated with an actual file later, using its tt(open()) member
+(see below).
+        )
+    itt(ifstream object(char const *name, ios::openmode mode = ios::in)):
+        quote(this constructor can be used to define an tt(ifstream) object
+and associate it immediately with the file named tt(name) using input mode
+tt(mode). Section ref(OUTPUTMODES) provides an overview of available input
+modes.  Example:
+        verb(
+    ifstream in("/tmp/input");
+        )
+            )
+    )
+
+    Instead of directly associating an tt(ifstream) object with a file, the
+object can be constructed first, and opened later.
+    itemization(
+        ithtq(open)(void open(char const *name,
+                            ios::openmode mode = ios::in))
+        (this member function is used to associate an tt(ifstream) object with
+an actual file. If the tt(ios::fail) flag was set before calling tt(open) and
+opening succeeds the flag is cleared. Opening an already open stream fails. To
+reassociate a stream with another file it must first be closed:
+        verb(
+    ifstream in("/tmp/in");
+    in >> variable;
+    in.close();        // closes in
+    in.open("/tmp/in2");
+    in >> anotherVariable;
+        )
+        )
+        ithtq(close)(void close())
+        (an tt(ifstream) object is closed by this member function. The
+function sets the ti(ios::fail) flag of the closed object. Closing the file
+will flush any buffered information to the associated file. A file is
+automatically closed when the associated tt(ifstream) object ceases to exist.
+        )
+        ithtq(is_open)(bool is_open() const)
+        (assume a stream was properly constructed, but it has not yet been
+attached to a file. E.g., the statement tt(ifstream ostr) was executed. When
+we now check its status through tt(good()), a non-zero (i.e., em(OK)) value is
+returned.  The `good' status here indicates that the stream object has been
+constructed properly. It doesn't mean the file is also open. To test whether a
+stream is actually open, tt(is_open) should be called. If it returns ti(true),
+the stream is open.  Also see the example in section ref(OFSTREAM). The
+following example  illustrates reading from a binary file (see also section
+ref(ISTREAMREAD)):
+        verbinclude(iostreams/examples/readdouble.cc)
+        )
+    )

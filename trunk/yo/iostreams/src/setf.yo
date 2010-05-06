@@ -1,0 +1,124 @@
+The member function tt(setf()) is used to define the way numbers are
+displayed. It expects one or two arguments, all em(flags) of the tt(iostream)
+class. In the following examples, tt(cout) is used, but other tt(ostream)
+objects might have been used as well:
+
+startit()
+    it() To display the numeric base of integral values, use
+            centt(cout.setf(ios::showbase))
+This results in em(no) prefix for decimal values, tt(0x) for hexadecimal
+values, tt(0) for octal values. For example:
+verb(
+    cout.setf(ios::showbase);
+    cout << 16 << ", " << hex << 16 << ", " << oct << 16 << '\n';
+)
+results in:
+        centt(16, 0x10, 020)
+    it() To display a trailing decimal point and trailing decimal zeros when
+real numbers are displayed, use
+            centt(cout.setf(ios::showpoint))
+For example:
+verb(
+    cout.setf(ios::showpoint);
+    cout << 16.0 << ", " << 16.1 << ", " << 16 << '\n';
+)
+results in:
+    centt(16.0000, 16.1000, 16)
+Note that the last tt(16) is an integral rather than a real number, and is not
+given a decimal point.
+
+If tt(ios::showpoint) is not used, then trailing zeros are discarded. If the
+decimal part is zero, then the decimal point is discarded as well.
+    it() Comparable to the tt(dec, hex) and tt(oct) manipulators
+verb(
+    cout.setf(ios::dec, ios::basefield);
+    cout.setf(ios::hex, ios::basefield);
+)
+or
+verb(
+    cout.setf(ios::oct, ios::basefield);
+)
+can be used.
+    it() To control the way real numbers are displayed tt(cout.setf(ios::fixed,
+ios::floatfield)) or tt(cout.setf(ios::scientific, ios::floatfield)) can be
+used. These settings result in, respectively, a fixed value display or a
+scientific (power of 10) display of numbers. For example,
+verb(
+    cout.setf(ios::fixed, ios::floatfield);
+    cout << sqrt(200) << '\n';
+    cout.setf(ios::scientific, ios::floatfield);
+    cout << sqrt(200) << '\n';
+)
+results in
+verb(
+    14.142136
+    1.414214e+01
+)
+        itt(ios::left): This format state is used to left-adjust the display
+of values for which the tt(setw()) manipulator (see below) is used. The format
+state can be set using the tt(setf()) member function, and it can be unset
+using the tt(unsetf()) member function. By default values are right-adjusted.
+
+        itt(ios::internal): This format state will add the fill-characters
+(blanks by default) between the minus sign of negative numbers and the value
+itself.
+
+endit()
+
+With tt(istream) objects the flag tt(ios::skipws) can be used to control the
+handling of whitespace characters when characters are extracted. Leading white
+space characters of numerical values are skipped when
+tt(istreamObject.unsetf(ios::skipws)) has been specified, but otherwise they
+must be read explicitly. Reading a tt(char *) or tt(string) variable in this
+situation will only succeed if the first character to be read isn't a
+white-space character. The following small program can be used to illustrate
+the effects of unsetting tt(ios::skipws):
+    verb(
+#include <iostream>
+#include <string>
+
+int main()
+{
+    string
+        buffer;
+    int
+        i;
+    char
+        c;
+
+    cin.unsetf(ios::skipws);
+
+    cin >> i;           // skips leading ws
+    cin >> buffer;      // doesn't skip leading ws.
+
+    cout << "got " << i << " and " << buffer << '\n';
+
+    while (cin >> c)    // reads individual chars, if the previous
+        cout << "got '" << c << "'\n";    // extraction succeeded.
+
+    return (0);
+}
+    )
+
+
+Summarizing:
+    startit()
+    itt(setf(ios::showbase)) is used to display the numeric base of integral
+values,
+    itt(setf(ios::showpoint)) is used to display the trailing decimal point
+and trailing zeros of real numbers
+    itt(setf(ios::dec, ios::basefield), setf(ios::hex, ios::basefield)) and
+tt(setf(ios::oct, ios::basefield)) can be used instead of the tt(dec, hex) and
+tt(oct) manipulators.
+    itt(cout.setf(ios::scientific, ios::floatfield)) and
+tt(cout.setf(ios::fixed, ios::floatfield)) can be used to obtain a fixed or
+scientific (power of 10) display of real values.
+    itt(setf(ios::left)) is used to left-adjust values in the width of
+their fields
+    itt(setf(ios::internal)) is used to left-adjust the minus sign of negative
+values (while the values themselves are right adjusted).
+    itt(ios::skipws) is used to control the handling of white space characters
+by the extraction operator.
+    endit()
+
+To em(unset) flags, the function tt(unsetf()) can be used.

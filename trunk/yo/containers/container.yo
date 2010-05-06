@@ -1,0 +1,140 @@
+bf(C++) offers several predefined datatypes, all part of the
+ link(Standard Template Library)(STL),
+which can be used to implement solutions to frequently occurring problems. The
+datatypes discussed in this chapter are all
+ hi(container) em(containers): you can put stuff inside them, and you can
+retrieve the stored information from them.
+
+The interesting part is that the kind of data that can be stored inside these
+containers has been left unspecified at the time the containers were
+constructed. That's why they are spoken of as em(abstract) containers.
+
+Abstract containers rely heavily on em(templates), covered in chapter
+ref(TEMPLATES) and beyonf. To use abstract containers, only a minimal grasp of
+the template concept is required. In bf(C++) a template is in fact a recipe
+for constructing a function or a complete class. The recipe tries to abstract
+the functionality of the class or function as much as possible from the data
+on which the class or function operates. As the data types on which the
+templates operate were not known when the template was implemented, the
+datatypes are either inferred from the context in which a function template is
+used, or they are mentioned explicitly when a class template is used (the term
+that's used here is em(instantiated)). In situations where the types are
+explicitly mentioned, the em(angle bracket notation) is used to indicate
+which data types are required. For example, below (in section ref(PAIR)) we'll
+encounter the hi(pair container)tt(pair) container, which requires the
+explicit mentioning of two data types. Here is a tt(pair) object
+containing both an tt(int) and a tt(string):
+        verb(
+    pair<int, string> myPair;
+        )
+    The object tt(myPair) is defined as an object holding both an tt(int) and
+a tt(string).
+
+    The angle bracket notation is used intensively in the upcoming
+discussion of abstract containers. Actually, understanding this part of
+templates is the only real requirement for using abstract containers. Now
+that we've introduced this notation, we can postpone the more thorough
+discussion of templates to chapter ref(TEMPLATES), and concentrate on
+their use in this chapter.
+
+Most of the abstract containers are em(sequential) containers: they contain
+data that can be stored and retrieved in some sequential
+way. Examples are the ti(vector), implementing an i(extendable array); the
+ti(list), implementing a datastructure that allows for the easy insertion or
+deletion of  data the ti(queue), also called a emi(FIFO)
+    (i(first in, first out)) structure, in which the first element that is
+entered will be the first element that will be retrieved; and the ti(stack),
+which is a
+    emi(first in, last out) (i(FILO) or i(LIFO)) structure.
+
+In addition to sequential containers several i(special containers) are
+available. The tt(pair) is a basic container in which a pair of values (of
+types that are left open for further specification) can be stored, like two
+strings, two ints, a string and a double, etc.. Pairs are often used to return
+data elements that naturally come in pairs. For example, the ti(map) is an
+abstract container storing keys and their associated values. Elements
+of these maps are returned as tt(pairs).
+
+A variant of the tt(pair) is the hi(complex container) tt(complex) container,
+implementing operations that are defined on emi(complex numbers).
+
+All abstract containers described in this chapter as well as the tt(string)
+and stream datatypes (cf. chapters ref(String) and ref(IOStreams)) are part of
+the Standard Template Library.
+
+All containers support hi(basic operators of containers)
+        hi(containers: basic operators)
+        hi(operators: of containers) the following operators:
+    itemization(
+    it() The i(overloaded assignment) operator, so we can assign two
+containers of the same types to each other.
+    it() hi(containers: equality tests) Tests for equality: ti(==) and ti(!=)
+The i(equality operator) applied to two containers returns ti(true) if the two
+containers have the same number of elements, which are pairwise equal
+according to the equality operator of the contained data type. The
+i(inequality operator) does the opposite.
+    it() hi(containers: ordering) Ordering operators: ti(<), ti(<=), ti(>) and
+ti(>=).  The tt(<) operator returns tt(true) if each element in the
+i(left-hand) side container is less than each corresponding element in the
+i(right-hand) side container. Additional elements in either the left-hand side
+container or the right-hand side container are ignored.
+        verb(
+    container left;
+    container right;
+
+    left = {0, 2, 4};
+    right = {1, 3};             // left < right
+
+    right = {1, 3, 6, 1, 2};    // left < right
+    )
+        )
+    Note that hi(containers: data type requirements) before a
+user-defined type (usually a tt(class)-type) can be stored in a container, the
+user-defined type should at least support:
+    itemization(
+    it() A default-value (e.g., a i(default constructor))
+    it() The i(equality operator) (ti(==))
+    it() The i(less-than operator) (ti(<))
+    )
+    With the advent of the C++0x standard sequential containers can also
+be initialized using em(initializer lists).
+
+    Most containers (exceptions are the link(stack)(STACK) (section
+ref(STACK)), link(priority_queue)(PRIQUEUE) (section
+ref(PRIQUEUE)), and link(queue)(QUEUE) (section
+ref(QUEUE)) containers) support members to determine their maximum sizes
+(through their member function i(max_size)).
+
+    Closely linked to the standard template library are the
+    emi(generic algorithms). These algorithms may be used to perform
+frequently occurring tasks or more complex tasks than is possible with the
+containers themselves, like counting, filling, merging, filtering etc.. An
+i(overview of generic algorithms) and their applications is given in chapter
+ref(GENERIC). Generic algorithms usually rely on the availability of
+    hi(iterators)link(em(iterators))(ITERATORS), representing begin and
+end-points for processing data stored inside containers. The abstract
+containers usually support constructors and members expecting iterators, and
+they often have members returning iterators (comparable to the
+tt(string::begin) and tt(string::end) members). In this chapter the
+iterator concept is not further investigated. Refer to chapter ref(STL) for
+this.
+
+The url hi(http://www.sgi.com/.../STL)
+tlurl(http://www.sgi.com/Technology/STL) is worth visiting as it offers more
+exensive coverage of abstract containers and the standard template library
+than can be provided by the bf(C++) annotations.
+
+    Containers often collect data during their lifetimes. When a container
+goes out of scope, its destructor tries to destroy its data elements. This
+only succeeds if the data elements themselves are stored inside the
+container. If the hi(container: storing pointers) data elements of containers
+are pointers to dynamically allocated memory then the data pointed to by these
+pointers will not be destroyed, resulting in a i(memory leak). A consequence
+of this scheme is that the data stored in a container should often be
+considered the `property' of the container: the container should be able to
+destroy its data elements when the container's destructor is called. So,
+normally containers should not contain pointers to data. Also, a container
+should not be required hi(containter: storing const data)
+    hi(const data and containers) to contain tt(const) data, as tt(const) data
+prevent the use of many of the container's members, like the assignment
+operator.

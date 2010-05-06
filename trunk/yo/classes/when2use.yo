@@ -1,0 +1,44 @@
+When should i(inline) functions be used, and when not? There are some
+    hi(rule of thumb) rules of thumb which may be followed:
+    itemization(
+    it() In general inline functions should bf(not) be used.
+em(Voil\`a); that's simple, isn't it?
+    it() Consider defining a function inline once a fully developed and
+tested program runs too slowly and shows `bottlenecks' in certain functions,
+and the bottleneck is removed by defining inline members. A i(profiler), which
+runs a program and determines where most of the time is spent, is necessary to
+perform such optimizations.
+    it() Defining inline functions may be considered when they consist of
+one very simple statement (such as the return statement in the function
+tt(Person::name)).
+    it() When a function is defined inline, its implementation is inserted
+in the code wherever the function is used. As a consequence, when the
+em(implementation) of the inline function changes, all sources using the
+inline function must be recompiled. In practice that means that all functions
+must be recompiled that include (either directly or indirectly) the header
+file of the class in which the inline function is defined. Not a very
+attractive prospect.
+    it() It is only useful to implement an inline function when the time
+spent during a function call is long compared to the time spent by the
+function's body. An example of an  inline function which will hardly have any
+effect on the program's speed is:
+        verb(
+    inline void Person::printname() const
+    {
+        cout << d_name << '\n';
+    }
+        )
+    This function contains only one statement.  However, the statement takes a
+relatively long time to execute. In general, functions which perform input and
+output take lots of time. The effect of the conversion of this function
+tt(printname()) to inline would therefore lead to an insignificant gain in
+execution time.
+    )
+    All inline functions hi(inline: disadvantage) have one disadvantage: the
+actual code is inserted by the compiler and must therefore be known
+compile-time. Therefore, as mentioned earlier, an inline function can never be
+located in a run-time library. Practically this means that an inline function
+is found near the interface of a class, usually in the same header file. The
+result is a header file which not only shows the bf(declaration) of a class,
+but also part of its bf(implementation), thus always blurring the distinction
+between interface and implementation.

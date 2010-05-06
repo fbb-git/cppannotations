@@ -1,0 +1,35 @@
+In addition to explicit constructors, the C++0x standard adds
+ hi(explicit: conversion operator)hi(conversion operator: explicit)
+em(explicit conversion operators) to bf(C++).
+
+For example, a class might define tt(operator bool() const) returning tt(true)
+if an object of that class is in a usable state and tt(false) if not.
+Since the type tt(bool) is an arithmetic type this could result in unexpected
+or unintended behavior. Consider:
+        verb(
+    class StreamHandler
+    {
+        public:
+            operator bool() const;      // true: object is fit for use
+            ...
+    };
+
+    int fun(StreamHandler &sh)
+    {
+        int sx;
+
+        if (sh)                         // intended use of operator bool()
+            ... use sh as usual; also use `sx'
+
+        process(sh);                    // typo: `sx' was intended
+    }
+        )
+    In this example tt(process) unintentionally receives the value returned by
+tt(operator bool) using the implicit conversion from tt(bool) to tt(int).
+
+With tt(explicit) conversion operators implicit conversions like the one shown
+in the example are prevented and such conversion operators will only be used
+in situations where the converted type is explicitly required. E.g., in the
+condition sections of tt(if) or repetition statements where a tt(bool) value
+is expected. In such cases an tt(explicit operator bool()) conversion operator
+would automatically be used.

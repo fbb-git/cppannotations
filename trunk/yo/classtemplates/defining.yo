@@ -1,0 +1,110 @@
+The arguments associated with a variadic template parameter are not directly
+available to the implementation of a function or class template.
+resort to other means to obtain them.
+
+By defining an partial specialization of a variadic template explicitly
+defining an additional template type parameter we can associate the first
+template argument of a parameter pack with the additional tyoe
+parameter. The setup of such a variadic function template (e.g., tt(printcpp),
+see the previous section) is as follows:
+    itemization(
+    it() The tt(printcpp) function receives at least a format
+string. Following the format string any number of additional arguments may be
+specified.
+    it() If there are no arguments trailing the format string then there is no
+need to use a function template. An overloaded (non-template) function
+is defined to handle this situation.
+    it() A variadic function template handles all remaining situations. In
+this case there is always at least one  arguments trailing the format
+string. That argument's type is matched with the variadic template function's
+first (ordinary) template type parameter tt(First). The types of any remaining
+arguments are bound to the template function's second template parameter,
+which is a parameter pack.
+    it() The variadic function template processes the argument trailing the
+format string. Then it recursively calls itself passing the format string and
+the parameter pack to the recursive call
+    it() If the recursive call merely receives the format string the
+overloaded (non-template) function is called (cf. section
+ref(FUNCTIONSELECTION)) ending the recursion. Otherwise the parameter pack's
+first argument is matched with the recursive call's tt(First) parameter. As
+reduces the size of the recursive call's parameter pack the recursion will
+eventually stop.
+    )
+
+The overloaded non-template function prints the remainder of the format
+string, em(en passant) checking for any left-over format specifications:
+        verb(
+    void printcpp(string const &format)
+    {
+        size_t left = 0;
+        size_t right = 0;
+
+        while (true)
+        {
+            if ((right = format.find('%', right)) == string::npos)
+                break;
+            if (format.find("%%", right) != right)
+                throw std::runtime_error(
+                            "printcpp: missing arguments");
+            ++right;
+            cout << format.substr(left, right - left);
+            left = ++right;
+        }
+        cout << format.substr(left);
+    }
+        )
+
+Here is the variadic function template's implementation:
+        verb(
+    template<typename First, typename ... Params>
+    void printcpp(std::string const &format, First value, Params ... params)
+    {
+        size_t left = 0;
+        size_t right = 0;
+        while (true)
+        {
+            if ((right = format.find('%', right)) == string::npos)      // 1
+                throw std::logic_error("printcpp: too many arguments");
+
+            if (format.find("%%", right) != right)                      // 2
+                break;
+
+            ++right;
+            cout << format.substr(left, right - left);
+            left = ++right;
+        }
+        cout << format.substr(left, right - left) << value;
+        printcpp(format.substr(right + 1), params ...);
+   }
+        )
+    itemization(
+    it() At 1 the format string is searched for a parameter specification
+tt(%). If none is found then the function is called with too many arguments
+and it throws an exception;
+    it() At 2 it verifies that it has not encountered tt(%%). If only a single
+tt(%) has been seen the tt(while)-loop ends, the format string is inserted
+into tt(cout) up to the tt(%) followed by tt(value), and the recursive call
+receives the remaing part of the format string as well as the remaining
+parameter pack;
+    it() If tt(%%) was seen the format string is inserted up to the second
+tt(%), which is ignored, and processing of the format string continues beyond
+the tt(%%).
+    )
+    Make sure that the overloaded function is at least declared before the
+compiler processes the function template's definition or it won't
+call the overloaded function tt(printcpp) when compiling the function
+template.
+
+    Different from bf(C)'s tt(printf) function tt(printcpp) only recognizes
+tt(%) and tt(%%) as format specifiers. The above implementation does not
+recognize, e.g., field widths. Type specifiers like tt(%c) and tt(%x) are of
+course not needed as tt(ostream)'s insertion operator is aware of the types of
+the arguments that are inserted into the tt(ostream).  Extending the format
+specifiers so that field widths etc. are recognized by this tt(printcpp)
+implementation is left as an exercise to the reader. Here is an example
+showing how tt(printcpp) can be called:
+        verb(
+    printcpp("Hello % with %%main%% called with % args"
+                                            " and a string showing %\n",
+        "world", argc, string("A String"));
+        )

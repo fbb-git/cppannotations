@@ -1,0 +1,101 @@
+Although em(class) templates may be partially specialized, em(function)
+templates may not. At times this is annoying. Assume a function template is
+available implementing a certain unary operator that could be used with the
+tt(transform) (cf. section ref(TRANSFORM)) generic algorithm:
+        verb(
+    template <typename Return, typename Argument>
+    Return chop(Argument const &arg)
+    {
+        return Return(arg);
+    }
+        )
+    Furthermore assume that if tt(Return) is tt(std::string) then the above
+implementation should not be used. Instead, with tt(std::string) a second
+argument tt(1) should always be provided. This would allow us, if tt(Argument)
+is a bf(C++) string, to return a copy of tt(arg) from which its first
+character has been chopped off.
+
+Since tt(chop) is a function, it is not possible to define a partial
+specialization like this:
+        verb(
+    template <typename Argument>        // This won't compile!
+    std::string chop<std::string, Argument>(Argument const &arg)
+    {
+        return string(arg, 1);
+    }
+        )
+    Although a function template cannot be partially specialized it em(is)
+possible to use overloading, defining a second,  dummy tt(string) parameter:
+        verb(
+    template <typename Argument>
+    std::string chop(Argument const &arg, std::string )
+    {
+        return string(arg, 1);
+    }
+        )
+    Now it em(is) possible to distinguish the two cases, but at the expense of
+a more complex function call. At the downside, in code this function may
+requiring the use of the tt(bind2nd) binder (cf. section ref(FUNADAPT)) to
+provide the dummy second argument or it may require a (possibly expensive to
+construct) dummy argument to allow the compiler to choose among the two
+overloaded function templates.
+
+    Instead of providing a tt(string) dummy argument the functions em(could)
+use the tt(IntType) template (cf. section ref(INTTYPE)) to select the proper
+overloaded version. E.g., tt(IntType<0>) could be defined as the type of the
+second argument of the first overloaded tt(chop) function, and tt(IntType<1>)
+could be used for the second overloaded function. From the point of view of
+program efficiency this is an attractive option, as the provided tt(IntType)
+objects are extremely lightweight. tt(IntType) objects contain no data at
+all. But there's also an obvious disadvantage as there is no intuitively clear
+association between the tt(int) value used and the intended type.
+
+    Instead of defining arbitrary tt(IntType) types it is more attractive to
+use another lightweight solution, using an automatic type-to-type
+association. The tt(struct TypeType) is a lightweight type wrapper, much like
+tt(IntType). Here is its definition:
+        verb(
+    template <typename T>
+    struct TypeType
+    {
+        typedef T Type;
+    };
+        )
+    tt(TypeType) is also a lightweight type as it doesn't have any data fields
+either. tt(TypeType) allows us to use a natural type association for
+tt(chop)'s second argument. E.g, the overloaded functions can now be defined
+as follows:
+        verb(
+    template <typename Return, typename Argument>
+    Return chop(Argument const &arg, TypeType<Argument> )
+    {
+        return Return(arg);
+    }
+
+    template <typename Argument>
+    std::string chop(Argument const &arg, TypeType<std::string> )
+    {
+        return std::string(arg, 1);
+    }
+        )
+    Using the above implementations any type can be specified for
+tt(Result). If it happens to be a tt(std::string) the appropriate overloaded
+version is automatically selected. The following additional overload of the
+function tt(chop) capitalizes on this:
+        verb(
+    template <typename Result>
+    Result chop(char const *txt)    // char const * could also be a 2nd
+    {                               // template type parameter
+        return chop(std::string(txt), TypeType<Result>());
+    }
+        )
+    Using the third tt(chop) function, the following statement produces the
+text `tt(ello world)':
+        verb(
+    cout << chop<string>("hello world") << '\n';
+        )
+    Template functions do not support partial specializations. But they can be
+overloaded. By providing overloads with dummy type-arguments that depend
+on other parameters and calling these overloads from a overloaded function
+that does not require the dummy type argument a situation similar to partial
+specializations with class templates can often be realized.

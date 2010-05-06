@@ -1,0 +1,23 @@
+At a certain level of the program only a limited set of handlers may actually
+be required. Exceptions whose types belong to that limited set are processed,
+all other exceptions are passed on to exception handlers of an outer level
+tt(try) block.
+
+An intermediate type of exception handling may be implemented using the
+default exception handler, which must be (due to the hierarchal nature of
+exception catchers, discussed in section ref(EXCEPTIONCATCH)) placed beyond
+all other, more specific exception handlers.
+
+This default exception handler cannot determine the actual type of the thrown
+exception and cannot determine the exception's value but it coould do some
+default processing. The exception is not lost, however, and the default
+exception handler may still use the empty tt(throw) statement (see section
+ref(EMPTYTHROW)) to pass the exception on to an outer level.  Here is an
+example showing this use of a default exception handler:
+    verbinclude(exceptions/examples/defaultcatch.cc)
+    The program's output illustrates that an empty tt(throw) statement in a
+default exception handler throws the received exception to the next (outer)
+level of exception catchers, keeping type and value of the thrown exception.
+Thus basic or generic exception handling can be accomplished at an inner level
+and specific handling, based on the type of the thrown expression, can then be
+provided at an outer level.

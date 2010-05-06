@@ -1,0 +1,131 @@
+This section briefly describes how hi(polymorphism: how) polymorphism is
+implemented in bf(C++).  It is not necessary to understand how polymorphism is
+implemented if you just want to em(use) polymorphism. However, we think it's
+nice to know how polymorphism is possible. Also, knowing how polymorphism is
+implemented clarifies why there is a (small) penalty to using polymorphism in
+terms of memory usage and efficiency.
+
+The fundamental idea behind polymorphism is that the compiler does not know
+which function to call compile-time. The appropriate function will be selected
+run-time. That means that the address of the function must be available
+somewhere, to be looked up prior to the actual call. This `somewhere' place
+must be accessible to the object in question. So when a tt(Vehicle *vp) points
+to a tt(Truck) object, then tt(vp->mass()) calls tt(Truck)'s member
+function. the address of this function is obtained through the actual object
+to which tt(vp) points.
+
+Polymorphism is commonly implemented as follows: an object containing virtual
+member functions also contains, usually as its first data member a
+ i(hidden data member), pointing to an array containing the addresses of the
+class's virtual member functions. The hidden data member is usually called the
+emi(vpointer), the array of virtual member function addresses the emi(vtable).
+
+The class's vtable is shared by all objects of that class.  The overhead of
+polymorphism in terms of i(memory consumption) is therefore:
+    itemization(
+    it() one vpointer data member per object pointing to:
+    it() one vtable per class.
+    )
+    Consequently, a statement like tt(vp->mass) first inspects the hidden
+data member of the object pointed to by tt(vp). In the case of the vehicle
+classification system, this data member points to a table containing two
+addresses: one pointer to the function tt(mass) and one pointer to the
+function tt(setMass) (three pointers if the class also defines (as it
+should) a virtual destructor). The actually called function is determined from
+this table.
+
+The internal organization of the objects having virtual functions is
+illustrated in figures fig(ImplementationFigure) and fig(CaumonFigure)
+(originals provided by url(Guillaume Caumon)
+    (mailto:Guillaume.Caumon@ensg.inpl-nancy.fr)).
+
+        figure(polymorphism/implementation)
+        (Internal organization objects when virtual functions are defined.)
+        (ImplementationFigure)
+
+        figure(polymorphism/caumon)
+        (Complementary figure, provided by Guillaume Caumon)
+        (CaumonFigure)
+
+    As shown by figures fig(ImplementationFigure) and fig(CaumonFigure),
+objects potentially using virtual member functions must have one (hidden) data
+member to address a table of function pointers. The objects of the classes
+tt(Vehicle) and tt(Auto) both address the same table. The class tt(Truck),
+however, overrides tt(mass). Consequently, tt(Truck) needs its own vtable.
+
+A small complication arises when a class is derived from multiple base
+classes, each defining virtual functions. Consider the following example:
+        verb(
+    class Base1
+    {
+        public:
+            virtual ~Base1();
+            void fun1();        // calls vOne and vTwo
+        private:
+            virtual void vOne();
+            virtual void vTwo();
+    };
+    class Base2
+    {
+        public:
+            virtual ~Base2();
+            void fun2();        // calls vThree
+        private:
+            virtual void vThree();
+    };
+    class Derived: public Base1, public Base2
+    {
+        public:
+            virtual ~Derived();
+        private:
+            virtual ~vOne();
+            virtual ~vThree();
+    };
+        )
+ In the example tt(Derived) is multiply derived from tt(Base1) and tt(Base2),
+each supporting virtual functions. Because of this, tt(Derived) also has
+virtual functions, and so tt(Derived) has a tt(vtable) allowing a base class
+pointer or reference to access the proper virtual member.
+
+When tt(Derived::fun1) is called (or a tt(Base1) pointer pointing to tt(fun1)
+calls tt(fun1)) tt(fun1) will call tt(Derived::vOne) and
+tt(Base1::vTwo). Likewise, when tt(Derived::fun2) is called
+tt(Derived::vThree) will be called.
+
+The complication
+ hi(multiple inheritance: vtable)hi(vtable: and multiple inheritance) occurs
+with tt(Derived)'s vtable. When tt(fun1) is called its class type determines
+the vtable to use and hence which virtual member to call. So when tt(vOne) is
+called from tt(fun1), it is presumably the second entry in tt(Derived)'s
+vtable, as it must match the second entry in tt(Base1)'s vtable. However, when
+tt(fun2) calls tt(vThree) it apparently is also the second entry in
+tt(Derived)'s vtable as it must match the second entry in tt(Base2)'s vtable.
+
+Of course this cannot be realized by a single vtable. Therefore, when multiple
+inheritance is used (each base class defining virtual members) another
+approach is followed to determine which virtual function to call. In this
+situation (cf. figure fig(MultiVtableFig)) the class tt(Derived) receives
+em(two) tt(vtable)s, one for each of its base classes and each tt(Derived)
+class object harbors em(two) hidden vpointers, each one pointing to its
+corresponding vtable.
+
+        figure(polymorphism/multivtable)
+        (Vtables and vpointers with multiple base classes)
+        (MultiVtableFig)
+
+Since base class pointers, base class references, or base class interface
+members unambiguously refer to one of the base classes the compiler can
+determine which vpointer to use.
+
+The following therefore holds true for classes multiply derived from base
+classes offering virtual member functions:
+    itemization(
+    it() the derived class defines a vtable for each of its base classes
+offering virtual members;
+    it() Each derived class object contains as many hidden vpointers as it has
+vtables.
+    it() Each of a derived class object's vpointers points to a unique vtable
+and the vpointer to use is determined by the class type of the base class
+pointer, the base class reference, or the base class interface function that
+is used.
+    )

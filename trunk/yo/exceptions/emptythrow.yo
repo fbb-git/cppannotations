@@ -1,0 +1,93 @@
+Sometimes it is required to inspect a thrown exception. An exception catcher
+may decide to ignore the exception, to process the exception, to rethrow it
+after inspection or to change it into another kind of exception. For example,
+in a server-client application the client may submit requests to the server by
+entering them into a queue. Normally every request is eventually answered by
+the server. The server may reply that the request was successfully processed,
+or that some sort of error has occurred. On the other hand, the server may
+have died, and the client should be able to discover this calamity, by not
+waiting indefinitely for the server to reply.
+
+In this situation an intermediate exception handler is called for. A thrown
+exception is first inspected at the middle level. If possible it is processed
+there. If it is not possible to process the exception at the middle level, it
+is passed on, unaltered, to a more superficial level, where the really tough
+exceptions are handled.
+
+By placing an hi(throw: empty) em(empty) tt(throw) statement in the exception
+handler's code the received exception is passed on to the next level that
+might be able to process that particular type of exception. The em(retrown)
+exception is never handled by one of its neighboring exception handlers; it
+is always transferred to an exception handler at a more superficial level.
+
+In our server-client situation a function
+        verb(
+    initialExceptionHandler(string &exception)
+        )
+    could be designed to handle the tt(string) exception. The received message
+is inspected. If it's a simple message it's processed, otherwise the exception
+is passed on to an outer level. In tt(initialExceptionHandler)'s
+implementation the empty tt(throw) statement is used:
+        verb(
+    void initialExceptionHandler(string &exception)
+    {
+        if (!plainMessage(exception))
+            throw;
+
+        handleTheMessage(exception);
+    }
+        )
+    Below (section ref(EXCEPTIONCATCH)), the empty tt(throw) statement is used
+to pass on the exception received by a tt(catch)-block. Therefore, a function
+like tt(initialExceptionHandler) can be used for a variety of thrown
+exceptions, as long as their types match tt(initialExceptionHandler)'s
+parameter, which is a string.
+
+The next example jumps slightly ahead, using some of the topics covered in
+chapter ref(POLYMORPHISM). The example may be skipped, though, without
+loss of continuity.
+
+A basic exception handling class can be constructed from which specific
+exception types are derived.  Suppose we have a class tt(Exception), having a
+member function tt(ExceptionType Exception::severity).  This member function
+tells us (little wonder!) the severity of a thrown exception. It might be
+tt(Info, Notice, Warning, Error) or tt(Fatal).  The information contained in
+the exception depends on its severity and is processed by a function
+tt(handle). In addition, all exceptions support a member function like
+ti(textMsg), returning textual information about the exception in a
+tt(string).
+
+By defining a polymorphic function tt(handle) it can be made to behave
+differently, depending on the nature of a thrown exception, when called
+from a basic tt(Exception) pointer or reference.
+
+In this case, a program may throw any of these five exception types. Let's
+assume that classes tt(Message) and tt(Warning) were derived from the class
+tt(Exception), then the tt(handle) function matching the exception type
+will automatically be called by the following exception catcher:
+        verb(
+    catch(Exception &ex)
+    {
+        cout << e.textMsg() << '\n';
+
+        if
+        (
+            ex.severity() != ExceptionWarning
+            &&
+            ex.severity() != ExceptionMessage
+        )
+            throw;              // Pass on other types of Exceptions
+
+        ex.handle();            // Process a message or a warning
+    }
+        )
+    Now anywhere in the tt(try) block preceding the exception handler
+tt(Exception) objects or objects of one of its derived classes may be thrown,
+that will all be caught by the above handler. E.g.,
+        verb(
+    throw Info();
+    throw Warning();
+    throw Notice();
+    throw Error();
+    throw Fatal();
+        )

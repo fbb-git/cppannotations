@@ -1,0 +1,84 @@
+The C++0x standard offers emi(extensible literals), also known as
+    emi(user defined literals). Standard bf(C++) defines various kinds of
+literals, like numerical constants (with or without suffixes), character
+constants and string (textual) literals.
+
+Under the C++0x standard a literal, e.g., 1013, can be looked at in two ways:
+as a emi(raw literal) in which the literal as ASCII string or series of
+characters is passed to a processing function or as a emi(cooked literal) in
+which case the compiler already performs some conversion.
+
+To extend a literal either a processing function or a variadic function
+template must be defined. Both functions must start with an underscore and all
+user defined literals are suffixes.
+
+Using tt(Type) to represent the resulting type of the literal a a (raw)
+literal can be declared using the following syntax (the initial underscore in
+tt(_functionName) is required):
+        verb(
+    Type operator "" _functionName(char const *text [, size_t len]);
+        )
+    Here, `tt(, size_t
+len)' is an optional parameter receiving tt(text)'s length (as returned by
+bf(C)'s ti(strlen) function)
+
+The function tt(_functionName) is implemented by the software engineer and
+must return a value of type tt(Type). Here is an example of the definition and
+use of an user defined literal tt(_kmh) returning a tt(double):
+        verb(
+    double _kmh(char const *speed)
+    {
+        std::istringstream in(speed);
+        double ret;
+        in >> ret;
+        return ret;
+    }
+    double operator "" _kmh(char const *speed);
+
+    double value = "120"_kmh;
+        )
+
+
+COMMENT(
+
+Alternatively a variadic template can be used. In the next example the
+individual characters of the user defined literal are received as a series of
+character type arguments to the function:
+        verb(
+    template <char ...>
+    double _kmh(char ...)
+        )
+
+template<char...> OutputType operator "" _Suffix();
+
+OutputType someVariable = "1234"_Suffix;
+
+This instantiates the literal processing function as operator""_Suffix<'1',
+'2', '3', '4'>. In this form, there is no terminating null character to the
+string. The main purpose to doing this is to use C++0x's constexpr keyword and
+the compiler to allow the literal to be transformed entirely at compile time,
+assuming OutputType is a constexpr-constructable and copyable type, and the
+literal processing function is a constexpr function.
+
+For cooked literals, the type of the cooked literal is used, and there is no alternative template form:
+
+OutputType operator "" _Suffix(int the_value);
+
+OutputType someVariable = "1234"_Suffix;
+
+For string literals, the following are used, in accordance with the previously mentioned new string prefixes:
+
+OutputType operator "" _Suffix(const char * string_values, size_t num_chars);
+OutputType operator "" _Suffix(const wchar_t * string_values, size_t num_chars);
+OutputType operator "" _Suffix(const char16_t * string_values, size_t num_chars);
+OutputType operator "" _Suffix(const char32_t * string_values, size_t num_chars);
+
+OutputType someVariable = "1234"_Suffix;      //Calls the const char * version
+OutputType someVariable = u8"1234"_Suffix;    //Calls the const char * version
+OutputType someVariable = L"1234"_Suffix;     //Calls the const wchar_t * version
+OutputType someVariable = u"1234"_Suffix;     //Calls the const char16_t * version
+OutputType someVariable = U"1234"_Suffix;     //Calls the const char32_t * version
+
+Character literals are defined similarly.
+
+END)

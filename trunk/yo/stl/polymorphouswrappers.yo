@@ -1,0 +1,42 @@
+In bf(C++) pointers to (member) function have fairly strict rvalues. They may
+only point to functions matching their types.  This becomes a problem when
+defining templates where type of a function pointer may vary from
+instantiation to instantiation.
+
+To improve handling of these situations the C++0x standard introduces
+ hi(polymorphous wrapper)em(polymorphous (function object) wrappers).
+Polymorphous wrappers can refer to function pointers, member functions or
+functors, as long as they match in type and number of their parameters.
+
+COMMENT(
+
+function<int ( int, int )> pF ;  // Wrapper creation using
+                                 // template class 'function'.
+
+plus<int> add ;  // 'plus' is declared as 'template<class T> T plus( T, T ) ;'
+                 // then 'add' is type 'int add( int x, int y )'.
+
+pF = &add ;  // OK - Parameters and return types are the same.
+
+int a = pF( 1, 2 ) ;  // NOTE: if the wrapper 'pF' does not refer to any function,
+                      // the exception 'std::bad_function_call' is thrown.
+
+function<bool ( short, short )> pG ;
+if( !pG )  // Always true because 'pG' has not yet
+           // been assigned a function.
+{
+  bool adjacent( long x, long y ) ;
+  pG = &adjacent ;  // OK - Parameters and return types are convertible.
+
+  struct test
+  {
+    bool operator()( short x, short y ) ;
+  } car ;
+  pG = ref(car) ;  // 'ref' is a template function that returns the wrapper
+                   // of member function 'operator()' of struct 'car'.
+}
+pF = pG ;  // OK - Parameters and return types are convertible.
+
+The template class function will be defined inside the header <functional>, and doesn't require any changes to the C++ language.
+
+END)

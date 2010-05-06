@@ -1,0 +1,42 @@
+In everyday class design two situation are frequently encountered:
+    itemization(
+        it() A class offering constructors explicitly has to define a default
+constructor;
+        it() A class (e.g., a class implementing a stream)
+cannot initialize objects by copying the values from an existing object of
+that class (called
+ emi(copy construction)) and cannot assign objects to each other.
+    )
+    Once a class defines at least one constructor its default constructor is
+not automatically defined by the compiler. The C++0x standard relaxes that
+restriction somewhat by offering the hi(default)`ti(= default)'
+syntax. A class specifying `tt(= default)' with its default constructor
+declaration indicates that the i(trivial default constructor) should be
+provided by the compiler. A trivial default constructor performs the following
+actions:
+    itemization(
+    it() Its data members of built-in or primitive types are not initialized;
+    it() Its composed (class type) data members are initialized by their
+default constructors.
+    it() If the class is derived from a base class (cf. chapter
+ref(INHERITANCE)) the base class is initialized by its default constructor.
+    )
+    Trivial implementations can also be provided for the em(copy constructor),
+the em(overloaded assignment operator), and the em(destructor). Those members
+are introduced in chapter ref(MEMORY).
+
+    Conversely, situations exist where some (otherwise automatically provided)
+members should em(not) be made available. This is realized by specifying
+ hi(delete)`ti(= delete)'. Using tt(= default) and tt(= delete) is illustrated
+by the following example. The default constructor receives its trivial
+implementation, copy-construction is prevented:
+        verb(
+    class Strings
+    {
+        public:
+            Strings() = default;
+            Strings(std::string const *sp, size_t size);
+
+            Strings(Strings const &other) = delete;
+    };
+        )

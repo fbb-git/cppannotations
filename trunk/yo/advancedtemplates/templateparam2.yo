@@ -1,0 +1,136 @@
+Template hi(template template parameter) template parameters allow us to
+specify a em(class template) as a template parameter. By specifying a class
+template, it is possible to add a certain kind of behavior, called a
+emi(policy) to an existing class template.
+
+Consider the class tt(Storage), introduced at the beginning of this section.
+Also consider the allocation classes discussed in the previous section. To
+allow us to specify an em(allocation policy) for the class tt(Storage) its
+definition starts as follows:
+        verb(
+    template <typename Data, template <typename> class Policy>
+    class Storage ...
+        )
+    The second template parameter is the
+    em(template template parameter). It consists of the following elements:
+        itemization(
+        it() The keyword tt(template), starting the template
+            template parameter;
+        it() It is followed (between pointed brackets) by a list of template
+            parameters that must be specified for the template template
+            parameter. These parameters em(may) be given names, but names are
+            usually omitted as those names cannot be used in subsequent
+            template definitions. On the other hand, providing formal names
+            may help the reader of the template to understand the kinds of
+            templates that may be specified as template template parameters.
+        it() Template template parameters must match, in numbers and types
+            (i.e., template type parameters, template non-type parameters,
+            template template parameters) the template parameters that must be
+            specified for the policy.
+        it() Following the bracketed list the keyword ti(class) must be
+            specified. In this case, tt(typename)
+                hi(typename vs. class)
+            can em(not) be used.
+        it() All parameters may be provided with default arguments. This is
+            shown in the next example of a hypothetical class template:
+        verb(
+    template <
+        template <
+            typename = std::string,
+            int = 12,
+            template < typename = int > class Inner = std::vector
+        >
+        class Policy
+    >
+    class Demo
+    {
+        ...
+    };
+        )
+        )
+    Since the policy class should be an inherent part of the class under
+consideration, it is often deployed as a base class. So, tt(Policy) becomes a
+base class of tt(Storage).
+
+    The policy operates on the class tt(Storage)'s data type. Therefore the
+policy is informed about that data type as well. From this we reach the
+following setup:
+        verb(
+    template <typename Data, template <typename> class Policy>
+    class Storage: public Policy<Data>
+        )
+    This scheme allows us to use the policy's members when implementing the
+members of the class tt(Storage).
+
+    The allocation classes shown before do not really provide us with many
+useful members. Except for the extraction operator they offer no immediate
+access to the data. This can easily be repaired by providing additional
+members. E.g., the class tt(NewAlloc) could be provided with the following
+operators, allowing access to and modification of stored data:
+            verb(
+        operator Data &()   // optionally add a `const' member too
+        {
+            return *d_data;
+        }
+        NewAlloc &operator=(Data const &data)
+        {
+            *d_data = data;
+        }
+            )
+    Other allocation classes can be given comparable members.
+
+    The next step consists of using the allocation schemes in some real
+code. The next example shows how a storage can be defined using some data type
+and an allocation scheme. First, define a class tt(Storage):
+        verb(
+    template <typename Data, template <typename> class Policy>
+    class Storage: public std::vector<Policy<Data> >
+    {};
+        )
+    That's all we have to do. All required functionality is offered by the
+tt(vector) base class, while the policy is `factored into the equation' via
+the template template parameter. Here's an example showing its use:
+        verb(
+    Storage<std::string, NewAlloc> storage;
+
+    copy(istream_iterator<std::string>(cin), istream_iterator<std::string>(),
+            back_inserter(storage));
+
+    cout << "Element index 1 is " << storage[1] << '\n';
+    storage[1] = "hello";
+
+    copy(storage.begin(), storage.end(),
+         ostream_iterator<NewAlloc<std::string> >(cout, "\n"));
+        )
+   Now the STL tt(copy)
+function can be used in combination with the em(back_inserter) iterator
+to add some data to tt(storage). Its elements can be both accessed and
+modified directly using the index operator and then tt(NewAlloc<std::string>)
+objects are inserted into tt(cout) (also using the tt(copy) function).
+
+    Interestingly, this is not the end of the story. After all, the intention
+was to create a class allowing us to specify the em(storage type) as
+well. What if we don't want to use a tt(vector), but instead would like to use
+a tt(list)?
+
+    It's easy to change tt(Storage)'s setup so that a completely different
+storage type can be used on request, like a tt(deque). To implement this, the
+storage class is parameterized as well, using yet another template template
+parameter:
+        verb(
+    template <typename Data, template <typename> class Policy,
+                             template <typename> class Container =
+                                                        std::vector>
+    class Storage: public Container< Policy<Data> >
+    {
+    };
+        )
+    The earlier example using a tt(Storage) object can be used again without
+requiring any modifications at all (except for the above redefinition). It
+clearly can't be used with a tt(list) container, as the tt(list) lacks
+tt(operator[]). But that's immediately recognized by the compiler, producing
+an error if an attempt is made to use tt(operator[]) on, e.g., a
+    tt(list)footnote(A complete example showing the definition of the
+allocation classes and the class tt(Storage) as well as its use is provided in
+the Annotation's distribution in the file
+tt(yo/advancedtemplates/examples/storage.cc).).

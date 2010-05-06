@@ -1,0 +1,91 @@
+By default the behavior of a member function called via a pointer or reference
+is determined by the implementation of that function in the pointer's or
+reference's class. E.g., a tt(Vehicle *) will activate tt(Vehicle)'s member
+functions, even when pointing to an object of a derived class. This is known
+as as em(early) or
+    hi(early binding) hi(static binding) em(static) binding: the function to
+call is determined
+ i(compile-time). In bf(C++) em(late)
+ hi(late bining) or hi(dynamic binding) em(dynamic) binding is realized using
+em(virtual member functions).
+
+A member function becomes a i(virtual member function) when its declaration
+starts with the keyword ti(virtual). It is stressed once again that in
+bf(C++), different from several other object oriented languages, this is
+em(not) the default situation. By default em(static) binding is used.
+
+Once a function is declared tt(virtual) in a base class, it remains virtual in
+all derived classes; even when the keyword tt(virtual) is not repeated in
+derived classes.
+
+In the vehicle classification system (see section ref(VehicleSystem)) the two
+member functions tt(mass) and tt(setMass) might be declared
+tt(virtual). Concentrating on tt(mass) The relevant sections of the class
+definitions of the class tt(Vehicle) and tt(Truck) are shown below. Also, we
+show the implementations of the member function tt(mass):
+        verb(
+    class Vehicle
+    {
+        public:
+            virtual int mass() const;
+    };
+    class Truck: // inherited from Vehicle through Auto and Land
+    {
+        // not altered
+    };
+    int Vehicle::mass() const
+    {
+        return d_mass;
+    }
+
+    int Truck::mass() const
+    {
+        return Auto::mass() + d_trailer_wt;
+    }
+        )
+    The keyword tt(virtual) em(only) appears in the (tt(Vehicle)) base
+class. There is no need (but there is also no i(penalty)) to repeat it in
+derived classes. Once a class member has been declared tt(virtual) is will be
+tt(virtual) in all derived classes. A member function may be
+declared tt(virtual) em(anywhere) in a
+    i(class hierarchy). The compiler will be perfectly happy if tt(mass) is
+declared tt(virtual) in tt(Auto), rather than in tt(Vehicle). The specific
+characteristics of virtual member functions would then only be available for
+tt(Auto) objects and for objects of classes derived from tt(Auto). For a
+tt(Vehicle) pointer static binding would remain to be used.  The effect of
+late binding is illustrated below:
+        verb(
+    Vehicle v(1200);            // vehicle with mass 1200
+    Truck t(6000, 115,          // truck with cabin mass 6000, speed 115,
+          "Scania", 15000);     // make Scania, trailer mass 15000
+    Vehicle *vp;                // generic vehicle pointer
+
+    int main()
+    {
+        vp = &v;                            // see (1) below
+        cout << vp->mass() << '\n';
+
+        vp = &t;                            // see (2) below
+        cout << vp->mass() << '\n';
+
+        cout << vp->speed() << '\n';     // see (3) below
+    }
+        )
+    Now that tt(mass) is defined tt(virtual), late binding will be used:
+    itemization(
+    it() at (1), tt(Vehicle::mass) is called.
+    it() at (2) tt(Truck::mass) is called.
+    it() at (3) a syntax error is generated. The member
+        tt(speed) is no member of tt(Vehicle), and hence not callable via
+a tt(Vehicle*).
+    )
+    The example illustrates that when a pointer to a class is used em(only the
+members of that class can be called).  These functions may or may not be
+tt(virtual). A member's tt(virtual) characteristic only influences the type of
+binding (early vs. late), not the set of member functions that is visible
+to the pointer.
+
+Through virtual members derived classes may redefine the behavior performed by
+functions called from base class members or from pointers or references to
+base class objects. This redefinition of base class members by derived classes
+is called hi(members: overriding)emi(overriding members).

@@ -1,0 +1,158 @@
+The relationship between the proposed classes representing different kinds of
+vehicles is further investigated here. The figure shows the object hierarchy:
+an tt(Auto) is a special case of a tt(Land) vehicle, which in turn is a
+special case of a tt(Vehicle).
+
+The class tt(Vehicle) represents the `greatest common divisor' in the
+classification system. tt(Vehicle) is given limited functionality: it can
+store and retrieve a vehicle's mass:
+        verb(
+    class Vehicle
+    {
+        size_t d_mass;
+
+        public:
+            Vehicle();
+            Vehicle(size_t mass);
+
+            size_t mass() const;
+            void setMass(size_t mass);
+    };
+        )
+    Using this class, the vehicle's mass can be defined as soon as the
+corresponding object has been created. At a later stage the mass can be
+changed or retrieved.
+
+To represent vehicles travelling over land, a new class tt(Land) can be
+defined offering tt(Vehicle)'s functionality and adding its own specific
+functionality. Assume we are interested in the speed of land vehicles em(and)
+in their mass. The relationship between tt(Vehicle)s and tt(Land)s could of
+course be represented by composition but that would be awkward: composition
+suggests that a tt(Land) vehicle em(is-implemented-in-terms-of), i.e.,
+em(contains), a tt(Vehicle), while the natural relationship clearly is that
+the tt(Land) vehicle em(is) a kind of tt(Vehicle).
+
+A relationship in terms of composition would also somewhat complicate our
+tt(Land) class's design.  Consider the following example showing a class
+tt(Land) using composition (only the tt(setMass) functionality is shown):
+        verb(
+    class Land
+    {
+        Vehicle d_v;        // composed Vehicle
+        public:
+            void setMass(size_t mass);
+    };
+
+    void Land::setMass(size_t mass)
+    {
+        d_v.setMass(mass);
+    }
+        )
+    Using composition, the tt(Land::setMass) function only passes its
+argument on to tt(Vehicle::setMass). Thus, as far as mass handling is
+concerned, tt(Land::setMass) introduces no extra functionality, just extra
+code. Clearly this code duplication is superfluous: a tt(Land) object em(is) a
+tt(Vehicle); to state that a tt(Land) object em(contains) a tt(Vehicle) is at
+least somewhat peculiar.
+
+    The intended relationship is represented better by i(inheritance).
+        A i(rule of thumb) for choosing between inheritance and composition
+distinguishes between em(is-a) and em(has-a) relationships. A truck em(is) a
+vehicle, so tt(Truck) should probably derive from tt(Vehicle).  On the other
+hand, a truck em(has) an engine; if you need to model engines in your system,
+you should probably express this by composing an tt(Engine) class inside the
+tt(Truck) class.
+
+Following the above rule of thumb, tt(Land) is em(derived) from the base class
+tt(Vehicle):
+        verb(
+    class Land: public Vehicle
+    {
+        size_t d_speed;
+        public:
+            Land();
+            Land(size_t mass, size_t speed);
+
+            void setspeed(size_t speed);
+            size_t speed() const;
+    };
+        )
+    To derive a class (e.g., tt(Land)) from another class (e.g., tt(Vehicle))
+postfix the class name tt(Land) in its interface by tt(: public Vehicle):
+        verb(
+    class Land: public Vehicle
+        )
+ The class tt(Land) now contains all the functionality of its base class
+tt(Vehicle) as well as its own features. Here those features are a constructor
+expecting two arguments and member functions to access the tt(d_speed) data
+member. Here is an example showing the possibilities of the derived class
+tt(Land):
+        verb(
+    Land veh(1200, 145);
+
+    int main()
+    {
+        cout << "Vehicle weighs " << veh.mass() << ";\n"
+                "its speed is " << veh.speed() << '\n';
+    }
+        )
+    This example illustrates two features of derivation.
+    itemization(
+    it() First, tt(mass) is not mentioned as a member in tt(Land)'s
+interface. Nevertheless it is used in tt(veh.mass).  This member function is
+an implicit part of the class, inherited from its `parent' vehicle.
+    it() Second, although the derived class tt(Land) contains the
+functionality of tt(Vehicle), the tt(Vehicle)'s private members remain
+private: they can only be accessed by tt(Vehicle)'s own member functions. This
+means that tt(Land)'s member functions em(must) use tt(Vehicle)'s member
+functions (like tt(mass) and tt(setMass)) to address the tt(mass)
+field. Here there's no difference between the access rights granted to
+tt(Land) and the access rights granted to other code outside of the class
+tt(Vehicle). The class tt(Vehicle) hi(encapsulation) em(encapsulates) the
+specific tt(Vehicle) characteristics, and i(data hiding) is one way to realize
+encapsulation.
+    )
+
+    Encapsulation is a core principle of good class design. Encapsulation
+reduces the dependencies among classes improving the maintainability and
+testability of classes and allowing us to modify classes without the need to
+modify depending code. By strictly complying with the principle of data hiding
+a class's internal data organization may change without requiring depending
+code to be changed as well. E.g., a class tt(Lines) originally storing
+bf(C)-strings could at some point have its data organization changed. It could
+abandone its tt(char **) storage in favor of a tt(vector<string>) based
+storage. When tt(Lines) uses perfect data hiding depending source code
+may use the new tt(Lines) class without requiring any modification at all.
+
+As a i(rule of thumb), derived classes must be fully recompiled (but don't
+have to be modified) when the em(data organization) (i.e., the data members)
+of their base classes change.  Adding new member em(functions) to the base
+class doesn't alter the data organization so no i(recompilation) is needed
+when new member em(functions) are added.
+
+There is one subtle exception to this rule of thumb: if a new member function
+is added to a base class and that function happens to be the first em(virtual)
+member function of the base class (cf. chapter ref(POLYMORPHISM) for a
+discussion of the virtual member function concept) then that will em(also)
+change the data organization of the base class.
+
+Now that tt(Land) has been derived from tt(Vehicle) we're ready for our next
+class derivation. We'll define a class tt(Auto) to represent
+automobiles. Agreeing that an tt(Auto) object is a tt(Land) vehicle, and that
+an tt(Auto) has a brand name it's easy to design the class tt(Auto):
+        verb(
+    class Auto: public Land
+    {
+        std::string d_brandName;
+
+        public:
+            Auto();
+            Auto(size_t mass, size_t speed, std::string const &name);
+
+            std::string const &brandName() const;
+    };
+        )
+    In the above class definition, tt(Auto) was derived from tt(Land), which in
+turn is derived from tt(Vehicle). This is called emi(nested derivation):
+tt(Land) is called tt(Auto)'s emi(direct base class), while tt(Vehicle) is
+called tt(Auto)'s  emi(indirect base class).

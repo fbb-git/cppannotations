@@ -1,0 +1,38 @@
+Member functions of nested classes may be defined as inline functions.  Inline
+ hi(inline member functions) member functions can be defined as if they were
+defined outside of the class definition. To define the member function
+tt(Outer::caller) outside of the class tt(Outer), the function's
+ hi(fully qualified name: nested class members) fully qualified name (starting
+from the outermost class scope (tt(Outer))) must be provided to the
+compiler. Inline and in-class functions can be defined accordingly. They can
+be defined and they can use any nested class. Even if the nested class's
+definition appears later in the outer class's interface.
+
+When (nested) member functions are defined inline, their definitions should be
+put below their class interface. Static nested data members are also usually
+defined outside of their classes.
+    hi(nested class: static members)
+        If the class tt(FirstWithin) would have a tt(static size_t) datamember
+tt(epoch), it could be initialized as follows:
+        verb(
+    size_t Surround::FirstWithin::epoch = 1970;
+        )
+    Furthermore, multiple scope resolution operators are needed to refer to
+public static members in code outside of the surrounding class:
+        verb(
+    void showEpoch()
+    {
+        cout << Surround::FirstWithin::epoch = 1970;
+    }
+        )
+    Within the class tt(Surround) only the tt(FirstWithin::)
+scope must be used; within the class tt(FirstWithin) there is
+no need to refer explicitly to the scope.
+
+    What about the members of the class tt(SecondWithin)? The classes
+tt(FirstWithin) and tt(SecondWithin) are both nested within tt(Surround), and
+can be considered members of the surrounding class. Since members of a class
+may directly refer to each other, members of the class tt(SecondWithin) can
+refer to (public) members of the class tt(FirstWithin). Consequently, members
+of the class tt(SecondWithin) could refer to the tt(epoch) member of
+tt(FirstWithin) as tt(FirstWithin::epoch).

@@ -1,0 +1,64 @@
+The tt(Multi) class template defines tt(PlainTypes) as the tt(TypeList)
+holding all the types of its parameter pack. Each tt(MultiType) derived from a
+tt(UWrap) type also defines a type tt(Type) representing the policy type that
+was used to define the tt(UWrap) type and a type tt(Base) representing the
+type of its nested tt(MultiBase) class.
+
+These three type definitions allow us to access the types from which the
+tt(Multi) object was created as well as the values of those types.
+
+The class template tt(typeAt), is a pure template meta program class template
+(it has no run-time executable code). It expects a tt(size_t idx) template
+argument specifying the index of the policy type in a tt(Multi) type object as
+well as a tt(Multi) class type. It defines the type tt(Type) as the tt(Type)
+defined by tt(Multi)'s tt(MultiBase<idx, ...) base class. Example:
+        verb(
+    typeAt<0, Multi<Vector, int, double>>::Type // Type is vector<double>
+        )
+
+The class template tt(typeAt) defines (and uses) a nested class template
+tt(PolType) doing all the work. tt(PolType)'s generic definition specifies two
+template parameters: an index used to specify the index of the requested type
+and a typename which initialized by a tt(MultiBase) type
+argument. tt(PolType)'s recursive definition recursively reduces its index
+non-type parameter, passsing the next base class in tt(MultiBase)'s
+inheritance tree to the recursive call. As tt(PolType) eventually defines the
+type tt(Type) to be the requested policy type the recursive definition defines
+its tt(Type) as the type defined by the recursive call. The final
+(non-recursive) specialization defines the initial policy type of the
+tt(MultiBase) type as tt(Type). Here is tt(typeAt)'s definition:
+        verbinsert(TYPEAT)(advancedtemplates/examples/multi.h)
+
+The types specified by tt(Multi)'s parameter pack can also be retrieved using
+a second helper class template: tt(plainTypeAt). Example:
+        verb(
+    plainTypeAt<0, Multi<Vector, int, double>>::Type // Type is double
+        )
+    The class template tt(plainTypeAt) uses a comparable (but simpler)
+implementation than tt(typeAt). It is also a pure template meta program class
+template defining a nested class template tt(At). tt(At) is implemented like
+tt(typeAt) but it visits the types of the original template pack that was
+passed to tt(Multi), and made available by tt(Multi) as its tt(PlainTypes)
+type. Here is tt(plainTypeAt)'s definition:
+        verbinsert(PLAINAT)(advancedtemplates/examples/multi.h)
+
+Arguably the neatest support template is tt(get). This is a function template
+defining tt(size_t idx) as its first template parameter and tt(typename Multi)
+as its second template parameter. tt(Get) defines one function parameter: a
+reference to a tt(Multi), so it can deduct tt(Multi)'s type by itself. Knowing
+that it's a tt(Multi), we reason that it is also a tt(UWrap<nr, PolicyType>)
+and therefore also a tt(PolicyType), as the latter class is defined as a base
+class of tt(UWrap).
+
+Since class type objects can initialize references to their base classes the
+tt(PolicyType &) can be initialized by an appropriate tt(UWrap) reference,
+which in turn can be initialized by a tt(Multi) object. Since we can
+determine tt(PolicyType) using tt(TypeAt) (note that evaluating tt(typename
+typeAt<idx, Multi>::Type) is a purely compile-time matter), the tt(get)
+function can very well be implemented em(inline) by a single tt(return)
+statement:
+        verbinsert(GET)(advancedtemplates/examples/multi.h)
+    The intermediate tt(UWrap) cast is required to disambiguate between
+identical policy types (like two tt(vector<int>) types). As tt(UWrap) is
+uniquely determined by its tt(nr) template argument and this is the number
+argument that is passed to tt(get) ambiguities can easily be prevented.

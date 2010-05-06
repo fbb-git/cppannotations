@@ -1,0 +1,65 @@
+bf(C++) inherited the struct concept from bf(C) and extended it with the class
+concept. Structs are still used in bf(C++), mainly to store and pass around
+aggregates of different data types. A commonly term for these structs is
+emi(plain old data) (i(pod)). Plain old data is commonly used in bf(C++)
+programs to aggregate data. E.g., when a function needs to return a tt(double,
+bool) and tt(std::string) these three different data types may be aggregated
+using a tt(struct) that merely exists to pass along values. Data protection
+and functionality is hardly ever an issue. For such cases bf(C) and bf(C++)
+use tt(structs). But as a bf(C++) tt(struct) is just a tt(class) with special
+access rights some members (constructors, destructor, overloaded assignment
+operator) may implicitly be defined. The plain old data capitalizes on this
+concept by requiring that its definition remains as simple as
+possible. Specifically the C++0x standard considers pod to be a class or
+struct having the following characteristics:
+    itemization(
+    it() it has a i(trivial default constructor).nl()
+       If a type has some emi(trivial member) then the type (or its base
+        class(es), cf. chapter ref(INHERITANCE)) does not explicitly define
+        that member. Rather, it is supplied by the compiler. A trivial default
+        constructor leaves all its non-class data members unitialized and will
+        call the default constructors of all its class data members. A class
+        having a trivial default constructor does not define any constructor
+        at all (nor does/do its base class/classes). It may also define the
+        default constructor using the default constructor syntax introduced in
+        section ref(DEFAULTED);
+    it() it has a i(trivial copy constructor).nl()
+       A trivial copy constructor byte-wise copies the non-class data members
+        from the provided existing class object and uses copy constructors
+        to initialize its base class(es) and class
+        data members with the information found in the provided existing class
+        object;
+    it() it has a i(trivial overloaded assignment operator).nl()
+       A trivial assignment operator performs a byte-wise copy of the
+        non-class data members of the provided right-hand class object and
+        uses overloaded assignment operators to assign new values to its class
+        data members using the corresponding members of the provided
+        right-hand class object;
+    it() it has a i(trivial destructor).nl()
+       A trivial destructor calls the destructors of its base class(es) and
+        class-type data members;
+    it() it has a emi(standard layout).
+    )
+
+A em(standard-layout) class or struct
+    itemization(
+    it() has only non-static data members that are themselves showing
+        the standard-layout;
+    it() has identical access control (public, private, protected) for all its
+        non-static members;
+    )
+
+Furthermore, in the context of class derivation (cf. chapters
+ref(POLYMORPHISM) and ref(INHERITANCE)), a emi(standard-layout) class or
+struct:
+    itemization(
+    it() has only base classes that themselves show the standard-layout;
+    it() has at most one (in)direct base class having non-static members;
+    it() has no base classes of the same type as its first non-static
+        data member;
+    it() has no virtual base classes;
+    it() has no virtual members.
+    )
+
+
+

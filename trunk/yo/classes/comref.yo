@@ -1,0 +1,80 @@
+Apart from using member initializers to initialize composed objects (be they
+tt(const) objects or not), there is another situation where member
+initializers must be used. Consider the following situation.
+
+A program uses an object of the class tt(Configfile), defined in tt(main)
+to access the information in a configuration file. The configuration file
+contains parameters of the program which may be set by changing the values in
+the configuration file, rather than by supplying command line arguments.
+
+Assume another object used in tt(main) is an object of the class tt(Process),
+doing `all the work'. What possibilities do we have to tell the object of the
+class tt(Process) that an object of the class tt(Configfile) exists?
+    itemization(
+    it() The objects could have been declared as em(global) objects. This
+em(is) a possibility, but not a very good one, since all the advantages of
+local objects are lost.
+    it() The tt(Configfile) object may be passed to the tt(Process) object at
+construction time. Bluntly passing an object (i.e., by value) might not
+be a very good idea, since the object must be copied into the tt(Configfile)
+parameter, and then a data member of the tt(Process) class can be used to make
+the tt(Configfile) object accessible throughout the tt(Process) class. This
+might involve yet another object-copying task, as in the following situation:
+        verb(
+    Process::Process(Configfile conf)   // a copy from the caller
+    {
+        d_conf = conf;                  // copying to d_conf member
+    }
+        )
+    it() The copy-instructions can be avoided if em(pointers) to
+the tt(Configfile) objects are used, as in:
+        verb(
+    Process::Process(Configfile *conf)  // pointer to external object
+    {
+        d_conf = conf;                  // d_conf is a Configfile *
+    }
+        )
+    This construction as such is OK, but forces us to use the `tt(->)' field
+selector operator, rather than the `tt(.)' operator, which is (disputably)
+awkward. Conceptually one tends to think of the tt(Configfile) object as an
+object, and not as a pointer to an object. In bf(C) this would probably have
+been the preferred method, but in bf(C++) we can do better.
+    it() Rather than using value or pointer parameters, the tt(Configfile)
+parameter could be defined as a emi(reference parameter) of tt(Process)'s
+constructor. Next, use a tt(Config) reference data member in the
+tt(class Process).
+    )
+    But a reference variable cannot be initialized using an assignment, and so
+the following is incorrect:
+        verb(
+    Process::Process(Configfile &conf)
+    {
+        d_conf = conf;        // wrong: no assignment
+    }
+        )
+    The statement tt(d_conf = conf) fails, because it is not an
+initialization, but an assignment of one tt(Configfile) object (i.e.,
+tt(conf)), to another (tt(d_conf)). An assignment to a reference variable is
+actually an assignment to the variable the reference variable refers to. But
+which variable does tt(d_conf) refer to? To no variable at all, since we
+haven't initialized tt(d_conf).  After all, the whole purpose of the statement
+tt(d_conf = conf) was to initialize tt(d_conf)....
+
+    How to initialize tt(d_conf)? We once again use the member initializer
+syntax. Here is the correct way to  initialize tt(d_conf):
+        verb(
+    Process::Process(Configfile &conf)
+    :
+        d_conf(conf)      // initializing reference member
+    {}
+        )
+    The above syntax must be used in all cases where reference data members
+are used. E.g., if tt(d_ir) would have been an tt(int) reference data member,
+a construction like
+        verb(
+    Process::Process(int &ir)
+    :
+        d_ir(ir)
+    {}
+        )
+    would have been required.

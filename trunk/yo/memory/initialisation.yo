@@ -1,0 +1,122 @@
+Consider the class tt(Strings), introduced in section ref(DESTRUCTOR),
+once again. As it contains several primitive type data members as well as a
+pointer to dynamically allocated memory it needs a constructor, a destructor,
+and an overloaded assignment operator. In fact the class offers two
+constructors: in addition to the default constructor it offers a constructor
+expecting a tt(char const *const *) and a tt(size_t).
+
+    Now consider the following code fragment. The statement references are
+discussed following the example:
+        verb(
+    int main(int argc, char **argv)
+    {
+        Strings s1(argv, argc);     // (1)
+        Strings s2;                 // (2)
+        Strings s3(s1);             // (3)
+
+        s2 = s1;                        // (4)
+    }
+        )
+    itemization(
+    it() At 1 we see  an i(initialization).  The object
+tt(s1) is initialized using tt(main)'s parameters: tt(Strings)'s second
+constructor is used.
+    it() At 2 tt(Strings)'s emi(default constructor) is used, initializing
+an empty tt(Strings) object.
+    it() At 3 yet another tt(Strings) object is created, using a
+constructor accepting an existing tt(Strings) object. This form of
+initializations has not yet been discussed. It is called a
+ hi(copy constructor) em(copy construction) and the constructor performing the
+initialization is called the em(copy constructor). Copy constructions are also
+encountered in the following form:
+        verb(
+    Strings s3 = s1;
+        )
+    This is a em(construction) and therefore an em(initialization). It is not
+an em(assignment) as an assignment needs a left-hand operand that has already
+been defined. bf(C++) allows the assignment syntax to be used for constructors
+having only one parameter. It is somewhat deprecated, though.
+    it() At 4 we see a plain assignment.
+    )
+    In the above example three objects were defined, each using a different
+constructor. The actually used constructor was deduced from the constructor's
+argument list.
+
+    The copy constructor encountered here is new. It does not result in a
+compilation error even though it hasn't been declared in the class
+interface. This takes us to the following rule:
+    quote(
+    A copy constructor is always available, even if it isn't declared in
+    the class's interface.
+    )
+    The copy constructor made available by the compiler is also called the
+i(trivial copy constructor). Starting with the C++0x standard it can easily be
+suppressed (using the tt(= delete) idiom). The trivial copy constructor
+performs a byte-wise copy operation of the existing object's primitive data to
+the newly created object, calls copy constructors to intialize the object's
+class data members from their counterparts in the existing object and, when
+inheritance is used, calls the copy constructors of the base class(es) to
+initialize the new object's base classes.
+
+    Consequently, in the above example the trivial copy constructor is
+used. As it performs a byte-by-byte copy operation of the object's
+primitive type data members that is exactly what happens at statement 3.
+By the time tt(s3) ceases to exist its destructor will delete its array of
+strings. Unfortunately tt(d_string) is of a primitive data type and so it also
+deletes tt(s1)'s data. Once again we encounter wild pointers as a result of an
+object going out of scope.
+
+    The remedy is easy: instead of using the trivial copy constructor a copy
+constructor must explicitly be added to the class's interface and its
+definition must prevent the wild pointers, comparably to the way this was
+realized in the overloaded assignment operator. An object's dynamically
+allocated memory is em(duplicated), so that it will contain its own allocated
+data. The copy constructor is simpler than the overloaded assignment operator
+in that it doesn't have to delete previously allocated memory. Since the
+object is going to be created no previously allocated memory already exists.
+
+    tt(Strings)'s copy constructor can be implemented as follows:
+        verb(
+    Strings::Strings(Strings const &other)
+    :
+        d_string(new string[other.d_size]),
+        d_size(other.d_size)
+    {
+        for (size_t idx = 0; idx != d_size; ++idx)
+            d_string[idx] = other.d_string[idx];
+    }
+        )
+
+    The copy constructor is always called when an object is initialized using
+another object of its class. Apart from the plain copy construction that we
+encountered thus far, here are other situations where the copy constructor is
+used:
+    itemization(
+    it() it is used when a function defines a hi(object: parameter) class type
+value parameter rather than a pointer or a reference. The function's argument
+initializes the function's parameter using the copy constructor. Example:
+        verb(
+    void process(Strings store) // no pointer, no reference
+    {
+        store.at(3) = "modified";   // doesn't modify `outer'
+    }
+
+    int main(int argc, char **argv)
+    {
+        Strings outer(argv, argc);
+        process(outer);
+    }
+        )
+    it() it is used when a function defines a class type value return type.
+Example:
+        verb(
+    Strings copy(Strings const &store)
+    {
+        return store;
+    }
+        )
+    )
+    Here tt(store) is used to initialize tt(copy)'s return value. The returned
+tt(Strings) object is a temporary, anonymous object that may be
+immediately used by code calling tt(copy) but no assumptions can be made about
+its lifetime thereafter.

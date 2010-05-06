@@ -1,0 +1,205 @@
+Operations on streams may fail for various reasons.  Whenever an operation
+fails, further operations on the stream are suspended. It is possible to
+inspect (and possibly: clear) the
+ i(condition state) of streams, allowing a program to repair the problem
+rather than having to abort.
+
+Conditions are represented by the following emi(condition flags):
+    itemization(
+        ithtq(badbit)(ios::badbit)
+            (if this flag has been raised an illegal operation has been
+requested at the level of the tt(streambuf) object to which the stream
+interfaces. See the member functions below for some examples.)
+        ithtq(eofbit)(ios::eofbit)
+            (if this flag has been raised, the tt(ios) object has sensed
+end of file.)
+        ithtq(failbit)(ios::failbit)
+            (if this flag has been raised, an operation performed by the
+stream object has failed (like an attempt to extract an tt(int) when no
+numeric characters are available on input). In this case the stream itself
+could not perform the operation that was requested of it.)
+        ithtq(goodbit)(ios::goodbit)
+            (this flag is raised when  none of the other three condition
+flags were raised.)
+    )
+
+Several i(condition member functions) are available to manipulate or
+determine the states of tt(ios) objects. Originally they returned tt(int)
+values, but their current return type is tt(bool):
+    itemization(
+    itht(bad)(ios::bad()):
+            quote(the value tt(true) is returned when the stream's
+tt(badbit) has been set and tt(false) otherwise.  If tt(true) is
+returned it indicates that an illegal operation has been requested at the
+level of the tt(streambuf) object to which the stream interfaces. What does
+this mean? It indicates that the tt(streambuf) itself is behaving
+unexpectedly. Consider the following example:
+        verb(
+    std::ostream error(0);
+        )
+    Here an tt(ostream) object is constructed em(without) providing it with a
+working tt(streambuf) object. Since this `tt(streambuf)' will never operate
+properly, its tt(badbit) flag is raised from the very beginning:
+tt(error.bad()) returns tt(true).
+            )
+    itht(eof)(ios::eof()):
+            quote(the value tt(true) is returned when end of file
+(endOfFile()) has been sensed (i.e., the tt(eofbit) flag has been set) and
+tt(false) otherwise. Assume we're reading lines line-by-line from tt(cin), but
+the last line is not terminated by a final tt(\n) character. In that case
+hi(getline)tt(std::getline) attempting to read the tt(\n) delimiter hits
+end-of-file first. This raises the tt(eofbit) flag and tt(cin.eof()) returns
+tt(true). For example, assume tt(std::string str) and tt(main) executing the
+statements:
+        verb(
+    getline(cin, str);
+    cout << cin.eof();
+        )
+    Then
+        verb(
+    echo "hello world" | program
+        )
+    prints the value 0 (no EOF sensed). But after
+        verb(
+    echo -n "hello world" | program
+        )
+    the value 1 (EOF sensed) is printed.)
+    itht(fail)(ios::fail()):
+            quote(the value tt(true) is returned when tt(bad)
+returns tt(true) or when the tt(failbit) flag was set. The value
+tt(false) is returned otherwise.
+In the above example, tt(cin.fail()) returns tt(false), whether we terminate
+the final line with a delimiter or not (as we've read a line). However, trying
+to execute a second tt(getline)  will set the tt(failbit) flag, causing
+tt(cin::fail()) to return tt(true). In general: tt(fail) returns
+tt(true) if the requested stream operation failed. A simple example showing
+this consists
+of an attempt to extract an tt(int) when the input stream contains the text
+tt(hello world). The value tt(not fail()) is returned by the tt(bool)
+interpretation of a stream object (see below).)
+    itht(good)(ios::good()):
+            quote(the value of the
+tt(goodbit) flag is returned. It equals tt(true) when none of the other
+condition flags (tt(badbit, eofbit, failbit)) was raised.
+    Consider the following little program:
+        verb(
+    #include <iostream>
+    #include <string>
+
+    using namespace std;
+
+    void state()
+    {
+        cout << "\n"
+                "Bad: " << cin.bad() << " "
+                "Fail: " << cin.fail() << " "
+                "Eof: " << cin.eof() << " "
+                "Good: " << cin.good() << '\n';
+    }
+
+    int main()
+    {
+        string line;
+        int x;
+
+        cin >> x;
+        state();
+
+        cin.clear();
+        getline(cin, line);
+        state();
+
+        getline(cin, line);
+        state();
+    }
+        )
+        When this program processes a file having two lines, containing,
+respectively, tt(hello) and tt(world), while the second
+line is not terminated by a tt(\n) character the following is shown:
+        verb(
+    Bad: 0 Fail: 1 Eof: 0 Good: 0
+
+    Bad: 0 Fail: 0 Eof: 0 Good: 1
+
+    Bad: 0 Fail: 0 Eof: 1 Good: 0
+        )
+        Thus, extracting tt(x) fails (tt(good) returning tt(false)). Then,
+the error state is cleared, and the first line is successfully read
+(tt(good) returning tt(true)). Finally the second line is read
+(incompletely): tt(good) returning tt(false), and tt(eof) returning tt(true).
+        )
+    it() hi(ios object: as bool value)
+         hi(stream: as bool value)
+        Interpreting streams as tt(bool) values:
+            quote(streams may be used in expressions expecting logical
+values. Some examples are:
+        verb(
+    if (cin)                // cin itself interpreted as bool
+    if (cin >> x)           // cin interpreted as bool after an extraction
+    if (getline(cin, str))  // getline returning cin
+        )
+        When interpreting a stream as a logical value, it is actually `tt(not
+fail())' that is interpreted. The above examples may therefore be rewritten
+as:
+        verb(
+    if (not cin.fail())
+    if (not (cin >> x).fail())
+    if (not getline(cin, str).fail())
+        )
+    The former incantation, however, is used almost exclusively.
+            )
+    )
+
+    The following members are available to manage error states:
+    itemization(
+        itht(clear)(ios::clear()):
+    quote(When an error condition has occurred, and the condition can be
+repaired, then tt(clear) can be used to clear the error state of the file. An
+overloaded version exists accepting state flags, that are set after first
+clearing the current set of flags: tt(clear(int state)). Its return
+type is tt(void))
+        itht(rdstate)(ios::rdstate()):
+        quote(hi(stream state flags)hi(flags: of ios objects)
+    The current set of flags that are set for an tt(ios) object are returned
+(as an tt(int)). To test for a particular flag, use the i(bitwise and)
+operator:
+        verb(
+    if (!(iosObject.rdstate() & ios::failbit))
+    {
+        // last operation didn't fail
+    }
+        )
+    Note that this test cannot be performed for the tt(goodbit) flag as its
+value equals zero. To test for `good' use a construction
+like:
+        verb(
+    if (iosObject.rdstate() == ios::goodbit)
+    {
+        // state is `good'
+    }
+        )
+     )
+        itht(setstate)(ios::setstate(ios::iostate state)):
+        quote(A stream may be assigned a certain set of states using
+tt(setstate). Its return type is tt(void). E.g.,
+        verb(
+    cin.setstate(ios::failbit);     // set state to `fail'
+        )
+    To set multiple flags in one tt(setstate()) call use the tt(bitor)
+operator:
+        verb(
+    cin.setstate(ios::failbit | ios::eofbit))
+        )
+    The member tt(clear) is a shortcut to clear all error
+flags.  Of course, clearing the flags doesn't automatically mean the
+error condition has been cleared too. The strategy should be:
+        itemization(
+            it() An error condition is detected,
+            it() The error is repaired
+            it() The member tt(clear) is called.
+        )
+        )
+    bf(C++) supports an emi(exception) mechanism to handle exceptional
+situations. According to the i(ANSI/ISO) standard, exceptions can be used
+with stream objects. Exceptions are covered in chapter ref(EXCEPTIONS). Using
+exceptions with stream objects is covered in section ref(IOEXCEPTIONS).

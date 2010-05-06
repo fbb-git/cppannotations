@@ -1,0 +1,56 @@
+/*PREAMBLE*/
+%{
+    #define _SKIP_YYFLEXLEXER_
+    #include "scanner.ih"
+%}
+/**/
+/*SYMBOLS*/
+%option yyclass="Scanner" outfile="yylex.cc" c++ 8bit warn noyywrap yylineno
+%option debug
+
+%x      comment
+%x      include
+
+eolnComment     "//".*
+anyChar         .|\n
+/**/
+/* --------------------------------------------------------------------------
+                               Flex rules area:
+                               ~~~~~~~~~~~~~~~~
+     Regular expressions below here define what the lexer will recognize.
+   ----------------------------------------------------------------------- */
+/*RULES*/
+%%
+    /*
+        The comment-rules: comment lines are ignored.
+    */
+{eolnComment}
+"/*"                    BEGIN comment;
+<comment>{anyChar}
+<comment>"*/"           BEGIN INITIAL;
+
+    /*
+        File switching: #include <filepath>
+    */
+#include[ \t]+"<"       BEGIN include;
+<include>[^ \t>]+       d_nextSource = yytext;
+<include>">"[ \t]*\n    {
+                            BEGIN INITIAL;
+                            pushSource(YY_CURRENT_BUFFER, YY_BUF_SIZE);
+                        }
+<include>{anyChar}      throw invalidInclude;
+
+    /*
+        The default rules: eating all the rest, echoing it to output
+    */
+{anyChar}               ECHO;
+
+    /*
+        The <<EOF>> rule: pop a pushed file, or terminate the lexer
+    */
+<<EOF>>                 {
+                            if (!popSource(YY_CURRENT_BUFFER))
+                                yyterminate();
+                        }
+%%
+/**/

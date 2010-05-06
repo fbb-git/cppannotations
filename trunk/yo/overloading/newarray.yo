@@ -1,0 +1,49 @@
+    To overload ti(operator new[]) in a class (e.g., in the class
+tt(String)) add the following line to the class's interface:
+        verb(
+    void *operator new[](size_t size);
+        )
+    The member's tt(size) parameter is implicitly provided and is initialized
+bij bf(C++)'s run-time system to the amount of memory that must be allocated.
+Like the simple one-object tt(operator new) it
+should return a ti(void *). The number of objects that must be initialized can
+easily be computed from tt(size / sizeof(String)) (and of course replacing
+tt(String) by the appropriate class name when overloading tt(operator new[])
+for another class). The overloaded tt(new[]) member may allocate raw memory
+using e.g., the default tt(operator new[]) or the default tt(operator new):
+        verb(
+    void *operator new[](size_t size)
+    {
+        return ::operator new[](size);
+        // alternatively:
+        // return ::operator new(size);
+    }
+        )
+    Before returning the allocated memory the overloaded tt(operator new[])
+has a chance to do something special. It could, e.g., initialize the memory to
+zero-bytes.
+
+    Once the overloaded tt(operator new[]) has been defined, it will be used
+automatically in statements like:
+        verb(
+    String *op = new String[12];
+        )
+    Like tt(operator new) additional overloads of tt(operator new[]) may be
+defined. One opportunity for an tt(operator new[]) overload is overloading
+ emi(placement new) specifically for arrays of objects. This operator is
+available by default but becomes  unavailable once at least one overloaded
+tt(operator new[]) is defined. Implementing placement tt(new) is not
+difficult. Here is an example, initializing the available memory to 0-bytes
+before returning:
+        verb(
+    void *String::operator new[](size_t size, char *memory)
+    {
+        return memset(memory, 0, size);
+    }
+        )
+    To use this overloaded operator, the second parameter must again be
+provided, as in:
+        verb(
+    char buffer[12 * sizeof(String)];
+    String *sp = new(buffer) String[12];
+        )

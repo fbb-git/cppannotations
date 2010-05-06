@@ -1,0 +1,93 @@
+    When a friend is declared as an
+ hi(friend: unbound)hi(unbound friend)em(unbound) friend it merely declares an
+existing template to be its friend (no matter how it is instantiated). This
+may be useful in situations where the friend should be able to instantiate
+objects of class templates declaring the friend, allowing the friend to access
+the instantiated object's private members.  Functions, classes, and member
+functions may all be declared as unbound friends.
+
+Here are  the syntactic conventions  declaring unbound friends:
+    itemization(
+        it() Declaring an unbound function template as a friend: any
+instantiation of the function template may instantiate objects of the template
+class and may access its private members. Assume the following
+function template has been defined
+        verb(
+    template <typename Iterator, typename Class, typename Data>
+    Class &ForEach(Iterator begin, Iterator end, Class &object,
+                        void (Class::*member)(Data &));
+        )
+    This function template can be declared as an unbound friend in the
+following class template tt(Vector2):
+        verb(
+    template <typename Type>
+    class Vector2: public std::vector<std::vector<Type> >
+    {
+        template <typename Iterator, typename Class, typename Data>
+        friend Class &ForEach(Iterator begin, Iterator end, Class &object,
+                    void (Class::*member)(Data &));
+        ...
+    };
+        )
+    If the function template is defined inside some namespace this namespace
+must be mentioned as well. Assuming that tt(ForEach) is defined in the
+namespace tt(FBB) its friend declaration becomes:
+        verb(
+    template <typename Iterator, typename Class, typename Data>
+    friend Class &FBB::ForEach(Iterator begin, Iterator end, Class &object,
+                    void (Class::*member)(Data &));
+        )
+    The following example illustrates the use of an unbound friend. The class
+tt(Vector2) stores vectors of elements of template type parameter
+tt(Type). Its tt(process) member allows tt(ForEach) to call its private
+tt(rows) member. The tt(rows) member, in turn, uses another tt(ForEach) to
+call its private tt(columns) member. Consequently, tt(Vector2) uses two
+instantiations of tt(ForEach) which is a clear hint for using an unbound
+friend. It is assumed that tt(Type) class objects can be inserted into
+tt(ostream) objects (the definition of the tt(ForEach) function template can
+be found in the tt(cplusplus.yo.zip) archive at
+lurl(http://sourceforge.net/projects/cppannotations/)). Here is the program:
+        verbinsert(VECTOR2)(concrete/examples/foreachdemo.cc)
+    it() Analogously, a full class template may be declared as friend. This
+allows all instantiations of the friend's member functions to instantiate
+objects of the class template declaring the friend class. In this case, the
+class declaring the friend should offer functionality that is useful to
+different instantiations of its friend class (i.e., instantiations using
+different template arguments) . The syntactic convention is comparable to the
+convention used when declaring an unbound friend function template:
+        verb(
+    template <typename Type>
+    class PtrVector
+    {
+        template <typename Iterator, typename Class>
+        friend class Wrapper;      // unbound friend class
+    };
+        )
+    All members of the class template tt(Wrapper) may now instantiate
+tt(PtrVector)s using any actual type for its tt(Type) parameter. This allows
+the tt(Wrapper) instantiation to access all of tt(PtrVector)'s private
+members.
+    it() When only some members of a class template need access to private
+members of another class template (e.g., the other class template has private
+constructors and only some members of the first class template need to
+instantiate objects of the second class template), then the latter class
+template may declare only those members of the former class template requiring
+access to its private members as its friends. Again, the friend class's
+interface may be left unspecified. However, the compiler must be informed that
+the friend member's class is indeed a class. A forward declaration of that
+class must therefore be provided. In the next example tt(PtrVector)
+declares tt(Wrapper::begin) as its friend. Note the forward declaration of
+the class tt(Wrapper):
+        verb(
+    template <typename Iterator>
+    class Wrapper;
+
+    template <typename Type>
+    class PtrVector
+    {
+        template <typename Iterator> friend
+            PtrVector<Type> Wrapper<Iterator>::begin(Iterator const &t1);
+        ...
+    };
+        )
+    )

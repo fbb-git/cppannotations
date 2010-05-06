@@ -1,0 +1,166 @@
+em(Function Objects) are created by overloading the
+ emi(function call operator) ti(operator()). By defining the function call
+operator an object masquerades as a function, hence the term
+ hi(function object) em(function objects).
+
+Function objects are important when using
+    link(em(generic algorithms))(GENERIC). The use of function objects is
+preferred over alternatives like
+ hi(pointer: to function) pointers to functions. The fact that they are
+important in the context of generic algorithms leaves us with a didactic
+dilemma. At this point in the annotations() it would have been nice if generic
+algorithms would already have been covered, but for the discussion of the
+generic algorithms knowledge of function objects is required. This
+bootstrapping problem is solved in a well known way: by ignoring the
+dependency for the time being, for now concentrating on the function object
+concept.
+
+Function objects are objects for which tt(operator()) has been
+defined. Function objects are not just used in combination with generic
+algorithms, but also as a (preferred) alternative to pointers to
+functions.
+
+Function objects are frequently used to implement
+ emi(predicate) functions.  Predicate functions return boolean values.
+Predicate functions and predicate function objects are commonly referred to as
+`predicates'. Predicates are frequently used by generic algorithms such as the
+link(count_if)(COUNTIF) generic algorithm, covered in chapter ref(GENERIC),
+returning the number of times its function object has returned tt(true). In
+the em(standard template library) two kinds of predicates are used: em(unary
+predicates) receive one argument, em(binary predicates) receive two arguments.
+
+Assume we have a class tt(Person) and an array of tt(Person) objects. Further
+assume that the array is not sorted. A well known procedure for finding a
+particular tt(Person) object in the array is to use the function hi(lsearch)
+ti(lsearch), which performs a emi(lineair search) in an array. Example:
+        verb(
+    Person &target = targetPerson();    // determine the person to find
+    Person *pArray;
+    size_t n = fillPerson(&pArray);
+
+    cout << "The target person is";
+
+    if (!lsearch(&target, pArray, &n, sizeof(Person), compareFunction))
+        cout << " not";
+    cout << "found\n";
+        )
+    The function tt(targetPerson) determines the person we're looking for, and
+tt(fillPerson) is called to fill the array.  Then tt(lsearch) is used to
+locate the target person.
+
+    The comparison function must be available, as its address is one of the
+arguments of tt(lsearch). It must be a real function having an address. If it
+is defined inline then the compiler has no choice but to ignore that request
+as inline functions don' have addresses. tt(CompareFunction) could be
+implemented like this:
+        verb(
+    int compareFunction(void const *p1, void const *p2)
+    {
+        return *reinterpret_cast<Person const *>(p1)    // lsearch wants 0
+                !=                                      // for equal objects
+                *reinterpret_cast<Person const *>(p2);
+    }
+        )
+    This, of course, assumes that the ti(operator!=) has been overloaded in
+the class tt(Person). But overloading tt(operator!=) is no big deal, so
+let's assume that that operator is actually available.
+
+    On average tt(n / 2) times em(at least) the
+following actions take place:
+    enumeration(
+    eit() The two arguments of the compare function are pushed on the stack;
+    eit() The value of the final parameter of tt(lsearch) is determined,
+producing tt(compareFunction)'s address;
+    eit() The compare function is called;
+    eit() Then, inside the compare function the address of the right-hand
+argument of the linebreak()
+        tt(Person::operator!=) argument is pushed on the stack;
+    eit() tt(Person::operator!=) is evaluated;
+    eit() The argument of the tt(Person::operator!=) function is popped off
+the stack;
+    eit() The two arguments of the compare function are popped off the stack.
+    )
+    Using function objects results in a different picture. Assume we have
+constructed a function tt(PersonSearch), having the following prototype (this,
+however, is not the preferred approach. Normally a generic algorithm is
+preferred over a home-made function. But for now we focus on tt(PersonSearch)
+to illustrate the use and implementation of a function object):
+        verb(
+    Person const *PersonSearch(Person *base, size_t nmemb,
+                               Person const &target);
+        )
+    This function can be used as follows:
+        verb(
+    Person &target = targetPerson();
+    Person *pArray;
+    size_t n = fillPerson(&pArray);
+
+    cout << "The target person is";
+
+    if (!PersonSearch(pArray, n, target))
+        cout << " not";
+
+    cout << "found\n";
+        )
+    So far, not much has been changed. We've replaced the call to tt(lsearch)
+with a call to another function: tt(PersonSearch).  Now look at
+tt(PersonSearch) itself:
+        verb(
+    Person const *PersonSearch(Person *base, size_t nmemb,
+                                Person const &target)
+    {
+        for (int idx = 0; idx < nmemb; ++idx)
+            if (target(base[idx]))
+                return base + idx;
+        return 0;
+    }
+        )
+    tt(PersonSearch) implements a plain i(linear search). However, in the
+for-loop we see tt(target(base[idx])). Here tt(target) is used as a
+em(function object). Its implementation is simple:
+        verb(
+    bool Person::operator()(Person const &other) const
+    {
+        return *this != other;
+    }
+        )
+    Note the somewhat i(peculiar syntax): ti(operator()). The first set of
+parentheses define the operator that is overloaded: the function call
+operator. The second set of parentheses define the parameters that are
+required for this overloaded operator. In the class header file this
+overloaded operator is declared as:
+        verb(
+    bool operator()(Person const &other) const;
+        )
+    Clearly tt(Person::operator()) is a simple function. It contains but one
+statement, and we could consider defining it i(inline). Assuming we do,
+then this is what happens when tt(operator()) is called:
+    itemization(
+    it() The address of the right-hand argument of the
+        tt(Person::operator!=) argument is pushed on the stack,
+    it() The tt(operator!=) function is evaluated,
+    it() The argument of tt(Person::operator!=) argument is popped off the
+        stack,
+    )
+    Due to the fact that tt(operator()) is an inline function, it is not
+actually called. Instead tt(operator!=) is called immediately. Moreover, the
+required i(stack operations) are fairly modest.
+
+    Function objects may truly be defined inline.  Functions that are called
+indirectly (i.e., using pointers to functions) can never be defined inline as
+their addresses must be known.  Therefore, even if the function object needs
+to do very little work it is defined as an ordinary function if it is going to
+be called through pointers. The overhead of performing the indirect call may
+annihilate the advantage of the flexibility of calling functions
+indirectly. In these cases using inline function objects can result in an
+increase of a program's efficiency.
+
+An added benefit of function objects is that they may access the private data
+of their objects. In a search algorithm where a compare function is used (as
+with tt(lsearch)) the target and array elements are passed to the compare
+function using pointers, involving extra stack handling. Using function
+objects, the target person doesn't vary within a single search
+task. Therefore, the target person could be passed to the function object's
+class constructor. This is in fact what happens in the expression
+tt(target(base[idx])) receiving as its only argument the subsequent elements
+of the array to search.

@@ -1,0 +1,109 @@
+Pointers hi(pointer to members: defining) to members are defined by prefixing
+the normal pointer notation with the appropriate class plus scope resolution
+operator. Therefore, in the previous section, we used tt(char const *
+(String::*d_sp)() const) to indicate that tt(d_sp)
+    itemization(
+    it() is a pointer (tt(*d_sp));
+    it() points to something in the class tt(String) (tt(String::*d_sp));
+    it() is a pointer to a tt(const) function, returning a tt(char const *)
+            (tt(char const * (String::*d_sp)() const)).
+    )
+
+The prototype of a matching function is therefore:
+        verb(
+    char const *String::somefun() const;
+        ) which is any tt(const) parameterless function in the class
+tt(String), returning a tt(char const *).
+
+When defining pointers to members the standard procedure for constructing
+pointers to functions can still be applied:
+    itemization(
+    it() put parentheses around the fully qualified function name (i.e., the
+function's header, including the function's  class name):
+        verb(
+    char const * ( String::somefun ) () const
+        )
+    it() Put a pointer (a star (tt(*))) character immediately before the
+function name itself:
+        verb(
+    char const * ( String:: * somefun ) () const
+        )
+    it() Replace the function name with the name of the pointer variable:
+        verb(
+    char const * (String::*d_sp)() const
+        )
+    )
+
+    Here is another example, defining hi(pointer: to a data member) a pointer
+to a data member. Assume the class tt(String) contains a tt(string d_text)
+member. How to construct a pointer to this member? Again we follow standard
+procedure:
+    itemization(
+    it() put parentheses around the fully qualified variable name:
+        verb(
+    std::string (String::d_text)
+        )
+    it() Put a pointer (a star (tt(*))) character immediately before the
+variable-name itself:
+        verb(
+    std::string (String::*d_text)
+        )
+    it() Replace the variable name with the name of the pointer variable:
+        verb(
+    std::string (String::*tp)
+        )
+    In this case, the parentheses are superfluous and may be omitted:
+        verb(
+    string String::*tp
+        )
+    )
+
+    Alternatively, a very simple i(rule of thumb) is
+    itemization(
+    it() Define a normal (i.e., global) pointer variable,
+    it() Prefix the class name to the pointer character, once you point to
+something inside a class
+    )
+    For example, the following pointer to a global function
+        verb(
+    char const * (*sp)() const;
+        )
+    becomes a pointer to a member function after prefixing the class-scope:
+        verb(
+    char const * (String::*sp)() const;
+        )
+    Nothing forces us to define pointers to members in their target
+(tt(String)) classes. Pointers to members em(may) be defined in its target
+class (so it becomes a data member), or in another class, or as a local
+variable or as a global variable. In all these cases the pointer to member
+variable can be given the address of the kind of member it points to. The
+important part is that a pointer to member can be initialized or assigned
+without requiring the existence an object of the pointer's target  class.
+
+Initializing or assigning an address to such a pointer merely indicates to
+which member the pointer points. This can be considered some kind of
+ emi(relative address); relative to the object for which the function is
+called. No object is required when pointers to members are initialized or
+assigned. While it is allowed to initialize or assign a pointer to member, it
+is (of course) not possible to em(call) those members without specifying an
+object of the correct type.
+
+In the following example hi(pointer to members: assignment)
+    hi(assignment: pointer to members) initialization of and assignment to
+pointers to members is illustrated (for illustration purposes all members of
+the class tt(PointerDemo) are defined tt(public)). In the example itself the
+tt(&)-operator is used to determine the addresses of the members. These
+operators as well as the class-scopes are required. Even when used inside
+member implementations:
+        verbinclude(pointermembers/examples/initializing.cc)
+    This involves nothing special. The difference with pointers at
+global scope is that we're now restricting ourselves to the scope of the
+tt(PointerDemo) class. Because of this restriction, all em(pointer)
+definitions and all variables whose addresses are used must be given the
+tt(PointerDemo) class scope.
+
+    Pointers to members can also be used with tt(virtual)
+        hi(pointer to members: virtual members)
+    member functions. No special syntax is required when pointing to virtual
+members. Pointer construction, initialization and assignment is done
+identically to the way it is done with non-virtual members.

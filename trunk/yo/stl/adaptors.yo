@@ -1,0 +1,160 @@
+Function adaptors modify the working of existing function objects. There are
+two kinds of hi(function adaptor) function adaptors:
+    itemization(
+    it() em(Binders) hi(binder) are function adaptors converting
+ hi(binary function object) binary function objects to
+ hi(unary function object) unary function objects. They do so by em(binding)
+one parameter of a binary function object to a constant value. For example,
+the first parameter of the tt(minus<int>) function object may be bound to 100,
+meaning that the resulting value will always be 100 minus the value of the
+function object's second argument.
+
+Either the first or the second parameter may be bound to a specific value. To
+bind the constant value to the function object's first parameter the function
+adaptor ti(bind1st) is used. To bind the constant value to the function
+object's second parameter the function adaptor ti(bind2nd) is used. As an
+example, assume we want to count all elements of a vector of tt(string)
+objects that occur later in the alphabetical ordering than some reference
+tt(string).
+
+The ti(count_if) generic algorithm is the algorithm of choice for solving
+these kinds of problems. It expects the usual iterator range and a function
+object. However, instead of providing it with a function object it is provided
+with the tt(bind2nd) adaptor which in turn is initialized with a relational
+function object (tt(greater<string>)) and a reference string against which all
+strings in the iterator range are compared. Here is the required tt(bind2nd)
+specification:
+        verb(
+    bind2nd(greater<string>(), referenceString)
+        )
+    Here is what this binder will do:
+    itemization(
+    it() To begin with, an adaptor (and so a binder) is a function object, so
+it defines tt(operator()). In this case the binder function object is a em(unary) function
+object.
+    it() The binder's tt(operator()) receives each of the strings referred to
+by the iterator range in turn.
+    it() Next it passes these strings and the binder's second argument (the
+reference object) to the (binary) tt(operator()) defined by the function
+object that is passed as the binder's first argument.
+    it() It returns the return value of that latter function object
+    )
+    Although binders are defined as templates, it is illustrative to have a
+look at their implementations, assuming they were ordinary classes. Here is
+such a pseudo-implementation of the tt(bind2nd) function adaptor:
+        verb(
+    class bind2nd
+    {
+        FunctionObject d_object;
+        Operand const &d_operand;
+        public:
+            bind2nd(FunctionObject const &object, Operand const &operand);
+            ReturnType operator()(Operand const &lvalue);
+    };
+    inline bind2nd::bind2nd(FunctionObject const &object,
+                            Operand const &operand)
+    :
+        d_object(object),
+        d_operand(operand)
+    {}
+    inline ReturnType bind2nd::operator()(Operand const &lvalue)
+    {
+        return d_object(lvalue, d_rvalue);
+    }
+        )
+    The binder's tt(operator()) merely calls the function object's
+tt(operator()), providing it with two arguments. It uses its parameter as the
+(latter) tt(operator())'s first argument and it uses tt(d_operand) as
+tt(operator())'s second argument.  The adaptor's members are typically very
+small so they are usually implemented inline.
+
+    The above application of the tt(bind2nd) adaptor has another important
+characteristic. Its return type is identical to the return type of the
+function object that it receives as its first argument, which is
+tt(bool). Functions hi(predicate function) returning tt(bool) values are also
+called em(predicate functions). In the above application the tt(bind2nd)
+adaptor therefore becomes a predicate function itself.
+
+    The tt(count_if) generic algorithm visits all the elements in an iterator
+range, returning the number of times the predicate specified as its final
+argument returns ti(true). Each of the elements of the iterator range is
+passed to this predicate, which is therefore a unary predicate. Through the
+binder the binary function object tt(greater<>) is adapted to a unary function
+object, that now compares each of the elements referred to by the iterator
+range to the reference string.  Eventualy, the tt(count_if) function is called
+like this:
+        verb(
+    count_if(stringVector.begin(), stringVector.end(),
+             bind2nd(greater<string>(), referenceString));
+        )
+
+    it() em(Negators) hi(negators) are function adaptors converting the values
+returned by predicate function. Since there are unary and binary predicate
+functions, two i(negator function) adaptors were predefined: ti(not1) is
+the negator to use with unary predicates, ti(not2) is the negator to
+with binary function objects.
+    )
+
+Example: to count the number of persons in a tt(vector<string>) vector ordered
+alphabetically before (i.e., em(not) exceeding) a certain reference text one
+of  the following alternatives could be used:
+    itemization(
+    it() a i(binary predicate) that directly offers the required comparison:
+        verb(
+    count_if(stringVector.begin(), stringVector.end(),
+        bind2nd(less_equal<string>(), referenceText))
+        )
+    it() tt(not2) in combination  with the tt(greater<>) predicate:
+        verb(
+    count_if(stringVector.begin(), stringVector.end(),
+        bind2nd(not2(greater<string>()), referenceText))
+        )
+        Here tt(not2) is used as it negates the truth value of a binary
+tt(operator()), in this case the tt(greater<string>::operator()) member
+function.
+    it() tt(not1) in combination with the tt(bind2nd) predicate:
+        verb(
+    count_if(stringVector.begin(), stringVector.end(),
+        not1(bind2nd(greater<string>(), referenceText)))
+        )
+        Here tt(not1) is used as it negates the truth value of a unary
+tt(operator()), in this case the tt(bind2nd) function adaptor.
+    )
+    The use of negators is illustrated by the following program:
+        verbinclude(stl/examples/adaptors.cc)
+
+    One may wonder which of these alternative approaches is fastest. Using the
+first approach, in which a  directly available function object was used, two
+actions must be performed for each iteration by tt(count_if):
+    itemization(
+    it() The binder's tt(operator()) is called;
+    it() The operation tt(<=) is performed.
+    )
+    When the compiler uses inline as requested, only the second step is
+actually performed.
+
+    Using the second approach, using the tt(not2) negator to
+negate the truth value of the complementary logical function adaptor, three
+actions must be performed for each iteration by tt(count_if):
+    itemization(
+    it() The binder's tt(operator()) is called;
+    it() The negator's tt(operator()) is called;
+    it() The operation tt(>) is performed.
+    )
+    When the compiler uses inline as requested, only the third step is
+actually performed.
+
+    Using the third approach, using tt(not1) negator to negate the truth value
+of the binder, three actions must be performed for each iteration by
+tt(count_if):
+    itemization(
+    it() The negator's tt(operator()) is called;
+    it() The binder's tt(operator()) is called;
+    it() The operation tt(>) is performed.
+    )
+    When the compiler uses inline as requested, only the third step is
+actually performed.
+
+With a commonly used optimization flag like tt(-O2) the compiler will try to
+grant inline requests. However, if the compiler ignores the inline requests
+the first variant will be fastest.

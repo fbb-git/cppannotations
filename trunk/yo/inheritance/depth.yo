@@ -1,0 +1,44 @@
+Now that tt(Auto) has been derived from tt(Land) and tt(Land) has been derived
+from tt(Vehicle) we might easily be seduced into thinking that these class
+hierarchies are the way to go when designing classes. But maybe we should
+temper our enthousiasm.
+
+Repeatedly deriving classes from classes quickly results in big, complex class
+hierarchies that are hard to understand, hard to use and hard to
+maintain. Hard to understand and use as users of our derived class now also
+have to learn all its (indirect) base class features as well. Hard to maintain
+because all those classes are very closely coupled. While it may be true that
+when data hiding is meticulously adhered to derived classes do not have to be
+modified when their base classes alter their data organization, it also
+quickly becomes practically infeasible to change those base classes once more
+an more (derived) classes depend on their current organization.
+
+What initially looks like a big gain, inheriting the base class's interface,
+thus becomes a liability. The base class's interface is hardly ever completely
+required and in the end a class may benefit from explicitly defining its own
+member functions rather than obtaining them through inheritance.
+
+Often classes can be defined em(in-terms-of) existing classes: some of their
+features are used, but others need to be shielded off. Consider the tt(stack)
+container: it is commonly implemented in-terms-of a tt(deque), returning
+tt(deque::back)'s value as tt(stack::top)'s value.
+
+When using inheritance to implement an tt(is-a) relationship make sure to get
+the `direction of use' right: inheritance aiming at implementing an em(is-a)
+relationship should focus on the base class: the base class facilities aren't
+there to be used by the derived class, but the derived class facilities should
+redefine (reimplement) the base class facilities using polymorphism (which is
+the topic of the link(next chapter)(POLYMORPHISM)), allowing
+code to use the derived class facilities polymorphically through the base
+class.  We've seen this approach when studying streams: the base class (e.g.,
+tt(ostream)) is used time and again. The facilities defined by classes derived
+from tt(ostream) (like tt(ofstream) and tt(ostringstream)) are then used by
+code only relying on the facilities offered by the tt(ostream) class, never
+using the derived classes directly.
+
+When designing classes always aim at the lowest possible coupling. Big class
+hierarchies usually indicate poor understanding of robust class design. When a
+class's interface is only partially used and if the derived class is
+implemented in terms of another class consider using composition rather than
+inheritance and define the appropriate interface members in terms of the
+members offered by the composed objects.

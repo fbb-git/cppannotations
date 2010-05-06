@@ -1,0 +1,88 @@
+In i(template programming) values are preferably represented by tt(enum)
+values. Enums are preferred over, e.g., tt(int const) values since enums never
+require any linkage. They are pure symbolic values with no memory
+representation whatsoever.
+
+Consider the situation where a programmer must use a cast, say a
+ti(reinterpret_cast). A problem with a tt(reinterpret_cast) is that it is the
+ultimate way to turn off all compiler checks. All bets are off, and we can
+write extreme but absolutely pointless tt(reinterpret_cast) statements, like
+        verb(
+    int value = 12;
+    ostream &ostr = reinterpret_cast<ostream &>(value);
+        )
+
+    Wouldn't it be nice if the compiler would warn us against such oddities by
+generating an error message?
+
+    If that's what we'd like the compiler to do, there must be some way to
+distinguish madness from weirdness. Let's assume we agree on the following
+distinction: reinterpret casts are never acceptable if the target type
+represents a larger type than the expression (source) type, since that would
+immediately result in exceeding the amount of memory that's actually available
+to the target type. For this reason it's clearly silly to
+tt(reinterpret_cast<doble *>(&intVar)), but tt(reinterpret_cast<char
+*>(&intVar)) could be defensible.
+
+    The intent is now to create a new kind of cast, let's call it
+ti(reinterpret_to_smaller_cast). It should only be allowed to perform a
+tt(reinterpret_to_smaller_cast) if the target type occupies less memory than
+the source type (note that this exactly the opposite reasoning as used by
+Alexandrescu hi(Alexandrescu, A.)  (2001), section 2.1).
+
+    To start, we construct the following template:
+        verb(
+    template<typename Target, typename Source>
+    Target &reinterpret_to_smaller_cast(Source &source)
+    {
+        // determine whether Target is smaller than source
+        return reinterpret_cast<Target &>(source);
+    }
+        )
+
+    At the comment an enum-definition is inserted defining a symbol having a
+suggestive name.  A compile-time error results if the required condition is
+not met and the error message displays the name of the symbol. A division by
+zero is clearly not allowed, and noting that a tt(false) value represents a
+zero value, the condition could be:
+        verb(
+    1 / (sizeof(Target) <= sizeof(Source));
+        )
+    The interesting part is that this condition doesn't result in any code at
+all. The enum's value is a plain value that's computed by the compiler while
+evaluating the expression:
+        verb(
+    template<typename Target, typename Source>
+    Target &reinterpret_to_smaller_cast(Source &source)
+    {
+        enum
+        {
+            the_Target_size_exceeds_the_Source_size =
+                1 / (sizeof(Target) <= sizeof(Source))
+        };
+        return reinterpret_cast<Target &>(source);
+    }
+        )
+    When tt(reinterpret_to_smaller_cast) is used to cast from tt(int) to
+tt(double) an error is produced by the compiler, like this:
+        verb(
+    error: enumerator value for 'the_Target_size_exceeds_the_Source_size'
+        is not an integer constant
+        )
+    whereas no error is reported if, e.g.,
+tt(reinterpret_to_smaller_cast<int>(doubleVar)) is requested with
+tt(doubleVar) defined as a tt(double).
+
+    In the above example a tt(enum) was used to compute (compile-time) a value
+that is illegal if an assumption is not met. The creative part is finding an
+appropriate expression.
+
+    Enum values are well suited for these situations as they do not consume
+any memory and their evaluation does not produce any executable code. They can
+be used to accumulate values too: the resulting enum value then contains a
+final value, computed by the compiler rather than by executable code as the
+next sections illustrate. In general, programs shouldn't do run-time what they
+can do
+        hi(run-time vs. compile-time)
+    compile-time and performing complex calculations resulting in constant
+values is a clear example of this principle.

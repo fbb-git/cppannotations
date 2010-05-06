@@ -1,0 +1,116 @@
+Scattered over the tt(std) namespace
+    hi(trait class)hi(class: trait)
+    em(trait classes) are found. E.g., most bf(C++) programmers will have seen
+the compiler mentioning `tt(std::char_traits<char>)' when performing an
+illegal operation on tt(std::string) objects, as in tt(std::string s(1)).
+
+    Trait classes are used to make compile-time decisions about types. Traits
+classes allow us to apply the proper code to the proper data type, be it a
+pointer, a reference, or a plain value, all this maybe in combination with
+tt(const). The particular type of data to use can be inferred from the actual
+type that is specified (or implied) when the template is used. This can be
+fully automated, not requiring the template writer to make any decision.
+
+    Trait classes allow us to develop a tt(template <typename Type1, typename
+Type2, ...>) without the need to specify many specializations covering all
+combinations of, e.g., values, (const) pointers, or (const) references, which
+would soon result in an unmaintainable exponential explosion of template
+specializations (e.g., allowing these five different types for each template
+parameter already results in 25 combinations when two template type parameters
+are used: each must be covered by potentially different specializations).
+
+    Having available a trait class, the actual type can be inferred compile
+time, allowing the compiler to deduct whether or not the actual type is a
+pointer, a pointer to a member, a const pointer and make comparable deductions
+in case the actual type is, e.g., an lvalue or rvalue reference type. This in
+turn allows us to write templates that define types like
+    hi(generic algorithms: required types)
+ ti(argument_type), ti(first_argument_type), ti(second_argument_type) and
+ti(result_type), which are required by several generic algorithms (e.g.,
+link(count_if())(COUNTIF)).
+
+    A trait class usually performs no behavior. I.e., it has no constructor
+and no members that can be called. Instead, it defines a series of types and
+tt(enum) values that have certain values depending on the actual type that is
+passed to the trait class template.  The compiler uses one of a set of
+available specializations to select the one appropriate for an actual template
+type parameter.
+
+    The point of departure when defining a trait template is a plain
+vanilla tt(struct), defining the characteristics of a plain value type like
+an tt(int).  This sets the stage for specific specializations, modifying the
+characteristics for any other type that could be specified for the template.
+
+    To make matters concrete, assume the intent is to create a trait class
+tt(BasicTraits) telling us whether a type is a plain value type, a pointer
+type, an lvalue reference type or an rvalue reference type (all of which may
+or may not be tt(const) types).
+
+    Whatever the actually provided type, we want to be able to determine the
+`plain' type (i.e., the type without any modifiers, pointers or references),
+the `pointer type' and the `reference type', allowing us to define in all
+cases, e.g., an rvalue reference to its built-in type, even though we passed a
+const pointer to that type.
+
+    Our point of departure, as mentioned, is a plain tt(struct) defining the
+required parameter. Maybe something like this:
+        verbinsert(BASIC)(advancedtemplates/examples/basictraits.h)
+
+    Although some conclusions can be drawn by combining various tt(enum)
+values (e.g., a plain type is not a pointer or a reference or a rvalue
+reference or a const), it is good practice to provide a full implementation of
+trait classes, not requiring its users to construct these logical expressions
+themselves. Therefore, the basic decisions in a trait class are usually made
+by a
+        hi(trait class: nested)i(nested trait class),
+    leaving the task of creating appropriate logical expressions to a
+surrounding trait class.
+
+    So, the tt(struct Basic) defines the generic form of our inner trait
+class. Specializations handle specific details. E.g., a pointer type is
+recognized by the following specialization:
+        verbinsert(POINTER)(advancedtemplates/examples/basictraits.h)
+
+    whereas a pointer to a const type is matched with the next specialization:
+        verbinsert(CONST)(advancedtemplates/examples/basictraits.h)
+
+    Several other specializations should be defined: e.g., recognizing
+tt(const) value types or (rvalue) reference types. Eventually all these
+specializations are implemented as nested tt(struct)s of an outer class
+tt(BasicTraits), offering the public traits class interface. The outline of
+the outer trait class is:
+        verb(
+    template <typename TypeParam>
+    class BasicTraits
+    {
+        // Define specializations of the template `Base' here
+
+        public:
+            BasicTraits(BasicTraits const &other) = delete;
+
+            typedef typename Basic<TypeParam>::Type ValueType;
+            typedef ValueType *PtrType;
+            typedef ValueType &RefType;
+            typedef ValueType &&RvalueRefType;
+
+            enum
+            {
+                isPointerType = Basic<TypeParam>::isPointer,
+                isReferenceType = Basic<TypeParam>::isRef,
+                isRvalueReferenceType = Basic<TypeParam>::isRRef,
+                isConst = Basic<TypeParam>::isConst,
+                isPlainType = not (isPointerType or isReferenceType or
+                                   isRvalueReferenceType or isConst)
+            };
+    };
+        )
+    The trait class's public interface explicitly deletes its copy
+constructor. As it therefore defines no constructor at all and as it has no
+static members it does not offer any run-time executable code.
+All the trait class's facilities must therefore be used compile time.
+
+    A trait class template can be used to obtain the proper type, irrespective
+of the template type argument provided. It can also be used to select
+a proper specialization that depends on, e.g., the tt(const)-ness of a
+template type. Example:
+        verbinsert(MAIN)(advancedtemplates/examples/basictraits.cc)

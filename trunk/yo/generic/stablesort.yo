@@ -1,0 +1,67 @@
+hi(stable_sort)
+    itemization(
+        it() Header file: tt(<algorithm>)
+        it() Function prototypes:
+        itemization(
+            itt(void stable_sort(RandomAccessIterator first,
+                RandomAccessIterator last);)
+            itt(void stable_sort+OPENPARRandomAccessIterator first,
+                RandomAccessIterator last,)linebreak()
+                tt(Compare comp+CLOSEPAR;)
+        )
+        it() Description:
+        itemization(
+           it() The first prototype: the elements in the range rangett(first,
+last) are stable-sorted in ascending order using ti(operator<) of the data
+type to which the iterators point: the relative order of equal elements is
+kept.
+            it() The second prototype: the elements in the range
+rangett(first, last) are stable-sorted in ascending order using the tt(comp)
+binary predicate to compare the elements. This predicate should return
+tt(true) if its first argument should be placed before its second argument in
+the sorted set of element.
+        )
+        it() Example (annotated below):
+        verbinclude(generic/examples/stablesort.cc)
+    )
+    Note that the example implements a solution to an often occurring problem:
+how to hi(sort: multiple hierarchal criteria) sort using multiple hierarchal
+criteria. The example deserves some additional attention:
+    itemization(
+    it() First, at tt(// 1) a i(wrapper) struct tt(Pss) is created around
+tt(std::pair<std::string, std::string>). Once the C++0x standard supports the
+direct use of base class constructors in derived classes (cf. section
+ref(BASECONS)) is becomes even simpler to create this struct. The intent here
+is to define a type that is a wrapper around a class that is defined in the
+tt(std) namespace for which no insertion operation has been defined. This
+struct design conflicts with the principles outlined in section
+ref(INHERITWHY) inheritance is nontheless defensible here as the intention is
+not to add `missing features' and as tt(pair) itself is in essence just
+link(Plain Old Data)(POD).
+    it() Next (tt(// 2)), oplshift() is overloaded for tt(Pss) objects.
+Although the compiler wouldn't have complained if this operator would have
+been defined in the tt(std) namespace for the tt(pair<string, string>) type,
+this would also bad style as the hi(std namespace: off limits) tt(std)
+namespace is em(off limits) for ordinary programs. By defining a wrapper type
+around tt(pair<string, string>) bad style can be prevented.
+    it() Then (tt(// 3)), a class tt(Sortby) is defined, allowing us to
+construct an anonymous object receiving a pointer to one of the
+tt(Pss) data members that are used for sorting. In this case, as both members
+are tt(string) objects, its constructor can easily be defined. It expects
+a pointer to a tt(string) member of the class tt(Pss).
+    it() tt(Sortby)'s tt(operator()) member (tt(// 4)) receives two references
+to tt(Pss) objects and uses its pointer to member to compare the appropriate
+fields of the tt(Pss) objects.
+    it() In tt(main) some data is stored in a tt(vector) (tt(// 5)).
+    it() Then (tt(// 6)) the first sort takes place. The least important
+criterion must be sorted first and for this a simple tt(sort) suffices. Since
+we want the names to be sorted within cities, the names represent the least
+important criterion, so we sort by names: tt(Sortby(&Pss::first)).
+    it() The next important criterion, the cities, are sorted next (tt(//
+7)). Since the relative ordering of the em(names) will not be altered anymore
+by tt(stable_sort), the ties that are observed when cities are sorted are
+solved in such a way that the existing relative ordering will not be
+broken. So, we end up getting Goldberg in Eugene before Hampson in Eugene,
+before Moran in Eugene. To sort by cities, we use another anonymous tt(Sortby)
+object: tt(Sortby(&Pss::second)).
+    )

@@ -1,0 +1,79 @@
+Functions defined elsewhere may be linked to code that uses these
+functions. Such functions are normally declared in header files, either as
+stand alone functions or as class member functions.
+
+Those functions may of course throw exceptions. Declarations of such functions
+may contain a hi(throw list) emi(function throw list) or
+    emi(exception specification list) specifying the types of the exceptions
+that can be thrown by the function. For example, a function that may throw
+`tt(char *)' and `tt(int)' exceptions can be declared as
+        verb(
+    void exceptionThrower() throw(char *, int);
+        )
+    A function throw list immediately follows the function header (and it also
+follows a possible tt(const) specifier).  Throw lists may be empty. It has the
+following general form:
+        verb(
+    throw([type1 [, type2, type3, ...]])
+        )
+
+    If a function is guaranteed not to throw exceptions an
+ i(empty function throw list) may be used. E.g.,
+        verb(
+    void noExceptions() throw ();
+        )
+    In all cases, the function header used in the function definition must
+exactly match the function header used in the declaration, including a
+possibly empty function throw list.
+
+    A function for which a function throw list is specified may only throw
+exceptions of the types mentioned in its throw list. A emi(run-time error)
+occurs if it throws other types of exceptions than those mentioned in the
+function throw list. Example: the function tt(charPintThrower) shown below
+clearly throws a tt(char const *) exception. Since tt(intThrower) may
+throw an tt(int) exception, the function throw list of tt(charPintThrower)
+must em(also) contain tt(int).
+        verbinclude(exceptions/examples/throwlist.cc)
+
+    A function without a throw list may throw any kind of exception.  Without
+a function throw list the program's designer is responsible for providing the
+correct handlers.
+
+For various reason declaring exception throwers is a questionable
+activity. Declaring exception throwers does not mean that the compiler will
+check whether an improper exception is thrown. Rather, the function will be
+surrounded by additional code in which the actual exception that is thrown is
+processed. Instead of compile time checks one gets run-time overhead,
+resulting in additional code (and execution time) thay is added to the
+function's code. One could write, e.g.,
+        verb(
+    void fun() throw (int)
+    {
+        // code of this function, throwing exceptions
+    }
+        )
+    but the function would be compiled to something like the following (cf.
+section ref(FUNTRY) for the use of tt(try) immediately following the
+function's header and section ref(STDEXC) for a description of
+ ti(bad_exception)):
+        verb(
+    void fun()
+    try         // this code resulting from throw(int)
+    {
+                // the function's code, throwing all kinds of exceptions
+    }
+    catch (int) // remaining code resulting from throw(int)
+    {
+        throw;  // rethrow the exception, so it can be caught by the
+                // `intended' handler
+    }
+    catch (...) // catch any other exception
+    {
+        throw bad_exception;
+    }
+        )
+    Run-time overhead is caused by doubling the number of thrown and caught
+exceptions. Without a throw list a thrown tt(int) is simply caught by its
+intended handler; with a throw list the tt(int) is em(first) caught by the
+`safeguarding' handler added to the function. In there it is em(rethrown) to
+be caught by its intended handler next.

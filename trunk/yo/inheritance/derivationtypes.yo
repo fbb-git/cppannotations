@@ -1,0 +1,51 @@
+With inheritance public derivation is frequently used. When public derivation
+is used the access rights of the base class's interface remains unaltered in
+the derived class. But the type of inheritance may also be defined as
+em(private) or em(protected).
+
+
+Protected derivation is used when the keyword tt(protected) is put in front of
+the derived class's base class:
+        verb(
+    class Derived: protected Base
+        )
+    When protected derivation is used all the base class's public and
+protected members become protected members in the derived class. The derived
+class may access all the base class's public and protected members. Classes in
+turn derived from the derived class will view the base class's members as
+protected, and other code (outside of the inheritance tree) will not be able
+to access the base class's members.
+
+Private derivation is used when the keyword tt(private) is put in front of the
+derived class's base class:
+        verb(
+    class Derived: private Base
+        )
+    When private derivation is used all the base class's members turn into
+private members in the derived class. The derived class members may access
+all base class public and protected members but base class members cannot be
+used elsewhere.
+
+    Public derivation should be used to define an tt(is-a) relationship
+between a derived class and a base class: the derived class object
+em(is-a) base class object allowing the derived class object to be used
+polymorphically as a base class object in code expecting a base class
+object. Private inheritance is used in situations where a derived class object
+is defined in-terms-of the base class where composition cannot be
+used. There's little documented use for protected inheritance, but one could
+maybe encounter protected inheritance when defining a base class that is
+itself a derived class and needs to make its base class members available to
+classes derived from itself.
+
+    Combinations of inheritance types do occur. For example, when designing a
+stream-class it is usually derived from tt(std::istream) or
+tt(std::ostream). However, before a stream can be constructed, a
+tt(std::streambuf) must be available. Taking advantage of the fact that the
+inheritance order is defined in the class interface, we use multiple
+inheritance (see section ref(MULTIPLE)) to derive the class from both
+tt(std::streambuf) and (then) from tt(std::ostream). To the class's users it
+is a tt(std::ostream) and not a tt(std::streambuf). So private derivation is
+used for the latter, and public derivation for the former class:
+        verb(
+    class Derived: private std::streambuf, public std::ostream
+        )

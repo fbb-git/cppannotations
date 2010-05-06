@@ -1,0 +1,34 @@
+Static hi(static: members) members of a class can be used without having
+available an object of their class. Public static members can be called like
+free functions, albeit that their class names must be specified when they are
+called.
+
+Assume a class tt(String) has a public static member function
+tt(count), returning the number of string objects created so
+far. Then, without using any tt(String) object the function
+tt(String::count) may be called:
+        verb(
+    void fun()
+    {
+        cout << String::count() << '\n';
+    }
+        )
+    em(Public) static members can be called like free functions (but see also
+section ref(CALLINGCONVENTION)).  em(Private) static members can only be
+called within the context of their class, by their class's member or friend
+functions.
+
+    Since static members have no associated objects their addresses can be
+stored in ordinary function pointer variables, operating at the global
+level. Pointers to members cannot be used to store addresses of static
+members. Example:
+        verb(
+    void fun()
+    {
+        size_t (*pf)() = String::count;
+                // initialize pf with the address of a static member function
+
+        cout << (*pf)() << '\n';
+                // displays the value returned by String::count()
+    }
+        )

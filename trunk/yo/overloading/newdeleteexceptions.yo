@@ -1,0 +1,23 @@
+When an exception is thrown while executing a tt(new[]) expression, what will
+happen? In this section we'll show that tt(new[]) is
+ hi(new[]: and exceptions)hi(exception: and new[]) exception safe even only
+some of the objects were properly constructed.
+
+To begin, tt(new[]) might throw while trying to allocate the required
+memory. In this case a ti(bad_alloc) is thrown and we don't leak as nothing
+was allocated.
+
+Having allocated the required memory the class's default constructor will be
+called for each of the objects in turn. At some point a constructor might
+throw. What happens next is defined by the bf(C++) standard: the destructors
+of the already constructed objects will be called and the memory allocated for
+the objects themselves is returned to the common pool. Assuming that the
+failing constructor offers the basic guarantee tt(new[]) is therefore
+exception safe even if a constructor may throw.
+
+The following example illustrates this behavior. A request to allocate and
+initialize five objects is made, but after constructing two objects
+construction fails by throwing an exception. The output shows that the
+destructors of properly constructed objects are called and that the allocated
+em(substrate memory) is properly returned:
+    verbinclude(overloading/examples/new.cc)

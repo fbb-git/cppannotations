@@ -1,0 +1,246 @@
+Although the term emi(static polymorphism) is coined for the situation that is
+encountered when templates are used (as the behavior of a template class may
+vary over different types that are specified when instantiating the template),
+there em(is) a difference with traditional emi(dynamic polymorphism) based on
+the well-known i(vtable).
+
+As the  polymorphic derived class is a base class at the same time the
+compiler is able to verify this once a derived class object is passed to a
+function defining a base class parameter. No such verification is possible in
+the context of templates. In fact, anything is possible as long as it
+represents valid bf(C++) syntax up to the point where instantiations are
+encountered. Only then the actually available interface is matched against the
+requirements of the function template.
+
+The C++0x standard introduces emi(concepts) to allow the programmer to
+specify what kind of types may actually be used when instantiating a
+template. This, in turn, allows the compiler to verify at the time the
+template is instantiated whether an acceptable type is specified which in turn
+allows the compiler to improve its error messages.
+
+Compiler messages generated as a result of some template-related error are
+notoriously difficult to read. These error messages may be several kBytes
+large, and have been called `the compiler's error novelle' by some writers.
+Nonetheless, there are various reasons for these long error messsages and
+often some tricks, which may be compiler-dependent, may greatly help us to
+understand the nature of the error. Here are two common causes of long and
+complex template-related error messages:
+    itemization(
+    it() As the compiler cannot know what is and what isn't important with
+respect to the actual instantiated template parameters it must write their
+definitions in full.
+    it() The actual error is usually found deep inside the definition of a
+function template, which function may very well be the eventually called
+function after scores of functions have been called from the original
+statement written by the programmer. Consequently it requires more than
+average experience for the programmer to `see through' this call-trace and to
+find the location in his/her program sources that caused the error. That isn't
+all: once the location is found the programmer also must be able to understand
+what has actually gone wrong.
+    )
+
+Concepts were primarily added to the language to relieve the above problems.
+Concepts specify what a template type must offer. Conversely, types may be
+associated with these concepts, required by templates. Although concepts are
+currently not yet implemented by the tt(g++) compiler several examples
+illustrating the ideas may already be provided. Consider a function template
+returning the smaller of two values. Rather than using the generic tt(typename
+T) the concept em(ComparableBySmaller) may be used:
+        verb(
+    template<ComparableBySmaller Type>
+    Type const &min(Type const &x, Type const &y)
+    {
+        return y < x ? y : x;
+    }
+        )
+    Now every type that is actually used with tt(min()) must be a
+tt(ComparableBySmaller) type. Alternatively the following syntax will be
+offered:
+        verb(
+    template< typename Type> requires ComparableBySmaller<Type>
+    Type const &min(Type const &x, Type const &y)
+    {
+        return y < x ? y : x;
+    }
+        )
+    The advantage of the former syntax is that it allows a list of
+requirements, e.g., linebreak() tt(ComparableBySmaller<Type>,
+Ordered<Type>). Moreover, these requirements may be combined using the
+logical negation (!) and conjunction (&&) operators.
+
+To define a concept hi(concept: definition) the following syntax will be
+provided:
+        verb(
+    auto concept ComparableBySmaller <typename Type>
+    {
+        bool operator<(Type, Type);
+    }
+        )
+    This concept specifies that a type supporting an tt(operator<) accepting
+two tt(Type) objects and returning a tt(bool) is a tt(ComparableBySmaller)
+type. Note that this therefore becomes an implied characteristic of an actual
+type. Any type defining this operator by implication also becomes a
+tt(ComparableBySmaller) type. Any such type may therefore be used to
+instantiate a template with that requires the tt(ComparableBySmaller) concept.
+
+COMMENT(
+    =================================================================
+The
+operator need not be a free-function; it could be a member function of the
+type T.
+
+Concepts can involve multiple objects as well. For example, concepts can
+express that a type is convertible from one type to another:
+
+auto concept Convertible< typename T, typename U>
+{
+  operator U(const T&);
+}
+
+In order to use this in a template, it must use a generalized form of concept
+usage:
+
+template< typename U, typename T> requires Convertible<T, U>
+  U convert(const T& t)
+  {
+    return t;
+  }
+
+
+Concepts may be composed. For example, given a concept named Regular:
+
+concept InputIterator< typename Iter, typename Value>
+{
+  requires Regular<Iter>;
+  Value operator*(const Iter&);
+  Iter& operator++(Iter&);
+  Iter operator++(Iter&, int);
+}
+
+The first template parameter to the InputIterator concept must conform to the
+Regular concept.
+
+Concepts can also be derived from one another, like inheritance. Like in class
+inheritance, types that meet the requirements of the derived concept also meet
+the requirements of the base concept. It is defined as per class derivation:
+
+concept ForwardIterator< typename Iter, typename Value> : InputIterator<Iter,
+Value> {
+  //Add other requirements here.
+}
+
+Typenames can also be associated with a concept. These impose the requirement
+that, in templates that use those concepts, these typenames are available:
+
+concept InputIterator< typename Iter>
+{
+  typename value_type;
+  typename reference;
+  typename pointer;
+  typename difference_type;
+  requires Regular<Iter>;
+  requires Convertible<reference, value_type>;
+  reference operator*(const Iter&); // dereference
+  Iter& operator++(Iter&); // pre-increment
+  Iter operator++(Iter&, int); // post-increment
+  // ...
+}
+
+Concept maps allow types to be explicitly bound to a concept. They also allow
+types to, where possible, adopt the syntax of a concept without changing the
+definition of the type. As an example:
+
+concept_map InputIterator<char*>
+{
+  typedef char value_type ;
+  typedef char& reference ;
+  typedef char* pointer ;
+  typedef std::ptrdiff_t difference_type ;
+};
+
+This map fills in the required typenames for the InputIterator concept when
+applied to char* types.
+
+As an added degree of flexibility, concept maps themselves can be
+templated. The above example can be extended to all pointer types:
+
+template< typename T> concept_map InputIterator<T*>
+{
+  typedef T value_type ;
+  typedef T& reference ;
+  typedef T* pointer ;
+  typedef std::ptrdiff_t difference_type ;
+};
+
+Further, concept maps can act as mini-types, with function definitions and
+other constructs commonly associated with classes:
+
+concept Stack< typename X>
+{
+  typename value_type;
+  void push(X&, const value_type&);
+  void pop(X&);
+  value_type top(const X&);
+  bool empty(const X&);
+};
+
+template< typename T> concept_map Stack<std::vector<T> >
+{
+  typedef T value_type;
+  void push(std::vector<T>& v, const T& x) { v.push_back(x); }
+  void pop(std::vector<T>& v) { v.pop_back(); }
+  T top(const std::vector<T>& v) { return v.back(); }
+  bool empty(const std::vector<T>& v) { return v.empty(); }
+};
+
+This concept map allows templates that take types that implement the concept
+Stack to take a std::vector, remapping the function calls directly to the
+std::vector calls. Ultimately, this allows a pre-existing object to be
+converted, without touching the definition of the object, into an interface
+that a template function can utilize.
+
+Finally, it should be noted that some requirements can be checked using static
+assertions. These can verify some requirements that templates need, but are
+really aimed at a different problem.
+
+    ================================================================
+END)
+
+
+
+The C++ standard introduces emi(axiom)em(s) as a feature of concepts.  Axioms
+can be used to define properties of concepts, such as their
+associativity. Here is a preliminary example of how an axiom could be used in
+the definition of a concept:
+        verb(
+    concept Semigroup< typename Op, typename Type> : CopyConstructible<Type>
+    {
+        Type operator()(Op, Type, Type);
+
+        axiom Associativity(Op op, Type x, Type y, Type z)
+        {
+            op(x, op(y, z)) == op(op(x, y), z);
+        }
+    };
+        )
+
+As remarked, concepts and axioms are currently still unavailable in the tt(g++)
+compiler. It is likely that this section will be vastly expanded by the time
+the compiler has catched up with the standard. Concepts, axioms and related
+constructs may eventually even be covered in a separate chapter.
+
+
+COMMENT(
+    ============================================================
+Compilers are allowed, but not required, to take advantage of the semantics
+specified by axioms to perform optimizations that possibly have side-effects
+on the observable behavior of the program, which are typically prohibited
+(with few exceptions such as copy constructor elision). In the above example,
+compilers may reassociate nested calls to operator() of type Op on several
+values of type Type provided that there is a concept map for types Op and Type to
+the concept Semigroup.
+
+Axioms can also assist in software verification, software testing, and other
+program analyses and transformations.
+    ===========================================================
+END)

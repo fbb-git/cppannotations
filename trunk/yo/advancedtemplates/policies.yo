@@ -1,0 +1,133 @@
+A emi(policy) defines (in some contexts: prescribes) a particular kind of
+behavior. In bf(C++) a
+    hi(class: policy)
+ em(policy class) defines a certain part of the class interface. It may also
+define i(inner types), i(member functions), and i(data members).
+
+In the previous section the problem of creating a class that might use any of
+a series of allocation schemes was introduced. These allocation schemes all
+depend on the actual data type to be used, and so the `template' reflex should
+kick in. Allocation schemes should probably be defined as template
+classes, applying the appropriate allocation procedures to the data type at
+hand. E.g. (using in-class implementations to save some space), the following
+three allocation classes could be defined:
+    itemization(
+    it() No special allocation takes place, tt(data) is used `as is':
+        verb(
+    template <typename Data>
+    class PlainAlloc
+    {
+        template<typename IData>
+        friend std::ostream &operator<<(std::ostream &out,
+                                        PlainAlloc<IData> const &alloc);
+        Data d_data;
+
+        public:
+            PlainAlloc()
+            {}
+            PlainAlloc(Data data)
+            :
+                d_data(data)
+            {}
+            PlainAlloc(PlainAlloc<Data> const &other)
+            :
+                d_data(other.d_data)
+            {}
+    };
+        )
+    it() The second allocation scheme uses the standard tt(new) operator to
+allocate a new copy of the data:
+        verb(
+    template <typename Data>
+    class NewAlloc
+    {
+        template<typename IData>
+        friend std::ostream &operator<<(std::ostream &out,
+                                        NewAlloc<IData> const &alloc);
+        Data *d_data;
+
+        public:
+            NewAlloc()
+            :
+                d_data(0)
+            {}
+            NewAlloc(Data const &data)
+            :
+                d_data(new Data(data))
+            {}
+            NewAlloc(NewAlloc<Data> const &other)
+            :
+                d_data(new Data(*other.d_data))
+            {}
+            ~NewAlloc()
+            {
+                delete d_data;
+            }
+    };
+        )
+    it() The third allocation scheme uses the i(placement new) operator (see
+        section ref(PLACEMENT)), requesting memory from a
+        common pool of bytes (the implementation of the member tt(request()),
+        obtaining the required amount of memory, is left as an exercise to the
+        reader):
+        verb(
+    template<typename Data>
+    class PlacementAlloc
+    {
+        template<typename IData>
+        friend std::ostream &operator<<(std::ostream &out,
+                                        PlacementAlloc<IData> const &alloc);
+        Data *d_data;
+
+        static char s_commonPool[];
+        static char *s_free;
+
+        public:
+            PlacementAlloc()
+            :
+                d_data(0)
+            {}
+            PlacementAlloc(Data const &data)
+            :
+                d_data(new(request()) Data(data))
+            {}
+            PlacementAlloc(PlacementAlloc<Data> const &other)
+            :
+                d_data(new(request()) Data(*other.d_data))
+            {}
+            ~PlacementAlloc()
+            {
+                d_data->~Data();
+            }
+        private:
+            static char *request();
+    };
+        )
+    )
+    The above three classes define em(policies) that may be selected by the
+user of the class tt(Storage), introduced in the previous section. In addition
+to this, additional allocation schemes could be implemented by the user as
+well.
+
+    In order to be able to apply the proper allocation scheme to the class
+tt(Storage) it should be designed as a class template itself. The class will
+also need a template type parameter allowing users to specify the data type.
+
+    The data type to be used by a particular allocation scheme can of course
+be specified when the allocation scheme itself is specified. This would result
+in code like this:
+        verb(
+    template <typename Data, typename Scheme>
+    class Storage ...
+        )
+    tt(Storage) would then be used as follows:
+        verb(
+    Storage<string, NewAlloc<string> > storage;
+        )
+    This implementation is needlessly complex, as it requires the user to
+specify the data type twice. Instead, the allocation scheme should be
+specified using a new type of template parameter, not requiring the user to
+specify the data type to be used by the allocation scheme. This new kind of
+template parameter (in addition to the well-known em(template type parameter)
+and em(template non-type parameter)) is called the
+ emi(template template parameter).

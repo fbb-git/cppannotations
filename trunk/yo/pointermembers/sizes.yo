@@ -1,0 +1,18 @@
+An interesting characteristic of pointers to members is that their sizes
+ hi(size: of pointers to members)hi(pointer to members: size of) differ from
+those of `normal' pointers. Consider the following little program:
+        verbinclude(pointermembers/examples/size.cc)
+    On a 32-bit architecture a pointer to a member function requires eight
+bytes, whereas other kind of pointers require four bytes (Using Gnu's g++
+compiler).
+
+    Pointer sizes are hardly ever explicitly used, but their sizes may cause
+confusion in statements like:
+        verb(
+    printf("%p", &X::fun);
+        )
+    Of course, tt(printf) is likely not the right tool to produce the
+value of these bf(C++) specific pointers. The values of these pointers can be
+inserted into streams when a tt(union), reinterpreting the 8-byte pointers as
+a series of size_t tt(char) values, is used:
+        verbinclude(pointermembers/examples/union.cc)

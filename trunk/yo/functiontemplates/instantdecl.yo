@@ -1,0 +1,44 @@
+    If declaring function templates speeds up the compilation and the linking
+phases of a program, how can we make sure that the required instantiations of
+the function templates will be available when the program is eventually linked
+together?
+
+    For this a variant of a template declaration is available, a so-called
+ hi(instantiation declaration)emi(explicit instantiation declaration).
+    An explicit instantiation declaration consists of the following elements:
+    itemization(
+    it() It starts with the keyword tt(template), omitting the template
+parameter list.
+    it() Next the function template's return type and name are specified.
+    it() The function template's name is followed by a em(type specification
+list). A type specification list is an angle brackets enclosed list of type
+names.  Each type specifies the actual type of the corresponding template type
+parameter in the template's parameter list.
+    it() Finally the function template's parameter list is specified,
+terminated by a semicolon.
+    )
+    Although this is a declaration, it is understood by the compiler as a
+request to instantiate that particular variant of the function template.
+
+    Using explicit instantiation declarations all instantiations of template
+functions required by a program can be collected in one file. This file, which
+should be a normal em(source) file, should include the template definition
+header file and should subsequently specify the required explicit
+instantiation declarations. Since it's a source file, it will not be included
+by other sources. So namespace tt(using) directives and declarations may
+safely be used once the required headers have been included.  Here is an
+example showing the required instantiations for our earlier tt(add) function
+template, instantiated for tt(double), tt(int), and tt(std::string) types:
+        verb(
+    #include "add.h"
+    #include <string>
+    using namespace std;
+
+    template int add<int>(int const &lvalue, int const &rvalue);
+    template double add<double>(double const &lvalue, double const &rvalue);
+    template string add<string>(string const &lvalue, string const &rvalue);
+        )
+    If we're sloppy and forget to mention an instantiation required by our
+program then the repair is easily made by adding the missing instantiation
+declaration to the above list. After recompiling the file and relinking the
+program we're done.

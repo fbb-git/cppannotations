@@ -1,0 +1,121 @@
+Function template parameters are either template type parameters or template
+non-type parameters (actually, a third type of template parameter exists, the
+em(template template parameter), which is discussed in chapter
+ref(ADVANCEDTEMPL) (section ref(TEMPTEMPPAR))).
+
+    Class templates hi(class template: non-type parameter) may also define
+non-type parameters. Like the function template non-type parameters they must
+be (integral) constants whose values must be known at object instantiation
+time.
+
+    Different from function template non-type parameters the values of class
+template non-type parameters are not deduced by the compiler using arguments
+passed to class template members. Assume we modify the class template
+tt(CirQue) so that it has an additional non-type parameter tt(size_t
+Size). Next we use this tt(Size) parameter in a new constructor defining an
+array parameter of tt(Size) elements of type tt(Data). Only showing the
+relevant constructors (section ref(MEMTEMP) provides the rationale for using
+the type tt(Data2));
+
+Now two template type parameters are required, e.g., when specifying the type
+of the copy constructor's parameter.  The new tt(CirQue) class template
+becomes (showing only the relevant constructors):
+        verb(
+    template <typename Data, size_t Size>
+    class CirQue
+    {
+        // ... data members
+        public:
+            CirQue(CirQue<Data, Size> &other);
+            CirQue(Data *data);
+            CirQue(Data const (&arr)[Size]);
+            ...
+    };
+
+    template <typename Data, size_t Size>
+    CirQue<Data, Size>::CirQue(Data const (&arr)[Size])
+    :
+        d_maxSize(Size),
+        d_size(0),
+        d_data(operator new(Size * sizeof(Data))),
+        d_front(d_data),
+        d_back(d_data),
+    {
+        std::copy(arr, arr + Size, back_inserter(*this));
+    }
+        )
+    Unfortunately, this setup doesn't satisfy our needs as  the values of
+template non-type parameters are not deduced by the compiler. When the
+compiler is asked to compile the following tt(main) function it reports a
+mismatch between the required and actual number of template parameters:
+        verb(
+    int main()
+    {
+        int arr[30];
+
+        CirQue<int> ap(arr);
+    }
+    /*
+        Error reported by the compiler:
+
+        In function `int main()':
+            error: wrong number of template arguments (1, should be 2)
+            error: provided for `template<class Data, size_t Size>
+                   class CirQue'
+    */
+        )
+    Defining tt(Size) as a non-type parameter having a default value doesn't
+work either. The compiler always uses the default unless its value is
+explicitly specified. Reasoning that tt(Size) can be 0 unless we need another
+value, we might be tempted to specify tt(size_t Size = 0) in the template's
+parameter type list.  Doing so we create  a mismatch between the default
+value 0 and the actual size of the array tt(arr) as defined in the above
+tt(main) function. The compiler, using the default value, reports:
+        verb(
+    In instantiation of `CirQue<int, 0>':
+    ...
+    error: creating array with size zero (`0')
+        )
+    So, although class templates may use non-type parameters they must always
+be specified like type parameters when an object of that class is
+defined. Default values can be specified for those non-type parameters causing
+the compiler to use the default when the non-type parameter is left
+unspecified.
+
+    hi(template parameter: default value) Default template parameter values
+(either type or non-type template parameters) may em(not) be specified when
+defining template member functions. In general: function template definitions
+(and thus: class template member functions) may not be given default template
+(non) type arguments. If default template arguments are to be used for class
+template members, they em(have) to be specified by the class interface.
+
+    Similar to non-type parameters of function templates default argument
+values for non-type class template parameters may only be specified as
+constants:
+    itemization(
+    it() Global hi(global variable) variables have constant addresses, which
+can be used as arguments for non-type parameters.
+    it() Local hi(local variables) and i(dynamically allocated variables) have
+addresses that are em(not) known by the compiler when the source file is
+compiled. These addresses can therefore em(not) be used as arguments for
+non-type parameters.
+    it() Lvalue hi(lvalue transformations) transformations are allowed: if a
+pointer is defined as a non-type parameter, an array name may be specified.
+    it() hi(conversions) Qualification hi(qualification conversions)
+conversions are allowed: a pointer to a non-const object may be used with a
+non-type parameter defined as a tt(const) pointer.
+    it() Promotions hi(promotions) are allowed: a constant of a `narrower'
+data type may be used when specifying a default argument for a non-type
+parameter of a `wider' type (e.g., a tt(short) can be used when an tt(int) is
+called for, a tt(long) when a tt(double) is called for).
+    it() Integral hi(integral conversions) conversions are allowed: if a
+tt(size_t) parameter is specified, an tt(int) may be used as well.
+    it() Variables cannot be used to specify template non-type parameters as
+their values are not constant expressions. Variables defined using the
+tt(const) modifier, however, may be used as their values never change.
+    )
+
+    Although our attempts to define a constructor of the class tt(CirQue)
+accepting an array as its argument has failed so far, we're not yet out of
+options. In the next section a method is described that em(does) allowing us
+to reach our goal.

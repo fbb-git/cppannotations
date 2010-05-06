@@ -1,0 +1,70 @@
+In bf(C++) struct and class type objects  can be directly assigned new values
+in the same way as this is possible in bf(C).  The default
+action of such an assignment for non-class type data members is a straight
+byte-by-byte copy from one data member to another.  For now we'll use the
+following simple class tt(Person):
+        verb(
+    class Person
+    {
+        char *d_name;
+        char *d_address;
+        char *d_phone;
+
+        public:
+            Person();
+            Person(char const *name, char const *addr, char const *phone);
+            ~Person();
+        private:
+            char *strdupnew(char const *src);   // returns a copy of src.
+    };
+        )
+    tt(Person)'s data members are initialized to zeroes or to copies of the
+ASCII-Z strings passed to tt(Person)'s constructor, using some variant of
+ti(strdup). Its destructor will return the allocated memory again.
+
+Now consider the consequences of using tt(Person) objects in the following
+example:
+        verb(
+    void tmpPerson(Person const &person)
+    {
+        Person tmp;
+        tmp = person;
+    }
+        )
+    Here's what happens when tt(tmpPerson) is called:
+    itemization(
+    it() it expects a reference to a tt(Person) as its parameter tt(person).
+    it() it defines a local object tt(tmp), whose data members are initialized
+to zeroes.
+    it() the object referenced by tt(person) is copied to tt(tmp):
+tt(sizeof(Person)) number of bytes are copied from tt(person) to tt(tmp).
+    )
+    Now a potentially dangerous situation has been created.  The actual values
+in tt(person) are em(pointers), pointing to allocated memory.  After the
+assignment this memory is addressed by two objects: tt(person) em(and)
+tt(tmp).
+    itemization(
+    it() The potentially dangerous situation develops into an acutely
+dangerous situation once the function tt(tmpPerson) terminates: tt(tmp) is
+destroyed. The destructor of the class tt(Person) releases the memory pointed
+to by the fields tt(d_name), tt(d_address) and tt(d_phone): unfortunately,
+this memory is also pointed at by tt(person)....
+    )
+    This problematic assignment is illustrated in fig(badassign).
+
+    figure(memory/badassign)
+    (Private data and public interface functions of the class Person,
+        using byte-by-byte assignment)
+    (badassign)
+
+    Having executed tt(tmpPerson), the object referenced by
+tt(person) now contains i(pointers to deleted memory).
+
+    This is undoubtedly not a desired effect of using a function like
+tt(tmpPerson).  The deleted memory will likely be reused by subsequent
+allocations. The pointer members of tt(person) have effectively become
+ hi(wild pointer)em(wild pointers), as they don't point to allocated
+memory anymore. In general it can be concluded that
+    center(em(every class containing pointer data members is a potential
+        candidate for trouble).)
+    Fortunately, it is possible to prevent these troubles, as discussed next.

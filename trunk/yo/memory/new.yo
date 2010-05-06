@@ -1,0 +1,76 @@
+bf(C++) defines two operators to allocate memory and to return it to the
+`i(common pool)'. These operators are, respectively ti(new) and ti(delete).
+
+Here is a simple example illustrating their use. An tt(int) pointer variable
+points to memory allocated by operator tt(new). This memory is later released
+by operator tt(delete).
+        verb(
+    int *ip = new int;
+    delete ip;
+        )
+
+Here are some characteristics of operators tt(new) and tt(delete):
+    itemization(
+    it() tt(new) and tt(delete) are em(operators) and therefore do not
+require parentheses, as required for em(functions) like tt(malloc) and
+tt(free);
+    it() tt(new) returns a pointer to the kind of memory that's asked for by
+its operand (e.g., it returns a pointer to an tt(int));
+    it() tt(new) uses a em(type) as its operand, which has the important
+benefit that the correct amount of memory, given the type of the object to be
+allocated, is made available;
+    it() as a consequence, tt(new) is a i(type safe) operator as it always
+returns a pointer to the type that was mentioned as its operand. In addition,
+the type of the receving pointer
+must match the type specified with operator tt(new);
+    it() tt(new) may fail, but this is normally of em(no) concern to the
+programmer. In particular, the program does em(not) have to test the success
+of the memory allocation, as is required for tt(malloc) and
+friends. Section ref(NEWHANDLER) delves into this aspect of tt(new);
+    it() tt(delete) returns tt(void);
+    it() for each call to tt(new) a matching tt(delete) should eventually be
+executed, lest a i(memory leak) occurs;
+    it() tt(delete) can safely operate on a i(0-pointer) (doing nothing);
+    it() otherwise tt(delete) must only be used to return memory allocated
+by tt(new). It should em(not) be used to return memory allocated by
+tt(malloc) and friends.
+    it() in bf(C++) i(malloc) and friends are em(deprecated) and should be
+avoided.
+    )
+
+    Operator tt(new) can be used to i(allocate primitive types) but also to
+ hi(object: allocation)i(allocate objects). When a primitive type
+or a tt(struct) type without a constructor is allocated the allocated
+memory is em(not) guaranteed to be initialized to 0, but an
+i(initialization) expression may be provided:
+        verb(
+    int *v1 = new int;          // not guaranteed to be initialized to 0
+    int *v1 = new int();        // initialized to 0
+    int *v2 = new int(3);       // initialized to 3
+    int *v3 = new int(3 * *v2); // initialized to 9
+        )
+    When a class-type object is allocated, the arguments of its constructor
+(if any) are specified immediately following the type specification in the
+tt(new) expression and the object will be initialized according to the thus
+specified constructor. For example, to allocate tt(string) objects the
+following statements could be used:
+        verb(
+    string *s1 = new string;            // uses the default constructor
+    string *s2 = new string();          // same
+    string *s3 = new string(4, ' ');    // initializes to 4 blanks.
+        )
+
+In addition to using tt(new) to allocate memory for a single entity or an
+array of entities there is also a variant that allocates emi(raw memory):
+ ti(operator new(sizeInBytes)). Raw memory is returned as a tt(void *). Here
+tt(new) allocates a block of memory for unspecified purpose. Although raw
+memory may consist of multiple characters it should not be interpreted as an
+array of characters. Since raw memory returned by tt(new) is returned as a
+tt(void *) its return value can be assigned to a tt(void *) variable. More
+often it is assigned to a tt(char *) variable, using a cast. Here is an
+example:
+        verb(
+    char *chPtr = static_cast<char *>(operator new(numberOfBytes));
+        )
+ The use of raw memory is frequently encountered in combination with the
+em(placement new) operator, discussed in section ref(PLACEMENT).

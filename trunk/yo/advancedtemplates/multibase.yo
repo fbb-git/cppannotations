@@ -1,0 +1,46 @@
+The class template tt(MultiBase) is tt(Multi)'s base class. It
+defines a class that, eventually, is derived from the list of tt(Policy)
+types that, in turn, were created by tt(Multi) using any additional types that
+were  passed to it.
+
+tt(MultiBase) itself has no concept of a tt(Policy). To tt(MultiBase) the
+world consists of a simple template pack whose types will be used to define a
+class from. In addition to the tt(PolicyTypes) template pack, tt(MultiBase)
+also defines a tt(size_t nr) non-type parameter that is used to create unique
+tt(UWrap) types. Here is tt(MultiBase)'s generic class declaration:
+    verbinsert(MULTIBASE)(advancedtemplates/examples/multi.h)
+
+    Two specializations handle all possible tt(MultiBase) invocations. One
+specialization is a recursive template. This template handles the first type
+of tt(MultiBase)'s template parameter pack and recursively uses itself to
+handle the remaining types. The second specialization is invoked once the
+template parameter pack is exhausted and does nothing. Here is the definition
+of the latter specialization:
+    verbinsert(MULTIBASEDONE)(advancedtemplates/examples/multi.h)
+
+    The recursively defined specialization is the interesting one. It performs
+the following tasks:
+    itemization(
+    it() It is derived from a unique tt(UWrap) type. The uniqueness is
+guaranteerd by using tt(MultiBase)'s tt(nr) parameter when defining
+tt(UWrap). In addition to tt(nr) the tt(UWrap) class receives the first type
+of the template parameter pack made available to tt(MultiBase);
+    it() It is also recursively derived from itself. The recursive
+tt(MultiBase) type is defined using as its first template argument an
+incremented tt(nr) value (thus ensuring the uniqueness of the tt(UWrap) types
+defined by recursive tt(MultiWrap) types). Its second template argument is the
+tail of the template parameter pack made available to tt(MultiBase)
+    )
+    An illustration showing the layout of the tt(MultiBase) class
+hierarchy is provided in figure ref(MultiBaseFig).
+
+        figure(advancedtemplates/multibase)
+            (Layout of a MultiBase class hierarchy)
+            (MultiBaseFig)
+
+    tt(MultiBase)'s constructor simple receives the initialization values that
+were passed to (originally) the tt(Multi) object. To accomplish this
+perfect forwarding is used. tt(MultiBase)'s constructor passes its first
+parameter value to its tt(UWrap) base class, also using perfect forwarding.
+tt(MultiBase)'s recursive definition is:
+        verbinsert(MULTIBASEREC)(advancedtemplates/examples/multi.h)

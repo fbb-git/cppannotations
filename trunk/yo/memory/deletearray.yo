@@ -1,0 +1,55 @@
+Dynamically allocated arrays are deleted using operator
+ ti(delete[]). It expects a pointer to a block of memory, previously allocated
+by operator ti(new[]).
+
+    When operator tt(delete[])'s operand is a pointer to an array of objects
+two actions will be performed:
+    itemization(
+    it() First, the class's destructor is called for each of the objects in
+the array. The destructor, as explained link(later in this
+chapter)(DESTRUCTOR), performs all kinds of cleanup operations that are
+required by the time the object ceases to exist.
+    it() Second, the memory pointed at by the pointer is returned to the
+common pool.
+    )
+    Here is an example showing how to allocate and delete an array of 10
+string objects:
+        verb(
+    std::string *sp = new std::string[10];
+    delete[] sp;
+        )
+    No special action is performed if a dynamically allocated array of
+primitive typed values is deleted. Following tt(int *it = new int[10]) the
+statement tt(delete[] it) simply returns the memory pointed at by tt(it) is
+returned.  Realize that, as a pointer is a primitive type, deleting a
+dynamically allocated array of pointers to objects will em(not) result in the
+proper destruction of the objects the array's elements point at. So, the
+following example results in a emi(memory leak):
+        verb(
+    string **sp = new string *[5];
+    for (size_t idx = 0; idx != 5; ++idx)
+        sp[idx] = new string;
+    delete[] sp;            // MEMORY LEAK !
+        )
+    In this example the only action performed by tt(delete[]) is to return an
+area the size of five pointers to strings to the common pool.
+
+    Here's how the destruction in such cases em(should) be performed:
+    itemization(
+    it() Call tt(delete) for each of the array's elements;
+    it() Delete the array itself
+    )
+    Example:
+        verb(
+    for (size_t idx = 0; idx != 5; ++idx)
+        delete sp[idx];
+    delete[] sp;
+        )
+    One of the consequences is of course that by the time the memory is going
+to be returned not only the pointer must be available but also the number of
+elements it contains. This can easily be accomplished by storing pointer and
+number of elements in a simple class and then using an object of that class.
+
+    Operator tt(delete[]) is a different operator than operator
+tt(delete). The i(rule of thumb) is: if ti(new[]) was used, also use
+tt(delete[]).

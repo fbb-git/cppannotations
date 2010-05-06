@@ -1,0 +1,98 @@
+The C++0x standard offers a emi(generalized pair) container: the emi(tuple),
+covered in this section.  Before tuples can be used the header file
+tthi(tuple) must have been included.
+
+Whereas tt(std::pair) containers have limited functionality and only support
+two members, tuples have slightly more functionality and may contain an
+unlimited number of different data types. In that respect a tuple can be
+thought of the `template's answer to bf(C)'s struct'.
+
+A tuple's generic declaration (and definition) uses the variadic template
+notation:
+        verb(
+    template <class ...Types>
+    class tuple;
+        )
+Here is an example of its use:
+        verb(
+    typedef std::tuple<int, double &, std::string, char const *> tuple_idsc;
+
+    double pi = 3.14;
+    tuple_idsc idsc(59, pi, "hello", "fixed");
+
+    // access a field:
+    std::get<2>(idsc) = "hello world";
+        )
+    The hi(get)tt(std::get<idx>(tupleObject)) function template returns a
+reference to the tt(idx)+sup(th) field of the tuple tt(tupleObject). Index 0
+returns a reference to its first value. The index is specified as the function
+template's non-type template argument.
+
+    Tuples may be constructed without specifying initial values. Primitive
+types are initialized to zeroes; class type fields are initialized by their
+default constructors. Be aware that in some situations the construction of a
+tuple may succeed but its use may fail. Consider:
+        verb(
+    tuple<int &> empty;
+    cout << get<0>(empty);
+        )
+    Here the tuple tt(empty) cannot be used as its tt(int &) field is an
+undefined reference. tt(Empty)'s construction, however, succeeds.
+
+    Tuples may be assigned to each other if their type lists are identical; if
+supported by their constituent types copy constructors are available as
+well. Copy construction and assignment is also available if a right-hand type
+can be converted to its matching left-hand type or if the left-hand type can
+be constructed from the matching right-hand type. Tuples
+(matching in number and (convertible) types) can be compared using relational
+operators as long as their constituent types support comparisons. In this
+respect tuples are like pairs.
+
+    Tuples offer the following static elements (using compile-time
+initialization):
+    itemization(
+    itht(tuple_size)(std::tuple_size<Tuple>::value) returns the number of
+types defined for the tuple type tt(Tuple). Example:
+        verb(
+    cout << tuple_size<tuple_idsc>::value << '\n';  // displays: 4
+        )
+    itht(tuple_element)(std::tuple_element<idx, Typle>::type)
+        returns the type of element tt(idx) of tt(Tuple). Example:
+            verb(
+    tuple_element<2, tuple_idsc>::type text;  // defines std::string text
+            )
+    )
+
+    The unpack operator can also be used to forward the arguments of a
+constructor to a tuple data member. Consider a class tt(Wrapper) that is
+defined as a variadic template:
+        verb(
+    template <typename ... Params>
+    class Wrapper
+    {
+        ...
+        public:
+            Wrapper(Params && ... params);
+    };
+        )
+    This class may be given a tuple data member which should be initialized by
+the types and values that are used when initializing an object of the class
+ hi(perfect forwarding: to data members) tt(Wrapper) using perfect
+forwarding. Comparable to the way a class may inherit from its template types
+(cf. section ref(UNPACK)) it may forward its types and constructor arguments
+to its tuple data member:
+        verb(
+    template <typename ... Params>
+    class Wrapper
+    {
+        std::tuple<Params ...> d_tuple;     // same types as used for
+                                            // Wrapper itself
+        public:
+            Wrapper(Params && ... params)
+            :                               // initialize d_tuple with
+                                            // Wrapper's arguments
+                d_tuple(std::forward<Params>(params) ...)
+            {}
+    };
+        )
+

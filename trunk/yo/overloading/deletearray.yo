@@ -1,0 +1,107 @@
+To overload ti(operator delete[]) in a class tt(String) add the following line
+to the class's interface:
+        verb(
+    void operator delete[](void *memory);
+        )
+    Its parameter is initialized to the address of a block of memory
+previously allocated by tt(String::new[]).
+
+    There are some subtleties to be aware of when implementing
+tt(operator delete[]). Although the addresses returned by tt(new) and
+tt(new[]) point to the allocated object(s), there is an additional tt(size_t)
+value available immediately before the address returned by tt(new) and
+tt(new[]). This tt(size_t) value is part of the allocated block and contains
+the actual size of the block. This of course does not hold true for the
+ hi(placement new)placement tt(new) operator.
+
+    When a class defines a destructor the tt(size_t) value preceding the
+address returned by tt(new[]) does not contain the size of the allocated
+block, but the em(number) of objects specified when calling
+tt(new[]). Normally that is of no interest, but when overloading tt(operator
+delete[]) it might become a useful piece of information. In those cases
+tt(operator[]) will em(not) receive the address returned by tt(new[]) but
+rather the address of the initial tt(size_t) value. Whether this is at all
+useful is not clear. By the time tt(delete[])'s code is executed all objects
+have already been destroyed, so tt(operator delete[]) is only to determine
+how many objects were destroyed but the objects themselves cannot be used
+anymore.
+
+    Here is an example showing this behavior of tt(operator delete[]) for a
+minimal tt(Demo) class:
+        verb(
+    struct Demo
+    {
+        size_t idx;
+        Demo()
+        {
+            cout << "default cons\n";
+        }
+        ~Demo()
+        {
+            cout << "destructor\n";
+        }
+        void *operator new[](size_t size)
+        {
+            return ::operator new(size);
+        }
+        void operator delete[](void *vp)
+        {
+            cout << "delete[] for: " << vp << '\n';
+            ::operator delete[](vp);
+        }
+    };
+
+    int main()
+    {
+        Demo *xp;
+        cout << ((int *)(xp = new Demo[3]))[-1] << '\n';
+        cout << xp << '\n';
+        cout << "==================\n";
+        delete[] xp;
+    }
+    // This program displays (your 0x?????? addresses might differ, but
+    // the difference between the two should be sizeof(size_t)):
+    //  default cons
+    //  default cons
+    //  default cons
+    //  3
+    //  0x8bdd00c
+    //  ==================
+    //  destructor
+    //  destructor
+    //  destructor
+    //  delete[] for: 0x8bdd008
+        )
+    Having overloaded tt(operator delete[]) for a class tt(String), it will be
+used automatically in statements like:
+        verb(
+        delete[] new String[5];
+        )
+
+    Operator tt(delete[]) may also be overloaded using an additional
+tt(size_t) parameter:
+        verb(
+    void operator delete[](void *p, size_t size);
+        )
+    Here tt(size) is automatically initialized to the size (in bytes) of the
+block of memory to which tt(void *p) points. If this form is defined, then
+tt(void operator[](void *)) should em(not) be defined, to avoid ambiguities.
+An example of this latter form of tt(operator delete[]) is:
+        verb(
+    void String::operator delete[](void *p, size_t size)
+    {
+        cout << "deleting " << size << " bytes\n";
+        ::operator delete[](ptr);
+    }
+        )
+
+    Additional overloads of tt(operator delete[]) may be defined, but to use
+them they must explicitly be called as static member functions (cf. chapter
+ref(StaticDataFun)). Example:
+        verb(
+        // declaration:
+    void String::operator delete[](void *p, ostream &out);
+        // usage:
+    String *xp = new String[3];
+    String::operator delete[](xp, cout);
+        )

@@ -1,0 +1,43 @@
+void zip(string dst, string src)
+{
+    system("zip -r cppannotations/zips/" + dst + " cppannotations/" + src); 
+}
+
+void zips()
+{
+    system("mkdir -p tmp/docs/zips");    
+    system("rm -f tmp/docs/zips/*");
+    system("ln -sf tmp/docs cppannotations");
+
+
+    system("cp README single/legal.shtml cppannotations/txt");
+    zip("cplusplus.txt.zip", "txt/*");
+
+
+    system("cp README single/legal.shtml cppannotations/latex");
+    zip("cplusplus.ps.zip",   "latex/*.ps");
+    zip("cplusplus.ps.zip",   "latex/legal.shtml");
+    zip("cplusplus.ps.zip",   "latex/README");
+
+
+    zip("cplusplus.pdf.zip",   "latex/*.pdf");
+    zip("cplusplus.pdf.zip",   "latex/legal.shtml");
+    zip("cplusplus.pdf.zip",   "latex/README");
+
+
+    system("ln -s ../../../contrib tmp/docs/html/contrib");
+        system("cp README cppannotations/html");
+        zip("cplusplus.html.zip",   "html/* -x *.svn*");
+    system("rm tmp/docs/html/contrib");
+
+
+    system("ln -sf ../../yo tmp/docs/yo");
+    system("ln -sf ../contrib yo/contrib");
+        system("cp single/legal.shtml changelog README yo");
+        zip("cplusplus.yo.zip",   "yo/* -x *.svn*");
+    system("rm yo/contrib yo/legal.shtml yo/changelog yo/README");
+    system("rm tmp/docs/yo ");
+
+    system("rm cppannotations");
+    exit(0);
+}

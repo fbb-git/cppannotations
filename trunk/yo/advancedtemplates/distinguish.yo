@@ -1,0 +1,145 @@
+In the previous section the tt(TypeTrait) trait class was developed. Using
+specialized versions of a nested tt(struct Type) modifiers, pointers,
+references and values could be distinguished.
+
+Knowing whether a type is a class type or not (e.g., the type represents a
+primitive type) could also be a useful bit of knowledge to a template
+developer. The class template developer might want to define a
+specialization when the template's type parameter represents a class
+type (maybe using some member function that should be available)
+and another specialization for non-class types.
+
+This section addresses the question how a trait class can distinguish class
+        hi(trait class: class detection)
+    types from non-class types.
+
+In order to distinguish classes from non-class types a distinguishing feature
+that can be used compile-time must be found. It may take some thinking to find
+such a distinguishing characteristic, but a good candidate eventually is found
+in the i(pointer to members) syntactic construct. Pointers to members are only
+available for classes. Using the pointer to member construct as the
+distinguishing characteristic, a specialization can be developed that uses the
+pointer to member if available. Another specialization (or the generic
+template) does something else if the pointer to member construction is not
+available.
+
+    How can we distinguish a pointer to a member from `a generic situation',
+not being a pointer to a member? Fortunately, such a distinction is
+possible. A function template specialization can be defined having a parameter
+which is a pointer to a member function. The generic function template will
+then accept any other argument. The compiler will em(select) the former
+(specialized) function when the provided type is a class type as class types
+em(may) support a pointer to a member. The interesting verb here is `em(may)':
+the class does not em(have) to define a pointer to member.
+
+    Furthermore, the compiler will not actually em(call) any function: we're
+talking compile-time here. All the compiler does is to em(select) the
+appropriate function by evaluating a constant expression.
+
+    So, our intended function template will look like this:
+        verb(
+    template <typename ClassType>
+    static `some returntype'  fun(void (ClassType::*)());
+        )
+    The function's return type (`tt((some returntype))') will be defined
+shortly. Let's first have a closer look at the function's parameter.  The
+function's parameter defines a pointer to a member returning tt(void). Such a
+function does em(not) have to exist for the concrete class-type that's
+specified when the function is used.  In fact, em(no) implementation will be
+provided. The function tt(fun) is only declared as a em(static) member in the
+trait class. It's not implemented and no trait class object is required to
+call it. What, then, is its use?
+
+    To answer the question we now have a look at the generic function
+template that should be used when the template's argument is em(not) a class
+type. The language offers a `worst case' parameter in its
+        hi(parameter: ellipsis)
+    emi(ellipsis) parameter list. The ellipsis is a final resort the compiler
+may turn to if everything else fails. The generic function template specifies
+a plain ellipsis in its parameter list:
+        verb(
+    template <typename NonClassType>
+    static `some returntype' fun(...);
+        )
+    It would be an error to define the generic alternative as a function
+expecting an tt(int). The compiler, when confronted with alternatives, will
+favor the simplest, most specified alternative over a more complex, generic
+one. So, when providing tt(fun) with an argument it will select tt(int)
+whenever possible and it won't select tt(fun(void (ClassType::*)())). When
+given the choice between tt(fun(void (ClassType::*)())) and tt(fun(...)) it
+will select the former unless it can't do that.
+
+    The question now becomes: what argument can be used for both a pointer to
+a member and for the ellipsis? Actually, there is such a `one size fits all'
+argument: 0. The value 0 can be used as argument value to initialize and
+pointers to members alike.
+
+    But 0 does not specify a particular class. Therefore, tt(fun) must specify
+an explicit template argument and it will appear in our code as
+tt(fun<Type>(0)), with tt(Type) being the template type parameter of the trait
+class.
+
+    Now for the return type. The function's return type cannot be a simple
+value (like tt(true) or tt(false)). Our eventual intent is to provide the
+trait class with an enum telling us whether the trait class's template
+argument represents a class type or not. That enum will be something like
+this:
+        verb(
+    enum { isClass = some class/non-class distinguishing expression } ;
+        )
+    The distinguishing expression cannot be
+        verb(
+    enum { isClass = fun<Type>(0) } ;
+        )
+    as tt(fun<Type>(0)) is not a constant expression and enum values em(must)
+        hi(enum values: evaluated compile-time)
+ be defined by constant expressions so they can be determined compile-time.
+
+    To determine tt(isClass)'s value we must find an expression that allows
+compile-time discriminates between tt(fun<Type>(...))  and tt(fun<Type>(void
+(Type::*)())).
+
+    In situations like these the ti(sizeof) operator often is our tool of
+choice as it is evaluated compile-time. By defining different sized return
+types for the two tt(fun) declarations we are able to distinguish
+(compile-time) which of the two tt(fun) alternatives is selected by the
+compiler.
+
+    The tt(char) type is by definition a type having size 1. By defining
+another type containing two consecutive tt(char) values a larger type is
+obtained. A tt(char [2]) is of course not a type, but a tt(char[2]) can be
+defined as a data member of a struct, and a struct em(does) define a
+type. That struct will then have a size exceeding 1. E.g.,
+        verb(
+    struct Char2
+    {
+        char data[2];
+    };
+        )
+    tt(Char2) can be defined as a nested type of our traits class. The
+two tt(fun) function template declarations become:
+        verb(
+    template <typename ClassType>
+    static Char2 fun(void (ClassType::*)());
+
+    template <typename NonClassType>
+    static char fun(...);
+        )
+    Since tt(typeof) expressions can be evaluated compile-time we can now
+determine tt(isClass)'s value:
+        verb(
+    enum { isClass = sizeof(fun<Type>(0)) == sizeof(Char2) };
+        )
+    This expression has several interesting implications:
+    itemization(
+    it() no tt(fun) function template is ever instantiated;
+    it() the compiler considers tt(Type) and selects
+tt(fun)'s function template specialization if tt(Type) is a class type and the
+generic function template if not;
+    it() From the selected function it determines the return type and thus the
+return type's size;
+    it() Resulting in the proper evaluation of tt(isClass).
+    )
+    Without requiring any instantiation the trait class can now provide an
+answer to the question whether a template type argument represents a class
+type or not. Marvelous!

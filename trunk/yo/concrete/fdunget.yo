@@ -1,0 +1,76 @@
+tt(Streambuf) classes and classes derived from ti(streambuf) should support
+em(at least) ungetting the last read character. Special care must be taken
+when em(series) of ti(unget) calls must be supported. In this section the
+construction of a class supporting a configurable number of tt(istream::unget)
+or hi(putback)tt(istream::putback) calls is discussed.
+
+    Support for multiple (say `tt(n)') tt(unget) calls is implemented by
+reserving an initial section of the input buffer, which is gradually filled up
+to contain the last tt(n) characters read. The class was implemented as
+follows:
+    itemization(
+    it() Once again, the class is derived from tt(std::streambuf). It
+defines several data members, allowing the class to perform the bookkeeping
+required to maintain an unget-buffer of a configurable size:
+        verbinsert(CLASS)(concrete/examples/fdunget.h)
+    it() The class's constructor expects a i(file descriptor), a buffer size
+and the number of characters that can be ungot or pushed back as its
+arguments. This number  determines the size of a em(reserved) area,
+defined as the first tt(d_reserved) bytes of the class's input buffer.
+        itemization(
+        it() The input buffer will always be at least one byte larger than
+tt(d_reserved). So, a certain number of bytes may be read. Once tt(d_reserved)
+bytes have been read at most tt(d_reserved) bytes can be ungot.
+        it() Next, the starting point for reading operations is configured. It
+is called tt(d_base), pointing to a location tt(d_reserved) bytes from the
+start of tt(d_buffer). This will always be the point where buffer refills
+start.
+        it() Now that the buffer has been constructed, we're ready to define
+tt(streambuf)'s buffer pointers using tt(setg). As no characters have been
+read yet, all pointers are set to point to tt(d_base). If tt(unget) is
+called at this point, no characters are available, so tt(unget) will
+(correctly) fail.
+        it() Eventually, the refill buffer's size is determined as the
+number of allocated bytes minus the size of the reserved area.
+        )
+        Here is the class's constructor:
+            verbinsert(CONS)(concrete/examples/fdunget.h)
+    it() The class's destructor simply returns the memory allocated for the
+buffer to the common pool:
+            verbinsert(DESTR)(concrete/examples/fdunget.h)
+    it() Finally,  tt(underflow) is overridden as follows:
+        itemization(
+        it() First tt(underflow) determines the number of characters that
+could potentially be ungot. If that number of characters are ungot, the input
+buffer is exhausted. So this value may be any value between 0 (the initial
+state) or the input buffer's size (when the reserved area has been filled up
+completely, and all current characters in the remaining section of the buffer
+have also been read);
+        it() Next the number of bytes to move into the reserved area is
+computed. This number is at most tt(d_reserved), but it is set equal to the
+actual number of characters that can be ungot if this value is smaller;
+        it() Now that the number of characters to move into the reserved area
+is known, this number of characters is moved from the input buffer's end to
+the area immediately before tt(d_base);
+        it() Then the buffer is refilled. This all is standard, but notice
+that reading starts from tt(d_base) and not from tt(d_buffer);
+        it() Finally, tt(streambuf)'s read buffer pointers are set up.
+                hi(eback)
+            tt(Eback) is set to tt(move) locations before tt(d_base), thus
+defining the guaranteed unget-area,
+            ti(gptr) is set to tt(d_base), since that's the location of the
+first read character after a refill, and
+            hi(egptr) is set just beyond the location of the last character
+read into the buffer.
+        )
+        Here is tt(underflow)'s implementation:
+            verbinsert(UNDERFLOW)(concrete/examples/fdunget.h)
+    )
+    The example program illustrates the class tt(FdUnget). It reads at most
+10 characters from the standard input, stopping at endOfFile(). A guaranteed
+unget-buffer of 2 characters is defined in a buffer holding 3 characters. Just
+before reading a character, the program tries to unget at most 6
+characters. This is, of course, not possible; but the program will nicely
+unget as many characters as possible, considering the actual number of
+characters read:
+        verbinclude(concrete/examples/fdunget.cc)

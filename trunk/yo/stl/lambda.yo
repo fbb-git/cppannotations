@@ -1,0 +1,173 @@
+The C++0x standard has added emi(lambda function) em(lambda functions) to
+bf(C++). As we've seen generic algorithms often accept an argument that can
+either be a function object or a plain function. Examples are the tt(sort) and
+tt(find_if) generic algorithms. When the function called by the generic
+algorithm must remember its state a function object is appropriate, otherwise
+a plain function will do.
+
+The function or function object is usually not readily available. Often it
+must be defined in or near the location where the generic algorithm is used.
+Often the software engineer will resort to anonymous namespaces in which a
+class or function is defined that is thereupon used by the function calling
+the generic algorithm. If that function is itself a member function the need
+may be felt to allow the function called by the generic algorithm access to
+other members of its class. Often this results in a significant amount of code
+(defining the class); in complex code (to make available software elements
+that aren't native to the called function (object)); and -at the level of the
+source file- code that is irrelevant at the current level of
+specification. Nested classes don't solve these problems and nested classes
+can't be used in templates.
+
+A i(lambda function) is an
+    i(anonymous function)hi(function: anonymous). Such a function may be
+defined on the spot and exists only during the lifetime of the statement
+of which it is a part.
+
+Here is an example of a lambda function:
+        verb(
+    [](int x, int y)
+    {
+        return x * y;
+    }
+        )
+    This particular function expects two tt(int) arguments and returns their
+product. It could be used e.g., in combination with the tt(accumulate) generic
+algorithm  to compute the product of a series of tt(int) values stored in a
+vector:
+        verb(
+    cout << accumulate(vi.begin(), vi.end(), 1,
+                [](int x, int y) { return x * y; });
+        )
+    The above lambda function will use the implicit return
+        ih(return type: implicit)
+    type tt(decltype(x * y)). An implicit return type can
+only be used if the lambda function has a single statement of the form
+    tt(return expression;).
+
+    Alternatively, the return type can be explicitly specified using a
+        hi(return type: late-specified)i(late-specified return type),
+(cf. section ref(AUTO)):
+        verb(
+    [](int x, int y) -> int
+    {
+        int z = x + y;
+        return z + x;
+    }
+        )
+    There is no need to specify a return type for lambda functions that do
+not return values (i.e., a void lambda function).
+
+    Variables having the same scope as the lambda function can be accessed
+from the lambda function using references, declared in between the lambda
+function's square brackets. This allows passing the
+    i(local context) to lambda functions. Such variables are called a
+emi(closure). Here is an example:
+        verb(
+    void showSum(vector<int> &vi)
+    {
+        int total = 0;
+        for_each(
+            vi.begin(), vi.end(),
+            [&total](int x)
+            {
+                total += x;
+            }
+        );
+        std::cout << total;
+    }
+        )
+    The variable tt(int total) is passed to the lambda function as a reference
+(tt([&total])) and can directly be accessed by the function. Its parameter
+list merely defines an tt(int x), which is initialized in sequence by each of
+the values stored in tt(vi). Once the generic algorithm has completed
+tt(showSum)'s variable tt(total) has received a value that is equal to the sum
+of all the vector's values. It has outlived the lambda function and its value
+is displayed.
+
+    If a closure variable is defined without the reference symbol (tt(&)) it
+is interpreted as a value parameter of the lambda function that is initialized
+by the local variable when the lambda function is passed to the generic
+algorithm. Usually closure variables are passed by reference. If em(all) local
+variables are to be passed by reference a mere ti([&]) can be used (to
+pass the full closure by value ti([=]) should be used):
+        verb(
+    void show(vector<int> &vi)
+    {
+        int sum = 0;
+        int prod = 1;
+        for_each(
+            vi.begin(), vi.end(),
+            [&](int x)
+            {
+                sum += x;
+                prod *= x;
+            }
+        );
+        std::cout << sum << ' ' << prod;
+    }
+        )
+    COMMENT(
+The specific internal implementation can vary, but the expectation is that the
+lambda function will store the actual stack pointer of the function it is
+created in, rather than individual references to stack variables.
+    END )
+
+    It is also possible to pass some variables to lambda function by value and
+other variables by reference.  In that case the default is specified using
+tt(&) or tt(=). This default specifying symbol is then followed by a list of
+variables passed differently. Example:
+        verb(
+    [&, value](int x)
+    {
+        total +=  x * value;
+    };
+        )
+    Here  tt(total) will be passed by reference, tt(value) by value.
+
+    Class members may also define lambda functions. Such lambda functions have
+full access to all the class's members. In other words, they are automatically
+defined as friends of the class. Example:
+        verb(
+    class Data
+    {
+        std::vector<std::string> d_names;
+        public:
+            void show() const
+            {
+                int count = 0;
+                std::for_each(d_names.begin(), d_end(),
+                    [this, &count](std::string const &name)
+                    {
+                        std::cout << ++count <<
+                            this->capitalized(name) << '\n';
+                    }
+                )
+            }
+        private:
+            std::string capitalized(std::string const &name);
+    }
+        )
+    Note the use of the tt(this) pointer: inside the lambda function it must
+explicitly be used (so,nl()
+        tt(this->capitalized(name)) is used rather than
+tt(capitalized(name))). In addition, in situations like these tt(this) will
+automatically be available when either tt([&]) or tt([=]) is used. So, the
+above lambda function could also have been defined as:
+        verb(
+                    [&](std::string const &name)
+                    {
+                        std::cout << ++count <<
+                            this->capitalized(name) << '\n';
+                    }
+        )
+
+    Lambda functions may be assigned to variables. An example of such an
+assignment (using tt(auto) to define the variable's type) is:
+        verb(
+    auto lambdaFun = [this]()
+                     {
+                        this->member();
+                     };
+        )
+    The lifetime of such lamda functions is equal to the lifetime of the
+variable receiving the lambda function as its value.

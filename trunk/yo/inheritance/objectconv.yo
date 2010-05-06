@@ -1,0 +1,50 @@
+Continuing our discussion of the tt(NavCom) class, introduced in section
+ref(MULTIPLE), we now define two objects, a base class and a derived class
+object:
+        verb(
+    ComSet com(intercom);
+    NavComSet navcom(intercom2, dial2);
+        )
+    The object tt(navcom) is constructed using an tt(Intercom) and a
+tt(VHF_Dial) object. However, a tt(NavComSet) is at the same time a
+tt(ComSet), allowing the i(assignment) em(from) tt(navcom) (a derived class
+object) em(to) tt(com) (a base class object):
+        verb(
+    com = navcom;
+        )
+    The effect of this assignment will be that the object tt(com) will now
+communicate with tt(intercom2).  As a tt(ComSet) does not have a tt(VHF_Dial),
+the tt(navcom)'s tt(dial) is ignored by the assignment. When assigning a
+base class object from a derived class object only the base class data members
+are assigned, other data members are dropped, a phenomenon called
+emi(slicing). In situations like these slicing probably does not have serious
+consequences, but when passing derived class objects to functions defining
+base class parameters or when returning derived class objects from functions
+returning base class objects slicing also occurs and might have unwelcome
+side-effects.
+
+    The assignment from a base class object to a derived class object is
+problematic. In a statement like
+        verb(
+    navcom = com;
+        )
+    it isn't clear how to reassign the tt(NavComSet)'s tt(VHF_Dial) data
+member as they are missing in the tt(ComSet) object tt(com). Such an
+assignment hi(assignment: refused) is therefore refused by the
+compiler. Although derived class objects are also base class objects, the
+reverse does not hold true: a base class object is not also a derived class
+object.
+
+    The following general rule applies: in assignments in which base class
+objects and derived class objects are involved, assignments in which data are
+dropped are legal (called em(slicing)). Assignments in which data remain
+unspecified are em(not) allowed.  Of course, it is possible to overload an
+assignment operator to allow the assignment of a derived class object from a
+base class object.  To compile the statement
+        verb(
+    navcom = com;
+        )
+    the class tt(NavComSet) must have defined an overloaded assignment
+operator accepting a tt(ComSet) object for its argument. In that case it's up
+to the programmer to decide what the assignment operator will do with the
+missing data.

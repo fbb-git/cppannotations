@@ -1,0 +1,226 @@
+In addition to the common ways to define variables (plain variables or
+pointers) bf(C++) introduces emi(references) defining synonyms for
+variables. A reference to a variable is like an em(alias); the variable and
+the reference can both be used in statements involving the variable:
+        verb(
+    int int_value;
+    int &ref = int_value;
+        )
+    In the above example a variable tt(int_value) is defined. Subsequently a
+reference tt(ref) is defined, which (due to its initialization) refers to the
+same memory location as tt(int_value). In the definition of tt(ref), the
+i(reference operator) hi(operator &) tt(&) indicates that tt(ref) is not
+itself an tt(int) but a reference to one. The two statements
+        verb(
+    ++int_value;
+    ++ref;
+        )
+    have the same effect: they increment tt(int_value)'s value.  Whether that
+location is called tt(int_value) or tt(ref) does not matter.
+
+    References serve an important function in bf(C++) as a means to pass
+modifiable arguments to functions. E.g., in standard bf(C), a function that
+increases the value of its argument by five and returning nothing needs a
+pointer parameter:
+        verb(
+    void increase(int *valp)    // expects a pointer
+    {                           // to an int
+        *valp += 5;
+    }
+
+    int main()
+    {
+        int x;
+
+        increase(&x);           // pass x's address
+    }
+        )
+    This construction can em(also) be used in bf(C++) but the same effect
+is also achieved using a reference:
+        verb(
+    void increase(int &valr)    // expects a reference
+    {                           // to an int
+        valr += 5;
+    }
+
+    int main()
+    {
+        int x;
+
+        increase(x);            // passed as reference
+    }
+        )
+    It is arguable whether code such as the above should be preferred over
+bf(C)'s method, though. The statement tt(increase) tt((x)) suggests that not
+tt(x) itself but a em(copy) is passed. Yet the value of tt(x) changes because
+of the way tt(increase()) is defined. However, references can also be used to
+pass objects that are only inspected (without the need for a copy or a const
+*) or to pass objects whose modification is an accepted side-effect of their
+use. In those cases using references are strongly preferred over existing
+alternatives like copy by value or passing pointers.
+
+    Behind the scenes references are implemented using pointers. So, as far as
+the compiler is concerned references in bf(C++) are just const pointers.  With
+references, however, the programmer does not need to know or to bother about
+levels of indirection. An important distinction between plain pointers and
+references is of course that with references no indirection takes place. For
+example:
+        verb(
+    extern int *ip;
+    extern int &ir;
+
+    ip = 0;     // reassigns ip, now a 0-pointer
+    ir = 0;     // ir unchanged, the int variable it refers to
+                // is now 0.
+        )
+
+In order to prevent confusion, we suggest to adhere to the following:
+    itemization(
+    it() In those situations where a function does not alter its
+parameters of a built-in or pointer type, value parameters can be used:
+            verb(
+        void some_func(int val)
+        {
+            cout << val << '\n';
+        }
+
+        int main()
+        {
+            int x;
+
+            some_func(x);       // a copy is passed
+        }
+            )
+    it() When a function explicitly must change the values of its arguments, a
+pointer parameter is preferred. These pointer parameters should preferably be
+the function's initial parameters. This is called emi(return by argument).
+            verb(
+        void by_pointer(int *valp)
+        {
+            *valp += 5;
+        }
+            )
+    it() When a function doesn't change the value of its class- or struct-type
+arguments, or if the modification of the argument is a trivial side-effect
+(e.g., the argument is a stream) references can be used. Const-references
+should be used if the function does not modify the argument:
+            verb(
+        void by_reference(string const &str)
+        {
+            cout << str;    // no modification of str
+        }
+
+        int main ()
+        {
+            int x = 7;
+            by_pointer(&x);         // a pointer is passed
+                                    // x might be changed
+            string str("hello");
+            by_reference(str);      // str is not altered
+        }
+            )
+    References play an important role in cases where the argument is not
+changed by the function but where it is undesirable to copy the argument to
+initialize the parameter. Such a situation occurs when a large object is
+passed as argument, or is returned by the function.  In these cases the
+copying operation tends to become a significant factor, as the entire
+object must be copied. In these cases references are preferred.
+
+    If the argument isn't modified by the function, or if the caller shouldn't
+modify the returned information, the tt(const) keyword should be
+used. Consider the following example:
+        verb(
+    struct Person                   // some large structure
+    {
+        char    name[80];
+        char    address[90];
+        double  salary;
+    };
+
+    Person person[50];          // database of persons
+
+                                // printperson expects a
+                                // reference to a structure
+                                // but won't change it
+    void printperson (Person const &p)
+    {
+        cout << "Name: " << p.name << '\n' <<
+                "Address: " << p.address << '\n';
+
+    }
+                                // get a person by indexvalue
+    Person const &person(int index)
+    {
+        return person[index];   // a reference is returned,
+    }                           // not a copy of person[index]
+
+    int main()
+    {
+        Person boss;
+
+        printperson (boss);     // no pointer is passed,
+                                // so variable won't be
+                                // altered by the function
+        printperson(person(5));
+                                // references, not copies
+                                // are passed here
+    }
+        )
+    it() Furthermore, note that there is yet another reason for using
+references when passing objects as function arguments. When passing a
+reference to an object, the activation of a so called em(copy constructor)
+is avoided. Copy constructors will be covered in chapter ref(MEMORY).
+    )
+
+    References em(could) result in extremely `ugly' code. A function may
+return a reference to a variable, as in the following example:
+        verb(
+    int &func()
+    {
+        static int value;
+        return value;
+    }
+        )
+    This allows the use of the following constructions:
+        verb(
+    func() = 20;
+    func() += func();
+        )
+    It is probably superfluous to note that such constructions should normally
+not be used. Nonetheless, there are situations where it is useful to return a
+reference.  We have actually already seen an example of this phenomenon in our
+previous discussion of streams. In a statement like tt(cout) lshift()
+tt("Hello") lshift() tt('\n';) the insertion operator returns a reference to
+tt(cout). So, in this statement first the tt("Hello") is inserted into
+tt(cout), producing a reference to tt(cout). Through this reference the
+tt('\n') is then inserted in the tt(cout) object, again producing a reference
+to tt(cout), which is then ignored.
+
+Several differences between pointers and references are pointed out in the
+next list below:
+    itemization(
+    it() A reference cannot exist by itself, i.e., without something to
+refer to. A declaration of a reference like
+        center(tt(int &ref;))
+    is not allowed; what would tt(ref) refer to?
+    it() References can be declared as tt(external).  These references were
+initialized elsewhere.
+    it() References may exist as parameters of functions: they are initialized
+when the function is called.
+    it() References may be used in the return types of functions. In those
+cases the function determines what the return value will refer to.
+    it() References may be used as data members of classes. We will return
+to this usage later.
+    it() Pointers are variables by themselves. They point at
+something concrete or just ``at nothing''.
+    it() References are aliases for other variables and cannot be re-aliased
+to another variable. Once a reference is defined, it refers to its particular
+variable.
+    it() Pointers (except for const pointers) can be reassigned to point to
+different variables.
+    it() When an i(address-of operator) hi(operator &) ti(&) is used with a
+reference, the expression yields the address of the variable to which the
+reference applies. In contrast, ordinary pointers are variables themselves, so
+the address of a pointer variable has nothing to do with the address of the
+variable pointed to.
+    )

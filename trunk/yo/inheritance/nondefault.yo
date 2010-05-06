@@ -1,0 +1,108 @@
+An often heard complaint is that operator tt(new[]) calls the default
+constructor
+ hi(new[]: and non-default constructors) of a class to initialize the
+allocated objects. For example, to allocate an array of 10 strings we can do
+        verb(
+    new string[10];
+        )
+    but it is not possible to use another constructor. Assuming that we'd want
+to initialize the strings with the text tt(hello world), we can't write
+something like:
+        verb(
+    new string("hello world")[10];
+        )
+    The initialization of a dynamically allocated object usually consists of a
+two-step process: first the array is allocated (implicitly calling the default
+constructor); second the array's elements are initialized, as in the following
+little example:
+        verb(
+    string *sp = new string[10];
+    fill(sp, sp + 10, string("hello world"));
+        )
+    These approaches all suffer from `i(double initialization)s', comparable
+to not using member initializers in constructors.
+
+    One way to avoid double initialization is to use inheritance.
+Inheritance can profitably be used to call non-default constructors in
+combination with operator tt(new[]). The approach capitalizes on the
+following:
+    itemization(
+    it() A base class pointer may point to a derived class object;
+    it() A derived class without (non-static)
+            hi(derived class vs. base class size)
+            hi(sizeof derived vs base classes)
+        data members has the same size as its base class.
+    )
+
+    The above also suggests s possible approach:
+    itemization(
+    it() Derive a simple, member-less class from the class we're interested
+in;
+    it() Use the appropriate base class initializer in its default
+constructor;
+    it() Allocate the required number of derived class objects, and assign
+tt(new[])'s return expression to a pointer to base class objects.
+    )
+    Here is a simple example, producing 10 lines containing
+the text tt(hello world):
+        verbinclude(inheritance/examples/derivenew.cc)
+    Of course, the above example is fairly unsophisticated, but it's easy to
+polish the example: the class tt(Xstr) can be defined in
+an anonymous namespace, accessible only to a function tt(getString()) which
+may be given a tt(size_t nObjects) parameter, allowing users to specify the
+number of tt(hello world)-initialized strings they would like to allocate.
+
+    Instead of hard-coding the base class arguments it's also possible to use
+variables or functions providing the appropriate values for the base class
+constructor's arguments. In the next example a
+    emi(local class)hi(classes: local) tt(Xstr) is defined inside a function
+tt(nStrings(size_t nObjects, char const *fname)), expecting the number of
+tt(string) objects to allocate and the name of a file whose subsequent lines
+are used to initialize the objects. The local class
+is invisible outside of the function tt(nStrings), so no special namespace
+safeguards are required.
+
+    As discussed in section ref(LOCAL), members of local classes cannot access
+local variables from their surrounding function. However, they can access
+global and static data defined by the surrounding function.
+
+    Using a local class neatly allows us to hide the implementation details
+within the function tt(nStrings), which simply opens the file, allocates the
+objects, and closes the file again. Since the local class is derived from
+tt(string), it can use any tt(string) constructor for its base class
+initializer. In this particular case it calls the tt(string(char const *))
+constructor, providing it with subsequent lines of the just opened stream via
+its static member function tt(nextLine()). This latter function is, as it is a
+static member function, available to tt(Xstr) default constructor's member
+initializers even though no tt(Xstr) object is available by that time.
+        verbinclude(inheritance/examples/nstrings.cc)
+    When this program is run, it displays the first 10 lines of the file
+tt(nstrings.cc).
+
+    Note that the above implementation can't safely be used in a multithreaded
+environment. In that case a emi(mutex) should be used to protect the three
+statements just before the function's return statement.
+
+    A completely different way to avoid the double initialization (not using
+inheritance) is to use placement new (cf. section ref(PLACEMENT)): simply
+allocate the required amount of memory followed by the proper in-place
+allocation of the objects, using the appropriate constructors. The following
+example can also be used in multithreaded environments. The approach uses a
+pair of static tt(construct/destroy) members to perform the required
+initialization.
+
+    In the program shown below tt(construct) expects a tt(istream) that
+provides the initialization strings for objects of a class tt(String) simply
+containing a tt(std::string) object. tt(Construct) first allocates enough
+memory for the tt(n) tt(String) objects plus room for an initial tt(size_t)
+value. This initial tt(size_t) value is then initialized with tt(n). Next, in
+a tt(for) statement, lines are read from the provided stream and the lines are
+passed to the constructors, using placement new calls. Finally the address of
+the first tt(String) object is returned.
+
+    The member tt(destroy) handles the destruction of the objects. It
+retrieves the number of objects to destroy from the tt(size_t) it finds just
+before the location of the address of the first object to destroy. The objects
+are then destroyed by explicitly calling their destructors. Finally the raw
+memory, originally allocated by tt(construct) is returned.
+        verbinclude(inheritance/examples/placement.cc)

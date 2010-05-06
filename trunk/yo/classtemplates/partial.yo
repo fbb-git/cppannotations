@@ -1,0 +1,269 @@
+In the previous section class template specializations were introduced.  In
+this section we'll introduce a variant of this specialization, both in
+number and type of template parameters that are specialized.  em(Partial
+specializations) may be defined for class templates having
+        hi(partial specialization)
+        hi(class template: partial specialization)
+    multiple template parameters. Function templates cannot be partially
+specialized.
+
+With partial specializations a subset (any subset) of template type parameters
+are given specific values. It is also possible to use a class template partial
+specialization when the intent is to specialize the class template, but to
+parameterize the data type that is processed by the specialization.
+
+To start our discussion with an example of the latter use of a partial class
+template specialization consider the class tt(CirQue<vector<int>>) developed
+in the previous section. When designing tt(CirQue<vector<int>>) you may have
+asked yourself how many specializations you'd have to implement. One for
+tt(vector<int>), one for tt(vector<string>), one for tt(vector<double>)? As
+long as the data types handled by the tt(vector) used by the class
+tt(CirQue<vector<...>>) behaves like an tt(int) (i.e., is a value-type of
+class) the answer is: zero. Instead of defining full specializations for each
+new data type the data type itself can be parameterized, resulting in a
+partial specialization:
+        verb(
+    template <typename Data>
+    class CirQue<std::vector<Data>>
+    {
+        ...
+    };
+        )
+    The above class is a specialization as a template argument list is
+appended to the tt(CirQue) class name. But as the class template itself has a
+non-empty template parameter list it is in fact recognized as a partial
+specialization. There is one characteristic that distinguishes the
+implementation (subsequent to the class template's interface) of a class
+template member function of a partial specialization from the implementation
+of a member function of a full specialization. Implementations of partially
+specialized class template member functions receives a template header. No
+template headers are used when implementing fully specialized class template
+members.
+
+Implementing the partial specialization for tt(CirQue) is not difficult and is
+left as an exercise for the reader (hints: simply change tt(int) into tt(Data)
+in the tt(CirQue<vector<int>>) specialization of the previous section).
+Remember to prefix the type tt(iterator) by tt(typename) (as in tt(typedef
+typename DataVect::iterator iterator)) (as discussed in section
+ref(DISTINGUISH)).
+
+The remainder of this section concentrates on specializing class template
+non-type template parameters. These partial specializations will be
+illustrated using some simple concepts defined in matrix algebra, a branch of
+linear algebra.
+
+    A matrix is commonly thought of as a table of some rows and columns,
+filled with numbers. Immediately we recognize an opening for using templates:
+the numbers might be plain tt(double) values, but they could also be complex
+numbers, for which our complex container (cf. section ref(COMPLEX)) might
+prove useful. Our class template is therefore provided with a tt(DataType)
+template type parameter. It is  specified when a
+matrix is constructed. Some simple matrices using tt(double) values, are:
+        verb(
+    1   0   0           An identity matrix,
+    0   1   0           (a 3 x 3 matrix).
+    0   0   1
+
+    1.2  0    0    0    A rectangular matrix,
+    0.5  3.5  18  23    (a 2 x 4 matrix).
+
+    1   2   4   8       A matrix of one row
+                        (a 1 x 4 matrix), also known as a
+                        `row vector' of 4 elements.
+                        (column vectors are analogously defined)
+        )
+    Since matrices consist of well defined numbers of rows and columns (the
+em(dimensions) of the matrix), that normally do not change when matrices are
+used, we might consider specifying their values as template non-type
+parameters. Since the tt(DataType = double) selection will be used in the
+majority of cases, tt(double) can be selected as the template's default type
+argument. Since it's a sensible default, the tt(DataType) template type
+parameter is used last in the template type parameter list.
+
+Our template class tt(Matrix) begins its life as:
+        verb(
+    template <size_t Rows, size_t Columns, typename DataType = double>
+    class Matrix
+    ...
+        )
+    Various operations are defined on matrices. They may, for example be
+added, subtracted or multiplied. Here we will not focus on these
+operations. Rather, we concentrate on some simple operations: computing
+marginals and sums:
+    itemization(
+    it() em(Row marginals) are obtained by adding, for each row,
+all the row's elements and putting these (tt(Rows)) sums in corresponding
+elements of a column vector of tt(Rows) elements.
+    it() Column marginals are
+obtained by adding, for each column, all the column's elements and putting
+these (tt(Columns)) sums in corresponding elements of a row vector of
+tt(Columns) elements.
+    it() The sum of all elements of a matrix can of course be computed as the
+sum of the elements of one of its marginals.
+    )
+    The following example shows a matrix, its marginals, and the sum of its
+values:
+        verb(
+                matrix:         row
+                                marginals:
+
+                1   2   3        6
+                4   5   6       15
+
+    column      5   7   9       21  (sum)
+    marginals
+        )
+
+    What do we want our class template to offer?
+    itemization(
+    it() It needs a place to store its matrix elements. This can be defined as
+an array of `tt(Rows)' rows each containing `tt(Columns)' elements of type
+tt(DataType). It can be an array, rather than a pointer, since the matrix'
+dimensions are known em(a priori). Since a vector of tt(Columns) elements (a
+em(row) of the matrix), as well as a vector of tt(Row) elements (a em(column)
+of the matrix) is often used, the class could use em(typedefs) to represent
+them. The class interface's initial section thus contains:
+        verbinsert(HEAD)(classtemplates/examples/matrix.h)
+    it() It should offer constructors: a default constructor and (e.g.,) a
+constructor initializing the matrix from a stream. A copy or move constructor
+is not required as the class does not use pointers. Likewise, no overloaded
+assignment operator or destructor is required. Implementations:
+        verbinsert(CONSTRUCTORS)(classtemplates/examples/matrix.h)
+    it() The class's tt(operator[]) member (and its tt(const) variant) only
+handles the first index, returning a reference to a complete
+tt(MatrixRow). How elements in a tt(MatrixRow) can be retrieved is shortly
+covered. To keep the example simple, no array bound check has been
+implemented:
+        verbinsert(OPERATORINDEX)(classtemplates/examples/matrix.h)
+    it() Now we get to the interesting parts: computing marginals and the sum
+of all elements in a tt(Matrix). Marginals are vectors (either a
+tt(MatrixRow), containing the column marginals; a tt(MatrixColumn), containing
+the row marginals; or a single value) computed as the sum of a vector of
+marginals or as the value of a tt(1 x 1) matrix initialized from a generic
+tt(Matrix). As marginals can be considered special forms of matrices we can
+now construct em(partial specializations) to handle tt(MatrixRow) and
+tt(MatrixColumn) objects, and a partial specialization handling tt(1 x 1)
+matrices.  The required specializations are shortly defined. They are used
+here to compute marginals and the sum of all elements in a matrix. Here are
+the implementations of the members computing the marginals and the sum of all
+elements of a matrix:
+        verbinsert(MARGINALS)(classtemplates/examples/matrix.h)
+    )
+
+    Class template em(partial specializations) can be defined for any (subset)
+        hi(class template: partial specialization)
+    of template parameters. They can be defined for template type parameters
+and for template non-type parameters alike. Our first partial specialization
+defines a row of a generic tt(Matrix), mainly (but not only) used for the
+construction of column marginals. Here is how such a partial specialization is
+designed:
+    itemization(
+    it() The partial specialization starts with a template header defining all
+template parameters that are em(not) specialized in the partial
+specialization. This template header cannot specify any defaults (like
+tt(DataType = double)) since defaults were already specified by the generic
+class template definition.  The specialization em(must) follow the definition
+of the generic class template's definition, or the compiler complains that it
+doesn't know what class is being specialized. Following the template header,
+the class's interface starts. It's a class template (partial) specialization
+so the class name must be followed by a template argument list specifying the
+template arguments used by the partial specialization. The arguments specify
+explicit types or values for some of the template's parameters. Remaining
+types are simply copied from the class template partial specialization's
+template parameter list. E.g., the tt(MatrixRow) specialization specifies 1
+for the generic class template's tt(Rows) type parameter (as we're talking
+here about a single row). Both tt(Columns) and tt(DataType) remain to be
+specified. The tt(MatrixRow) partial specialization therefore starts as
+follows:
+        verbinsert(MATRIXROW)(classtemplates/examples/matrix.h)
+    it() A tt(MatrixRow) holds the data of a single row. So it needs a
+data member storing tt(Columns) values of type tt(DataType). Since tt(Columns)
+is a constant value, the tt(d_row) data member can be defined as an array:
+        verbinsert(ROWDATA)(classtemplates/examples/matrix.h)
+    it() The class template partial specialization's constructors require some
+attention. The default constructor is simple. It merely initializes the
+tt(MatrixRow)'s data elements using tt(DataType)'s default constructor:
+        verbinsert(ROWCONS1)(classtemplates/examples/matrix.h)
+    Another constructor is needed initializing a tt(MatrixRow) object
+with the column marginals of a generic tt(Matrix) object. This requires us to
+provide the constructor with a non-specialized tt(Matrix) parameter.
+
+The i(rule of thumb) here is to define a member template that allows us to
+keep the general nature of the parameter. Since the generic tt(Matrix)
+template requires three template parameters. Two of these were already
+provided by the template specialization. The third parameter is mentioned in
+the member template's template header. Since this parameter refers to the
+number of rows of the generic matrix it is simply called tt(Rows).
+
+Here then is the implementation of the second constructor, initializing the
+tt(MatrixRow)'s data with the column marginals of a generic tt(Matrix) object:
+        verbinsert(ROWCONS2)(classtemplates/examples/matrix.h)
+    The constructor's parameter is a reference to a tt(Matrix) template using
+the additional tt(Row) template parameter as well as the template parameters
+of the partial specialization.
+    it() We don't really require additional members to satisfy our current
+needs. To access the data elements of the tt(MatrixRow) an overloaded
+tt(operator[]()) is of course useful. Again, the tt(const) variant can be
+implemented like the non-tt(const) variant. Here is its implementation:
+        verbinsert(ROWOPERATORINDEX)(classtemplates/examples/matrix.h)
+    )
+    Now that we have defined the generic tt(Matrix) class and the
+partial specialization defining a single row the compiler will select the
+row's specialization whenever a tt(Matrix) is defined using tt(Row = 1). For
+example:
+        verb(
+    Matrix<4, 6> matrix;        // generic Matrix template is used
+    Matrix<1, 6> row;           // partial specialization is used
+        )
+
+    The partial specialization for a tt(MatrixColumn) is constructed
+similarly. Let's present its highlights (the full tt(Matrix) class template
+definition as well as all its specializations are provided in the
+tt(cplusplus.yo.zip) archive (at url(SourceForge)
+(http://sourceforge.net/projects/cppannotations/)) in the
+file tt(yo/classtemplates/examples/matrix.h)):
+    itemization(
+    it() The class template partial specialization once again starts with a
+template header. Now the class interface specifies a fixed value for the
+second template parameter of the generic class template. This illustrates that
+we can construct partial specializations for every single template parameter;
+not just for the first or the last:
+        verbinsert(MATRIXCOLUMN)(classtemplates/examples/matrix.h)
+    it() Its constructors are implemented completely analogously to the way
+the tt(MatrixRow) constructors were implemented. Their implementations are
+left as an exercise to the reader (and they can be found in tt(matrix.h)).
+    it() An additional member tt(sum) is defined to compute the sum of the
+elements of a tt(MatrixColumn) vector. It's simply implemented
+using the tt(accumulate) generic algorithm:
+        verbinsert(SUMCOLUMN)(classtemplates/examples/matrix.h)
+    )
+
+    The reader might wonder what happens if we specify the following matrix:
+        centt(Matrix<1, 1> cell;)
+    Is this a tt(MatrixRow) or a tt(MatrixColumn) specialization? The answer
+is: neither. It's ambiguous, precisely because em(both) the columns em(and)
+the rows could be used with a (different) template partial specialization. If
+such a tt(Matrix) is actually required, yet another specialized template must
+be designed. Since this template specialization can be useful to
+obtain the sum of the elements of a tt(Matrix), it's covered here as well.
+    itemization(
+    it() This class template partial specialization also needs a template
+header, this time only specifying tt(DataType). The class definition specifies
+two fixed values: 1 for the number of rows and 1 for the number of columns:
+        verbinsert(MATRIX1X1)(classtemplates/examples/matrix.h)
+    it() The specialization defines the usual batch of constructors.
+Constructors expecting a more generic tt(Matrix) type are again implemented as
+member templates. For example:
+        verbinsert(1X1CONS)(classtemplates/examples/matrix.h)
+    it() Since tt(Matrix<1, 1>) is basically a wrapper around a tt(DataType)
+value, we need members to access that latter value. A type conversion
+operator might be usefull, but we also defined a tt(get) member to obtain
+the value if the conversion operator isn't used by the compiler (which
+happens when the compiler is given a choice, see section
+ref(ConversionOperators)). Here are the accessors (leaving out their tt(const)
+variants):
+        verbinsert(ACCESSORS)(classtemplates/examples/matrix.h)
+    )
+    The next tt(main) function shows how the tt(Matrix) class template
+and its partial specializations can be used:
+    verbinclude(classtemplates/examples/matrix.cc)

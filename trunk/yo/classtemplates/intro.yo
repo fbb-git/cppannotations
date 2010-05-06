@@ -1,0 +1,70 @@
+Templates can not only be constructed for functions but also for complete
+classes. Consider constructing a i(class template) when a class should be able
+to handle different types of data. Class templates are frequently used in
+bf(C++): chapter ref(CONTAINERS) discusses data structures like tt(vector,
+stack) and tt(queue), that are implemented as em(class templates). With class
+templates, the algorithms and the data on which the algorithms operate are
+completely separated from each other. To use a particular data structure in
+combination with a particular data type only the data type needs to be
+specified when defining or declaring a class template object (as in
+tt(stack<int> iStack)).
+
+In this chapter constructing and using class templates is discussed. In a
+sense, class templates compete with object oriented programming (cf. chapter
+ref(POLYMORPHISM)), that uses a mechanism resembling that of
+templates. Polymorphism allows the programmer to postpone the implementation
+of algorithms by deriving classes from base classes in which algorithms are
+only partially implemented. The actual definition and processing of the data
+upon which the algorithms operate may be postponed until derived classes are
+defined. Likewise, templates allow the programmer to postpone the
+specification of the data upon which the algorithms operate. This is most
+clearly seen with abstract containers, that completely specify the algorithms
+and that at the same time leave the data type on which the algorithms operate
+completely unspecified.
+
+The correspondence between class templates and polymorphic classes is
+well known. In their book bf(C++ Coding Standards) (Addison-Wesley, 2005)
+        hi(Sutter, H.)hi(Alexandrescu, A.)
+    Sutter and Alexandrescu (2005) refer to
+        emi(static polymorphism)hi(polymorphism: static) and
+        hi(polymorphism: dynamic) emi(dynamic polymorphism).
+    em(Dynamic) polymorphism is what we use when overriding virtual members.
+Usingem tt(vtable)s the function that is actually called depends on the type
+of object a (base) class pointer points at. em(Static) polymorphism is
+encountered in the context of templates. Depending on the actual types, the
+compiler em(creates) the code, compile time, that's appropriate for those
+particular types. There's no need to consider static and dynamic polymorphism
+as mutually exlusive variants of polymorphism. Rather, both can be used
+together, combining their strengths. A warning is in place, though. When a
+class template defines virtual members em(all) virtual members are
+instantiated for every instantiated type. All virtual members must be
+instantiated (whether they are used or not) as the compiler must construct the
+tt(vtable) for each data type for which an object of the class is
+instantiated.
+
+Generally, class templates are easier to use than polymorphism. It is
+certainly easier to write tt(stack<int> istack) to create a stack of tt(ints)
+than to derive a new class tt(Istack: public stack) and to implement all
+necessary member functions defining a similar stack of tt(ints) using object
+oriented programming. On the other hand, for each different type for which an
+object of a class template is defined another, possibly complete class must be
+reinstantiated.  This is not required in the context of object oriented
+programming where derived classes em(use), rather than em(copy), the functions
+that are already available in their base classes (but see also section
+ref(DERIVEDTEMPCLASS)).
+
+Previously we've already used class templates. Objects like tt(vector<int> vi)
+and tt(vector<string> vs) are commonly used. The data types for which these
+templates are defined and instantiated are an inherent part of such container
+types. It is stressed that it is the em(combination) of a class template type
+and its template parameter(s), rather than the mere class template's type
+that defines or generates a
+ hi(class template: generate types) type. So tt(vector<int>) is a type as is
+tt(vector<string>). Such types could very well be represented by typedefs:
+        verb(
+    typedef std::vector<int>         IntVector;
+    typedef std::vector<std::string> StringVector;
+
+    IntVector vi;
+    StringVector vs;
+        )

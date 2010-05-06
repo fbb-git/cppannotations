@@ -1,0 +1,81 @@
+When defining variables and objects they may immediately be given
+initial values. Class type objects are always initialized using one of their
+available constructors. bf(C) already supports the array and struct
+ hi(initialization)emi(initializer list) consisting of a list of constant
+expressions surrounded by a pair of curly braces. A comparable initialization,
+called
+ emi(uniform initialization) is added to bf(C++) by the C++0x standard. It
+uses the following syntax:
+        verb(
+    Type object {value list};
+        )
+    When defining objects using a list of objects each individual object
+may use its own uniform initialization.
+
+The advantage of uniform initialization over using constructors is that using
+constructor arguments may sometimes result in an ambiguity as constructing an
+object may sometimes be confused with using the object's overloaded function
+call operator (cf. section ref(FUNOBJ)). As initializer lists can only be used
+with em(plain old data) (POD) types (cf. section ref(POD)) and with classes
+that are `initializer list aware' (like tt(std::vector)) the ambiguity does
+not arise when initializer lists are used.
+
+Uniform initialization can be used to initialize an object or
+variable, but also to initialize data members in a constructor or implicitly
+in the return statement of functions. Examples:
+        verb(
+    class Person
+    {
+        // data members
+        public:
+            Person(std::string const &name, size_t mass)
+            :
+                d_name {name},
+                d_mass {mass}
+            {}
+
+            Person copy() const
+            {
+                return {d_name, d_mass};
+            }
+    };
+        )
+ Although the uniform intialization syntax is slightly different from the
+syntax  of an initializer list (the latter using the assignment operator) the
+compiler nevertheless uses the initializer list if a constructor
+supporting an initializer list is available. As an example consider:
+        verb(
+    class Vector
+    {
+        public:
+            Vector(size_t size);
+            Vector(std::initializer_list<int> const &values);
+    };
+
+    Vector vi = {4};
+        )
+    When defining tt(vi) the constructor expecting the initializer list is
+called rather than the constructor expecting a tt(size_t) argument. If the
+latter constructor is required the definition using the standard constructor
+syntax must be used. I.e., tt(Vector vi(4)).
+
+    Initializer lists are themselves objects that may be constructed using
+another initializer list. However,
+values stored in an initializer list are immutable. Once the initializer list
+has been defined their values remain as-is. Initializer lists support a basic
+set of member functions and constructors:
+    itemization(
+    ithtq(initializer_list)(initializer_list<Type> object)
+        (defines tt(object) as an empty initializer list)
+    ittq(initializer_list<Type> object { list of Type values })
+        (defines tt(object) as an initializer list containing tt(Type) values)
+    ittq(initializer_list<Type> object(other))
+        (initializes tt(object) using the values stored in tt(other))
+    ithtq(size)(size_t size() const)
+        (returns the number of elements in the initializer list)
+    ithtq(begin)(Type const *begin() const)
+        (returns a pointer to the first element of the initializer list)
+    ithtq(end)(Type const *end() const)
+        (returns a pointer just beyond the location of the last element of the
+initializer list)
+    )

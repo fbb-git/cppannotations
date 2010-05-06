@@ -1,0 +1,80 @@
+    As there are no variables in template meta programming, there is no
+template equivalent to a tt(for) or tt(while) statement. However, iterations
+can always be rewritten as recursions.  Recursions em(are) supported
+by templates and so iterations can always be implemented as (tail) recursions.
+        hi(templates: iteration by recursion)
+
+    To implement iterations by (tail) recursion do as follows:
+    itemization(
+    it() define a specialization implementing the end-condition;
+    it() define all other steps using recursion.
+    it() store intermediate values as tt(enum) values.
+    )
+    The compiler selects a more specialized template implementation over a
+more generic one. By the time the compiler reaches the end-condition the
+recursion stops since the specialization does not use recursion.
+
+    Most readers will be familiar with the recursive implementation of the
+mathematical `em(factorial)' operator, commonly represented by the exclamation
+mark (tt(!)). Factorial tt(n) (so: tt(n!)) returns the successive products
+tt(n * (n - 1) * (n - 2) * ... * 1), representing the number of ways tt(n)
+objects can be permuted. Interestingly, the factorial operator is itself
+usually defined by a em(recursive) definition:
+        verb(
+    n! = (n == 0) ?
+            1
+        :
+            n * (n - 1)!
+        )
+    To compute tt(n!) from a template, a template tt(Factorial) can be defined
+using an tt(int n) template non-type parameter. A specialization is defined
+for the case tt(n == 0). The generic implementation uses recursion according
+to the factorial definition. Furthermore, the tt(Factorial) template defines
+an tt(enum) value `tt(value)' containing its factorial value. Here is the
+generic definition:
+        verb(
+    template <int n>
+    struct Factorial
+    {
+        enum { value = n * Factorial<n - 1>::value };
+    };
+        )
+    Note how the expression assigning a value to `tt(value)' uses constant
+values that can be determined by the compiler. The value n is provided, and
+tt(Factorial<n - 1>) is computed using em(template meta
+programming). tt(Factorial<n-1>) in turn results in value that can be
+determined by the compiler (em(viz.)
+tt(Factorial<n-1>::value)). tt(Factorial<n-1>::value) represents the tt(value)
+defined by the em(type) tt(Factorial<n - 1>). It is em(not) the value returned
+by an em(object) of that type. There are no objects here but merely values
+defined by types.
+
+The recursion ends in  a specialization. The compiler will select the
+specialization (provided for the terminating value 0) instead of  the generic
+implementation whenever possible. Here is the specialization's implementation:
+        verb(
+    template <>
+    struct Factorial<0>
+    {
+        enum { value = 1 };
+    };
+        )
+    The tt(Factorial) template can be used to determine, compile time, the
+number of permutations of a fixed number of objects. E.g.,
+        verb(
+    int main()
+    {
+        cout << "The number of permutations of 5 objects = " <<
+                Factorial<5>::value << "\n";
+    }
+        )
+    Once again, tt(Factorial<5>::value) is em(not) evaluated run-time, but
+compile-time. The run-time equivalent of the above tt(cout) statement is,
+therefore:
+        verb(
+    int main()
+    {
+        cout << "The number of permutations of 5 objects = " <<
+                120 << "\n";
+    }
+        )

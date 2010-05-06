@@ -1,0 +1,153 @@
+    The C++0x standard offers a series of i(mutex) classes to protect shared
+data.  Before using mutexes the tthi(mutex) header file must have been
+included.
+
+Apart from the tt(std::mutex) class hi(recursive_mutex)
+tt(std::recursive_mutex) is offered.  When a tt(recursive_mutex) is called
+multiple times by the same thread it will increase its lock-count. Before
+other threads may access the protected data the recursive mutex must be
+unlocked again that number of times. In addition the classes hi(timed_mutex)
+tt(std::timed_mutex) and
+ hi(recursive_timed_mutex)tt(std::recursive_timed_mutex) are available. Their
+locks will (also) expire after a preset amount of time.
+
+    In many situations locks will be released at the end of some action
+block. To simplify locking additional template classes
+ hi(unique_lock) tt(std::unique_lock<>) and hi(lock_guard)
+tt(std::lock_guard<>) are provided. As their constructors lock the data and
+their destructors unlock the data they can be defined as local variables,
+unlocking their data once their scope terminates.  Here is a simple example
+showing the use of a tt(lock_guard). Once tt(safeProcess) ends tt(guard) is
+destroyed, thereby releasing the lock on tt(data):
+        verb(
+    std::mutex dataMutex;
+    Data data;
+
+    void safeProcess()
+    {
+        std::lock_guard<std::mutex> guard(dataMutex);
+        process(data);
+    }
+        )
+    tt(Unique_lock) is used similarly, but is used when timeouts must be
+considered as well:
+        verb(
+    std::timed_mutex dataMutex;
+    Data data;
+
+    void safeProcess()
+    {
+        std::unique_lock<std::timed_mutex>
+            guard(dataMutex, std::chrono::milliseconds(3));
+        if (guard)
+            process(data);
+    }
+        )
+    In the above example tt(guard) tries to obtain the lock during three
+milliseconds. If tt(guard)'s tt(operator bool) returns tt(true) the lock was
+obtained and tt(data) can be processed safely.
+
+ hi(deadlock) em(Deadlocks) are commonly encountered in multi threaded
+programs. If a deadlock occurs when two locks are required to process data,
+but one thread obtains the first lock and another thread obtains the second
+lock. The C++0x standard defines a generic
+ hi(lock)tt(std::lock) function that can be used to prevent problems like
+these. The tt(std::lock) function can be used to lock multiple mutexes in one
+atomic action. Here is an example:
+        verb(
+    struct SafeString
+    {
+        std::mutex  d_mutex;
+        std::string d_text;
+    };
+
+    void calledByThread(SafeString &first, SafeString &second)
+    {
+        std::unique_lock<std::mutex>                        // 1
+                lock_first(first.d_mutex, std::defer_lock);
+
+        std::unique_lock<std::mutex>                        // 2
+                lock_second(second.d_mutex, std::defer_lock);
+
+        std::lock(lock_first, lock_second);                 // 3
+
+        safeProcess(first.d_text, second.d_text);
+    }
+        )
+    At 1 and 2 tt(unique_locks) are created. Locking is deferred until calling
+tt(std::lock) at 3. Having obtained the lock, the two tt(SafeString) text
+members can both be safely processed by tt(calledByThread).
+
+Another problematic issue with threads involves initialization. If multiple
+threads are running and only the first thread encountering the initialization
+code should perform the initialization then this problem should not be solved
+using mutexes. Although proper synchronization is realized, the
+synchronization will also be performed time and again for every thread. The
+C++0x standard offers several ways to perform a proper initialization:
+    itemization(
+    it() First, a emi(constexpr) em(constructor) may be defined. Constexpr
+constructors are currently not yet supported by the tt(g++) compiler and they
+are not yet discussed in the annotations().
+    COMMENT(
+First, suppose your constructor is declared with the new constexpr keyword and
+satisfies the requirements for constant initialization. In this case, an
+object of static storage duration, initialized with that constructor, is
+guaranteed to be initialized before any code is run as part of the static
+initialization phase. This is the option chosen for std::mutex, because it
+eliminates the possibility of race conditions with initialization of mutexes
+at a global scope:
+
+
+class my_class
+    {
+        int i;
+
+    public:
+        constexpr my_class():i(0){}
+
+        my_class(int i_):i(i_){}
+
+        void do_stuff();
+    };
+
+    my_class x; // static initialization with constexpr constructor
+
+    int foo();
+    my_class y(42+foo()); // dynamic initialization
+
+    void f()
+    {
+        y.do_stuff(); // is y initialized?
+    }
+        END)
+
+    it() Second, a static variable defined within a compound statement may be
+used (e.g., a static local variable within a function body).  In C++ static
+variables hi(static variable: initialization) defined within a compund
+statement are initialized the first time the function is called at the point
+in the code where the static variable is defined as illustrated by the
+following example:
+        verbinclude(stl/examples/staticlocal.cc)
+    This feature causes a thread to wait automatically if another thread is
+still initializing the static data (note that em(non-static) data never cause
+problems, as each non-static local variables have lifes that are completely
+restricted to their own threads).
+    it() If the above two approaches can't be used. The combined use of
+ hi(call_once)tt(std::call_once) and hi(once_flag) tt(std::once_flag) result
+in one-time execution of a specified function as illustrated by the next
+example:
+        verb(
+    std::string *global;
+    std::once_flag globalFlag;
+
+    void initializeGlobal()
+    {
+        global = new std::string("Hello world (why not?)");
+    }
+    void safeUse()
+    {
+        std::call_once(globalFlag, initializeGlobal);
+        process(*global);
+    }
+        )
+    )

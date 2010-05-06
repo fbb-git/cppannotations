@@ -1,0 +1,54 @@
+The bf(C) language defines the i(initializer list) as a list of values enclosed
+by curly braces, possibly themselves containing initializer lists. In bf(C)
+these initializer lists are commonly used to initialize arrays and structs.
+
+bf(C++) extends this concept in the C++0x standard by introducing the
+em(type)
+    ti(initializer_list<Type>) where tt(Type) is replaced by the type name of
+the values used in the initializer list. Initializer lists in bf(C++) are,
+like their counterparts in bf(C), recursive, so they can also be used with
+multi-dimensional arrays, structs and classes.
+
+    Like in bf(C), initializer lists consist of a list of values surrounded by
+curly braces. But unlike bf(C), em(functions) can define initializer list
+parameters. E.g.,
+        verb(
+    void values(std::initializer_list<int> iniValues)
+    {
+    }
+        )
+    A function like tt(arrayValues) could be called as follows:
+        verb(
+    values({2, 3, 5, 7, 11, 13});
+        )
+    The initializer list appears as an argument which is a  list of values
+surrounded by curly braces. Due to the recursive nature of initializer lists a
+two-dimensional series of values can also be passes, as shown in the next
+example:
+        verb(
+    void values2(std::initializer_list<int> iniValues)
+    {
+    }
+
+    values2({{1, 2}, {2, 3}, {3, 5}, {4, 7}, {5, 11}, {6, 13}});
+        )
+    Initializer lists are constant expressions and cannot be
+modified. However, their em(size) and values may be retrieved using their
+tt(size, begin), and tt(end) members as follows:
+
+        verb(
+    void values(initializer_list<int> iniValues)
+    {
+        cout << "Initializer list having " << iniValues.size() << "values\n";
+        for
+        (
+            initializer_list<int>::const_iterator begin = iniValues.begin();
+                begin != iniValues.end();
+                    ++begin
+        )
+            cout << "Value: " << *begin << '\n';
+    }
+        )
+
+Initializer lists can also be used to initialize objects of classes
+(cf. section ref(UNIFORMINIT)).

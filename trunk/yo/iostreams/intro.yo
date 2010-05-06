@@ -1,0 +1,147 @@
+Extending the standard stream (ti(FILE)) approach, well known from the
+bf(C) programming language, bf(C++) offers an em(input/output) (i(I/O))
+library hi(I/O library) based on tt(class) concepts.
+
+All bf(C++) I/O facilities are defined in the namespace ti(std). The tt(std::)
+prefix is omitted below, except for situations where this would result in
+ambiguities.
+
+Earlier (in chapter ref(FirstImpression)) we've seen several examples of the
+use of the bf(C++) I/O library, in particular showing  insertion
+operator (lshift()) and the extraction operator (rshift()).
+In this chapter we'll cover I/O in more detail.
+
+The discussion of input and output facilities provided by the bf(C++)
+programming language heavily uses the tt(class) concept and the notion of
+member functions. Although class construction has not yet been covered (for
+that see chapter ref(Classes)) and although em(inheritance) will not be
+covered formally before chapter ref(INHERITANCE), we think it is quite
+possible to introduce I/O facilities long before the technical background of
+their construction has been covered.
+
+Most bf(C++) I/O classes have names starting with ti(basic_) (like
+tt(basic_ios)). However, these ti(basic_) names are not regularly found in
+bf(C++) programs, as most classes are also defined using ti(typedef)
+definitions like:
+        centt(typedef basic_ios<char>       ios;)
+    Since bf(C++) supports various kinds of character types (e.g., ti(char),
+ti(wchar_t)), I/O facilities were developed using the emi(template) mechanism
+allowing for easy conversions to character types other than the traditional
+tt(char) type. As elaborated in chapter ref(TEMPLATES), this also allows the
+construction of i(generic software), that could thereupon be used for any
+particular type representing characters. So, analogously to the above
+tt(typedef) there exists a
+        centt(typedef basic_ios<wchar_t>    wios;)
+    This type definition can be used for the tt(wchar_t) type. Because of the
+existence of these type definitions, the tt(basic_) prefix was omitted from
+the annotations() without loss of continuity. The annotations() primarily
+focus on the standard 8-bits tt(char) type.
+
+    It must be stressed that it is em(not) correct anymore to declare iostream
+objects using standard
+    i(forward declarations), like:
+        verb(
+    class std::ostream;     // now erroneous
+        )
+    Instead, sources that must i(declare iostream classes) must
+    hi(iosfwd)
+        verb(
+    #include <iosfwd>       // correct way to declare iostream classes
+        )
+
+    Using bf(C++) I/O offers the additional advantage of
+ emi(type safety). Objects (or plain values) are inserted into
+streams. Compare this to the situation commonly encountered in bf(C) where the
+ti(fprintf) function is used to indicate by a format string what kind of
+value to expect where. Compared to this latter situation bf(C++)'s
+em(iostream) approach immediately uses the objects where their values should
+appear, as in
+        verb(
+    cout << "There were " << nMaidens << " virgins present\n";
+        )
+The compiler notices the type of the tt(nMaidens) variable, inserting
+its proper value at the appropriate place in the sentence inserted into
+the tt(cout) iostream.
+
+Compare this to the situation encountered in bf(C). Although bf(C) compilers
+are getting smarter and smarter, and although a well-designed
+bf(C) compiler may warn you for a mismatch between a format specifier and the
+type of a variable encountered in the corresponding position of the argument
+list of a tt(printf) statement, it can't do much more than em(warn) you.
+The em(type safety) seen in bf(C++) em(prevents) you from making type
+mismatches, as there are no types to match.
+
+Apart from this, em(iostreams) offer more or less the same set of
+possibilities as the standard tt(FILE)-based I/O used in bf(C): files can be
+opened, closed, positioned, read, written, etc.. In bf(C++) the basic tt(FILE)
+structure, as used in bf(C), is still available. But bf(C++) adds to this I/O
+based on classes, resulting in type safety, extensibility, and a clean design.
+
+In the i(ANSI/ISO) standard the intent was to create architecture independent
+I/O. Previous implementations of the iostreams library did not always comply
+with the standard, resulting in many extensions to the standard. The I/O
+sections of previously developed software may have to be partially
+rewritten. This is tough for those who are now forced to modify old software,
+but every feature and extension that was once available can be rebuilt easily
+using ANSI/ISO standard conforming I/O. Not all of these reimplementations can
+be covered in this chapter, as many reimplementations relies on inheritance
+and polymorphism, which will not be covered until chapters ref(INHERITANCE)
+and ref(POLYMORPHISM). Selected reimplementations will be provided in chapter
+ref(CONCRETE), and in this chapter references to particular sections in other
+chapters will be given where appropriate.
+        figure(iostreams/ioclasses)(Central I/O Classes)(IOCLASSESFIG)
+This chapter is organized as follows (see also fig(IOCLASSESFIG)):
+    itemization(
+        it() The tt(class) ti(ios_base) is the foundation upon which the
+iostreams I/O library was built. It defines the core of all I/O operations and
+offers, among other things, facilities for inspecting the
+ i(state of I/O streams) and for i(output formatting).
+        it() The class ti(ios) was directly derived from tt(ios_base). Every
+class of the I/O library doing input or output is itself em(derived) from this
+tt(ios) class, and so em(inherits) its (and, by implication, tt(ios_base)'s)
+capabilities. The reader is urged to keep this in mind while reading this
+chapter. The concept of inheritance is not discussed here, but rather
+in chapter ref(INHERITANCE).
+
+The class tt(ios) is important in that it implements the communication with a
+em(buffer) that is used by streams. This buffer is a ti(streambuf) object
+which is responsible for the actual I/O to/from the underlying
+em(device). Consequently tt(iostream) objects do not perform I/O
+operations themselves, but leave these to the (stream)buffer objects with
+which they are associated.
+        it() Next, basic bf(C++) output facilities are discussed. The basic
+class used for output operations is ti(ostream), defining the
+ i(insertion operator) as well as other facilities writing information to
+streams. Apart from inserting information into files it is possible to insert
+information into i(memory buffers), for which the ti(ostringstream) class is
+available. Formatting output is to a great extent possible using the
+facilities defined in the tt(ios) class, but it is also possible to
+ em(insert) emi(formatting commands) directly into streams using
+ emi(manipulators). This aspect of bf(C++) output is discussed as well.
+        it() Basic bf(C++) input facilities are implemented by the ti(istream)
+class. This class defines the i(extraction operator) and related input
+facilities. Comparably to insert information into to memory buffers (using
+tt(ostringstream)) a class ti(istringstream) is available to extract
+information from memory buffers.
+        it() Finally, several advanced I/O-related topics are discussed. E.g.,
+i(reading and writing) from the same stream and
+    i(mixing bf(C) and bf(C++) I/O) using ti(filebuf) ojects. Other I/O
+related topics are covered elsewhere in the annotations(), e.g., in chapter
+ref(CONCRETE).
+    )
+    Stream objects have a limited but important role: they are the interface
+between, on the one hand, the objects to be input or output and, on the other
+hand, the tt(streambuf), which is responsible for the actual input and output
+to the i(device) accessed by a tt(streambuf) object.
+
+    This approach allows us to construct a new kind of tt(streambuf) for a new
+kind of device, and use that streambuf in combination with the `good old'
+tt(istream)- and tt(ostream)-class facilities. It is important to understand
+the distinction between the formatting roles of iostream objects and the
+buffering interface to an external device as implemented in a tt(streambuf)
+object. Interfacing to new devices (like emi(sockets) or
+ emi(file descriptors)) requires the construcion of a new kind of
+tt(streambuf), rather than a new kind of tt(istream) or tt(ostream) object. A
+emi(wrapper class) may be constructed around the tt(istream) or tt(ostream)
+classes, though, to ease the access to a special device. This is how the
+stringstream classes were constructed.

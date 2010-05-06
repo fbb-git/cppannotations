@@ -1,0 +1,57 @@
+Below we see two class templates. tt(Base) is used as a base class of
+tt(Derived):
+        verbinclude(advancedtemplates/examples/basename1.cc)
+    This example won't compile, and the compiler tells us something like:
+        hi(no arguments depending on a template parameter)
+        verb(
+    error: there are no arguments to 'member' that depend on a template
+           parameter, so a declaration of 'member' must be available
+        )
+    This error causes some confusion as ordinary (non-template) base classes
+readily make their public and protected members available to classes that are
+derived from them. This is no different for class templates, but only if the
+compiler can figure out what we mean. In the above example the compiler
+em(can't) as it doesn't know for what type tt(T) the member function
+tt(member) must be initialized when called from tt(Derived<T>::Derived).
+
+    To appreciate why this is true, consider the situation where we have
+defined a specialization:
+        verb(
+    template <>
+    Base<int>::member()
+    {
+        std::cout << "This is the int-specialization\n";
+    }
+        )
+    Since the compiler, when tt(Derived<SomeType>::Derived) is called, does
+not know whether a specialization of tt(member) will be in effect, it can't
+decide (when compiling tt(Derived<T>::Derived)) for what type to instantiate
+tt(member). It can't decide this when compiling tt(Derived<T>::Derived) as
+tt(member)'s call in tt(Derived::Derived) doesn't require a template type
+parameter.
+
+    In cases like these, where no template type parameter is available to
+determine which type to use, the compiler must be told that it should postpone
+its decision about the template type parameter to use (and therefore about the
+particular (here: tt(member)) function to call)
+    hi(template members: without template type parameters)
+until instantiation time.
+
+    This may be implemented in two ways: either by using tt(this) or by
+explicitly mentioning the base class, instantiated for the derived class's
+template type(s). When tt(this) is used the compiler is informed that we're
+referring to the type tt(T) for which the template was instantiated. Any
+confusion about which member function to use (the derived class or base class
+member) is resolved in favor of the derived class member. Alternatively, the
+base or derived class can explicitly be mentioned (using tt(Base<T>) or
+tt(Derived<T>)) as shown in the next example. Note that with the tt(int)
+template type the tt(int) specialization is used.
+        verbinclude(advancedtemplates/examples/basename2.cc)
+    The above example might also define virtual member templates (although
+virtual member templates aren't often used). E.g., tt(Base) might declare a
+tt(virtual void member()) and tt(Derived) might define its overriding function
+tt(member). In that case tt(this->member()) in tt(Derived::Derived) will, due
+to tt(member)'s virtual nature, of course call tt(Derived::member). The
+statement tt(Base<T>::member()), however, will always call tt(Base)'s
+tt(member) function and can be used to
+    hi(polymorphism: bypassing) bypass dynamic polymorphism.

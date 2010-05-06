@@ -1,0 +1,45 @@
+    The cast converting conceptually comparable types to each other is:
+                      hi(static_cast<type>(expression))
+                     centt(static_cast<type>(expression))
+    This type of cast is used to convert, e.g., a tt(double) to an tt(int):
+both are numbers, but as the tt(int) has no fractions precision is potentially
+reduced. But the converse also holds true. When the quotient of
+two tt(int) values must be assigned to a tt(double) the fraction part of the
+division will get lost unless a cast is used.
+
+Here is an example of such a cast is (assuming tt(quotient) is of type
+tt(double) and tt(lhs) and tt(rhs) are tt(int)-typed variables):
+        centt(quotient = static_cast<double>(lhs) / rhs;)
+    If the cast is omitted, the division operator will ignore the remainder as
+its operands are tt(int) expressions. Note that the division should be put
+outside of the cast expression. If the division is put inside (as in
+tt(static_cast<double>(lhs / rhs))) an em(integer division) will have been
+performed em(before) the cast has had a chance to convert the type of an
+operand to tt(double).
+
+    Another nice example of code in which it is a good idea to use the
+tt(static_cast<>())-operator is in situations where the arithmetic assignment
+operators are used in mixed-typed exprressions. Consider the following
+expression (assume tt(doubleVar) is a variable of type tt(double)):
+        centt(intVar += doubleVar;)
+This statement actually evaluates to:
+     centt(intVar = static_cast<int>(static_cast<double>(intVar) +
+doubleVar);)
+    Here tt(IntVar) is first promoted to a tt(double), and is then added as a
+tt(double) value to tt(doubleVar). Next, the sum is cast back to an tt(int).
+These two casts are a bit overdone. The same result is obtained by
+explicitly casting tt(doubleVar) to an tt(int), thus obtaining an
+tt(int)-value for the right-hand side of the expression:
+        centt(intVar += static_cast<int>(doubleVar);)
+
+    A tt(static_cast) can also be used to undo or introduce the
+signed-modifier of an tt(int)-typed variable. The bf(C) function tt(tolower)
+requires an tt(int) representing the value of an tt(unsigned char). But
+tt(char) by default is a signed type. To call tt(tolower) using an available
+tt(char ch) we should use:
+        centt(tolower(static_cast<unsigned char>(ch)))
+    Casts like these provide information to the compiler about how to handle
+the provided data. Very often (especially with data types differing only in
+size but not in representation) the cast won't require any additional
+code. Additional code will be required, however, to convert one representation
+to another, e.g., when converting tt(double) to tt(int).

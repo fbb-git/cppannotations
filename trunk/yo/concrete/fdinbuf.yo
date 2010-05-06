@@ -1,0 +1,39 @@
+    When deriving a class (e.g., ti(IFdStreambuf)) from tt(streambuf) using a
+buffer of one character, at least its member
+ hi(underflow)
+    tt(streambuf::underflow) should be overridden, as this member eventually
+receives all requests for input. The member
+ hi(setg)
+    tt(streambuf::setg) is used to inform the tt(streambuf) base class of the
+size and location of the input buffer, so that it is able to set up its input
+buffer pointers accordingly. This will ensure that hi(eback)
+tt(streambuf::eback), hi(gptr) tt(streambuf::gptr), and hi(egptr)
+tt(streambuf::egptr) return correct values.
+
+    The class tt(IFdStreambuf) is designed like this:
+    itemization(
+    it() Its member functions use low-level functions operating on file
+descriptors. Therefore, in addition to tt(streambuf), the tthi(unistd.h)
+header file must have been read by the compiler before its member functions
+can be compiled.
+    it() Like most classes designed for input operations, this class is derived
+from hi(streambuf)tt(std::streambuf) as well.
+    it() The class defines two data members, one of them a fixed-sized one
+character buffer. The data members are defined as ti(protected) data members
+so that derived classes (e.g., see section ref(IFDSEEK)) can access them. Here
+is the full class interface:
+        verbinsert(CLASS)(concrete/examples/ifdbuf.h)
+    it() The constructor initializes the buffer. However, the initialization
+sets ti(gptr)'s return value equal to ti(egptr)'s return value. This
+implies that the buffer is empty so tt(underflow) is immediately called
+to fill the buffer:
+        verbinsert(CONS)(concrete/examples/ifdbuf.h)
+    it() Finally tt(underflow) is overridden. The buffer is refilled by
+reading from the file descriptor. If this fails (for whatever reason),
+endOfFile() is returned. More sophisticated implementations could act more
+intelligently here, of course. If the buffer could be refilled, ti(setg) is
+called to set up tt(streambuf)'s buffer pointers correctly:
+        verbinsert(UFLOW)(concrete/examples/ifdbuf.h)
+    )
+    The following tt(main) function shows how tt(IFdStreambuf) can be used:
+        verbinsert(MAIN)(concrete/examples/ifdbuf.cc)

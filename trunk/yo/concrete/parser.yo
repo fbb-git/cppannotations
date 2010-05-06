@@ -1,0 +1,41 @@
+In Bisonc++'s grammar specification tt(%stype) is of course
+tt(Semantic). A simple grammar is defined for this illustrative example. The
+grammar expects input according to the following rule:
+        verb(
+    rule:
+        IDENTIFIER '(' IDENTIFIER ')' ';'
+    |
+        IDENTIFIER '=' INT ';'
+    ;
+        )
+
+The rule's actions simply echo the received identifiers and tt(int) values to
+tt(cout). Here is an example of a decorated production rule, where due to
+tt(Semantic)'s overloaded insertion operator the insertion of the object
+controlled by tt(Semantic) is automatically performed:
+        verb(
+    IDENTIFIER '=' INT ';'
+    {
+          cout << $1 << " " << $3 << '\n';
+    }
+        )
+
+Bisonc++'s parser stores em(all) semantic values on its semantic values stack
+(irrespective of the number of tokens that were defined in a particular
+production rule). At any time em(all) semantic values associated with
+previously recognized tokens are available in an action block. Once the
+semantic value stack is reduced, the tt(Semantic) class's destructor takes
+care of the proper destruction of the objects controlled by its tt(shared_ptr)
+base class.
+
+The scanner must of course be allowed to access the parser's data member
+representing the most recent semantic value. This data member is available as
+the parser's data member tt(d_val__), whose address or reference can be passed
+to the scanner when it is constructed. E.g., with a scanner expecting
+an tt(STYPE__ &) the parser's constructor could simply be implemented as:
+        verb(
+    inline Parser::Parser()
+    :
+        d_scanner(d_val__)
+    {}
+        )

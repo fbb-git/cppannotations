@@ -1,0 +1,55 @@
+With function templates the combination of the types of template arguments and
+template parameters shows some interesting contractions. What happens, for
+example if a template type parameter is specified as an rvalue reference but
+an lvalue reference argument type is provided?
+
+In such cases the compiler performs type contractions. Doubling identical
+reference types results in a simple contraction: the type is deduced to be a
+single reference type. Example: if the template parameter type is specified as
+a tt(Type &&) and the actual parameter is an tt(int &&) then tt(Type) is
+deduced to be an tt(int), rather than an tt(int &&).
+
+This is fairly intuitive. But what happens if the actual type is tt(int &)?
+There is no such thing as an tt(int & &&param) and so the compiler contracts
+the double reference by removing the rvalue reference, keeping the lvalue
+reference. Here a simple rule is followed: Any reference to an lvalue
+reference results in an lvalue reference and emi(vice versa): an lvalue to any
+reference also results in an lvalue:
+    itemization(
+    it() if tt(Type) is tt(Actual &) then tt(Type &) is tt(Actual &) and
+tt(Type == Actual);
+    it() if tt(Type) is tt(Actual &) then tt(Type &&) still is tt(Actual &)
+and tt(Type == Actual);
+    it() if tt(Type) is tt(Actual &&) then tt(Type &) again is tt(Actual &)
+and tt(Type == Actual);
+    it() if tt(Type) is tt(Actual &&) then tt(Type &&)  is tt(Actual &&)
+and tt(Type == Actual);
+    )
+
+Let's look at a concrete exampe where contraction occurs. Consider the
+following template function where a function parameter is defined as an rvalue
+references to some template type parameter:
+        verb(
+    template <typename Type>
+    void function(Type &&param)
+    {
+        callee(static_cast<Type &&>(param));
+    }
+        )
+ In this situation, when tt(function) is called with an (lvalue) argument of
+type tt(TP &) the template type parameter tt(Type) is deduced to be tt(Tp
+&). Therefore, tt(param) is considered to be instantiated as tt(Tp &param) (as
+tt(Tp & &&param)) is contracted as tt(Tp &param). But with an rvalue typed
+argument (tt(Tp &&)) it results in tt(Tp &&param) (again using contraction).
+
+Likewise, when tt(callee) is called using the tt(static_cast) the same
+contraction occurs, so if tt(Type &&param) is interpreted as tt(Tp &param) the
+static cast em(also) uses type tt(Tp &param). If (Type &&param) is interpreted
+as tt(Tp &&param) the static cast em(also) uses type tt(Tp &&param).
+
+This characteristics allows us to pass a function argument straight through to
+a nested function em(without) changing its type: lvalues remain lvalues,
+rvalues remain rvalues. This characteristic is therefore also known as
+ emi(perfect forwarding) which will be discussed in greated detail in section
+ref(PERFECT). Perfect forwarding prevents the template author from having to
+define multiply overloaded versions of a function template.

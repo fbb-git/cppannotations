@@ -1,0 +1,69 @@
+The keyword tt(const) is often used behind the parameter list of member
+functions. This keyword indicates that a member function does not alter the
+data members of its object. Such member functions are called
+    emi(const member functions). In the class tt(Person), we see that the
+accessor functions were declared tt(const):
+        verb(
+    class Person
+    {
+        public:
+            std::string const &name()    const;
+            std::string const &address() const;
+            std::string const &phone()   const;
+            size_t mass()              const;
+    };
+        )
+    The rule of thumb given in section ref(ConstRule) applies here too:
+whichever appears to the em(left) of the keyword tt(const), is not
+altered. With member functions this should be interpreted as `doesn't alter
+its own data'.
+
+When implementing a const member function the tt(const) attribute must be
+repeated:
+        verb(
+    string const &Person::name() const
+    {
+        return d_name;
+    }
+        )
+    The compiler will prevent the data members of a class from being modified
+by one of its const member functions. Therefore a statement like
+        verb(
+    d_name[0] = toupper(static_cast<unsigned char>(d_name[0]));
+        )
+ results in a compiler error when added to the above function's definition.
+
+tt(Const) member functions are used to prevent inadvertent data
+modification. Except for constructors and the destructor (cf. chapter
+ref(MEMORY)) only const member functions can be used with (plain, references
+or pointers to) tt(const) objects.
+
+Const objects are frequently encounterd as tt(const &) parameters of
+functions. Inside such functions only the object's const members may be
+used. Here is an example:
+        verb(
+    void displayMass(ostream &out, Person const &person)
+    {
+        out << person.name() << " weighs " << person.mass() << " kg.\n";
+    }
+        )
+    Since tt(person) is defined as a tt(Person const &) the function
+tt(displayMass) cannot call, e.g.,nl()
+    tt(person.setMass(75)).
+
+    The tt(const) member function attribute can be used to
+ hi(function overloading) overload member functions. When functions are
+overloaded by their tt(const) attribute the compiler will use the member
+function matching most closely the i(const-qualification) of the object:
+    itemization(
+    it() When the object is a tt(const) object, only tt(const) member
+functions can be used.
+    it() When the object is not a tt(const) object, non-tt(const) member
+functions will be used, em(unless) only a tt(const) member function is
+available. In that case, the tt(const) member function will be used.
+    )
+    The next example illustrates how (non) tt(const) member functions are
+selected:
+        verbinclude(classes/examples/constmembers.cc)
+    As a general principle of design: member functions should always be given
+the tt(const) attribute, unless they actually modify the object's data.
