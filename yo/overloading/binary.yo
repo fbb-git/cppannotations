@@ -28,13 +28,14 @@ and right hand operands.
         eit() The string returned by the second tt(+) operator represents the
 value of the expression.
         )
-    it() statement tt(// 5) is interesting in that it should not compile but
-does compile with the ti(Gnu) compiler. It should not compile, as the tt(+)
-operator should return a tt(const) string, thereby preventing its modification
-by the subsequent tt(+=) operator (compare this situation with tt(int) values:
-tt((3 + intVar) += 4) won't compile. Clearly, tt(std::string) does em(not) do
-`as the ints do'). However, in the Annotations we will consequently let binary
-arithmetic operators return tt(const) values.
+    it() statement tt(// 5) is interesting in that it should not compile (it
+does compile with the ti(Gnu) compiler). It should not compile, as the tt(+)
+operator should return a tt(const) string. This should prevent its
+modification by the subsequent tt(+=) operator (compare this situation with
+tt(int) values: tt((3 + intVar) += 4) won't compile. Clearly, tt(std::string)
+does em(not) do `as the ints do'). In the annotations() binary arithmetic
+operators return tt(const) values to render statements like statement tt(// 5)
+incompilable.
     )
 
     Consider the following code, in which a class tt(Binary) supports
@@ -111,11 +112,11 @@ corresponding arithmetic assignment operator:
     If a class benefits from being i(move-aware) then for each tt(const)
 reference parameter an overloaded function expecting a tt(const) rvalue
 reference may be considered. With the class tt(Binary) and its tt(operator+)
-this would boild down to the following overloaded tt(operator+) functions:
+this would boil down to the following overloaded tt(operator+) functions:
         verb(
     Binary const operator+(Binary const &&ltmp, Binary const &rhs);
     Binary const operator+(Binary const &lhs,   Binary const &&rtmp);
-    Binary const operator+(Binary const &&ltmp, Binary const &rtmp);
+    Binary const operator+(Binary const &&ltmp, Binary const &&rtmp);
         )
 
     When implementing the arithmetic assignment operator the strong guarantee
@@ -130,8 +131,8 @@ arithmetic operation might throw. Example:
         return *this;
     }
         )
-    Here, too, defining a tt(operator+=(Binary const &&tmp)) should be
-considered if tt(Binary) shold be a move-aware class.
+    Here, too, defining tt(operator+=(Binary const &&tmp)) should be
+considered if tt(Binary) must be a move-aware class.
 
     Having available the arithmetic assignment operator, implementating
 the plain binary operator is easy. The tt(lhs) argument is

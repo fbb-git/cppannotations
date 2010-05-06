@@ -11,6 +11,6 @@
     Binary const operator+(Binary const &lhs, Binary const &rhs)
     {
         Binary tmp(lhs);
-        tmp += ths;
+        tmp += rhs;
         return tmp;
     }

@@ -1,18 +1,18 @@
 When ti(operator new)hi(new) is overloaded, it must define a ti(void *) return
 type, and its first parameter must be of type ti(size_t). The default
 tt(operator new) defines only one parameter, but overloaded versions may
-define multiple parameters the first of not explicitly specified but is
-deducted from the size of the object of the class for which tt(operator new)
+define multiple parameters. The first one is not explicitly specified but is
+deducted from the size of objects of the class for which tt(operator new)
 is overloaded. In this section overloading tt(operator new) is discussed.
 Overloading ti(new[]) is discussed in section ref(NEWDELETEARRAY).
 
 It is possible to define multiple versions of the tt(operator new), as long as
 each version defines its own unique set of arguments. When overloaded
 tt(operator new) members must dynamically allocate memory they can do so using
-the global tt(operator new) using the scope resolution operator tt(::). In the
-next example the overloaded tt(operator new) of the class tt(String) will
-initialize the substrate of dynamically allocated tt(String) objects to
-0-bytes:
+the global tt(operator new), applying the scope resolution operator
+tt(::). In the next example the overloaded tt(operator new) of the class
+tt(String) will initialize the substrate of dynamically allocated tt(String)
+objects to 0-bytes:
         verb(
     #include <cstddef>
     #include <iosfwd>
@@ -65,7 +65,7 @@ should operate. This hidden pointer becomes the function's ti(this) pointer.
 
 In the next example of em(pseudo) bf(C++) em(code), the pointer is explicitly
 shown to illustrate what's happening when tt(operator new) is used. In the
-first part an tt(String) object tt(str) is defined directly, in the second
+first part a tt(String) object tt(str) is directly defined, in the second
 part of the example the (overloaded) tt(operator new) is used:
         verb(
     String::String(String *const this);     // real prototype of the default
@@ -80,20 +80,20 @@ part of the example the (overloaded) tt(operator new) is used:
         String::String(sp);                                 // initialization
         )
     In the above fragment the member functions were treated as
- an em(object-less) member function of the class tt(String). Such members are
-called em(static member functions) that are covered in chapter
-ref(StaticDataFun). Actually, tt(operator new) em(is) such a static member
-function. Since it has no tt(this) pointer it cannot reach data members of the
-object for which it is expected to make memory available. It can only allocate
-and initialize the allocated memory, but cannot reach the object's data
-members by name as there is as yet no data object layout defined.
+ em(object-less) member functions of the class tt(String). Such members are
+called em(static member functions) (cf. chapter ref(StaticDataFun)). Actually,
+tt(operator new) em(is) such a static member function. Since it has no
+tt(this) pointer it cannot reach data members of the object for which it is
+expected to make memory available. It can only allocate and initialize the
+allocated memory, but cannot reach the object's data members by name as there
+is as yet no data object layout defined.
 
     Following the allocation, the memory is passed (as the tt(this) pointer)
 to the constructor for further processing.
 
     tt(Operator new) can have multiple parameters. The first parameter is
 initialized as an implicit argument and is always a tt(size_t)
-parameter. Additional overloaded operators may defined additional
+parameter. Additional overloaded operators may define additional
 parameters. An interesting additional tt(operator new) is the
     hi(new: placement)emi(placement new) operator. With the placement new
 operator a block of memory has already been set aside and one of the class's
@@ -132,7 +132,7 @@ of pointers to tt(String) objects (assuming the array is large enough):
     }
 
         // implementation:
-    void *String::operator new(size_t size, char **pointers, size_t idx)
+    void *String::operator new(size_t size, String **pointers, size_t idx)
     {
         return pointers[idx] = ::operator new(size);
     }
