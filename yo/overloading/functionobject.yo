@@ -121,7 +121,7 @@ em(function object). Its implementation is simple:
         verb(
     bool Person::operator()(Person const &other) const
     {
-        return *this != other;
+        return *this == other;
     }
         )
     Note the somewhat i(peculiar syntax): ti(operator()). The first set of
@@ -135,15 +135,17 @@ overloaded operator is declared as:
     Clearly tt(Person::operator()) is a simple function. It contains but one
 statement, and we could consider defining it i(inline). Assuming we do,
 then this is what happens when tt(operator()) is called:
-    itemization(
-    it() The address of the right-hand argument of the
-        tt(Person::operator!=) argument is pushed on the stack,
-    it() The tt(operator!=) function is evaluated,
-    it() The argument of tt(Person::operator!=) argument is popped off the
-        stack,
+    enumeration(
+    eit() The address of the right-hand argument of the
+        tt(Person::operator==) argument is pushed on the stack;
+    eit() The tt(operator==) function is evaluated (which probably also is a
+em(semantic) improvement over calling tt(operator!=) when looking for an
+object em(equal to) a specified target object);
+    eit() The argument of tt(Person::operator==) argument is popped off the
+        stack.
     )
     Due to the fact that tt(operator()) is an inline function, it is not
-actually called. Instead tt(operator!=) is called immediately. Moreover, the
+actually called. Instead tt(operator==) is called immediately. Moreover, the
 required i(stack operations) are fairly modest.
 
     Function objects may truly be defined inline.  Functions that are called

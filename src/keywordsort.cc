@@ -23,7 +23,7 @@ string keywords =
 "virtual "
 "nullptr sizeof union axiom continue for operator static unsigned bitand "
 "short typeid asm const false not_eq signed typename auto const_cast float "
-"try xor_eq constexpr import "
+"try xor_eq constexpr import export "
 "while char else mutable reinterpret_cast true xor class enum namespace "
 "return" ;
 
@@ -45,11 +45,15 @@ int main()
             inserter(keyword, keyword.begin()));
 
     Support support;
+    support << 0;
+    for (size_t col = 0; col != 6; ++col)
+        support << 1;
+
     Table table(support, 6, Table::COLUMNWISE);
     table.fill(keyword.begin(), keyword.end());
-    for(size_t col = 0; col < 6; ++col)
+    for(size_t col = 0; col != 6; ++col)
         table << Align(col, std::left);
-    cout << table << endl;
+    cout << table << '\n';
 }
 
 
