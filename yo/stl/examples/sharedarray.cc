@@ -4,49 +4,49 @@
 using namespace std;
 
 #if 0
-    struct X                          
-    {       
+    struct X
+    {
         ~X()
-        {   
+        {
             cout << "destr\n";
         }
     };
-      
+
     template<typename T>
-    struct ArrayDeleter 
-    {                  
+    struct ArrayDeleter
+    {
        void operator()(T* p)
-       {                    
+       {
           delete [] p;
        }
     };
-      
+
     int main()
-    {         
+    {
         shared_ptr<X> sp(new X[3], ArrayDeleter<X>());
         shared_ptr<float> sp(new float[16], ArrayDeleter<float>());
     }
 #else
 //SHAREDARRAY
-    struct X    
-    {       
+    struct X
+    {
         ~X()
-        {   
+        {
             cout << "destr\n";  // show the object's destruction
         }
     };
     template <typename Type>
     class shared_array: public shared_ptr<Type>
-    {                                       
+    {
         struct Deleter          // Deleter receives the pointer
-        {                       // and calls delete[] 
+        {                       // and calls delete[]
            void operator()(Type* ptr)
            {
               delete[] ptr;
            }
         };
         public:
-            shared_array(Type *p)           // other constructors 
+            shared_array(Type *p)           // other constructors
             :                               // not shown here
                 shared_ptr<Type>(p, Deleter())
             {}
@@ -70,6 +70,3 @@ using namespace std;
     }
 //=
 #endif
-
-
-
