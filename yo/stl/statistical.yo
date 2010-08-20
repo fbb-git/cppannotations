@@ -1,21 +1,40 @@
-The following standard distributions are currently available (an example
-showing their use is provided at the end of this section). For information
+    Before the statistical distributions and accompanying random number
+generators can be used the tthi(random) header file must have been included.
+
+The following statistical distributions are available (an example showing their
+use is provided with each distribution presented below). More information
 about the distributions mentioned below can be found at web-locations like
 lurl(http://en.wikipedia.org/wiki/Bernoulli_distribution).
 
-    Before using the mathematical distributions the tthi(random) header file
-must have been included.
+Although the STL offers various statistical distributions their functionality
+is rather basic. The distributions allow us to obtain a random number from
+these distributions, but 
+    i(probility density function)s 
+ or
+    i(cumulative distribution function)s 
+ are currently not provided by the STL. These functions (distributions as well
+as the density and the cumulative distribution functions) are, however,
+available in other libraries, like the 
+    turl(boost math library)(http://www.boost.org/) (specifically:
+     lurl(http://www.boost.org/doc/libs/1_44_0/libs/math/doc/sf_and_dist/\
+          html/index.html)).
+
+Below, ti(RNG) is used to indicate a em(Random Number Generator) and ti(URNG)
+is used to indicate a em(Uniform Random Number Generator)
 
     All distributions offer the following members (em(result_type) refers to
 the type name of the values returned by the distribution;
 em(name_distribution) refers to the type name of the mathematical
 distribution, e.g., tt(bernoulli_distribution)):
     itemization(
-    itt(result_type operator()(RandomNumberGenerator):)
-        The next randomly generated value is returned.
+    itt(result_type operator()(RNG):)
+       The next randomly generated value is returned, providing the member
+        with a random number generator as its argument;
+    itt(void reset():)
+       Clears all of its cached values;
     itt(std::istream &operator<<(std::istream &in,
             distribution-name &object):)
-        The parameters of the distribution are extracted from an
+       The parameters of the distribution are extracted from an
         tt(std::istream);
     itt(std::ostream &operator<<(std::ostream &out,
             bernoulli_distribution const &bd):)
@@ -23,50 +42,12 @@ distribution, e.g., tt(bernoulli_distribution)):
         tt(std::ostream)
     )
 
-Distributions:
-    itemization(
-    it() ti(bernoulli_distribution)nl()
-        Logical tt(true) values are generated with a certain probability
-        tt(p).nl()
-        Constructor:
-        itemization(
-        itt(bernoulli_distribution(double p = 0.5))nl()
-        )
 
-    it() ti(binomial_distribution<IntType = int, RealType = double>)nl()
-       tt(IntType): the type of the generated random value (by default
-        tt(int)). nl()
-        tt(RealType): the probability parameter of the binomial
-        distribution.nl()
-        Random integral values are generated according to the
-        specified binomial distribution+nl()
-        Constructor:
-        itemization(
-        itt(binomial_distribution<IntType, RealType>OPENPARIntType t,
-            RealType p =)linebreak()tt(RealType(0.5)CLOSEPAR)
-        )
 
-    it() ti(gamma_distribution<Type = double>)nl()
-        tt(Type): the parameter of the gamma distribution.nl()
-        Random values are generated according to the
-        specified gamma distribution.nl()
-        Constructor:
-        itemization(
-        itt(gamma_distribution<IntType, Type>(Type alpha = Type(1)))nl()
-        )
 
-    it() ti(geometric_distribution<IntType = int, RealType = double>)nl()
-        tt(IntType): the type of the generated random value (by default
-        tt(int)). nl()
-        tt(RealType): the probability parameter of the geometric
-        distribution.nl()
-        Random integral values are generated according to the
-        specified geometric distribution+nl()
-        Constructor:
-        itemization(
-        itt(geometric_distribution<IntType, RealType>(RealType p =
-        RealType(0.5)))nl()
-        )
+
+
+
 
     it() ti(exponential_distribution<Type = double>)nl()
         tt(Type): the parameter of the exponential distribution.nl()
@@ -131,14 +112,4 @@ Distributions:
             )
         which might not be what you'd expect.
     )
-
-    Some of the distributions mentioned below appear not yet to be fully
-operational in the STL. This appears to be the case for the
-tt(binomial_distribution), the tt(gamma_distribution), the linebreak()
-tt(normal_distribution), and the tt(poisson_distribution). These distributions
-will likely become fully operational in the near future.
-
-    Here is an example showing the outcome of a statistical experiment
-consisting of throwing an honest coin 20 times:
-    verbinclude(stl/examples/coins.cc)
 
