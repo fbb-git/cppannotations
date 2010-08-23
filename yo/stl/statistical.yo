@@ -1,115 +1,46 @@
-    Before the statistical distributions and accompanying random number
-generators can be used the tthi(random) header file must have been included.
-
-The following statistical distributions are available (an example showing their
-use is provided with each distribution presented below). More information
-about the distributions mentioned below can be found at web-locations like
-lurl(http://en.wikipedia.org/wiki/Bernoulli_distribution).
-
-Although the STL offers various statistical distributions their functionality
-is rather basic. The distributions allow us to obtain a random number from
-these distributions, but 
-    i(probility density function)s 
- or
-    i(cumulative distribution function)s 
- are currently not provided by the STL. These functions (distributions as well
-as the density and the cumulative distribution functions) are, however,
-available in other libraries, like the 
-    turl(boost math library)(http://www.boost.org/) (specifically:
-     lurl(http://www.boost.org/doc/libs/1_44_0/libs/math/doc/sf_and_dist/\
-          html/index.html)).
-
-Below, ti(RNG) is used to indicate a em(Random Number Generator) and ti(URNG)
-is used to indicate a em(Uniform Random Number Generator)
+In the following sections the various statistical distributions that are
+supported by the C++0x standard are covered. The notation ti(RNG) is used to
+indicate a em(Random Number Generator) and ti(URNG) is used to indicate a
+em(Uniform Random Number Generator). With each distribution a 
+tt(struct param_type) is defined containing the distribution's parameters. The
+organization of these tt(param_type) structs depends on (and is described
+at) the actual distribution. 
 
     All distributions offer the following members (em(result_type) refers to
-the type name of the values returned by the distribution;
-em(name_distribution) refers to the type name of the mathematical
-distribution, e.g., tt(bernoulli_distribution)):
+the type name of the values returned by the distribution:
     itemization(
-    itt(result_type operator()(RNG):)
-       The next randomly generated value is returned, providing the member
-        with a random number generator as its argument;
+    itt(result_type max() const)nl()
+        returns the distribution's least upper bound;
+    itt(result_type min() const)nl()
+        returns the distribution's greatest lower bound;
+    itt(param_type param() const)nl()
+        returns the object's tt(param_type) struct;
+    itt(void param(const param_type &param))
+        redefines the parameters of the distribution;
     itt(void reset():)
-       Clears all of its cached values;
+       clears all of its cached values;
+    )
+
+    All distributions offer the following operators (em(distribution-name)
+        should be replaced by the name of the intended distribution, e.g.,
+        tt(normal_distribution)): 
+    itemization(
+    itt(template<typename URNG> result_type operator()(URNG &urng))nl()
+       returns the next random value from the statistical distribution, with
+        the function object tt(urng) returning the next random number selected
+        from a uniform random distribution;
+    itt(template<typename URNG> result_type operator())nl() 
+       tt((URNG &urng, param_type &param))nl() returns the next random value
+        from the statistical distribution initialize with the parameters
+        provided by the tt(param) struct.  The function object tt(urng)
+        returns the next random number selected from a uniform random
+        distribution;
     itt(std::istream &operator<<(std::istream &in,
             distribution-name &object):)
        The parameters of the distribution are extracted from an
         tt(std::istream);
     itt(std::ostream &operator<<(std::ostream &out,
-            bernoulli_distribution const &bd):)
+            distribution-name const &bd):)
         The parameters of the distribution are inserted into an
         tt(std::ostream)
     )
-
-
-
-
-
-
-
-
-    it() ti(exponential_distribution<Type = double>)nl()
-        tt(Type): the parameter of the exponential distribution.nl()
-        Random integral values are generated according to the
-        specified exponential distribution+nl()
-        Constructor:
-        itemization(
-        itt(exponential_distribution<IntType, Type>(Type lambda =
-        Type(1)))nl()
-        )
-
-    it() ti(normal_distribution<Type = double>)nl()
-        tt(Type): the type of the generated random value (by default
-        tt(double)). nl()
-        Constructor:
-        itemization(
-        itt(normal_distribution<Type>(ReadType mean = Type(0),
-            Type sigma = Type(1)))nl()
-        )
-
-    it() ti(poisson_distribution<IntType = int, RealType = double>)nl()
-        tt(IntType): the type of the generated random value (by default
-        tt(int)). nl()
-        tt(RealType): the type of the parameter of the distribution (by default
-        tt(double)). nl()
-        Random integral values are generated that are distributed
-        according to a poisson distribution with parameter tt(mean).
-        Constructor:
-        itemization(
-        itt(poisson_distribution<IntType, RealType>(RealType mean =
-        RealType(1)))nl()
-        )
-
-    it() ti(uniform_int<Type = int>)nl()
-        tt(Type): the type of the generated random value (by default
-        tt(int)). nl()
-        Random integral values are generated that are uniformly
-        distributed over a certain range.nl()
-        Constructor:
-        itemization(
-        itt(uniform_int<Type>(Type min = 0, Type max = 9))nl()
-        )
-        Additional member:
-        itemization(
-        itt(Type operator()(RandomNumberGenerator), Type upper)nl()
-            Random numbers are generated in the range rangett(0)(upper)
-            (half-inclusive).
-        )
-
-    it() ti(uniform_real<Type = real>)nl()
-        tt(Type): the type of the generated random value (by default
-        tt(real)). nl()
-        Random real values are generated that are uniformly
-        distributed over a certain range.nl()
-        Constructor:
-        itemization(
-        itt(uniform_real<Type>(Type min = Type(0), Type max = Type(1)))nl()
-        )
-        Note: the current implementation generates
-            verb(
-        GRN * (max - min) + min
-            )
-        which might not be what you'd expect.
-    )
-
