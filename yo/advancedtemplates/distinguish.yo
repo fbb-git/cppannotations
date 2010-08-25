@@ -14,10 +14,10 @@ This section addresses the question how a trait class can distinguish class
     types from non-class types.
 
 In order to distinguish classes from non-class types a distinguishing feature
-that can be used compile-time must be found. It may take some thinking to find
-such a distinguishing characteristic, but a good candidate eventually is found
-in the i(pointer to members) syntactic construct. Pointers to members are only
-available for classes. Using the pointer to member construct as the
+that can be used at compile-time must be found. It may take some thinking to
+find such a distinguishing characteristic, but a good candidate eventually is
+found in the i(pointer to members) syntactic construct. Pointers to members
+are only available for classes. Using the pointer to member construct as the
 distinguishing characteristic, a specialization can be developed that uses the
 pointer to member if available. Another specialization (or the generic
 template) does something else if the pointer to member construction is not
@@ -92,15 +92,15 @@ this:
     enum { isClass = fun<Type>(0) } ;
         )
     as tt(fun<Type>(0)) is not a constant expression and enum values em(must)
-        hi(enum values: evaluated compile-time)
- be defined by constant expressions so they can be determined compile-time.
+        hi(enum values: evaluated at compile-time)
+ be defined by constant expressions so they can be determined at compile-time.
 
     To determine tt(isClass)'s value we must find an expression that allows
 compile-time discriminates between tt(fun<Type>(...))  and tt(fun<Type>(void
 (Type::*)())).
 
     In situations like these the ti(sizeof) operator often is our tool of
-choice as it is evaluated compile-time. By defining different sized return
+choice as it is evaluated at compile-time. By defining different sized return
 types for the two tt(fun) declarations we are able to distinguish
 (compile-time) which of the two tt(fun) alternatives is selected by the
 compiler.
@@ -125,7 +125,7 @@ two tt(fun) function template declarations become:
     template <typename NonClassType>
     static char fun(...);
         )
-    Since tt(typeof) expressions can be evaluated compile-time we can now
+    Since tt(typeof) expressions can be evaluated at compile-time we can now
 determine tt(isClass)'s value:
         verb(
     enum { isClass = sizeof(fun<Type>(0)) == sizeof(Char2) };
