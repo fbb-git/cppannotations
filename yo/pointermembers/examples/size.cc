@@ -23,7 +23,7 @@
     }
 
     /*
-        generated output:
+        generated output (on 32-bit architectures):
 
         size of pointer to data-member:     4
         size of pointer to member function: 8
