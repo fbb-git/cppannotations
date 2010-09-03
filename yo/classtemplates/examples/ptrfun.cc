@@ -8,41 +8,41 @@
 
 //BINDER2ND
     template<typename Operation>
-    class Binder2nd: 
+    class Binder2nd:
         public std::unary_function<typename Operation::first_argument_type,
                                    typename Operation::result_type>
     {
         typedef typename Operation::second_argument_type SecondArg;
-    
+
         protected:
             Operation d_operation;
             SecondArg d_arg2;
-    
+
         public:
             Binder2nd(Operation const &operation, SecondArg const &arg2)
-            : 
-                d_operation(operation), 
-                d_arg2(arg2) 
+            :
+                d_operation(operation),
+                d_arg2(arg2)
             {}
-    
+
             template <typename ... Params>
             typename Operation::result_type
             operator()(Params && ... params) const
-            { 
+            {
                 return d_operation(std::forward<Params>(params) ..., d_arg2);
             }
     };
 //=
 //BIND2ND
     template<typename Operation, typename SecondArg>
-    inline Binder2nd<Operation> Bind2nd(Operation const &operation, 
+    inline Binder2nd<Operation> Bind2nd(Operation const &operation,
                                         SecondArg const &arg2)
     {
         return Binder2nd<Operation>(
-                    operation, 
+                    operation,
                     typename Operation::second_argument_type(arg2)
                 );
-    } 
+    }
 //=
 
 using namespace std;
@@ -66,7 +66,7 @@ int main()
                     not1( Bind2nd(ptr_fun(stringicmp), target) )
                );
 
-    if ( pos != v1.end())  
+    if ( pos != v1.end())
        cout <<   "The search for `" << target << "' was successful.\n"
                  "The next string is: `" << pos[1] << "'.\n";
 }

@@ -22,18 +22,18 @@ int main()
     copy(istream_iterator<string>(cin), istream_iterator<string>(),
         back_inserter(v1));
 
-    auto pos = find_if( 
+    auto pos = find_if(
                     v1.begin(), v1.end(),
                     not1( bind2nd(ptr_fun(stringcasecmp), target) )
                );
 
-    if ( pos != v1.end())  
+    if ( pos != v1.end())
        cout <<   "The search for `" << target << "' was successful.\n"
                  "The next string is: `" << pos[1] << "'.\n";
 }
 
     // on input:
     //  VERY   I have existed for years, but very little has changed
-    // the program displays:    
+    // the program displays:
     //  The search for `VERY' was successful.
     //  The next string is: `little'.

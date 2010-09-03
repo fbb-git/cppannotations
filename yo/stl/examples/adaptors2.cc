@@ -4,7 +4,7 @@
 #include <vector>
 
 template<typename Operation>
-class Binder2nd: 
+class Binder2nd:
         public std::unary_function<typename Operation::first_argument_type,
                                    typename Operation::result_type>
 {
@@ -16,28 +16,28 @@ class Binder2nd:
 
     public:
         Binder2nd(Operation const &operation, SecondArg const &arg2)
-        : 
-            d_operation(operation), 
-            d_arg2(arg2) 
+        :
+            d_operation(operation),
+            d_arg2(arg2)
         {}
 
         template <typename ... Params>
         typename Operation::result_type
         operator()(Params && ... params) const
-        { 
+        {
             return d_operation(std::forward<Params>(params) ..., d_arg2);
         }
 };
 
 template<typename Operation, typename SecondArg>
-inline Binder2nd<Operation> Bind2nd(Operation const &operation, 
+inline Binder2nd<Operation> Bind2nd(Operation const &operation,
                                     SecondArg const &arg2)
 {
     return Binder2nd<Operation>(
-                operation, 
+                operation,
                 typename Operation::second_argument_type(arg2)
             );
-} 
+}
 
 using namespace std;
 

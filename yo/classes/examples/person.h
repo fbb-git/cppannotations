@@ -18,8 +18,3 @@
             std::string const &phone()   const;
             size_t mass()                const;
     };
-
-
-
-
-

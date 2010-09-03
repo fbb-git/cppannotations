@@ -1,9 +1,17 @@
 void svnclean()
 {
-    run("rm -f script.log {yo,html,latex}/legal.shtml html/cplusplus*.html");
+    list extensions;
+    int idx;
+
+    run("rm -f script.log yo/legal.shtml latex/legal.shtml html/legal.shtml");
+    run("rm -f html/cplusplus*.html");
     run("rm -f html/target.shtml html/contents.html html/index.html");
     run("rm -f html/cppindex.html html/cplusplus.index zip/cplusplus.*.zip");
-    run("rm -f latex/*.{log,toc,aux,out,ind,ilg,idx,dvi,latex}");
+
+    extensions = strtok("aux dvi idx ilg ind latex log out pdf ps toc", " ");
+    for(idx = sizeof(extensions); idx--; )
+        run("rm -f latex/cplusplus*." + extensions[idx]);
+
     run("rm -rf src/*/*/o src/*/o");
 
     exit(0);
