@@ -8,7 +8,7 @@
 
 using namespace std;
 
-inline int stringcasecmp(string const &lhs, string const &rhs)
+inline int stringcasecmp(string lhs, string rhs)
 {
     return strcasecmp(lhs.c_str(), rhs.c_str());
 }
