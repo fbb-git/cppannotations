@@ -1,0 +1,69 @@
+em(Negators) hi(negators) are function adaptors converting the values
+returned by predicate function. Since there are unary and binary predicate
+functions, two i(negator function) adaptors were predefined: ti(not1) is
+the negator to use with unary predicates, ti(not2) is the negator to
+with binary function objects.
+
+Example: to count the number of persons in a tt(vector<string>) vector ordered
+alphabetically before (i.e., em(not) exceeding) a certain reference text one
+of  the following alternatives could be used:
+    itemization(
+    it() a i(binary predicate) that directly offers the required comparison:
+        verb(
+    count_if(stringVector.begin(), stringVector.end(),
+        bind2nd(less_equal<string>(), referenceText))
+        )
+    it() tt(not2) in combination  with the tt(greater<>) predicate:
+        verb(
+    count_if(stringVector.begin(), stringVector.end(),
+        bind2nd(not2(greater<string>()), referenceText))
+        )
+        Here tt(not2) is used as it negates the truth value of a binary
+tt(operator()), in this case the tt(greater<string>::operator()) member
+function.
+    it() tt(not1) in combination with the tt(bind2nd) predicate:
+        verb(
+    count_if(stringVector.begin(), stringVector.end(),
+        not1(bind2nd(greater<string>(), referenceText)))
+        )
+        Here tt(not1) is used as it negates the truth value of a unary
+tt(operator()), in this case the tt(bind2nd) function adaptor.
+    )
+    The use of negators is illustrated by the following program:
+        verbinclude(stl/examples/adaptors.cc)
+
+    One may wonder which of these alternative approaches is the faster. Using
+the first approach, in which a directly available function object was used,
+two actions must be performed for each iteration by tt(count_if):
+    itemization(
+    it() The binder's tt(operator()) is called;
+    it() The operation tt(<=) is performed.
+    )
+    When the compiler uses inline as requested, only the second step is
+actually performed.
+
+    Using the second approach, using the tt(not2) negator to
+negate the truth value of the complementary logical function object, three
+actions must be performed for each iteration by tt(count_if):
+    itemization(
+    it() The binder's tt(operator()) is called;
+    it() The negator's tt(operator()) is called;
+    it() The operation tt(>) is performed.
+    )
+    When the compiler uses inline as requested, only the third step is
+actually performed.
+
+    Using the third approach, using tt(not1) negator to negate the truth value
+of the binder, three actions must be performed for each iteration by
+tt(count_if):
+    itemization(
+    it() The negator's tt(operator()) is called;
+    it() The binder's tt(operator()) is called;
+    it() The operation tt(>) is performed.
+    )
+    When the compiler uses inline as requested, only the third step is
+actually performed.
+
+With a commonly used optimization flag like tt(-O2) the compiler will try to
+grant inline requests. However, if the compiler ignores the inline requests
+the first variant will be faster.
