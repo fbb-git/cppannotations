@@ -2,7 +2,7 @@ The class tt(unique_ptr) offers the  following
  hi(unique_ptr: operators) operators:
     itemization(
     ithtq(operator=)
-        (unique_ptr<Type> &unique_ptr<Type>operator=(unique_ptr<Type> &&tmp))
+        (unique_ptr<Type> &operator=(unique_ptr<Type> &&tmp))
        (This operator transfers the memory pointed to by the i(rvalue)
         tt(unique_ptr) object to the i(lvalue) tt(unique_ptr) object using
         em(move semantics). So, the rvalue object em(loses) the memory it
@@ -10,7 +10,7 @@ The class tt(unique_ptr) offers the  following
         be assigned to another tt(unique_ptr) by converting it to an rvalue
         reference first using hi(move)tt(std::move). Example:
        verb(
-    unique_ptr<int> ip1(unique_ptr<int>(new int));
+    unique_ptr<int> ip1(new int);
     unique_ptr<int> ip2;
 
     ip2 = std::move(ip1);
@@ -22,13 +22,13 @@ The class tt(unique_ptr) offers the  following
         to memory (i.e., its tt(get) member, see below, returns 0). Otherwise,
         tt(true) is returned.)
     ithtq(operator*)(Type &operator*())
-       (This operator returns a reference to the information stored in the
-        tt(unique_ptr) object. It acts like a normal pointer dereference
+       (This operator returns a reference to the information accessible via
+        a tt(unique_ptr) object . It acts like a normal pointer dereference
         operator.)
     ithtq(operator->)(Type *operator->())
-       (This operator returns a pointer to the information stored in the
-        tt(unique_ptr) object. Through this operator members of a stored
-        object can be selected. Example:
+       (This operator returns a pointer to the information accessible via a
+        tt(unique_ptr) object. This operator allows you to select 
+        members of an object accessible via a tt(unique_ptr) object. Example:
        verb(
     unique_ptr<string> sp(new string("hello"));
     cout << sp->c_str();
@@ -48,20 +48,20 @@ member functions:
        (A reference to the deleter object used by the tt(unique_ptr) is
         returned.)
     ithtq(release)(Type *release())
-       (A pointer to the information stored in the tt(unique_ptr) object is
+       (A pointer to the information accessible via a tt(unique_ptr) object is
         returned. At the same time the object itself becomes a 0-pointer
         (i.e., its pointer data member is turned into a 0-pointer). This
-        member can be used to transfer the information stored in the
-        tt(unique_ptr) object to a plain tt(Type) pointer. Having called this
-        member the proper destruction of the dynamically allocated memory has
-        become the i(responsibility of the programmer).)
+        member can be used to transfer the information accessible via a 
+        tt(unique_ptr) object to a plain tt(Type) pointer. After calling this
+        member the proper destruction of the dynamically allocated memory
+        is the i(responsibility of the programmer).)
     ithtq(reset)(void reset(Type *))
        (The dynamically allocated memory controlled by the tt(unique_ptr)
-        object to the common pool and it is reassigned to the argument that is
-        passed to the function. It can also be called without argument,
-        turning the object into a 0-pointer. This member function can be used
-        to assign a new block of dynamically allocated memory to a
-        tt(unique_ptr) object.)
+        object is returned to the common pool; the object thereupon controls
+        the memory  to which the argument that is passed to the function
+        points. It can also be called without argument, turning the object
+        into a 0-pointer. This member function can be used to assign a new
+        block of dynamically allocated memory to a tt(unique_ptr) object.)
     ithtq(swap)(void swap(unique_ptr<Type> &))
        (Two identically typed tt(unique_ptrs) are swapped.)
     )
