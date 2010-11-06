@@ -98,7 +98,7 @@ tt(size_t) data members are used to monitor the filling state of the
 tt(CirQue): tt(d_size) represents the number of elements currently stored in
 the tt(CirQue), tt(d_maxSize) represents the maximum number of elements that
 the tt(CirQue) can contain. Thus, the tt(CirQue)'s data members are:
-    verbinsert(DATA)(classtemplates/examples/cirque.h)
+    verbinsert(DATA)(examples/cirque.h)
 
     The class tt(CirQue) offers various member functions.  Normal design
 principles should be adhered to when constructing class template
@@ -125,21 +125,21 @@ to tt(d_data). As class template member functions are themselves function
 templates their implementations outside of the class template's interface must
 start with the class template's template header. Here is the implementation of
 the tt(CirQue(size_t)) constructor:
-        verbinsert(CIRQUE)(classtemplates/examples/cirque.h)
+        verbinsert(CIRQUE)(examples/cirque.h)
     )
     ittq(CirQue(CirQue<Data> const &other))(The copy constructor has no
 special features. It uses a private support member tt(inc) to increment
 tt(d_back) (see below) and placement new to copy the other's tt(Data) elements
 to the current object. The implementation of the copy constructor is
 straightforward:
-        verbinsert(COPYCONS)(classtemplates/examples/cirque.h)
+        verbinsert(COPYCONS)(examples/cirque.h)
     )
     ittq(CirQue(CirQue<Data> const &&tmp))(The move constructor merely
 initializes the current object's tt(d_data) pointer to 0 and swaps (see the
 member tt(swap), below) the temporary object with the current
 object. tt(CirQue)'s destructor will inspect tt(d_data) and will immediately
 return when it's zero. Implementation:
-        verbinsert(MOVECONS)(classtemplates/examples/cirque.h)
+        verbinsert(MOVECONS)(examples/cirque.h)
     )
     ittq(~CirQue())(The destructor inspects the tt(d_data) member. If it is
 zero then nothing has been allocated and the destructor immediately
@@ -149,16 +149,16 @@ operation, setting the temporary's tt(d_data) member to zero. Otherwise
 tt(d_size) elements are destroyed by explicitly calling their destructors
 followed by returning the element's raw memory to the common
 pool. Implementation:
-        verbinsert(DESTRUCTOR)(classtemplates/examples/cirque.h)
+        verbinsert(DESTRUCTOR)(examples/cirque.h)
     )
     ittq(CirQue &operator=(CirQue<Data> const &other))(The copy assignment
         operator has a  standard implementation:
-        verbinsert(COPYASSIGN)(classtemplates/examples/cirque.h)
+        verbinsert(COPYASSIGN)(examples/cirque.h)
     )
     ittq(CirQue &operator=(CirQue<Data> const &&tmp))(The move assignment
         operator also has a standard implementation. As its implementation
         merely calls tt(swap) it is defined as an inline function template:
-        verbinsert(MOVEASSIGN)(classtemplates/examples/cirque.h)
+        verbinsert(MOVEASSIGN)(examples/cirque.h)
     )
     ittq(void pop_front())(removes the element pointed at by tt(d_front) from
         the tt(CirQue).  Throws an exception if the tt(CirQue) is empty. The
@@ -166,20 +166,20 @@ pool. Implementation:
         tt(enum CirQue<Data>::Exception) (see tt(push_back)). The
         implementation is straightforward (explicitly calling the destructor
         of the element that is removed):
-       verbinsert(POPFRONT)(classtemplates/examples/cirque.h)
+       verbinsert(POPFRONT)(examples/cirque.h)
     )
     ittq(void push_back(Data const &object))(adds another element to the
         tt(CirQue).  Throws a tt(CirQue<Data>::FULL) exception if the
         tt(CirQue) is full. The exceptions that can be thrown by a tt(CirQue)
         are defined in its tt(Exception) enum:
-       verbinsert(EXCEPTION)(classtemplates/examples/cirque.h)
+       verbinsert(EXCEPTION)(examples/cirque.h)
         A copy of tt(object) is installed in the tt(CirQue)'s raw memory using
         placement tt(new) and its tt(d_size) is incremented.
-       verbinsert(PUSHBACK)(classtemplates/examples/cirque.h)
+       verbinsert(PUSHBACK)(examples/cirque.h)
     )
     ittq(void swap(CirQue<Data> &other))(swaps the current tt(CirQue) object
         with another tt(CirQue<Data>) object;
-       verbinsert(PUSHBACK)(classtemplates/examples/cirque.h)
+       verbinsert(PUSHBACK)(examples/cirque.h)
     )
 )
     The remaining public members all consist of one-liners and are implemented
@@ -187,31 +187,31 @@ as inline functiontemplates:
     itemization(
     ittq(Data &back())(returns a reference to the element pointed at by
         tt(d_back) (undefined result if the tt(CirQue) is empty):
-       verbinsert(BACK)(classtemplates/examples/cirque.h)
+       verbinsert(BACK)(examples/cirque.h)
     )
     ittq(Data &front())(returns reference to the element pointed at by
         tt(d_front) (undefined result if the tt(CirQue) is empty);
-       verbinsert(FRONT)(classtemplates/examples/cirque.h)
+       verbinsert(FRONT)(examples/cirque.h)
     )
     ittq(bool empty() const)(returns tt(true) if the tt(CirQue) is empty;
-       verbinsert(PUSHBACK)(classtemplates/examples/cirque.h)
+       verbinsert(PUSHBACK)(examples/cirque.h)
     )
     ittq(bool full() const)(returns tt(true) if the tt(CirQue) is full;
-       verbinsert(PUSHBACK)(classtemplates/examples/cirque.h)
+       verbinsert(PUSHBACK)(examples/cirque.h)
     )
     ittq(size_t size() const)(returns the number of elements currently stored
         in the  tt(CirQue);
-       verbinsert(PUSHBACK)(classtemplates/examples/cirque.h)
+       verbinsert(PUSHBACK)(examples/cirque.h)
     )
     ittq(size_t maxSize() const)(returns the maximum number of elements that
         can be stored in the tt(CirQue);
-       verbinsert(PUSHBACK)(classtemplates/examples/cirque.h)
+       verbinsert(PUSHBACK)(examples/cirque.h)
     )
 )
 
     Finally, the class has one private member, tt(inc), returning a
 cyclically incremented pointer into tt(CirQue)'s raw memory:
-       verbinsert(INC)(classtemplates/examples/cirque.h)
+       verbinsert(INC)(examples/cirque.h)
 
 
     When objects of a class template are instantiated, em(only) the
@@ -227,4 +227,4 @@ the class template's interface (defining some functions inline).
     Now that the class tt(CirQue) has been defined, it can be used. To use the
 class its object must be instantiated for a particular data type. In the
 following example it is initialized for data type tt(std::string):
-        verbinclude(classtemplates/examples/cirque.cc)
+        verbinclude(examples/cirque.cc)

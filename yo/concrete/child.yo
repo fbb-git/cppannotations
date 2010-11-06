@@ -11,27 +11,27 @@ communications between its own child- and parent processes. As these pipes are
 used by the tt(Child)'s child process, their names refer to the child
 process. The child process reads from tt(d_in), and writes to tt(d_out). Here
 is the interface of the class tt(Child):
-        verbinsert(CLASS)(concrete/examples/monitor/child.h)
+        verbinsert(CLASS)(examples/monitor/child.h)
     it() The tt(Child)'s constructor simply stores its argument, a
 child-process order number, in its own tt(d_nr) data member:
-        verbinsert(CONS)(concrete/examples/monitor/child.h)
+        verbinsert(CONS)(examples/monitor/child.h)
     it() The tt(Child)'s child process obtains commands from its standard
 input stream and writes its output to its standard output stream. Since the
 actual communication channels are pipes, redirections must be used. The
 tt(childRedirections) member looks like this:
-        verbinsert(CHILD)(concrete/examples/monitor/child.cc)
+        verbinsert(CHILD)(examples/monitor/child.cc)
     it() Although the parent process performs no actions, it must configure
 some redirections. Realizing that the names of the pipes indicate their
 functions in the child process. So the parent em(writes) to tt(d_in) and
 em(reads) from tt(d_out). Here is tt(parentRedirections):
-        verbinsert(PARENT)(concrete/examples/monitor/child.cc)
+        verbinsert(PARENT)(examples/monitor/child.cc)
     it() The tt(Child) object exists until it is destroyed by the
 tt(Monitor)'s tt(stopChild) member. By allowing its creator, the tt(Monitor)
 object, to access the parent-side ends of the pipes, the tt(Monitor) object
 can communicate with the tt(Child)'s child process via those pipe-ends. The
 members tt(readFd) and tt(writeFd) allow the tt(Monitor) object to access
 these pipe-ends:
-        verbinsert(PIPES)(concrete/examples/monitor/child.h)
+        verbinsert(PIPES)(examples/monitor/child.h)
     it() The tt(Child) object's child process performs two tasks:
         itemization(
         it() It must reply to information appearing at its standard input
@@ -49,10 +49,10 @@ to return. When the alarm goes off it sends a message to its standard output
 (hence, into the writing pipe). Otherwise, it will echo the messages appearing
 at its standard input to its standard output. Here is the tt(childProcess)
 member:
-        verbinsert(PROCESS)(concrete/examples/monitor/child.cc)
+        verbinsert(PROCESS)(examples/monitor/child.cc)
     it() Two accessors are defined allowing the tt(Monitor) object to obtain
 the tt(Child)'s process ID and its order number:
-        verbinsert(PIDNR)(concrete/examples/monitor/child.h)
+        verbinsert(PIDNR)(examples/monitor/child.h)
     it() A tt(Child) process terminates when the user enters a tt(stop)
 command. When an existing child process number was entered, the corresponding
 tt(Child) object is removed from tt(Monitor)'s tt(d_child) map. As a result,
@@ -65,5 +65,5 @@ this does not happen. In `real life' more elaborate killing-procedures may be
 required (e.g., using tt(SIGKILL) in addition to tt(SIGTERM)). As discussed in
 section ref(CONSEXCEPTIONS) it em(is) important to ensure the proper
 destruction. Here is the tt(Child)'s destructor:
-        verbinsert(CHILDDES)(concrete/examples/monitor/child.cc)
+        verbinsert(CHILDDES)(examples/monitor/child.cc)
     )

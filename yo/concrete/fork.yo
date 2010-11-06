@@ -66,19 +66,19 @@ the value 0. Its public interface declares only two members:
         it() an (default) tt(virtual) destructor tt(~Fork).
         )
         Here is tt(Fork)'s interface:
-            verbinsert(CLASS)(concrete/examples/fork.h)
+            verbinsert(CLASS)(examples/fork.h)
     it() All non-virtual member functions are declared in the class's
 tt(protected) section and can thus em(only) be used by derived classes. They
 are:
         itemization(
         itt(pid()): The member function tt(pid) allows derived classes to
             access the system tt(fork)'s return value:
-                verbinsert(PID)(concrete/examples/fork.h)
+                verbinsert(PID)(examples/fork.h)
         itt(waitForChild()): The member tt(int waitForChild) can be called by
 parent processes to wait for the completion of their child processes (as
 discussed below). This member is declared in the class interface. Its
 implementation is:
-                verbinclude(concrete/examples/waitforchild.cc)
+                verbinclude(examples/waitforchild.cc)
             This simple implementation returns the child's emi(exit status) to
 the parent. The called system function ti(waitpid) em(blocks) until the
 child terminates.
@@ -109,7 +109,7 @@ em(parent) process.
     Redirection of the standard streams is necessary if parent- and
 child processes must communicate with each other via the standard streams.
 Here are their default definitions provided by the class's interface:
-            verbinsert(REDIRECT)(concrete/examples/fork.h)
+            verbinsert(REDIRECT)(examples/fork.h)
     )
     The member function tt(fork) calls the system function tt(fork)
 (Caution: since the system function tt(fork) is called by a member
@@ -120,12 +120,12 @@ or  tt(childProcess) is called. Maybe redirection is
 necessary. tt(Fork::fork)'s implementation calls tt(childRedirections)
 just before calling tt(childProcess), and tt(parentRedirections) just
 before calling tt(parentProcess):
-        verbinclude(concrete/examples/fork.cc)
+        verbinclude(examples/fork.cc)
     In tt(fork.cc) the class's emi(internal header file) tt(fork.ih) is
 included. This header file takes care of the inclusion of the necessary system
 header files, as well as the inclusion of tt(fork.h) itself. Its
 implementation is:
-        verbinclude(concrete/examples/fork.ih)
+        verbinclude(examples/fork.ih)
 
     Child processes should not return: once they have completed their tasks,
 they should terminate. This happens automatically when the child process

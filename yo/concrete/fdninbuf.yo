@@ -22,16 +22,16 @@ have been read by the compiler before its member functions can be compiled.
     it() Like the class tt(IFdStreambuf) (section ref(IFDBUF)), its data
 members are protected. Since the buffer's size is configurable, this size is
 kept in a dedicated data member, tt(d_bufsize):
-            verbinsert(CLASS)(concrete/examples/ifdnbuf.h)
+            verbinsert(CLASS)(examples/ifdnbuf.h)
     it() The default constructor does not allocate a buffer. It can be used
 to construct an object before the file descriptor becomes known. A second
 constructor simply passes its arguments to tt(open). tt(Open) will then
 initialize the object so that it can actually be used:
-            verbinsert(CONS)(concrete/examples/ifdnbuf.h)
+            verbinsert(CONS)(examples/ifdnbuf.h)
     it() Once the object has been initialized by tt(open), its destructor will
 both delete the object's buffer and use the file descriptor to close the
 device:
-            verbinsert(DESTR)(concrete/examples/ifdnbuf.h)
+            verbinsert(DESTR)(examples/ifdnbuf.h)
     Even though the device is closed in the above implementation this may not
 always be desirable. In cases where the open file descriptor is already
 available the intention may be to use that descriptor repeatedly, each time
@@ -45,13 +45,13 @@ assumed that the calling program has already opened the device. Once the
 buffer has been allocated, the base class member ti(setg) is used to ensure
 that hi(eback) tt(streambuf::eback) hi(gptr) tt(streambuf::gptr) and hi(egptr)
 tt(streambuf::egptr) return correct values:
-            verbinsert(OPEN)(concrete/examples/ifdnbuf.h)
+            verbinsert(OPEN)(examples/ifdnbuf.h)
     it() The overridden member tt(underflow) is implemented almost
 identically to tt(IFdStreambuf)'s (section ref(IFDBUF)) member. The only
 difference is that the current class supports buffers of larger
 sizes. Therefore, more characters (up to tt(d_bufsize)) may be read from the
 device at once:
-            verbinsert(UFLOW)(concrete/examples/ifdnbuf.h)
+            verbinsert(UFLOW)(examples/ifdnbuf.h)
     it() Finally ti(xsgetn) is overridden. In a loop, tt(n) is reduced until
 0, at which point the function terminates. Alternatively, the member returns
 if tt(underflow) fails to obtain more characters. This member optimizes the
@@ -59,9 +59,9 @@ reading of series of characters. Instead of calling hi(sbumpc)
 tt(streambuf::sbumpc) tt(n) times, a block of tt(avail) characters is copied
 to the destination, using hi(gbump)tt(streambuf::gbump) to consume tt(avail)
 characters from the buffer using one function call:
-            verbinsert(XSGETN)(concrete/examples/ifdnbuf.h)
+            verbinsert(XSGETN)(examples/ifdnbuf.h)
     )
     The member function ti(xsgetn) is called by hi(sgetn)tt(streambuf::sgetn),
 which is a tt(streambuf) member. Here is an example illustrating the use of
 this member function with a tt(IFdNStreambuf) object:
-        verbinclude(concrete/examples/ifdnbuf.cc)
+        verbinclude(examples/ifdnbuf.cc)

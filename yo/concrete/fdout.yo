@@ -78,16 +78,16 @@ have been read by the compiler before its member functions can be compiled.
     it() It defines three data members. These data members keep track of,
 respectively, the size of the buffer, the file descriptor, and the buffer
 itself. Here is the full class interface
-        verbinsert(CLASS)(concrete/examples/fdout.h)
+        verbinsert(CLASS)(examples/fdout.h)
     it() Its default constructor merely initializes the buffer to 0. Slightly
 more interesting is its constructor expecting a file descriptor and a buffer
 size. This constructor passes its arguments on to the class's tt(open)
 member (see below). Here are the constructors:
-        verbinsert(CONS)(concrete/examples/fdout.h)
+        verbinsert(CONS)(examples/fdout.h)
     it() The destructor calls tt(sync), flushing any characters stored in the
 output buffer to the device. In implementations not using a buffer the
 destructor can be given a default implementation:
-        verbinsert(DESTR)(concrete/examples/fdout.h)
+        verbinsert(DESTR)(examples/fdout.h)
     This implementation does not close the device. It is left as an exercise
 to the reader to change this class in such a way that the device is optionally
 closed (or optionally remains open). This approach was adopted by, e.g., the
@@ -99,11 +99,11 @@ hi(setp)tt(streambuf::setp), the begin and end points of the buffer are
 defined. This is used by the tt(streambuf) base class to initialize
 hi(pbase)tt(streambuf::pbase), hi(pptr)tt(streambuf::pptr), and
 hi(epptr)tt(streambuf::epptr):
-        verbinsert(OPEN)(concrete/examples/fdout.h)
+        verbinsert(OPEN)(examples/fdout.h)
     it() The member ti(sync) flushes the as yet unflushed contents of the
 buffer to the device. After the flush the buffer is reinitialized using
 tt(setp). After successfully flushing the buffer tt(sync) returns 0:
-        verbinsert(SYNC)(concrete/examples/fdout.h)
+        verbinsert(SYNC)(examples/fdout.h)
     it() The member hi(overflow)tt(streambuf::overflow) is also
 overridden. Since this member is called from the tt(streambuf) base class when
 the buffer is full it should first call tt(sync) to flush the buffer to the
@@ -113,9 +113,9 @@ hi(pbump)tt(streambuf::pbump).  Entering a character into the buffer should be
 implemented using available tt(streambuf) member functions, rather than `by
 hand' as doing so might invalidate tt(streambuf)'s internal bookkeeping. Here
 is tt(overflow)'s implementation:
-        verbinsert(OVERFLOW)(concrete/examples/fdout.h)
+        verbinsert(OVERFLOW)(examples/fdout.h)
     )
     The next program uses the tt(OFfdStreambuf) class to copy its standard
 input to file descriptor ti(STDOUT_FILENO), which is the symbolic name of the
 file descriptor used for the standard output:
-        verbinclude(concrete/examples/fdout.cc)
+        verbinclude(examples/fdout.cc)

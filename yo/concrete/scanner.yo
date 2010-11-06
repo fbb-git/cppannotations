@@ -41,12 +41,12 @@ there is no need to open it again and so tt(Scanner)'s constructor will use
 this constructor to store the name of the initial file only. tt(Scanner)'s
 public section starts off by defining the tt(enum Error) defining various
 symbolic constants for errors that may be detected:
-        verbinsert(HEAD)(concrete/lexer/scanner/scanner.h)
+        verbinsert(HEAD)(lexer/scanner/scanner.h)
     it() As they are objects, the class's data members are initialized
 automatically by tt(Scanner)'s constructor. It activates the initial input
 (and output) file and pushes the name of the initial input file on the file
 stack, using the second tt(FileInfo) constructor. Here is its implementation:
-        verbinclude(concrete/lexer/scanner/scanner.cc)
+        verbinclude(lexer/scanner/scanner.cc)
     it() The scanning process proceeds as follows:
     once the scanner extracts a filename from an tt(#include) directive, a
 switch to another file is performed by tt(pushSource).  If the filename could
@@ -61,7 +61,7 @@ throws a tt(nestingTooDeep) exception.
 inclusions when switching to new files. This function throws an exception if a
 filename is included twice using a simple literal name check. Here is its
 implementation:
-        verbinclude(concrete/lexer/scanner/throwoncircular.cc)
+        verbinclude(lexer/scanner/throwoncircular.cc)
         it() Then the new filename is added to the tt(FileInfo) vector, at the
 same time creating a new tt(ifstream) object.  If this fails, the scanner
 throws a tt(cantRead) exception.
@@ -70,7 +70,7 @@ opened stream, and the lexical scanner is instructed to switch to that stream
 using tt(yyFlexLexer)'s member function ti(yy_switch_to_buffer).
     )
     Here is tt(pushSource)'s implementation:
-        verbinclude(concrete/lexer/scanner/pushsource.cc)
+        verbinclude(lexer/scanner/pushsource.cc)
     it() The class tt(yyFlexLexer) provides a series of member functions that
 can be used to switch files. The file-switching capability of a
 tt(yyFlexLexer) object is founded on the tt(struct yy_buffer_state),
@@ -109,14 +109,14 @@ memory allocated for this stream by tt(pushSource). Therefore tt(delete)
 is called for the tt(ifstream) pointer stored at the back of tt(d_fileInfo) to
 take care of both. Following this the last tt(FileInfo) entry is removed from
 tt(d_fileInfo). Finally the function returns tt(true):
-        verbinclude(concrete/lexer/scanner/popsource.cc)
+        verbinclude(lexer/scanner/popsource.cc)
     it() Two service members are offered: tt(stackTrace) dumps the names of
 the currently pushed files to the standard error stream. It may be called by
 exception catchers. Here is its implementation:
-        verbinclude(concrete/lexer/scanner/stacktrace.cc)
+        verbinclude(lexer/scanner/stacktrace.cc)
     it() tt(lastFile) returns the name of the currently processed file. It
 may be implemented inline:
-        verbinsert(LAST)(concrete/lexer/scanner/scanner.h)
+        verbinsert(LAST)(lexer/scanner/scanner.h)
     it() The lexical scanner itself is defined in tt(Scanner::yylex).
 Therefore, tt(int yylex) must be declared by the class tt(Scanner), as it
 overrides tt(FlexLexer)'s virtual member tt(yylex).
