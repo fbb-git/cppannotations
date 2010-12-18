@@ -2,6 +2,38 @@
 data.  Before using mutexes the tthi(mutex) header file must have been
 included.
 
+Mutexes should be used when multiple threads needs access to common data to
+prevent data corruption. For (a very simple) example, unless mutexes are used
+the following could happen when two threads access a common int variable:
+        verb(
+Time step:    Thread1:      var        Thread2:        description
+---------------------------------------------------------------------------
+    0                        5
+    1           starts                                  T1 active
+    2           writes var                              T1 commences writing
+    3           stopped                                 Context switch
+    4                                   starts          T2 active
+    5                                   writes var      T2 commences writing
+    6                       10          assigns 10      T2 writes 10
+    7                                   stopped         Context switch
+    8           assigns 12                              T1 writes 12
+    9                       12
+----------------------------------------------------------------------------
+    )
+    The above is just a very simple illustration of what may go wrong when
+multiple threads access the same data without using mutexes. Thread 2 clearly
+thinks (and may proceed on the assumption) that var equals 10, but after step
+9 it holds the value 12. Mutexes are used to prevent these kinds of problems
+by using data `atomic': as long as a thread holds a mutex for the data it's
+operating on other threads cannot access the data. All this depends on
+cooperation between the threads, however. If thread 1 uses mutexes, but thread
+2 doesn't then thread 2 may access the common data any which way it wants
+to. Of course that's bad practice, and mutexes allow us to write program not
+behaving badly in this respect. More information about mutexes can be found in
+the extensive literature on this topic. It is not a topic that is discussed
+further in the annotations(). The available facilities for using mutexes,
+however, em(are) covered in this section.
+
 Apart from the tt(std::mutex) class hi(recursive_mutex)
 tt(std::recursive_mutex) is offered.  When a tt(recursive_mutex) is called
 multiple times by the same thread it will increase its lock-count. Before
