@@ -22,8 +22,8 @@
     }
     /*
         Displays:
-            Removing all "alpha"s:
-            kilo lima mike november oscar papa quebec
-            Trailing elements are:
-            oscar alpha alpha papa quebec
+			Removing all "alpha"s:
+			kilo lima mike november papa quebec 
+			Leftover elements are:
+			alpha alpha alpha papa quebec 
     */

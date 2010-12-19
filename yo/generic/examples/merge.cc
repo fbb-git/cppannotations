@@ -21,7 +21,7 @@
             };
         string range2[] =
             {                                       // 4 elements
-                "echo", "delta", "golf", "romeo"
+                "delta", "echo", "golf", "romeo"
             };
         string result[5 + 4];
 
@@ -47,6 +47,6 @@
     }
     /*
         Displays:
-            alpha bravo echo delta foxtrot golf hotel romeo zulu
-            ALPHA bravo delta ECHO foxtrot GOLF HOTEL romeo ZULU
+            alpha bravo delta echo foxtrot golf hotel romeo zulu 
+            ALPHA bravo delta ECHO foxtrot GOLF HOTEL romeo ZULU 
     */

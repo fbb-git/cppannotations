@@ -20,7 +20,7 @@
             void operator()(std::string &str)
             {
                 std::for_each(str.begin(), str.end(), lowerCase);
-                str[0] = toupper(str[0]);   // here assuming str.length()
+                str[0] = toupper(str[0]);   // assuming str is not empty
                 std::cout << ++d_count << " " << str << "; ";
             }
             int count() const
