@@ -1,7 +1,6 @@
 #include <iostream>
 #include <ctime>
 #include <random>
-using namespace std;
 
 int main()
 {
@@ -12,7 +11,7 @@ int main()
     for (size_t idx = 0; idx < 10; ++idx)
         std::cout << "a random value: " << dist(engine) << "\n";
 
-    cout << '\n' <<
+    std::cout << '\n' <<
         dist.min() << " " << dist.max() << '\n';
 
 }
