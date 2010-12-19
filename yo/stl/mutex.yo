@@ -4,7 +4,11 @@ included.
 
 Mutexes should be used when multiple threads needs access to common data to
 prevent data corruption. For (a very simple) example, unless mutexes are used
-the following could happen when two threads access a common int variable:
+the following could happen when two threads access a common int variable (a
+emi(context switch) occurs when the operating system switches between
+threads. With a mult-processor system the threads can really be executed 
+in parallel. To keep the example simple, assume multi threading is used on a
+single-core computer, switching between multi-threads):
         verb(
 Time step:    Thread1:      var        Thread2:        description
 ---------------------------------------------------------------------------
@@ -22,17 +26,27 @@ Time step:    Thread1:      var        Thread2:        description
     )
     The above is just a very simple illustration of what may go wrong when
 multiple threads access the same data without using mutexes. Thread 2 clearly
-thinks (and may proceed on the assumption) that var equals 10, but after step
-9 it holds the value 12. Mutexes are used to prevent these kinds of problems
-by using data `atomic': as long as a thread holds a mutex for the data it's
-operating on other threads cannot access the data. All this depends on
-cooperation between the threads, however. If thread 1 uses mutexes, but thread
-2 doesn't then thread 2 may access the common data any which way it wants
-to. Of course that's bad practice, and mutexes allow us to write program not
-behaving badly in this respect. More information about mutexes can be found in
-the extensive literature on this topic. It is not a topic that is discussed
-further in the annotations(). The available facilities for using mutexes,
-however, em(are) covered in this section.
+thinks (and may proceed on the assumption) that tt(var) equals 10, but after
+step 9 tt(var) holds the value 12. Mutexes are used to prevent these kinds of
+problems by using data `atomic': as long as a thread holds a mutex for the
+data it is operating on, other threads cannot access the data. All this
+depends on cooperation between the threads, however. If thread 1 uses mutexes,
+but thread 2 doesn't then thread 2 may access the common data any which way it
+wants to. Of course that's bad practice, and mutexes allow us to write program
+not behaving badly in this respect. It is stressed here that although using
+mutexes is the programmer's responsibility, their implementation isn't. A
+user-program is unable to accomplish the locking atomicity mutexes offer. The
+bottom line is that if we try to implement a mutex-like facility in our
+programs then each statement will be compiled into several machine
+instructions and in between each of these instructions the operating system
+may do a context switch, rendering the instructions non-atomic.  Mutexes offer
+the required atomicity and when requesting a mutex-lock the thread is
+suspended (i.e., the mutex statement does not return) until the lock has been
+obtained by the thread.  More information about mutexes can be found in the
+link(mentioned O'Reilly book)(PTHREADS) and in general in the extensive
+literature on this topic. It is not a topic that is discussed further in the
+annotations(). The available facilities for using mutexes, however, em(are)
+covered in this section.
 
 Apart from the tt(std::mutex) class hi(recursive_mutex)
 tt(std::recursive_mutex) is offered.  When a tt(recursive_mutex) is called
@@ -62,7 +76,8 @@ destroyed, thereby releasing the lock on tt(data):
     }
         )
     tt(Unique_lock) is used similarly, but is used when timeouts must be
-considered as well:
+considered as well. So a tt(unique_lock) not only returns when the lock is
+obtained but also after a specified amount of time:
         verb(
     std::timed_mutex dataMutex;
     Data data;
@@ -79,107 +94,3 @@ considered as well:
 milliseconds. If tt(guard)'s tt(operator bool) returns tt(true) the lock was
 obtained and tt(data) can be processed safely.
 
- hi(deadlock) em(Deadlocks) are commonly encountered in multi threaded
-programs. If a deadlock occurs when two locks are required to process data,
-but one thread obtains the first lock and another thread obtains the second
-lock. The C++0x standard defines a generic
- hi(lock)tt(std::lock) function that can be used to prevent problems like
-these. The tt(std::lock) function can be used to lock multiple mutexes in one
-atomic action. Here is an example:
-        verb(
-    struct SafeString
-    {
-        std::mutex  d_mutex;
-        std::string d_text;
-    };
-
-    void calledByThread(SafeString &first, SafeString &second)
-    {
-        std::unique_lock<std::mutex>                        // 1
-                lock_first(first.d_mutex, std::defer_lock);
-
-        std::unique_lock<std::mutex>                        // 2
-                lock_second(second.d_mutex, std::defer_lock);
-
-        std::lock(lock_first, lock_second);                 // 3
-
-        safeProcess(first.d_text, second.d_text);
-    }
-        )
-    At 1 and 2 tt(unique_locks) are created. Locking is deferred until calling
-tt(std::lock) at 3. Having obtained the lock, the two tt(SafeString) text
-members can both be safely processed by tt(calledByThread).
-
-Another problematic issue with threads involves initialization. If multiple
-threads are running and only the first thread encountering the initialization
-code should perform the initialization then this problem should not be solved
-using mutexes. Although proper synchronization is realized, the
-synchronization will also be performed time and again for every thread. The
-C++0x standard offers several ways to perform a proper initialization:
-    itemization(
-    it() First, a emi(constexpr) em(constructor) may be defined. Constexpr
-constructors are currently not yet supported by the tt(g++) compiler and they
-are not yet discussed in the annotations().
-    COMMENT(
-First, suppose your constructor is declared with the new constexpr keyword and
-satisfies the requirements for constant initialization. In this case, an
-object of static storage duration, initialized with that constructor, is
-guaranteed to be initialized before any code is run as part of the static
-initialization phase. This is the option chosen for std::mutex, because it
-eliminates the possibility of race conditions with initialization of mutexes
-at a global scope:
-
-
-class my_class
-    {
-        int i;
-
-    public:
-        constexpr my_class():i(0){}
-
-        my_class(int i_):i(i_){}
-
-        void do_stuff();
-    };
-
-    my_class x; // static initialization with constexpr constructor
-
-    int foo();
-    my_class y(42+foo()); // dynamic initialization
-
-    void f()
-    {
-        y.do_stuff(); // is y initialized?
-    }
-        END)
-
-    it() Second, a static variable defined within a compound statement may be
-used (e.g., a static local variable within a function body).  In C++ static
-variables hi(static variable: initialization) defined within a compund
-statement are initialized the first time the function is called at the point
-in the code where the static variable is defined as illustrated by the
-following example:
-        verbinclude(examples/staticlocal.cc)
-    This feature causes a thread to wait automatically if another thread is
-still initializing the static data (note that em(non-static) data never cause
-problems, as each non-static local variables have lifes that are completely
-restricted to their own threads).
-    it() If the above two approaches can't be used. The combined use of
- hi(call_once)tt(std::call_once) and hi(once_flag) tt(std::once_flag) result
-in one-time execution of a specified function as illustrated by the next
-example:
-        verb(
-    std::string *global;
-    std::once_flag globalFlag;
-
-    void initializeGlobal()
-    {
-        global = new std::string("Hello world (why not?)");
-    }
-    void safeUse()
-    {
-        std::call_once(globalFlag, initializeGlobal);
-        process(*global);
-    }
-        )
-    )
