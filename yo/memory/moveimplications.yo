@@ -1,0 +1,28 @@
+Here are some general rules to apply when designing classes offering value
+semantics (i.e., classes whose objects can be used to initialize other
+objectes of their class and that can be asssigned to other objects of their
+class):
+    itemization(
+    it() Classes using pointers to dynamically allocated memory, owned by the
+class's objects must be provided with a copy constructor, an overloaded copy
+assignment operator and a destructor;
+    it() Classes using pointers to dynamically allocated memory, owned by the
+class's objects should be provided with a move constructor and a move
+assignment operator;
+    it() Classes using composition may benefit from move constructors and
+move assignment operators as well. Some classes support neither move nor copy
+construction and assignment (for example: stream classes don't). If your
+class contains data members of such class types then defining move operations
+is pointless.
+    it() In general: if your class supports functions expecting tt(Class const
+&) parameters a corresponding move-aware function expecting tt(Class const &&)
+parameters should be considered.
+    it() The tt(const) keyword in tt(Class const &&) parameters is their to
+allow the function to be called from arguments defining tt(Class const) return
+types. Such const-aware functions are commonly encountered when binary
+operators are overloaded (e.g., tt(Class const operator+(Class const &lhs,
+Class const &rhs))). Since the returned value is a temporary value the
+function receiving the anonymous tt(Class const) object may modify it,
+ignoring its const-ness, when performing a move-operation.
+    )
+

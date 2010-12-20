@@ -1,18 +1,12 @@
-Before the advent of the C++0x standard bf(C++) offered basically two ways to
-assign the information pointed to by a data member of a temporary object to an
-em(lvalue) object. Either a copy constructor or reference counting had to be
-used. The C++0x standard adds emi(move semantics) to these two, allowing
-em(transfer) of the data pointed to by a temporary object to its destination.
-
 Our class tt(Strings) has, among other members a data member tt(string
 *d_string). Clearly, tt(Strings) should define a copy constructor, a
 destructor and an overloaded assignment operator.
 
-Now design a function tt(loadStrings(std::istream &in)) extracting the strings
-of a tt(Strings) object from tt(in). As the tt(Strings) object doesn't exit
-yet, the tt(Strings) object filled by tt(loadStrings) is returned by
-value. The function tt(loadStrings) returns a temporary object, which is then
-used to initialize an external tt(Strings) object:
+Now consider the following function tt(loadStrings(std::istream &in))
+extracting the strings for a tt(Strings) object from tt(in). Next, the
+tt(Strings) object filled by tt(loadStrings) is returned by value. The
+function tt(loadStrings) returns a temporary object, which can then used to
+initialize an external tt(Strings) object:
         verb(
     Strings loadStrings(std::istream &in)
     {
@@ -29,114 +23,25 @@ used to initialize an external tt(Strings) object:
 tt(Strings ret) object;
     it() initializing tt(store) from tt(loadString)'s return value
     )
-
-The em(rvalue reference) concept allows us to improve this procedure. An
-em(rvalue reference) binds to an anonymous temporary (r)value and the compiler
-is required to do so whenever possible. We, as programmers, must inform the
-compiler in what situations rvalue references can be handled. We do this by
-providing overloaded members defining rvalue reference parameters.
-
-One such overloaded member is the emi(move constructor). The move constructor
-is a constructor defining an i(rvalue reference) to an object of its own class
-as parameter. Here is the declaration of the tt(Strings) class
-move constructor:
+    We can improve the above procedure by defining a 
+ emi(move constructor).  Here is the declaration of the tt(Strings) class move
+constructor:
         verb(
-    Strings(Strings &&tmp);
+    Strings(Strings const &&tmp);
         )
-    Move constructors are allowed to simply assign the values of pointer data
-members to their own pointer data members without requiring them to make a
-copy of the source's data first. Having done so the temporary's pointer value
-is set to zero to prevent its destructor from destroying data now owned by the
-just constructed object. The move constructor has em(grabbed) or
+
+    Move constructors of classes using dynamic memory allocation are allowed
+to assign the values of pointer data members to their own pointer data members
+without requiring them to make a copy of the source's data. Next, the
+temporary's pointer value is set to zero to prevent its destructor from
+destroying data now owned by the just constructed object. The move constructor
+has em(grabbed) or
  hi(resource: stealing) em(stolen) the data from the temporary object. This is
-OK as the temporary cannot be referred to again (as it is anonymous, it cannot
-be accessed by other code) and ceases to exist shortly after the constructor's
-call anyway. Here is the implementation of tt(Strings) move constructor:
+OK as the temporary object cannot be referred to again (as it is anonymous, it
+cannot be accessed by other code) and the temporary objects will cease to
+exist shortly after the constructor's call. Here is the implementation of
+tt(Strings) move constructor:
         verbinclude(examples/stringsmove.cc)
 
-    Once a class becomes a emi(move-aware) class this awareness must extend to
-its destructor as well. With tt(Strings) this is not an issue as its
-destructor only executes  tt(delete[] d_string), but it becomes an issue in
-classes using, e.g., pointers to pointer data members. Their destructors
-must visit each of the array's pointers to delete the objects pointed to by
-the array's elements. Assuming that tt(Strings d_string) data member was
-defined as tt(string **d_string) the implementation of tt(String)'s move
-constructor may remain as-is, but the destructor must now inspect tt(d_string)
-to prevent the destruction loop from executing when it is zero:
-        verb(
-    Strings::~Strings()
-    {
-        if (d_string == 0)
-            return;
-        for (string **end = d_string + d_size; end-- != d_string; )
-            delete *end;
-        delete[] d_string;
-    }
-        )
 
-    In addition to the move constructor other members defining tt(Class const
-&) parameters may also be overloaded with members expecting tt(Class &&)
-parameters. Here too the compiler will select these latter overloads if an
-anonymous temporary argument is provided. Let's consider the implications for
-a minute using the next example, assuming tt(Class) offers a move constructor
-and a copy constructor:
-        verb(
-    Class factory();
 
-    void fun(Class const &other);   // a
-    void fun(Class &&tmp);          // b
-
-    void callee(Class &&tmp);
-    {
-        Class object(factory());    // 1
-        Class object2(object);      // 2
-        fun(object);                // 3
-        fun(factory());             // 4
-        fun(tmp);                   // 5
-    }
-
-    int main()
-    {
-        callee(factory());
-    }
-        )
-    itemization(
-    it() At 1 the move constructor is called. Object is initialized by an
-anonymous temporary tt(Class) object;
-    it() At 2 the copy constructor is called. The constructor's argument is an
-existing local object;
-    it() At 3 function a is called: tt(fun)'s argument is an existing local
-object;
-    it() At 4 function b is called: tt(fun)'s argument is an anonymous
-temporary object;
-    it() At 5 function a is called. At first sight this might be surprising,
-but tt(fun)'s argument is not an em(anonymous) temporary object but a
-em(named) temporary object. Overloads expecting rvalue references are em(only)
-selected when passed em(anonymous) temporary objects.
-    )
-    Realizing that tt(fun(tmp)) might be called twice the compiler's choice is
-understandable. If tt(tmp)'s data would have been grabbed at the first call,
-the second call would receive tt(tmp) without any data. But at the last call
-we might know that  tt(tmp) is never used again and so we might like to ensure
-that tt(fun(Class &&)) is called. This can be realized by the following cast:
-        verb(
-    fun(reinterpret_cast<Class &&>(tmp)); // last call!
-        )
-    More often, though the shorthand hi(move) tt(fun(std::move(tmp))) is used,
-already performing the required cast for us. tt(Std::move) is indirectly
-declared by many header files. If no header is already declaring tt(std::move)
-then include ti(utility).
-
-    It is pointless to provide a function with an rvalue reference return
-type. The compiler decides whether or not to use an overloaded member
-expecting an rvalue reference on the basis of the provided argument: if it is
-an anonymous temporary it will call the overloaded member defining the rvalue
-reference parameter.
-
-    Classes not using pointer members pointing to memory controlled by its
-objects (and not having base classes doing so, see chapter ref(INHERITANCE))
-do not benefit from overloaded members expecting rvalue references.
-
-    The compiler, when selecting a function to call applies a fairly simple
-algorithm, and also considers copy elision. This is covered shortly (section
-ref(RVO)).

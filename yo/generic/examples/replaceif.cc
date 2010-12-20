@@ -9,7 +9,7 @@
     {
         string words[] =
             { "kilo", "alpha", "lima", "mike", "alpha", "november", "alpha",
-                "oscar", "alpha", "alpha", "papa", "quebec" };
+                "oscar", "alpha", "alpha", "papa"};
         size_t const size = sizeof(words) / sizeof(string);
 
         replace_if(words, words + size,
@@ -20,5 +20,5 @@
     }
     /*
         Displays:
-            kilo ALPHA lima mike ALPHA november ALPHA oscar ALPHA ALPHA papa
+            kilo ALPHA lima mike ALPHA november ALPHA oscar ALPHA ALPHA papa 
     */

@@ -1,0 +1,27 @@
+In addition to the overloaded assignment operator a emi(move assignment)
+operator could be implemented for classes supporting move operations. In this
+case, if the class supports swapping the implementation is really simple. No
+copy construction is required and the move assignment operator can simply be
+implemented like this:
+        verb(
+    Class &operator=(Class const &&tmp)
+    {
+        swap(const_cast<Class &>(tmp));
+        return *this;
+    }
+        )
+    If swapping is not supported then the assignment can be performed for each
+of the data members in turn, using tt(std::move) as shown in the previous
+section with a class tt(Person). Here is an example showing how to do this
+with that class  tt(Person):
+        verb(
+    Person &operator=(Person const &&tmp)
+    {
+        d_name = std::move(tmp.d_name);
+        d_address = std::move(tmp.d_address);
+        return *this;
+    }
+        )
+
+
+        

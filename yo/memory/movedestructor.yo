@@ -1,0 +1,42 @@
+    Once a class becomes a emi(move-aware) class one should realize that its
+destructor will still do its job as implemented. Consequently, when moving
+pointer values from a temporary source to a destination the move constructor
+should make sure that the temporary's pointer value is set to zero, to prevent
+doubly freeing memory. 
+
+    If a class defines pointers to pointer data members there will usually not
+only be a pointer that is moved, but also a tt(size_t) defining the number of
+elements in the array of pointers. 
+
+Once again, consider the class tt(Strings). Its destructor is implemented
+like this: 
+        verb(
+    Strings::~Strings()
+    {
+        for (string **end = d_string + d_size; end-- != d_string; )
+            delete *end;
+        delete[] d_string;
+    }
+        )
+    The move constructor (and other move operations!) must realize that the
+distructor not only deletes tt(d_string), but also considers tt(d_size). A
+member implementing move operations should therefore not only set tt(d_string)
+to zero but also tt(d_size). The previously shown move constructor for
+tt(Strings) is therefore incorrect. Its improved implementation is:
+        verb(
+    Strings::Strings(Strings const &&tmp)
+    :
+        d_memory(tmp.d_memory),
+        d_size(tmp.d_size),
+        d_capacity(tmp.d_capacity)
+    {
+        const_cast<Strings &>(tmp.d_memory) = 0;
+        const_cast<Strings &>(tmp.d_size) = 0;
+    }
+        )
+    If operations by the destructor all depend on tt(d_string) having a
+non-zero value then variations of the above approach are of course
+possible. The move operations merely could decide to set tt(d_memory) to 0,
+and then test whether tt(d_memory == 0) in the destructor (and if so, end the
+destructor's actions), saving some tt(d_size) assignments.
+
