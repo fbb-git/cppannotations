@@ -20,5 +20,5 @@
     }
     /*
         Displays:
-            kilo ALPHA lima mike ALPHA november ALPHA oscar ALPHA ALPHA papa 
+            kilo ALPHA lima mike ALPHA november ALPHA oscar ALPHA ALPHA papa
     */

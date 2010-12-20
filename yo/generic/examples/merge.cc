@@ -47,6 +47,6 @@
     }
     /*
         Displays:
-            alpha bravo delta echo foxtrot golf hotel romeo zulu 
-            ALPHA bravo delta ECHO foxtrot GOLF HOTEL romeo ZULU 
+            alpha bravo delta echo foxtrot golf hotel romeo zulu
+            ALPHA bravo delta ECHO foxtrot GOLF HOTEL romeo ZULU
     */

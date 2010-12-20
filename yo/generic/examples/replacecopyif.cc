@@ -12,7 +12,7 @@
               "alpha", "oscar", "alpha", "alpha", "papa"};
         size_t const size = sizeof(words) / sizeof(string);
         string result[size];
-        
+
         // Note: the comparisons are: "mike" > word[i]
         replace_copy_if(words, words + size, result,
                         bind1st(greater<string>(), string("mike")),

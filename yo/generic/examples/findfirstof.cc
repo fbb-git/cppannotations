@@ -39,10 +39,10 @@
         size_t range[] = {2, 4, 6, 8, 10, 4, 6, 8, 10};
         size_t nrs[]   = {2, 3, 4};
 
-            // copy the sequence of values in 'range', starting at the 
+            // copy the sequence of values in 'range', starting at the
             // first element in 'range' that is equal to twice one of the
             // values in 'nrs', and ending at the last element of 'range'
-        copy 
+        copy
         (
             find_first_of(range, range + 9, nrs, nrs + 3, Twice()),
             range + 9, ostream_iterator<size_t>(cout, " ")
