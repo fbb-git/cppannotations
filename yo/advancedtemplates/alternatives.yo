@@ -11,20 +11,20 @@ code, but the code that is produced by the meta program is a function of
 decisions the compiler made by itself.
 
 Template (member) functions are only instantiated when they are actually
-used. Consequenlty we can define specializations of functions that are
+used. Consequently we can define specializations of functions that are
 mutually exclusive. Thus it is possible to define a specialization that can be
-compiled in one situation, but not in another and to define another
-specialization that can be compiled in the other situation, but not in the
-first situation. Using specializations code can be generated that is tailored
-to the demands of a particular situation.
+compiled in situation one, but not in situation two and to define another
+specialization that can be compiled in situation two, but not in situation
+one. Using specializations code can be generated that is tailored to the
+demands of a particular situation.
 
 A feature like this cannot be implemented in run-time executable code. For
 example, when designing a generic storage class the software engineer may
 intend to store em(value class) type objects as well as objects of
 em(polymorphic class) types in the final storage class. Thus the software
 engineer may conclude that the storage class should contain pointers to
-objects, rather than the objects themselves. The initially designed code may
-look like this:
+objects, rather than the objects themselves. The initial implementation
+attempt could look like this:
         verb(
     template <typename Type>
     void Storage::add(Type const &obj)
@@ -37,14 +37,14 @@ look like this:
         );
     }
         )
-    The intent is to use the tt(clone) member function of the tt(Type) class
+    The intent is to use the tt(clone) member function of the class tt(Type) 
 if tt(Type) is a polymorphic class and the standard copy constructor if
 tt(Type) is a value class.
 
-    Unfortunately, this scheme normally fails as value classes do not define
-tt(clone) member functions and polymorphic base classes should tt(delete)
+    Unfortunately, this scheme usually fails as value classes do not define
+tt(clone) member functions and polymorphic base classes should em(delete)
 their copy constructors (cf. section ref(DEFAULTED)). It doesn't matter to the
-compiler that tt(clone) is never called for value classes and the copy
+compiler that tt(clone) is never called for value classes and that the copy
 constructor is unavailable in polymorphic classes. It merely has some code to
 compile, and can't do that because of missing members. It's as simple as that.
 
@@ -64,12 +64,12 @@ one used with tt(Storage) objects storing polymorphic objects (using tt(true)
 as its template non-type argument) and one storing value
 class objects (using tt(false) as its template non-type argument).
 
-    We run into a small problem: functions cannot be overloaded by their
-argument values but only by their argument types. But a solution
-exists. Realizing that types are defined by the combination of templates and
-their template arguments we may convert the values tt(true) and tt(false) into
-types using the knowledge obtained in section ref(INTTYPE) about how to
-convert integral values to types.
+    Unfortunately we run into a small problem: functions cannot be overloaded
+by their argument em(values) but only by their argument em(types). But the
+small problem may be solved. Realizing that types are defined by the
+combination of template names and their template arguments we may convert the
+values tt(true) and tt(false) into types using the knowledge from section
+ref(INTTYPE) about how to convert integral values to types.
 
 We'll provide one (private) tt(add) member with a tt(IntType<true>) parameter
 (implementing the polymorphic class) and another (private) tt(add) member with
