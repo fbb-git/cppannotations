@@ -10,7 +10,6 @@
     int main()
     {
         int range1[] =  {-2, -4, -4, -6, -8, 2, 4, 4, 6, 8};
-        int range2[] =  {6, 8};
 
         copy
         (
