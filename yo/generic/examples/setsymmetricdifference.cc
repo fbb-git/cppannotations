@@ -15,7 +15,6 @@
                           "oscar", "papa", "quebec" };
         string set2[] = { "papa", "quebec", "romeo"};
         string result[7];
-        string *returned;
 
         copy(result,
             set_symmetric_difference(set1, set1 + 7, set2, set2 + 3,

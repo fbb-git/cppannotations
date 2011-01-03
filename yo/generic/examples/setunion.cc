@@ -14,8 +14,7 @@
         string set1[] = { "kilo", "lima", "mike", "november",
                           "oscar", "papa", "quebec" };
         string set2[] = { "papa", "quebec", "romeo"};
-        string result[7];
-        string *returned;
+        string result[8];
 
         copy(result,
             set_union(set1, set1 + 7, set2, set2 + 3, result),
