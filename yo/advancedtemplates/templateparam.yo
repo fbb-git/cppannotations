@@ -6,8 +6,8 @@ storage medium. How should the engineer tackle this request? Should four
 different tt(Storage) classes be designed?
 
 The engineer's first reaction could be to develop an all-in tt(Storage) class.
-It could have having two data members, a list and a vector, and to provide the
-constructor with maybe an enum value indicating whether the data itself or new
+It could have two data members, a list and a vector, and its constructor could
+be provided with maybe an enum value indicating whether the data itself or new
 copies should be stored. The enum value can be used to initialize a series of
 pointers to member functions performing the requested tasks (e.g., using a
 vector to store the data or a list to store copies).
@@ -15,20 +15,21 @@ vector to store the data or a list to store copies).
 Complex, but doable. Then the engineer is asked to modify the class: in the
 case of new copies a custom-made allocation scheme should be used rather than
 the standard tt(new) operator.  It should also be possible to use yet another
-type of container, in addition to the vector and list that were already part
-of the design. E.g., a tt(deque) could be preferred or maybe even a tt(stack).
+type of container, in addition to the vector and the list that were already
+part of the design. E.g., a tt(deque) could be preferred or maybe even a
+tt(stack).
 
 It's clear that the approach aiming at implementing all functionality and all
 possible combinations in one class doesn't scale. The class tt(Storage) would
-soon become a monolithic giant which is hard to understand, maintain, test,
-and deploy.
+soon become a monolithic giant which would be hard to understand, maintain,
+test, and deploy.
 
 One of the reasons why the big, all-encompassing class is hard to deploy and
 understand is that a well-designed class should
         hi(class: enforcing constraints)
     em(enforce constraints): the design of the class should, by itself,
 disallow certain operations, violations of which should be detected by the
-compiler, rather than by a program that might terminate with a fatal error.
+compiler, rather than by a program that might terminate in a fatal error.
 
 Consider the above request. If the class offers both an interface to access
 the vector data storage em(and) an interface to access the list data storage,
@@ -41,7 +42,7 @@ Sooner or later, em(users) of the monolithic all-encompassing class
 tt(Storage) will fall into the trap of using tt(operator[]) even though
 they've selected the list as the underlying data storage. The compiler won't
 be able to detect the error, which will only appear once the program is
-running, confusing em(users).
+running, confusing its users.
 
 The question remains: how should the engineer proceed, when confronted with
 the above questions? It's time to introduce hi(class: policy) em(policies).

@@ -21,7 +21,7 @@ class StringPtr: public std::vector<std::string *>
             iterator &operator--();
             iterator const operator--(int);
             iterator &operator++();
-            iterator &operator++(int);
+            iterator const operator++(int);
             bool operator==(iterator const &other) const;
             bool operator!=(iterator const &other) const;
             int operator-(iterator const &rhs) const;
