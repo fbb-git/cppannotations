@@ -12,18 +12,30 @@ deduced to be an tt(int), rather than an tt(int &&).
 This is fairly intuitive. But what happens if the actual type is tt(int &)?
 There is no such thing as an tt(int & &&param) and so the compiler contracts
 the double reference by removing the rvalue reference, keeping the lvalue
-reference. Here a simple rule is followed: Any reference to an lvalue
-reference results in an lvalue reference and emi(vice versa): an lvalue to any
-reference also results in an lvalue:
+reference. Here the following rules are applied: 
+
+    quote(
+    1. A template function parameter defined as an lvalue reference (e.g.,
+    tt(Type &)) receiving an lvalue reference argument results in a single
+    lvalue reference.
+    
+    2. A template function parameter defined as an rvalue reference (e.g.,
+    tt(Type &&)) receiving any kind of reference argument uses the reference
+    type of the argument.
+    )
+Examples:
     itemization(
-    it() if tt(Type) is tt(Actual &) then tt(Type &) is tt(Actual &) and
-tt(Type == Actual);
-    it() if tt(Type) is tt(Actual &) then tt(Type &&) still is tt(Actual &)
-and tt(Type == Actual);
-    it() if tt(Type) is tt(Actual &&) then tt(Type &) again is tt(Actual &)
-and tt(Type == Actual);
-    it() if tt(Type) is tt(Actual &&) then tt(Type &&)  is tt(Actual &&)
-and tt(Type == Actual);
+    it() When providing an tt(Actual &) argument then tt(Type &) becomes an
+    tt(Actual &) and tt(Type) is inferred as tt(Actual);
+
+    it() When providing an tt(Actual &) then tt(Type &&) becomes an
+    tt(Actual &) and tt(Type) is inferred as tt(Actual);
+
+    it() When providing an tt(Actual &&) then tt(Type &) also becomes
+    tt(Actual &)  and tt(Type) is inferred as tt(Actual);
+
+    it() When providing an tt(Actual &&) then tt(Type &&)  becomes tt(Actual
+    &&) and tt(Type) is inferred as tt(Actual);
     )
 
 Let's look at a concrete exampe where contraction occurs. Consider the
@@ -38,18 +50,18 @@ references to some template type parameter:
         )
  In this situation, when tt(function) is called with an (lvalue) argument of
 type tt(TP &) the template type parameter tt(Type) is deduced to be tt(Tp
-&). Therefore, tt(param) is considered to be instantiated as tt(Tp &param) (as
-tt(Tp & &&param)) is contracted as tt(Tp &param). But with an rvalue typed
-argument (tt(Tp &&)) it results in tt(Tp &&param) (again using contraction).
+&). Therefore, tt(Type &&param) is instantiated as tt(Tp &param), tt(Type)
+becomes tt(Tp) and the rvalue reference is replaced by an lvalue reference.
 
 Likewise, when tt(callee) is called using the tt(static_cast) the same
-contraction occurs, so if tt(Type &&param) is interpreted as tt(Tp &param) the
-static cast em(also) uses type tt(Tp &param). If (Type &&param) is interpreted
-as tt(Tp &&param) the static cast em(also) uses type tt(Tp &&param).
+contraction occurs, so tt(Type &&param) operates on tt(Tp &param). Therefore
+(using contraction) the static cast em(also) uses type tt(Tp &param). If
+tt(param) happened to be of type tt(Tp &&) then the static cast uses type
+tt(Tp &&param).
 
-This characteristics allows us to pass a function argument straight through to
+This characteristic allows us to pass a function argument to
 a nested function em(without) changing its type: lvalues remain lvalues,
 rvalues remain rvalues. This characteristic is therefore also known as
- emi(perfect forwarding) which will be discussed in greated detail in section
+ emi(perfect forwarding) which is discussed in greated detail in section
 ref(PERFECT). Perfect forwarding prevents the template author from having to
 define multiply overloaded versions of a function template.

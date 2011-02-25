@@ -49,32 +49,24 @@ such a function the name of a function may be specified as its argument. The
 address of the function is then assigned to the pointer-parameter, deducing
 the template type parameter in the process. This is called a
     i(function-to-pointer transformation). For example:
-        verb(
-    #include <cmath>
-
-    template<typename Type>
-    void call(Type (*fp)(Type), Type const &value)
-    {
-        (*fp)(value);
-    }
-    int main()
-    {
-        call(&sqrt, 2.0);
-    }
-        )
+        verbinclude(examples/lvalue.cc)
     In this example, the address of the tt(sqrt) function is passed to
 tt(call), expecting a pointer to a function returning a tt(Type) and expecting
 a tt(Type) for its argument. Using the function-to-pointer transformation,
 tt(sqrt)'s address is assigned to tt(fp), deducing that tt(Type) is tt(double)
-in the process. The argument tt(2.0) could not have been specified as tt(2) as
-there is no tt(int sqrt(int)) prototype. Furthermore, the function's first
-parameter specifies tt(Type (*fp)(Type)), rather than tt(Type (*fp)(Type const
-&)) as might have been expected from our previous discussion about how to
-specify the types of function template's parameters, preferring references
-over values.  However, tt(fp)'s argument tt(Type) is not a function template
-parameter, but a parameter of the function tt(fp) points to. Since tt(sqrt)
-has prototype tt(double sqrt(double)), rather than tt(double sqrt(double const
-&)), tt(call)'s parameter tt(fp) em(must) be specified as tt(Type
+in the process (note that tt(sqrt) is the em(address) of a function, not a
+variable that is a pointer to a function, hence the lvalue
+transformation). 
+
+The argument tt(2.0) could not have been specified as tt(2) as there is no
+tt(int sqrt(int)) prototype. Furthermore, the function's first parameter
+specifies tt(Type (*fp)(Type)), rather than tt(Type (*fp)(Type const &)) as
+might have been expected from our previous discussion about how to specify the
+types of function template's parameters, preferring references over values.
+However, tt(fp)'s argument tt(Type) is not a function template parameter, but
+a parameter of the function tt(fp) points to. Since tt(sqrt) has prototype
+tt(double sqrt(double)), rather than tt(double sqrt(double const &)),
+tt(call)'s parameter tt(fp) em(must) be specified as tt(Type
 (*fp)(Type)). It's that strict.
     )
     )
