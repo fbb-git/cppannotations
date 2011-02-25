@@ -1,0 +1,58 @@
+    So do we have to define yet another overloaded function template, this
+time expecting tt(Type *) arguments? It is possible, but at some point it
+should become clear that our approach doesn't scale. Like ordinary functions
+and classes, function templates should have one conceptually clear
+purpose. Trying to add overloaded function templates to overloaded function
+templates quickly turns the template into a kludge. Don't use this approach. A
+better approach is to construct the template so that it fits its original
+purpose, to make allowances for the occasional specific case and to describe
+its purpose clearly in its documentation.
+
+    In some situations constructing template explicit specialization may of
+course be defensible. Two specializations for tt(const) and non-tt(const)
+pointers to characters might be appropriate for our tt(add) function
+template. hi(template: explicit specialization) Here's how they are
+constructed:
+    itemization(
+    it() Start with the keyword tt(template).
+    it() Next, an empty set of angle brackets is written. This indicates to
+the compiler that there must be an em(existing) template whose prototype
+matches the one we're about to define. If we err and there is no such template
+        hi(template: id-declaration mismatch)
+then the compiler reports an error like:
+        verb(
+    error: template-id `add<char*>' for `char* add(char* const&, char*
+           const&)' does not match any template declaration
+        )
+    it() Now the function's head is defined. It must match the prototype of
+the initial function template or the form of a template explicit instantiation
+declaration (see section ref(TEMPFUNEXDEC)) if its specialized type cannot be
+determined from the function's arguments. It must specify the correct
+returntype, function name, maybe explicit template type arguments, as well as
+the function's parameter list.
+    it() Finally the function's body is defined, providing the special
+implementation that is required for the specialization.
+    )
+
+    Here are two explicit specializations for the function template tt(add),
+expecting tt(char *) and tt(char const *) arguments:
+        verb(
+    template <> char *add<char *>(char *const &p1,
+                                        char *const &p2)
+    {
+        std::string str(p1);
+        str += p2;
+        return strcpy(new char[str.length() + 1], str.c_str());
+    }
+
+    template <> char const *add<char const *>(char const *const &p1,
+                                        char const *const &p2)
+    {
+        static std::string str;
+        str = p1;
+        str += p2;
+        return str.c_str();
+    }
+        )
+    Template explicit specializations are normally included in the file
+containing the other function template's implementations.

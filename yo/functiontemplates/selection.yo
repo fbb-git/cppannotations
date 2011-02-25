@@ -56,143 +56,19 @@ compiler is left with a set of 10 candidate functions.
 
     it() Second, the set of
  hi(functions: viable) emi(viable functions) is constructed. Viable functions
-are functions for which i(type conversions) exist that can be applied to match
-the types of the function's parameters of the functions and the types of the
-actual arguments to the types of the actual arguments. This implies that at
-least the number of arguments must match the number of parameters of the
-viable functions. Function 10's first argument is a tt(string). As a
-tt(string) cannot be initialized by an tt(int) value no approprate conversion
-exists and function 10 is removed from the list of candidate functions.
-tt(double) parameters can be retained. Standard conversions em(do) exists for
-tt(int)s to tt(double)s, so all functions having ordinary tt(double)
-parameters can be retained. Therefore, the set of viable functions consists of
-functions 1 until 9.
-    )
+are functions for which i(type conversions) exist that can be applied so as to
+match the types of the function's parameters to the types of the actual
+arguments.
 
+This implies that at least the number of arguments must match the number of
+parameters of the viable functions. Function 10's first argument is a
+tt(string). As a tt(string) cannot be initialized by an tt(int) value no
+approprate conversion exists and function 10 is removed from the list of
+candidate functions.  tt(double) parameters can be retained. Standard
+conversions em(do) exists for tt(int)s to tt(double)s, so all functions having
+ordinary tt(double) parameters can be retained. Therefore, the set of viable
+functions consists of functions 1 through 9.
+    )
     At this point the compiler tries to determine the types of the template
-type parameters. It may use any of the three standard template parameter
-transformation procedures when trying to match actual types to template type
-parameters. In this process it concludes that no type cannot be determined for
-the tt(T) in function 1's tt(T &t1) parameter as the argument tt(3) is a
-constant tt(int) value. Thus function 1 is removed from the list of
-viable functions. The compiler is now confronted with the following set of
-potentially instantiated function templates and ordinary functions:
-        verb(
-    void process(T1 [= int] const &t1, T2 [= int] const &t2);   // 2
-    void process(T [= int] const &t, double d);                 // 3
-    void process(T [= int] const &t, int i);                    // 4
-    void process<int, int>(int i1, int i2);                     // 5
-    void process(int i1, int i2);                               // 6
-    void process(int i, double d);                              // 7
-    void process(double d, int i);                              // 8
-    void process(double d1, double d2);                         // 9
-    )
+type parameters. This step is outlined in the following subsection.
 
-    The compiler associates a em(direct match count) value to each of the
-viable functions. The direct match count counts the number of arguments that
-can be matched to function parameters without an (automatic) type
-conversion. E.g., for function 2 this count equals 2, for fuction 6 it is 1
-and for function 9 it is 0. The functions are now (decrementally) sorted by
-their direct match count values:
-        verb(
-                                                             match
-                                                             count
-    void process(T1 [= int] const &t1, T2 [= int] const &t2);  2 // 2
-    void process(T [= int] const &t, int i);                   2 // 4
-    void process<int, int>(int i1, int i2);                    2 // 5
-    void process(int i1, int i2);                              2 // 6
-    void process(T [= int] const &t, double d);                1 // 3
-    void process(int i, double d);                             1 // 7
-    void process(double d, int i);                             1 // 8
-    void process(double d1, double d2);                        0 // 9
-    )
-    If there is no draw for the top value the corresponding function is
-selected and the function selection process is completed.
-
-    When multiple functions appear at the top the compiler verifies that no
-ambiguity has been encountered. An ambiguity is encountered if the
-em(sequences) of parameters for which type conversions were (not) required
-differ. As an example consider functions 3 and 8. Using D for `direct match'
-and C for `conversion' the arguments match function 3 as D,C and function 8 as
-C,D. If 2, 4, 5 and 6 would not have been present then the compiler would have
-reported an ambiguity as the sequences of argument/parameter matching
-procedures differ for functions 3 and 8. The same difference is encountered
-comparing functions 7 and 8 and no such difference is encountered comparing
-functions 3 and 7.
-
-    At this point there is a draw for the top value and the compiler
-proceeds with the subset of associated functions (functions 2, 4, 5 and
-6). With each of these functions an `ordinary parameter count' is associated
-counting the number of non-template parameters of the functions. The functions
-are decrementally sorted by this count, resulting in:
-        verb(
-                                                         ordin. param.
-                                                             count
-    void process(int i1, int i2);                              2 // 6
-    void process(T [= int] const &t, int i);                   1 // 4
-    void process(T1 [= int] const &t1, T2 [= int] const &t2);  0 // 2
-    void process<int, int>(int i1, int i2);                    0 // 5
-        )
-    Now there is no draw for the top value. The corresponding function
-(tt(process(int, int)), function 6) is selected and the function selection
-process is completed. Function 6 is used in tt(main)'s function call
-statement.
-
-If function 6 would not have existed function 4 would have been used. Assuming
-that neither function 4 nor function 6 would have existed the selection
-process would continue with functions 2 and 5:
-        verb(
-                                                         ordin. param.
-                                                             count
-    void process(T1 [= int] const &t1, T2 [= int] const &t2);  0 // 2
-    void process<int, int>(int i1, int i2);                    0 // 5
-        )
-
-    In this situation a draw is encountered once again and the selection
-process continues. A `type of function' value is associated with each of the
-functions having the highest ordinary parameter count and these functions are
-decrementally sorted by their type of function values. Value 2 is associated
-to ordinary functions, value 1 to template explicit specializations and value
-0 to plain function templates.
-
-    If there is no draw for the top value the corresponding function is
-selected and the function selection process is completed. If there is a draw
-the compiler reports and ambiguity and cannot determine which function to
-call.  Assuming only functions 2 and 5 existed then this selection step
-would have resulted in the following ordering:
-        verb(
-                                                           function
-                                                             type
-    void process<int, int>(int i1, int i2);                    1 // 5
-    void process(T1 [= int] const &t1, T2 [= int] const &t2);  0 // 2
-        )
-    Function 5, the template explicit specialization, would have been
-selected.
-    figure(functiontemplates/selection)
-    (The function template selection mechanism)
-    (selection)
- Here is a summary of the function template selection mechanism (cf. figure
-fig(selection)):
-    itemization(
-    it() The set of candidate functions is constructed: identical names;
-    it() The set of viable functions is constructed: correct number of
-        parameters and available type conversions;
-    it() Template type determination, dropping templates whose type parameters
-        cannot be determined;
-    it() Decrementally sort the functions by their direct match count
-        values. If there no draw for the top value the associated function is
-        selected, completing the selection process.
-    it() Inspect the functions associated with the top value for ambiguities
-        in automatic type conversion sequences. If different sequences are
-        encountered report an ambiguity and terminate the selection process.
-    it() Decrementally sort the functions associated with the top value by
-        their ordinary parameter count values.  If there no draw for the top
-        value the associated function is selected, completing the selection
-        process.
-    it() Decrementally sort the functions associated with the top value by
-        their function type values using 2 for ordinary functions, 1 for
-        template explicit specializations and 0 for plain template functions.
-        parameter count values. If there no draw for the top value the
-        associated function is selected, completing the selection process.
-    it() Report an ambiguity and terminate the selection process.
-    )

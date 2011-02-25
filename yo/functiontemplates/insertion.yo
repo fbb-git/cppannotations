@@ -1,0 +1,29 @@
+    Now that we've covered explicit specializations and overloading let's
+consider what happens when a class defines a tt(std::string) conversion
+operator (cf. section ref(ConversionOperators)). 
+
+A conversion operator is guaranteed to be used as an rvalue. This means that
+objects of a class defining a tt(string) conversion operator can be assigned
+to, e.g., tt(string) objects. But when trying to insert objects defining
+tt(string) conversion operators into streams then the compiler complains that
+we're attemping to insert an inappropriate type into an tt(ostream). 
+
+On the other hand, when this class defines an tt(int) conversion operator
+insertion is performed flawlessly. 
+
+The reason for this distinction is that tt(operator<<) is defined as a plain
+(free) function when inserting a basic type (like tt(int)) but it is defined
+as a function template when inserting a tt(string). Hence, when trying to
+insert an object of our class defining a tt(string) conversion operator the
+compiler visits all overloaded versions of insertion operators inserting into
+tt(ostream) objects. 
+
+Since no basic type conversion is available the basic type insertion operators
+can't be used. Since the available conversions for template arguments do not
+allow the compiler to look for conversion operators our class defining the
+tt(string) conversion operator cannot be inserted into an tt(ostream). 
+
+If it should be possible to insert objects of such a class into tt(ostream)
+objects the class must define its own overloaded insertion operator (in
+addition to the tt(string) conversion operator that was required to use the
+class's objects as rvalue in tt(string) assignments).
