@@ -32,11 +32,11 @@ class CirQue
         explicit CirQue(size_t maxSize = 0);
         CirQue(CirQue<Data> const &other);
         CirQue(CirQue<Data> const &&tmp);
+
         template <size_t Size>
         explicit CirQue(Data const (&arr)[Size]);
 
-        template <typename Data2>
-        explicit CirQue(Data2 const *data);
+        explicit CirQue(Data const *data, size_t size);
 
         ~CirQue();
 
@@ -119,7 +119,7 @@ class CirQue
     :
         d_size(0),
         d_maxSize(Size),
-        d_data(static_cast<Data *>(operator new(Size * sizeof(Data)))),
+        d_data(static_cast<Data *>(operator new(sizeof(arr)))),
         d_front(d_data),
         d_back(d_data)
     {

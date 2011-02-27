@@ -4,7 +4,7 @@ because the template's parameters are not implicitly deduced when a
 constructor is called. Instead, they must explicitly be specified when an
 object of the class template is defined. As the template arguments are
 specified just before the template's constructor is called the compiler
-doens't have to deduce anything and it can simply use the explicitly specified
+doesn't have to deduce anything and it can simply use the explicitly specified
 template arguments.
 
 In contrast, when em(function) templates are used, the actual template
@@ -93,23 +93,29 @@ namespace should therefore be:
 
     A potentially occurring problem remains. Assume that in addition to the
 above member template a tt(CirQue<Data>::CirQue(Data const *data)) has been
-defined. Some (here not further elaborated) protocol may be defined allowing
+defined. Some (here not further elaborated) protocol could be defined allowing
 the constructor to determine the number of elements that should be stored in
 the tt(CirQue) object. When we now define
         verb(
     CirQue<int> object(array);
         )
-    it is this latter constructor, rather than the member template, that is
-used by the compiler. The compiler selects this latter constructor as it is a
-more specialized version of a constructor of the class tt(CirQue) than the
-member template (cf. section ref(FUNCTIONSELECTION)). Problems like these can
-be solved by defining the constructor tt(CirQue(Data const *data)) into a
-member template as well.  It could receive a template type parameter
-tt(Data2). tt(Data) cannot be used as template parameters of a member template
-may not shadow hi(class template: shadowing parameters) template parameters of
-its class. Using tt(Data2) instead of tt(Data) takes care of this
-subtlety. Here is the declaration of the constructor tt(CirQue(Data2 const *))
-as it could appear in the tt(CirQue) header file:
+    it is this latter constructor, rather than the member template, that will
+be used by the compiler. 
+
+The compiler selects this latter constructor as it is a more specialized
+version of a constructor of the class tt(CirQue) than the member template
+(cf. section ref(FUNCTIONSELECTION)). Problems like these can be solved by
+defining the constructor tt(CirQue(Data const *data)) into a member template
+as well or by defining a constructor using two parameters, the second
+parameter defining the number of elements to copy.  
+
+When using the former constructor (i.e., the member template) it must define a
+template type parameter tt(Data2). Here `tt(Data)' cannot be used as template
+parameters of a member template may not shadow hi(class template: shadowing
+parameters) template parameters of its class. Using tt(Data2) instead of
+tt(Data) takes care of this subtlety. The following declaration of the
+constructor tt(CirQue(Data2 const *)) could appear in tt(CirQue)'s header
+file:
         verb(
     template <typename Data>
     class CirQue

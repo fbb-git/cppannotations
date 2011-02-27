@@ -9,25 +9,22 @@ be (integral) constants whose values must be known at object instantiation
 time.
 
     Different from function template non-type parameters the values of class
-template non-type parameters are not deduced by the compiler using arguments
-passed to class template members. Assume we modify the class template
-tt(CirQue) so that it has an additional non-type parameter tt(size_t
-Size). Next we use this tt(Size) parameter in a new constructor defining an
-array parameter of tt(Size) elements of type tt(Data). Only showing the
-relevant constructors (section ref(MEMTEMP) provides the rationale for using
-the type tt(Data2));
+template non-type parameters are em(not) deduced by the compiler using
+arguments passed to class template members. 
 
-Now two template type parameters are required, e.g., when specifying the type
-of the copy constructor's parameter.  The new tt(CirQue) class template
-becomes (showing only the relevant constructors):
+Assume we extend our design of the class template tt(CirQue) so that it
+defines a second (non-type) parameter tt(size_t Size). Our intent is to use
+this tt(Size) parameter in the constructor defining an array parameter of
+tt(Size) elements of type tt(Data).
+
+The  tt(CirQue) class template now becomes (only showing the relevant
+constructor): 
         verb(
     template <typename Data, size_t Size>
     class CirQue
     {
         // ... data members
         public:
-            CirQue(CirQue<Data, Size> &other);
-            CirQue(Data *data);
             CirQue(Data const (&arr)[Size]);
             ...
     };
@@ -117,5 +114,5 @@ tt(const) modifier, however, may be used as their values never change.
 
     Although our attempts to define a constructor of the class tt(CirQue)
 accepting an array as its argument has failed so far, we're not yet out of
-options. In the next section a method is described that em(does) allowing us
+options. In the next section a method is described that em(does) allow us
 to reach our goal.

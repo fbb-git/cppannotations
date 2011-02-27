@@ -1,0 +1,72 @@
+The construction of a class template is illustrated in this section. Here,
+we'll develop the class template tt(CirQue) (circular queue). This class
+template has one template type parameter, tt(Data), representing the data type
+that is stored in the circular queue. The outline of the interface of this
+class template looks like this:
+    hi(template parameter list)
+        verb(
+    template<typename Data>
+    class CirQue
+    {
+        // member declarations
+    };
+        )
+    A class template's definition starts like a function template's
+definition:
+    itemization(
+    it() The keyword ti(template), starting a template definition or
+declaration.
+    it() The angle bracket enclosed list following tt(template): a
+list containing one or more comma-separated elements is called the
+ emi(template parameter list). Template parameter lists may have multiple
+elements, like this:
+        verb(
+    typename Type1, typename Type2, typename Type3
+        )
+    When a class template defines multiple template type parameters they are
+matched in sequence with the list of template type arguments provided when
+defining objects of such a class template. Example:
+        verb(
+    template <typename Type1, typename Type2, typename Type3>
+    class MultiTypes
+    {
+        ...
+    };
+
+    MultiTypes<int, double, std::string> multiType;
+        // Type1 is int, Type2 is double, Type3 is std::string
+        )
+    it() Inside the template parameter list we find the emi(formal type) name
+(tt(Data) for tt(CirQue)). It is a formal (type) name, like the formal types
+used in function template parameter lists.
+    it() Following the template header the class interface is defined. It may
+use the formal type names defined in the template header as type names.
+    )
+    Once the tt(CirQue) class template has been defined it can be used to
+create all kinds of circular queues. As one of its constructors expects a
+tt(size_t) argument defining the maximum number of elements that can be stored
+in the circular queue, circular queues could be defined like this:
+        verb(
+    CirQue<int> cqi(10);            // max 10 ints
+    CirQue<std::string> cqstr(30);  // max 30 strings
+        )
+    As noted in the introductory section of this chapter the combination of
+name of the class template and the data type for which it is instantiated
+defines a data type. Also note the similarity between defining a
+tt(std::vector) (of some data type) and a tt(CirQue) (of some data type).
+
+    Like tt(std::map) containers class templates may be defined with multiple
+template type parameters.
+
+
+Back to tt(CirQue). A tt(CirQue) must be capable of storing tt(max_size)
+tt(Data) elements. These elements are eventually stored in memory pointed at by
+a pointer tt(Data *d_data), initially pointing to raw memory. New elements are
+added at the backside of the tt(CirQue). A pointer tt(Data *d_back) is used to
+point to the location where the next element will be stored. Likewise, tt(Data
+*d_front) points to the location of the tt(CirQue)'s  first element. Two
+tt(size_t) data members are used to monitor the filling state of the
+tt(CirQue): tt(d_size) represents the number of elements currently stored in
+the tt(CirQue), tt(d_maxSize) represents the maximum number of elements that
+the tt(CirQue) can contain. Thus, the tt(CirQue)'s data members are:
+    verbinsert(DATA)(examples/cirque.h)
