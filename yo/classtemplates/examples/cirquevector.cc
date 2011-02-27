@@ -28,7 +28,7 @@ int main()
     cout << cp.size() << ' ' << cp.front() << ' ' << cp.back() << '\n';
 }
 
-/* 
+/*
     Displays:
         5 1 5
         3 3 5
