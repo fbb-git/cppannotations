@@ -1,5 +1,5 @@
 Whenever a class template's parameter is a reference the compiler
-can't distinguish between member functions overloaded tt(const)
+can't distinguish between member functions overloading tt(const)
 and non-tt(const) references. Here is an example of a program that won't
 compile:
         verb(
@@ -17,7 +17,7 @@ compile:
         Wrap<int &> wrap(i);
     }
         )
- with the compiler generating an error message like
+ and the compiler generates an error message like
     hi(Class(T&) cannot be overloaded with Class(T const&))
         verb(
     'Wrap<T>::Wrap(T&) [with T = int&]' cannot be overloaded
@@ -29,25 +29,34 @@ function having signature
         verb(
     int stringcasecmp(string lhs, string rhs)
         )
-    where it was noted that this function did introduce inefficiency, but that
-an improved signature, using tt(string const &) parameters failed to compile,
-with tt(std::bind2nd) (cf. section ref(FUNADAPT)) generating an error like the
-one mentioned here. The following sequence of templates were instantiated in
-that example:
+    There it was noted that this function did introduce inefficiency, but that
+an improved signature, using tt(string const &) parameters fails to
+compile. With a function having that signature tt(std::bind2nd) (cf. section
+ref(FUNADAPT)) generates an error like the one mentioned here. Following the
+call
+        verb(
+    auto pos = find_if(
+                    v1.begin(), v1.end(),
+                    not1( bind2nd(ptr_fun(stringcasecmp), target) )
+               );
+        )
+ that was used in section ref(ADAPTABLEFUN) as well as the definition of
+tt(bind2nd) (usually found in the system header file ti(binders.h)) we
+encounter the following series of instantiated templates:
     itemization(
     it() First, tt(ptr_fun) was instantiated, receiving tt(stringcasecmp). The
 function template tt(ptr_fun) returns a tt(pointer_to_binary_function), for
-which its tt(first_arugment_type) and tt(second_argument_type) are deducted as
-tt(string const &) if tt(stringcasecmp) defines tt(string const &)
+which its tt(first_argument_type) and tt(second_argument_type) are determined
+as tt(string const &) if tt(stringcasecmp) defines tt(string const &)
 parameters;
     it() Next, the tt(pointer_to_binary_function) object is passed to
-tt(binary2nd). As you may have guessed, we're already on dangerous grounds as
+tt(bind2nd). As you may have guessed, we're already on dangerous grounds as
 tt(pointer_to_binary_function) is a class template defining reference template
 type parameters;
     it() The tt(bind2nd) function template merely creates and returns a
 tt(binder2nd) object, initializing it with the tt(pointer_to_binary_function)
 object and the type of the second parameter of tt(stringcasecmp) (which can be
-ignoredin the current discussion);
+ignored in the current discussion);
     it() The tt(binder2nd) class template object is a functor defining two
 overloaded function operators (using declarations and simplified type names to
 ease focussing on the essence):
@@ -63,10 +72,10 @@ tt(stringcasecmp) cannot be defined as a function having tt(string const &)
 parameters.
     )
 
-This problem could not elegantly be solved in before the arrival of the C++0x
-standard, as bf(C++) did not have em(perfect forwarding) before the C++0x
-standard. The solution requires a reformulation of tt(bind2nd) and
-tt(binder2nd) exploiting the
+Before the arrival of the C++0x standard this problem could not elegantly be
+solved, as pre-C++0x versions of bf(C++) did not offer em(perfect
+forwarding). The solution requires a reformulation of tt(bind2nd) and
+tt(binder2nd), exploiting 
     hi(bind2nd: perfect forwarding)
     features offered by perfect forwarding. Other adaptors defined by the STL
 may require comparable reformulations. The modifications required for
