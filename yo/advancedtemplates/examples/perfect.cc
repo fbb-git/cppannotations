@@ -102,7 +102,7 @@ struct Two
 };
 
 template <typename Class, typename ... Args>
-Class factory(Args&& ... args)
+Class factory(Args&&...args)
 {
     return Class(std::forward<Args>(args) ...);
 }

@@ -36,7 +36,7 @@ struct Wrap1
     typedef typename std::tuple_element<size - 1, Tuple>::type ElType;
 
     inline Wrap1(Return &ret,
-                Tuple &&tuple, Fun fun, Arg1 &&arg, Params && ... params)
+                Tuple &&tuple, Fun fun, Arg1 &&arg, Params &&...params)
     {
         Wrap1<size - 1, Return, Tuple, Fun, Arg1, ElType, Params ...>
         (
@@ -55,7 +55,7 @@ template < typename Return, typename Tuple,
 struct Wrap1<0, Return, Tuple, Fun, Arg1, Params ...>
 {
     inline Wrap1(Return &ret,
-                Tuple &&tuple, Fun fun, Arg1 &&arg, Params && ... params)
+                Tuple &&tuple, Fun fun, Arg1 &&arg, Params &&...params)
     {
         ret =
             fun(std::forward<Arg1>(arg), std::forward<Params>(params) ...);
@@ -68,7 +68,7 @@ struct Wrap1<size, void, Tuple, Fun, Arg1, Params ...>
 {
     typedef typename std::tuple_element<size - 1, Tuple>::type ElType;
 
-    inline Wrap1(Tuple &&tuple, Fun fun, Arg1 &&arg, Params && ... params)
+    inline Wrap1(Tuple &&tuple, Fun fun, Arg1 &&arg, Params &&...params)
     {
         Wrap1<size - 1, void, Tuple, Fun, Arg1, ElType, Params ...>
         (
@@ -85,7 +85,7 @@ template <  typename Tuple,
             typename Fun, typename Arg1, typename ... Params>
 struct Wrap1<0, void, Tuple, Fun, Arg1, Params ...>
 {
-    inline Wrap1(Tuple &&tuple, Fun fun, Arg1 &&arg, Params && ... params)
+    inline Wrap1(Tuple &&tuple, Fun fun, Arg1 &&arg, Params &&...params)
     {
         fun(std::forward<Arg1>(arg), std::forward<Params>(params) ...);
     }
@@ -102,7 +102,7 @@ struct Wrap2
 
     inline Wrap2(Return &ret,
                 Tuple &&tuple, Fun fun, Arg1 &&arg1, Arg2 &&arg2,
-                                                    Params && ... params)
+                                                    Params &&...params)
     {
         Wrap2<size - 1, Return, Tuple, Fun, Arg1, Arg2, ElType, Params ...>
         (
@@ -123,7 +123,7 @@ struct Wrap2<0, Return, Tuple, Fun, Arg1, Arg2, Params ...>
 {
     inline Wrap2(Return &ret,
                 Tuple &&tuple, Fun fun, Arg1 &&arg1, Arg2 &&arg2,
-                                                    Params && ... params)
+                                                    Params &&...params)
     {
         ret =
             fun(std::forward<Arg1>(arg1), std::forward<Arg2>(arg2),
@@ -142,7 +142,7 @@ struct Wrap2<size, void, Tuple, Fun, Arg1, Arg2, Params ...>
 
     inline Wrap2(
                 Tuple &&tuple, Fun fun, Arg1 &&arg1, Arg2 &&arg2,
-                                                    Params && ... params)
+                                                    Params &&...params)
     {
         Wrap2<size - 1, void, Tuple, Fun, Arg1, Arg2, ElType, Params ...>
         (
@@ -163,7 +163,7 @@ struct Wrap2<0, void, Tuple, Fun, Arg1, Arg2, Params ...>
 {
     inline Wrap2(
                 Tuple &&tuple, Fun fun, Arg1 &&arg1, Arg2 &&arg2,
-                                                    Params && ... params)
+                                                    Params &&...params)
     {
         fun(std::forward<Arg1>(arg1), std::forward<Arg2>(arg2),
             std::forward<Params>(params) ...);
@@ -188,7 +188,7 @@ class Wrap
     std::tuple<Params ...> d_tuple;
 
     public:
-        Wrap(Fun fun, Params && ... params)
+        Wrap(Fun fun, Params &&...params)
         :
             d_fun(fun),
             d_tuple(std::forward<Params>(params) ...)
@@ -218,7 +218,7 @@ class Wrap<unary, void, Fun, Params ...>
     std::tuple<Params ...> d_tuple;
 
     public:
-        Wrap(Fun fun, Params && ... params)
+        Wrap(Fun fun, Params &&...params)
         :
             d_fun(fun),
             d_tuple(std::forward<Params>(params) ...)
@@ -248,7 +248,7 @@ class Wrap<2, Return, Fun, Params ...>
     std::tuple<Params ...> d_tuple;
 
     public:
-        Wrap(Fun fun, Params && ... params)
+        Wrap(Fun fun, Params &&...params)
         :
             d_fun(fun),
             d_tuple(std::forward<Params>(params) ...)
@@ -279,7 +279,7 @@ class Wrap<2, void, Fun, Params ...>
     std::tuple<Params ...> d_tuple;
 
     public:
-        Wrap(Fun fun, Params && ... params)
+        Wrap(Fun fun, Params &&...params)
         :
             d_fun(fun),
             d_tuple(std::forward<Params>(params) ...)
@@ -308,7 +308,7 @@ struct Wrapper
     static Wrap<1,
                 typename IUO::RetType<Func>::type /*Return*/,
                 Func, Param ...>
-        unary(Func fun, Param && ... param)
+        unary(Func fun, Param &&...param)
         {
             Wrap<1,
                 typename IUO::RetType<Func>::type /*Return*/,
@@ -321,7 +321,7 @@ struct Wrapper
     static Wrap<2,
                 typename IUO::RetType<Func>::type /*Return*/,
                 Func, Param ...>
-        binary(Func fun, Param && ... param)
+        binary(Func fun, Param &&...param)
         {
             Wrap<2,
                 typename IUO::RetType<Func>::type /*Return*/,

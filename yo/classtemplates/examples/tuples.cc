@@ -9,7 +9,7 @@ struct Multi
 {
     std::tuple<Types ...> d_tup;
 
-    Multi(Types && ... types)
+    Multi(Types &&...types)
     :
         d_tup(std::forward<Types>(types) ...)
     {}
@@ -22,7 +22,7 @@ struct Wrapper
 
     Result (*d_fun)(Opnd, std::tuple<Cntxt ...>& );
 
-    Wrapper(Result fun(Opnd, std::tuple<Cntxt ...> &), Cntxt && ... cntxt)
+    Wrapper(Result fun(Opnd, std::tuple<Cntxt ...> &), Cntxt &&...cntxt)
     :
         d_cntxt(std::forward<Cntxt>(cntxt) ...),
         d_fun(fun)

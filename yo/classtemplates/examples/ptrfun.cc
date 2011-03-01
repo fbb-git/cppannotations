@@ -27,7 +27,7 @@
 
             template <typename ... Params>
             typename Operation::result_type
-            operator()(Params && ... params) const
+            operator()(Params &&...params) const
             {
                 return d_operation(std::forward<Params>(params) ..., d_arg2);
             }

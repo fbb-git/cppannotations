@@ -44,7 +44,7 @@
     struct Demo2
     {
         template<typename ... Args>
-        void mem(Args&& ... args)
+        void mem(Args&&...args)
         {}
     };
 
@@ -53,7 +53,7 @@
         // void Demo2<char>::mem<int>(int v);
         // error: template-id 'mem<int>' for 'void Demo2<char>::mem(int)' does
         //        not match any template declaration
-        // void Demo2<char>::mem<typename ... Args>(Args && ... args);
+        // void Demo2<char>::mem<typename ... Args>(Args &&...args);
         // error: using 'typename' outside of template
         //        expected parameter pack before '...'
         //        parse error in template argument list
