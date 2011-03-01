@@ -1,8 +1,8 @@
 #include <stdexcept>
 #include <iostream>
 
-    template<typename ... Params>
-    void xprintf(std::string const &strFormat, Params ... parameters);
+    template<typename ...Params>
+    void xprintf(std::string const &strFormat, Params ...parameters);
 
     void xprintf(char const *s)
     {
@@ -15,8 +15,8 @@
         }
     }
 
-    template<typename T, typename ... Args>                 // 1
-    void xprintf(const char* s, T value, Args ... args)      // 2
+    template<typename T, typename ...Args>                 // 1
+    void xprintf(const char* s, T value, Args ...args)      // 2
     {
         while (*s)
         {

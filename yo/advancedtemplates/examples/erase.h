@@ -17,20 +17,20 @@
 //=
 
 //ERASEIDXZERO
-    template <typename EraseType, typename ... Tail>
-    struct EraseIdx<0, TypeList<EraseType, Tail ...>>
+    template <typename EraseType, typename ...Tail>
+    struct EraseIdx<0, TypeList<EraseType, Tail...>>
     {
-        typedef TypeList<Tail ...> List;
+        typedef TypeList<Tail...> List;
     };
 //=
 
 //ERASEIDXNEXT
-    template <size_t idx, typename Head, typename ... Tail>
-    struct EraseIdx<idx, TypeList<Head, Tail ...>>
+    template <size_t idx, typename Head, typename ...Tail>
+    struct EraseIdx<idx, TypeList<Head, Tail...>>
     {
         typedef typename Prefix<
                     Head,
-                    typename EraseIdx<idx - 1, TypeList<Tail ...>>::List
+                    typename EraseIdx<idx - 1, TypeList<Tail...>>::List
                 >::List List;
     };
 //=
@@ -49,20 +49,20 @@
 //=
 
 //ERASEHEAD
-    template <typename EraseType, typename ... Tail>
-    struct Erase<EraseType, TypeList<EraseType, Tail ...>>
+    template <typename EraseType, typename ...Tail>
+    struct Erase<EraseType, TypeList<EraseType, Tail...>>
     {
-        typedef TypeList<Tail ...> List;
+        typedef TypeList<Tail...> List;
     };
 //=
 
 //ERASENEXT
-    template <typename EraseType, typename Head, typename ... Tail>
-    struct Erase<EraseType, TypeList<Head, Tail ...>>
+    template <typename EraseType, typename Head, typename ...Tail>
+    struct Erase<EraseType, TypeList<Head, Tail...>>
     {
         typedef typename
             Prefix<Head,
-                typename Erase<EraseType, TypeList<Tail ...>>::List
+                typename Erase<EraseType, TypeList<Tail...>>::List
             >::List List;
     };
 //=
@@ -74,20 +74,20 @@
 //=
 
 //ERASEALLTYPES
-    template <typename EraseType, typename ... Tail>
-    struct EraseAll<EraseType, TypeList<EraseType, Tail ...>>
+    template <typename EraseType, typename ...Tail>
+    struct EraseAll<EraseType, TypeList<EraseType, Tail...>>
     {
-        typedef typename EraseAll<EraseType, TypeList<Tail ...>>::List List;
+        typedef typename EraseAll<EraseType, TypeList<Tail...>>::List List;
     };
 //=
 
 //ERASEALLNEXT
-    template <typename EraseType, typename Head, typename ... Tail>
-    struct EraseAll<EraseType, TypeList<Head, Tail ...>>
+    template <typename EraseType, typename Head, typename ...Tail>
+    struct EraseAll<EraseType, TypeList<Head, Tail...>>
     {
         typedef typename Prefix<
             Head,
-            typename EraseAll<EraseType, TypeList<Tail ...>>::List
+            typename EraseAll<EraseType, TypeList<Tail...>>::List
         >::List List;
     };
 //=
@@ -104,10 +104,10 @@
     };
 //=
 //ERASEDUPHEAD
-    template <typename Head, typename ... Tail>
-    struct EraseDup<TypeList<Head, Tail ...>>
+    template <typename Head, typename ...Tail>
+    struct EraseDup<TypeList<Head, Tail...>>
     {
-        typedef typename EraseDup<TypeList<Tail ...>>::List UniqueTail;
+        typedef typename EraseDup<TypeList<Tail...>>::List UniqueTail;
         typedef typename Erase<Head, UniqueTail>::List NewTail;
 
         typedef typename Prefix<Head, NewTail>::List List;

@@ -2,11 +2,11 @@
 #define INCLUDED_TYPELIST_H_
 
 //TYPELIST
-    template <typename ... Types>
+    template <typename ...Types>
     struct TypeList
     {
         TypeList(TypeList const &) = delete;
-        enum { size = sizeof ... (Types) };
+        enum { size = sizeof ...(Types) };
     };
 //=
 

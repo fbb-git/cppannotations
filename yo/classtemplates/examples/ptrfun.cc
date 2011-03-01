@@ -25,11 +25,11 @@
                 d_arg2(arg2)
             {}
 
-            template <typename ... Params>
+            template <typename Param>
             typename Operation::result_type
-            operator()(Params &&...params) const
+            operator()(Param &&param) const
             {
-                return d_operation(std::forward<Params>(params) ..., d_arg2);
+                return d_operation(std::forward<Param>(param), d_arg2);
             }
     };
 //=

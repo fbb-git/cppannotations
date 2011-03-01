@@ -18,7 +18,7 @@ struct Forwarder
         d_cl("1234567890")
     {}
     template<typename ...Args>
-    string substr(Args&&... args)
+    string substr(Args &&...args)
     {
         return d_cl.substr(std::forward<Args>(args)...);
     }
@@ -44,7 +44,7 @@ struct Forwarder
 ////////////////////////////////////////////////////////////////
 
 //    template <typename Ret, typename Member, typename ...Args>
-//    Ret fwd(Member member, Args&&... args)
+//    Ret fwd(Member member, Args&&...args)
 //    {
 //        return (d_cl.*member)(std::forward<Args>(args)...);
 //    }
@@ -53,7 +53,7 @@ struct Forwarder
 
 struct X
 {
-    template <typename T>//, typename ... Args>
+    template <typename T>//, typename ...Args>
     struct result
     {
         typedef void type;
@@ -101,32 +101,32 @@ struct Two
     }
 };
 
-template <typename Class, typename ... Args>
-Class factory(Args&&...args)
+template <typename Class, typename ...Args>
+Class factory(Args &&...args)
 {
-    return Class(std::forward<Args>(args) ...);
+    return Class(std::forward<Args>(args)...);
 }
 
-    void calledFunction(ostream &out)
-    {
-        out << "hello\n";
-    }
+void calledFunction(ostream &out)
+{
+    out << "hello\n";
+}
 
-    void calledFunction(int x)
-    {
-        ++x;
-    }
+void calledFunction(int x)
+{
+    ++x;
+}
 
-    void calledFunction(int &x)
-    {
-        ++x;
-    }
+void calledFunction(int &x)
+{
+    ++x;
+}
 
-    template <typename ... Args>
-    void caller(Args &&... args)
-    {
-        calledFunction(std::forward<Args>(args) ...);
-    }
+template <typename ...Args>
+void caller(Args &&...args)
+{
+    calledFunction(std::forward<Args>(args) ...);
+}
 
 int main()
 {

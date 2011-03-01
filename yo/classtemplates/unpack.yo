@@ -7,8 +7,8 @@ variadic template.
 derived from any number of base classes.
   hi(perfect forwarding: inheritance) Here is how it's done:
         verb(
-    template <typename... BaseClasses>
-    class Combi: public BaseClasses ...         // derive from base classes
+    template <typename ...BaseClasses>
+    class Combi: public BaseClasses...          // derive from base classes
     {
         public:
                                                 // specify base class objects
@@ -16,7 +16,7 @@ derived from any number of base classes.
                                                 // perfect forwarding
             Combi(BaseClasses &&...baseClasses)
             :
-                BaseClasses(baseClasses) ...    // use base class initializers
+                BaseClasses(baseClasses)...     // use base class initializers
             {}                                  // for each of the base
     };                                          // classes
         )
@@ -38,14 +38,14 @@ type):
 supporting variadic type lists such as tt(tuples) (cf. section
 ref(TUPLES)). Such a class could be designed along these lines:
         verb(
-    template <typename ... Types>
+    template <typename ...Types>
     struct Multi
     {
-        std::tuple<Types ...> d_tup;        // define tuple for Types types
+        std::tuple<Types...> d_tup;        // define tuple for Types types
 
-        Multi(Types ... types)
+        Multi(Types ...types)
         :                                   // initialize d_tup from Multi's
-            d_tup(std::forward<Types>(types) ...)   //             arguments
+            d_tup(std::forward<Types>(types)...)   //             arguments
         {}
     };
         )
@@ -58,17 +58,17 @@ specifying the template parameters, resulting in a
     hi(parameter packs not expanded)
  emi(parameter packs not expanded with `...') error message:
         verb(
-    template <int size, typename ... List>
+    template <int size, typename ...List>
     struct Call
     {
         Call(List &&...list)
         {
-            Call<size - 1, List &&> call(std::forward<List>(list) ...);
+            Call<size - 1, List &&> call(std::forward<List>(list)...);
         }
     };
         )
     Instead of the above definition of the tt(call) object the programmer
 should have used:
         verb(
-    Call<size - 1, List && ...> call(std::forward<List>(list) ...);
+    Call<size - 1, List &&...> call(std::forward<List>(list)...);
         )

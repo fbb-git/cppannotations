@@ -4,27 +4,27 @@
 
 #include <bobcat/typetrait>
 
-template <typename ... Types>
+template <typename ...Types>
 struct Multi
 {
-    std::tuple<Types ...> d_tup;
+    std::tuple<Types...> d_tup;
 
     Multi(Types &&...types)
     :
-        d_tup(std::forward<Types>(types) ...)
+        d_tup(std::forward<Types>(types)...)
     {}
 };
 
-template <typename Result, typename Opnd, typename ... Cntxt>
+template <typename Result, typename Opnd, typename ...Cntxt>
 struct Wrapper
 {
-    mutable std::tuple<Cntxt ...> d_cntxt;
+    mutable std::tuple<Cntxt...> d_cntxt;
 
-    Result (*d_fun)(Opnd, std::tuple<Cntxt ...>& );
+    Result (*d_fun)(Opnd, std::tuple<Cntxt...>& );
 
-    Wrapper(Result fun(Opnd, std::tuple<Cntxt ...> &), Cntxt &&...cntxt)
+    Wrapper(Result fun(Opnd, std::tuple<Cntxt...> &), Cntxt &&...cntxt)
     :
-        d_cntxt(std::forward<Cntxt>(cntxt) ...),
+        d_cntxt(std::forward<Cntxt>(cntxt)...),
         d_fun(fun)
     {}
 

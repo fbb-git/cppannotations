@@ -22,8 +22,8 @@ void printcpp(string const &format)
     cout << format.substr(left);
 }
 
-template<typename First, typename ... Params>
-void printcpp(std::string const &format, First value, Params ... params)
+template<typename First, typename ...Params>
+void printcpp(std::string const &format, First value, Params ...params)
 {
     size_t left = 0;
     size_t right = 0;
@@ -40,7 +40,7 @@ void printcpp(std::string const &format, First value, Params ... params)
         left = ++right;
     }
     cout << format.substr(left, right - left) << value;
-    printcpp(format.substr(right + 1), params ...);
+    printcpp(format.substr(right + 1), params...);
 
 
 

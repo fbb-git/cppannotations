@@ -1,7 +1,7 @@
 #include "typelist.h"
 
 //LISTSEARCH
-    template <typename ... Types>
+    template <typename ...Types>
     struct ListSearch
     {
         ListSearch(ListSearch const &) = delete;
@@ -18,8 +18,8 @@
 //=
 
 //TAIL
-    template <typename SearchType, typename ... Tail>
-    struct ListSearch<SearchType, TypeList<SearchType, Tail ...>>
+    template <typename SearchType, typename ...Tail>
+    struct ListSearch<SearchType, TypeList<SearchType, Tail...>>
     {
         ListSearch(ListSearch const &) = delete;
         enum { index = 0 };
@@ -27,11 +27,11 @@
 //=
 
 //FULL
-    template <typename SearchType, typename Head, typename ... Tail>
-    struct ListSearch<SearchType, TypeList<Head, Tail ...> >
+    template <typename SearchType, typename Head, typename ...Tail>
+    struct ListSearch<SearchType, TypeList<Head, Tail...> >
     {
         ListSearch(ListSearch const &) = delete;
-        enum {tmp = ListSearch<SearchType, TypeList<Tail ...>>::index};
+        enum {tmp = ListSearch<SearchType, TypeList<Tail...>>::index};
         enum {index = tmp == -1 ? -1 : 1 + tmp};
     };
 //=

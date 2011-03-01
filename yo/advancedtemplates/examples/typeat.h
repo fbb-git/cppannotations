@@ -18,18 +18,18 @@
 //=
 
 //ZERO
-    template <typename Head, typename ... Tail>
-    struct TypeAt<0, TypeList<Head, Tail ...>>
+    template <typename Head, typename ...Tail>
+    struct TypeAt<0, TypeList<Head, Tail...>>
     {
         typedef Head Type;
     };
 //=
 
 //TYPELIST
-    template <size_t index, typename Head, typename ... Tail>
-    struct TypeAt<index, TypeList<Head, Tail ...>>
+    template <size_t index, typename Head, typename ...Tail>
+    struct TypeAt<index, TypeList<Head, Tail...>>
     {
-        typedef typename TypeAt<index - 1, TypeList<Tail ...>>::Type Type;
+        typedef typename TypeAt<index - 1, TypeList<Tail...>>::Type Type;
     };
 //=
 

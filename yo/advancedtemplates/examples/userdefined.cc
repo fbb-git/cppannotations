@@ -1,8 +1,8 @@
 #include <iostream>
 using namespace std;
 
-template <typename ... Chars>
-double _kmh(Chars ... chars);
+template <typename ...Chars>
+double _kmh(Chars ...chars);
 
 double _kmh()
 {
@@ -21,7 +21,7 @@ struct factor<0>
     enum {value = 1};
 };
 
-template <typename ... Chars>
+template <typename ...Chars>
 double _kmh(char c, Chars ...chars)
 {
     return (c - '0') * factor<sizeof...(Chars)>::value + _kmh(chars ...);

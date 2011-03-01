@@ -4,24 +4,24 @@
 #include "typelist.h"
 
 //STRUCTS
-    template <typename ... Types>
+    template <typename ...Types>
     struct Append;
 
-    template <typename ... Types>
+    template <typename ...Types>
     struct Prefix;
 //=
 
 //ADDTYPE
-    template <typename NewType, typename ... Types>
-    struct Append<TypeList<Types ...>, NewType>
+    template <typename NewType, typename ...Types>
+    struct Append<TypeList<Types...>, NewType>
     {
-        typedef TypeList<Types ..., NewType> List;
+        typedef TypeList<Types..., NewType> List;
     };
 
-    template <typename NewType, typename ... Types>
-    struct Prefix<NewType, TypeList<Types ...>>
+    template <typename NewType, typename ...Types>
+    struct Prefix<NewType, TypeList<Types...>>
     {
-        typedef TypeList<NewType, Types ...> List;
+        typedef TypeList<NewType, Types...> List;
     };
 //=
 
