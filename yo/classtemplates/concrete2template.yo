@@ -37,7 +37,7 @@ the number of columns we would like our table to have as well as a
 em(FillDirection). tt(FillDirection) is an tt(enum),
 defined by tt(TableType), having values tt(HORIZONTAL) and tt(VERTICAL). To
 allow tt(Table)'s users to exercise control over headers, footers, captions,
-horizontal and vertical separators, one constructor has tt(TableSupport)
+horizontal and vertical separators, one constructor has a tt(TableSupport)
 reference parameter. The class tt(TableSupport) will be developed later as a
 virtual class allowing clients to exercise this control. Here are the class's
 constructors:
@@ -53,21 +53,21 @@ rangett(begin, end), as defined by the constructor's first two parameters.
 As we will see shortly, tt(TableType) defines a protected data member
 tt(std::vector<std::string> d_string). One of the requirements of the data
 type to which the iterators point is that this data type can be inserted into
-streams. So, tt(fill) uses a tt(ostringstream) object to obtain the textual
+streams. So, tt(fill) uses an tt(ostringstream) object to obtain the textual
 representation of the data, which is then appended to tt(d_string):
         verbinsert(FILL)(examples/table/table/table.h)
     )
 
     This completes the implementation of the class tt(Table). Note that this
-class template only has three members, two of them constructors. Therefore, in
-most cases only two function templates will have to be instantiated: a
-constructor and the class's tt(fill) member. For example, the following
-defines a table having four columns, vertically filled by tt(string)s
-extracted from the standard input stream:
+class template only has three members, two of them being
+constructors. Therefore, in most cases only two function templates will have
+to be instantiated: a constructor and the class's tt(fill) member. For
+example, the following defines a table having four columns, vertically filled
+by tt(string)s extracted from the standard input stream:
         verb(
     Table<istream_iterator<string> >
         table(istream_iterator<string>(cin), istream_iterator<string>(),
-              4, TableType::Vertical);
+              4, TableType::VERTICAL);
         )
     The fill-direction is specified as
 tt(TableType::VERTICAL). It could also have been specified using tt(Table),
@@ -77,7 +77,7 @@ slightly more complex: tt(Table<istream_iterator<string> >::VERTICAL).
     Now that the tt(Table) derived class has been designed, let's turn our
 attention to the class tt(TableType). Here are its essential characteristics:
     itemization(
-    it() It is a ordinary class, designed to operate as tt(Table)'s base
+    it() It is an ordinary class, designed to operate as tt(Table)'s base
 class.
     it() It uses various private data members, among which tt(d_colWidth), a
 vector storing the width of the widest element per column and tt(d_indexFun),
@@ -124,11 +124,12 @@ vertically filled table:
 captions and separators. It has four virtual members to perform those tasks
 (and, of course, a virtual constructor):
     itemization(
-    itt(hline(size_t rowIndex)): called just before the elements in row
-tt(rowIndex) will be displayed.
+    itt(hline(size_t rowIndex)): called just before displaying 
+the elements in row
+tt(rowIndex).
     itt(hline()): called immediately after displaying the final row.
-    itt(vline(size_t colIndex)): called just before the element in column
-tt(colIndex) will be displayed.
+    itt(vline(size_t colIndex)): called just before displaying the element in
+column tt(colIndex).
     itt(vline()): called immediately after displaying all elements in a row.
     )
     The reader is referrred to the tt(cplusplus.yo.zip) archive for the full
