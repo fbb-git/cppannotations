@@ -3,7 +3,6 @@
     #include <list>
     using namespace std;
                             // see the merge() example
-    void showlist(list<string> &target);
     void showlist(list<string> &target)
     {
         for

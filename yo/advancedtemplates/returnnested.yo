@@ -49,13 +49,20 @@ error message like
 (i.e., tt(Outer<T>::Nested)) refers to a type defined by tt(Outer<T>) rather
 than to a member of tt(Outer<T>).
 
-    Here, too, tt(typename) must be used. The general rule being: the keyword
-tt(typename) must be used whenever a type is referred to that is a em(subtype)
-of a type that itself depends on a template type parameter.
+    Here tt(typename) must once again be used. The general rule being: the
+keyword tt(typename) must be used whenever a type is referred to that is a
+em(subtype) of a type that itself depends on a template type parameter. 
         hi(template: subtypes inside templates)
         hi(class template: subtype vs. static members)
-    Writing tt(typename) in front of tt(Outer<T>::Nested) removes the
-compilation error. Thus, the correct implementation of the function
+    When using the inline implementation no such dependency is used as the
+function's return type is simply tt(Nested). When implementing the function
+outside of the class interface (which should be considered `good practice')
+then a specification of the class defining tt(Nested) must be provided for the
+function's return type. So it becomes tt(Outer<T>::Nested) which clearly is a
+type depending on a template type parameter.
+
+    Like before, writing tt(typename) in front of tt(Outer<T>::Nested) removes
+the compilation error. Thus, the correct implementation of the function
 tt(nested) becomes:
         verb(
     template <typename T>
