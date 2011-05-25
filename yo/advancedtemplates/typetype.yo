@@ -1,7 +1,7 @@
 Although em(class) templates may be partially specialized, em(function)
 templates may not. At times this is annoying. Assume a function template is
 available implementing a certain unary operator that could be used with the
-tt(transform) (cf. section ref(TRANSFORM)) generic algorithm:
+tt(transform) generic algorithm (cf. section ref(TRANSFORM)):
         verb(
     template <typename Return, typename Argument>
     Return chop(Argument const &arg)
@@ -11,8 +11,8 @@ tt(transform) (cf. section ref(TRANSFORM)) generic algorithm:
         )
     Furthermore assume that if tt(Return) is tt(std::string) then the above
 implementation should not be used. Instead, with tt(std::string) a second
-argument tt(1) should always be provided. This would allow us, if tt(Argument)
-is a bf(C++) string, to return a copy of tt(arg) from which its first
+argument tt(1) should always be provided. If tt(Argument) is a bf(C++) string,
+this would allow us to, e.g., return a copy of tt(arg) from which its first
 character has been chopped off.
 
 Since tt(chop) is a function, it is not possible to define a partial
@@ -25,18 +25,18 @@ specialization like this:
     }
         )
     Although a function template cannot be partially specialized it em(is)
-possible to use overloading, defining a second,  dummy tt(string) parameter:
+possible to use overloading, defining a second,  dummy, tt(string) parameter:
         verb(
     template <typename Argument>
-    std::string chop(Argument const &arg, std::string )
+    std::string chop(Argument const &arg, std::string)
     {
         return string(arg, 1);
     }
         )
     Now it em(is) possible to distinguish the two cases, but at the expense of
-a more complex function call. At the downside, in code this function may
-requiring the use of the tt(bind2nd) binder (cf. section ref(FUNADAPT)) to
-provide the dummy second argument or it may require a (possibly expensive to
+a more complex function call. Moreover, in code this function may
+require the use of the tt(bind2nd) binder (cf. section ref(FUNADAPT)) to
+provide the dummy second argument, or it may require a (possibly expensive to
 construct) dummy argument to allow the compiler to choose among the two
 overloaded function templates.
 
