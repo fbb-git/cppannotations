@@ -45,12 +45,12 @@ void Fistream::setBuffer()
 {
     char *buffer = new char[d_width + 1];
 
-    rdbuf(d_streambuf);                     // use istream's buffer to
+    rdbuf(d_streambuf);                         // use istream's buffer to
     buffer[read(buffer, d_width).gcount()] = 0; // read d_width chars,
                                                 // terminated by ascii-Z
     d_iss.str(buffer);
-    delete buffer;
+    delete[] buffer;
 
-    rdbuf(d_iss.rdbuf());                   // switch buffers
+    rdbuf(d_iss.rdbuf());                       // switch buffers
 }
 //=

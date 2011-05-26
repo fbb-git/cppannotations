@@ -28,3 +28,15 @@ vtable;
         verbinclude(examples/vtable.cc)
     It's of course easy to correct the error: implement the derived class's
 missing virtual member function.
+
+    Virtual functions should em(never) be implemented inline. Since the vtable
+contains the addresses of the class's virtual functions, these functions must
+have addresses and so they must have been compiled as real (out-of-line)
+functions. By defining virtual functions inline you run the risk that the
+compiler simply overlooks those functions as they may very well never be
+explicitly called (but only polymorphically, from a base class pointer or
+reference). As a result their addresses may never enter their class's vtables
+(and even the vtable itself might remain undefined), causing linkage problems
+or resulting in programs showing unexpected behavior. All these kinds of
+problems are simply avoided: em(never) define virtual members inline (see also
+section ref(NOTINLINE)).

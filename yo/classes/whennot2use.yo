@@ -1,0 +1,34 @@
+    hi(inline: avoid!)
+As a prelude to chapter ref(POLYMORPHISM) (Polymorphism), there is one
+situation in which inline functions should definitely be avoided. At this
+point in the annotations() it's a bit too early to expose the full details,
+but since the keyword tt(inline) is the topic of this section this is
+considered the appropriate location for the advice.
+
+    There are situations where the compiler is confronted with 
+        emi(vague linkage) 
+    (cf:
+tlurl(http://gcc.gnu.org/onlinedocs/gcc-4.6.0/gcc/Vague-Linkage.html). These
+situations occur when the compiler does not have a clear indication in what
+object file to put its compiled code. This happens, e.g., with inline
+functions, which are usually encountered in multiple source files. Since the
+compiler may insert the code of ordinary inline functions in places where
+these functions are called, vague linking is usually no problem with these
+ordinary functions.
+
+However, as will be explained in chapter ref(POLYMORPHISM), 
+when using polymorphism the compiler must ignore the tt(inline) keyword and
+define so-called em(virtual members) as true (em(out-of-line)
+        hi(out-of-line functions) 
+    functions). In this situation the vague linkage may cause problems, as the
+compiler must decide in what object file(s) to put their code. Usually that's
+not a big problem as long as the function is at least called once. But virtual
+functions are special in the sense that they may very well never be explicitly
+called. On some architectures (e.g., armel) the compiler may fail to compile
+such inline virtual functions. This may result in missing symbols in programs
+using them. To make matters slightly more complex: the problem may emerge when
+shared libraries are used, but not when static libraries are used.
+
+To avoid all of these problems virtual functions should em(never) be defined
+inline, but they should always be defined em(out-of-line). I.e., they should
+be defined in source files.

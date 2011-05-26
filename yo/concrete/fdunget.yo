@@ -6,7 +6,7 @@ or hi(putback)tt(istream::putback) calls is discussed.
 
     Support for multiple (say `tt(n)') tt(unget) calls is implemented by
 reserving an initial section of the input buffer, which is gradually filled up
-to contain the last tt(n) characters read. The class was implemented as
+to contain the last tt(n) characters read. The class is implemented as
 follows:
     itemization(
     it() Once again, the class is derived from tt(std::streambuf). It
@@ -60,17 +60,20 @@ that reading starts from tt(d_base) and not from tt(d_buffer);
 defining the guaranteed unget-area,
             ti(gptr) is set to tt(d_base), since that's the location of the
 first read character after a refill, and
-            hi(egptr) is set just beyond the location of the last character
+            ti(egptr) is set just beyond the location of the last character
 read into the buffer.
         )
         Here is tt(underflow)'s implementation:
             verbinsert(UNDERFLOW)(examples/fdunget.h)
     )
-    The example program illustrates the class tt(FdUnget). It reads at most
-10 characters from the standard input, stopping at endOfFile(). A guaranteed
-unget-buffer of 2 characters is defined in a buffer holding 3 characters. Just
-before reading a character, the program tries to unget at most 6
-characters. This is, of course, not possible; but the program will nicely
-unget as many characters as possible, considering the actual number of
-characters read:
+
+    bf(An example using FdUnget)
+
+    The next example program illustrates the use of the class tt(FdUnget). It
+reads at most 10 characters from the standard input, stopping at
+endOfFile(). A guaranteed unget-buffer of 2 characters is defined in a buffer
+holding 3 characters. Just before reading a character, the program tries to
+unget at most 6 characters. This is, of course, not possible; but the program
+will nicely unget as many characters as possible, considering the actual
+number of characters read:
         verbinclude(examples/fdunget.cc)

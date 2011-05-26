@@ -1,6 +1,7 @@
     #include <iostream>
     #include <fstream>
     #include <string>
+    #include <climits>
     using namespace std;
 
     void err(char const *msg)
@@ -18,7 +19,11 @@
         int idx;
 
         if (!(cin >> idx))                          // read index
+        {
+            cin.clear();                            // allow reading again
+            cin.ignore(INT_MAX, '\n');              // skip the line
             return err("line number expected");
+        }
 
         index.seekg(idx * sizeof(long));            // go to index-offset
 
@@ -99,6 +104,12 @@
                 read(index, strings);
             else if (cmd == "w")
                 write(index, strings);
+            else if (cin.eof())
+            {
+                cout << "\n"
+                        "Unexpected end-of-file\n";
+                return 1;
+            }
             else
                 cout << "Unknown command: " << cmd << '\n';
         }
