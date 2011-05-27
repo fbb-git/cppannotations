@@ -1,9 +1,10 @@
 #include <string>
-using namespace std;
 
 int main()
 {
 //CODE
+    using std::string;
+
     char buffer[3 * sizeof(string)];
     string *sp = new(buffer) string [3];
 
