@@ -35,7 +35,7 @@ situations where a class cannot implement a swap member this way, even if the
 class only defines data members of primitive data types. Consider the
 situation depicted in figure ref(SWAPLIST).
 
-    figure(memory/fswap1)(Swapping a linked list)(SWAPLIST)
+    figure(memory/fswap)(Swapping a linked list)(SWAPLIST)
 
 In this figure there are four objects, each object has a pointer pointing to
 the next object. The basic organization of such a class looks like this:
@@ -46,23 +46,53 @@ the next object. The basic organization of such a class looks like this:
         ...
     };
         )
+    Initially four objects have their tt(d_next) pointer set to the next
+object: 1 to 2, 2 to 3, 3 to 4. This is shown in the upper half of the
+figure. At the bottom half it is shown what happens if objects 2 and 3 are
+swapped: 3's tt(d_next) point is now at object 2, which still points to 4; 2's
+tt(d_next) pointer points to 3's address, but 2's tt(d_next is now at object
+3, which is therefore pointing to itself. Bad news!
 
-    As we've seen with the placement tt(new) operator objects can be
-constructed in blocks of memory of tt(sizeof(Class)) bytes large. And so, two
-objects of the same class each occupy tt(sizeof(Class)) bytes. To swap these
-objects we merely have to swap the contents of those tt(sizeof(Class))
-bytes. This procedure may be applied to classes whose objects may be
-swapped using a member-by-member swapping operation and can also be used for
-classes having reference data members. Here is its implementation for a
-hypothetical class tt(Class), resulting in very fast swapping:
+Another situation where swapping of objects goes wrong happens with classes
+having data members pointing or referring to data members of the same
+object. Such a situation is shown in figure ref(SWAPSELF).
+
+  figure(memory/fswap2)(Swapping objects with self-referential data)(SWAPSELF)
+
+Here, objects have two data members, as in the following class setup:
         verb(
-    #include <cstring>
-
-    void Class::swap(Class &other)
+    class SelfRef
     {
-        char buffer[sizeof(Class)];
-        memcpy(buffer, &other, sizeof(Class));
-        memcpy(&other, this,   sizeof(Class));
-        memcpy(this,   buffer, sizeof(Class));
+        size_t *d_ownPtr;       // initialized to &d_data
+        size_t d_data;
+    };
+        )
+    The top-half of figure ref(SWAPSELF) shows two objects; their upper data
+members pointing to their lower data members. But if these objects are swapped
+then the situation shown in the figure's bottom half is encountered. Here the
+values at addresses a and c are swapped, and so, rather than pointing to their
+bottom data members they suddenly point to other object's data members. Again:
+bad news.
+
+The common cause of these failing swapping operations is easily recognized:
+simple swapping operations must be avoided when data members point or refer to
+data that is involved in the swapping. If, in figure ref(SWAPSELF) the a and c
+data members would point to information outside of the two objects (e.g., if
+they would point to dynamically allocated memory) then the simple swapping
+would succeed. 
+
+However, the difficulty encountered with swapping tt(SelfRef) objects does not
+imply that two tt(SelfRef) objects cannot be swapped; it only means that we
+must be careful when designing tt(swap) members. Here is an implementation of
+tt(SelfRef::swap): 
+        verb(
+    void SelfRef::swap(SelfRef &other)
+    {
+        swap(d_data, other.d_data);
     }
         )
+    In this implementation swapping leaves the self-referential data member
+as-is, and merely swaps the remaining data. A similar tt(swap) member could be
+designed for the linked list shown in figure ref(SWAPLIST).
+
+
