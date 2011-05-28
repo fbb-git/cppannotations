@@ -1,0 +1,68 @@
+Many classes (e.g., tt(std::string)) offer ti(swap) members allowing us to
+swap two of their objects. The em(Standard Template Library) (STL, cf. chapter
+ref(STL)) offers various functions related to swapping. There is even a
+tt(swap) em(generic algorithm) (cf. section ref(SWAP)), which is 
+commonly implemented using the
+assignment operator. When implementing a tt(swap) member for our class
+tt(Strings) it could be used, provided that all of tt(String)'s data members
+can be swapped. As this is true (em(why) this is true will shortly be
+discussed) we can augment tt(class Strings) with a tt(swap) member:
+        verb(
+    void Strings::swap(Strings &other)
+    {
+        swap(d_string, other.d_string);
+        swap(d_size, other.d_size);
+    }
+        )
+    Having added this member to tt(Strings) the copy-and-swap implementation
+of tt(String::operator=) can now be used.
+
+    When two variables (e.g., tt(double one) and tt(double two)) are swapped, 
+each one holds the other one's value after the swap. So, if tt(one == 12.50)
+and tt(two == -3.14) then after tt(swap(one, two) one == -3.14) and tt(two ==
+12.50). 
+
+    Variables of primitive data types (pointers and the built-in types) can be
+swapped, class-type objects can be swapped if their classes offer a tt(swap)
+member. 
+
+    So should we provide our classes with a swap member, and if so, how should
+it be implemented?
+
+    The above example (tt(Strings::swap)) shows the standard way to implement
+a tt(swap) member: each of its data members are swapped in turn. But there are
+situations where a class cannot implement a swap member this way, even if the
+class only defines data members of primitive data types. Consider the
+situation depicted in figure ref(SWAPLIST).
+
+    figure(memory/fswap1)(Swapping a linked list)(SWAPLIST)
+
+In this figure there are four objects, each object has a pointer pointing to
+the next object. The basic organization of such a class looks like this:
+        verb(
+    class List
+    {
+        List *d_next;
+        ...
+    };
+        )
+
+    As we've seen with the placement tt(new) operator objects can be
+constructed in blocks of memory of tt(sizeof(Class)) bytes large. And so, two
+objects of the same class each occupy tt(sizeof(Class)) bytes. To swap these
+objects we merely have to swap the contents of those tt(sizeof(Class))
+bytes. This procedure may be applied to classes whose objects may be
+swapped using a member-by-member swapping operation and can also be used for
+classes having reference data members. Here is its implementation for a
+hypothetical class tt(Class), resulting in very fast swapping:
+        verb(
+    #include <cstring>
+
+    void Class::swap(Class &other)
+    {
+        char buffer[sizeof(Class)];
+        memcpy(buffer, &other, sizeof(Class));
+        memcpy(&other, this,   sizeof(Class));
+        memcpy(this,   buffer, sizeof(Class));
+    }
+        )
