@@ -31,7 +31,7 @@ class CirQue
 //=
         explicit CirQue(size_t maxSize = 0);
         CirQue(CirQue<Data> const &other);
-        CirQue(CirQue<Data> const &&tmp);
+        CirQue(CirQue<Data> &&tmp);
 
         template <size_t Size>
         explicit CirQue(Data const (&arr)[Size]);
@@ -41,7 +41,7 @@ class CirQue
         ~CirQue();
 
         CirQue &operator=(CirQue<Data> const &other);
-        CirQue &operator=(CirQue<Data> const &&tmp);
+        CirQue &operator=(CirQue<Data> &&tmp);
 
         Data &back();
         Data &front();
@@ -104,11 +104,11 @@ class CirQue
 
 //MOVECONS
     template<typename Data>
-    CirQue<Data>::CirQue(CirQue<Data> const &&tmp)
+    CirQue<Data>::CirQue(CirQue<Data> &&tmp)
     :
         d_data(0)
     {
-        swap(const_cast<CirQue<Data> &>(tmp));
+        swap(tmp);
     }
 //=
 
@@ -152,9 +152,9 @@ class CirQue
 
 //MOVEASSIGN
     template<typename Data>
-    inline CirQue<Data> &CirQue<Data>::operator=(CirQue<Data> const &&tmp)
+    inline CirQue<Data> &CirQue<Data>::operator=(CirQue<Data> &&tmp)
     {
-        swap(const_cast<CirQue<Data> &>(tmp));
+        swap(tmp);
     }
 //=
 

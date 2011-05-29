@@ -2,7 +2,7 @@ When the compiler selects a member function (or constructor) it will do
 so  according to a simple set of rules, matching arguments with parameter
 types.
 
-Below two tables are provided. The first table should be used in cases where a
+Below two tables are shown. The first table should be used in cases where a
 function argument has a name, the second table should be used in cases where
 the argument is anonymous. In each table select the const or non-const column
 and then use the topmost overloaded function that is available having the
@@ -20,17 +20,18 @@ is:
     itemization(
     it() a em(named)  argument (an lvalue or a named rvalue)
         center(
-    table(2)(cc)(
+    table(3)(ccc)(
         rowline()
+        row(cell()  cells(2)(the argument is:))
         row(
-            cell(non-const)  cell(const)
+            cell()  cell(non-const)  cell(const)
         )
         rowline()
         row(
-            cell((T &))
+            cell(Use the topmost) cell((T &))
         )
         row(
-            cell((T const &))  cell((T const &))
+            cell(available function) cell((T const &))  cell((T const &))
         )
         rowline()
     )
@@ -42,54 +43,46 @@ compiler reports an error.
 
     it() an em(anonymous) argument (an anonymous temporary or a literal value)
         center(
-    table(2)(cc)(
+    table(3)(ccc)(
+        rowline()
+        row(cell()  cells(2)(the argument is:))
+        row(
+            cell() cell(non-const)  cell(const)
+        )
         rowline()
         row(
-            cell(non-const)  cell(const)
-        )
-        rowline()
-        row(
-            cell((T &&))
+            cell(Use the topmost) cell((T &&))
         )
         row(
-            cell((T const &&))  cell((T const &&))
+            cell(available function) cell((T const &&))  cell((T const &&))
         )
         row(
-            cell((T const &))  cell((T const &))
+            cell(available function) cell((T const &))  cell((T const &))
         )
         rowline()
         ))
-        Example: for an tt(int arg()) argument a function tt(fun(int &&)) is
-selected rather than a function tt(fun(int const &&)). If both functions are
-unavailable but a tt(fun(int const &)) is available, that function is used.
-If none of these functions is available the compiler reports an error.
+        Example: when the return value of an tt(int arg()) function is passed
+to a function tt(fun) for which various overloaded versions are available
+tt(fun(int &&)) is selected. If this function is unavailable but tt(fun(int
+const &)) is, then the latter function is used.  If none of these two
+functions is available the compiler reports an error.
         )
     The tables show that eventually em(all) arguments can be used with a
 function specifying a tt(T const &) parameter. For em(anonymous) arguments a
 similar em(catch all) is available having a higher priority: tt(T const &&)
-matches all anonymous arguments. Thus, if named and anonymous arguments are to
-be distinguished a tt(T const &&) overloaded function will catch all
-temporaries.
+matches all anonymous arguments. Functions having this signature are normally
+not defined as their implementations are (should be) identical to the
+implementations of the functions expecting a tt(T const &) parameter. Since
+the temporary can apparently not be modified a function defining a tt(T const
+&&) parameter has no alternative but to copy the temporary's resources. As
+this task is already performed by functions expecting a tt(T const &), there
+is no need for implenting functions expecting tt(T const &&) parameters.
 
     As we've seen the move constructor grabs the information from a temporary
 for its own use. That is OK as the temporary is going to be destroyed after
 that anyway. It also means that the temporary's data members are
-modified. This modification can safely be considered a
-    emi(non-mutating operation) on the temporary. It may thus be modified even
-if it was passed to a function specifying a tt(T const &&) parameter. In cases
-like these consider using a tt(const_cast) to cast away the const-ness of the
-rvalue reference. The tt(Strings) move constructor encountered before might
-therefore also have been implemented as follows, handling both tt(Strings) and
-tt(Strings const) anonymous temporaries:
-        verb(
-    Strings::Strings(Strings const &&tmp)
-    :
-        d_string(tmp.d_string),
-        d_size(tmp.d_size)
-    {
-        const_cast<Strings &>(tmp).d_string = 0;
-    }
-        )
+modified. 
+
     Having defined appropriate copy and/or move constructors it may be
 somewhat surprising to learn that the compiler may decide to stay clear of a
 copy or move operation. After all making em(no) copy and em(not) moving is

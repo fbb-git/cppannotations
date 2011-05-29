@@ -23,9 +23,9 @@
             explicit Clonable(Base *base);
             ~Clonable();
             Clonable(Clonable const &other);
-            Clonable(Clonable const &&tmp);
+            Clonable(Clonable &&tmp);
             Clonable &operator=(Clonable const &other);
-            Clonable &operator=(Clonable const &&tmp);
+            Clonable &operator=(Clonable &&tmp);
 
             Base &base() const;
     };
@@ -45,11 +45,11 @@
     :
         d_bp(other.d_bp->clone())
     {}
-    inline Clonable::Clonable(Clonable const &&tmp)
+    inline Clonable::Clonable(Clonable &&tmp)
     :
         d_bp(tmp.d_bp)
     {
-        const_cast<Clonable &>(tmp).d_bp = 0;
+        tmp.d_bp = 0;
     }
     inline Clonable::~Clonable()
     {
@@ -82,9 +82,9 @@
         std::swap(d_bp, tmp.d_bp);
         return *this;
     }
-    Clonable &Clonable::operator=(Clonable const &&tmp)
+    Clonable &Clonable::operator=(Clonable &&tmp)
     {
-        std::swap(d_bp, const_cast<Clonable &>(tmp).d_bp);
+        std::swap(d_bp, tmp.d_bp);
         return *this;
     }
     Derived1::~Derived1()

@@ -18,15 +18,15 @@
         public:
             bool operator!=(RandomPtrIterator const &other) const;
             int operator-(RandomPtrIterator const &rhs) const;
-            RandomPtrIterator const operator+(int step) const;
+            RandomPtrIterator operator+(int step) const;
             Type &operator*() const;
             bool operator<(RandomPtrIterator const &other) const;
             RandomPtrIterator &operator--();
-            RandomPtrIterator const operator--(int);
+            RandomPtrIterator operator--(int);
             RandomPtrIterator &operator++();
-            RandomPtrIterator const operator++(int);
+            RandomPtrIterator operator++(int);
             bool operator==(RandomPtrIterator const &other) const;
-            RandomPtrIterator const operator-(int step) const;
+            RandomPtrIterator operator-(int step) const;
             RandomPtrIterator &operator-=(int step);
             RandomPtrIterator &operator+=(int step);
             Type *operator->() const;

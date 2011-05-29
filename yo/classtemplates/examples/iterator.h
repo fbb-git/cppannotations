@@ -15,7 +15,7 @@
                 --d_current;
                 return *this;
             }
-            iterator const operator--(int)
+            iterator operator--(int)
             {
                 return iterator(d_current--);
             }
@@ -44,11 +44,11 @@
             {
                 return **d_current < **other.d_current;
             }
-            iterator const operator+(int step) const
+            iterator operator+(int step) const
             {
                 return iterator(d_current + step);
             }
-            iterator const operator-(int step) const
+            iterator operator-(int step) const
             {
                 return iterator(d_current - step);
             }

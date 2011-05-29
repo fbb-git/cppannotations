@@ -19,16 +19,16 @@ class StringPtr: public std::vector<std::string *>
 
         public:
             iterator &operator--();
-            iterator const operator--(int);
+            iterator operator--(int);
             iterator &operator++();
-            iterator const operator++(int);
+            iterator operator++(int);
             bool operator==(iterator const &other) const;
             bool operator!=(iterator const &other) const;
             int operator-(iterator const &rhs) const;
             std::string &operator*() const;
             bool operator<(iterator const &other) const;
-            iterator const operator+(int step) const;
-            iterator const operator-(int step) const;
+            iterator operator+(int step) const;
+            iterator operator-(int step) const;
             iterator &operator+=(int step); // increment over `n' steps
             iterator &operator-=(int step); // decrement over `n' steps
             std::string *operator->() const;// access the fields of the

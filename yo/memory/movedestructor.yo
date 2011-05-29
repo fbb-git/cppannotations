@@ -24,14 +24,14 @@ member implementing move operations should therefore not only set tt(d_string)
 to zero but also tt(d_size). The previously shown move constructor for
 tt(Strings) is therefore incorrect. Its improved implementation is:
         verb(
-    Strings::Strings(Strings const &&tmp)
+    Strings::Strings(Strings &&tmp)
     :
         d_memory(tmp.d_memory),
         d_size(tmp.d_size),
         d_capacity(tmp.d_capacity)
     {
-        const_cast<Strings &>(tmp.d_memory) = 0;
-        const_cast<Strings &>(tmp.d_size) = 0;
+        tmp.d_memory = 0;
+        tmp.d_size = 0;
     }
         )
     If operations by the destructor all depend on tt(d_string) having a

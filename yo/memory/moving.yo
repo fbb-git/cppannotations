@@ -31,17 +31,32 @@ it can benefit from move operations. Most classes using composition (or
 inheritance where the base class uses composition) can benefit from move
 operations as well.
 
-Movable parameters for class tt(Class) take the form tt(Class const
-&&tmp). The parameter is a em(rvalue reference), and a rvalue reference only
-binds to an anonymous temporary value. The compiler is required to call
-functions offering movable parameters whenever possible. This happens when
-the class defines functions supporting tt(Class const &&) parameters and an
-anonymous temporary value is passed to these functions. Once a temporary value
-has a name (e.g., binding it to a tt(const &) or tt(const &&)) it is no longer
-an em(anonymous) temporary value, and the compiler will call the function
-defining a tt(Class const &) parameter instead.
+Movable parameters for class tt(Class) take the form tt(Class &&tmp). The
+parameter is a em(rvalue reference), and a rvalue reference only binds to an
+anonymous temporary value. The compiler is required to call functions offering
+movable parameters whenever possible. This happens when the class defines
+functions supporting tt(Class &&) parameters and an anonymous temporary value
+is passed to such functions. Once a temporary value has a name (which already
+happens inside functions defining tt(Class const &) or tt(Class &&tmp)
+parameters as within such functions the names of these parameters are
+available) it is no longer an em(anonymous) temporary value, and within such
+functions the compiler will no longer call functions expecting anonymous
+temporary values when the parameters are used as arguments.
 
-Note that it is pointless to define a
+The next example (using inline member implementations for brevity) illustrates
+what happens if a non-const object, a temporary object and a const object are
+passed to functions tt(fun) for which these kinds of parameters were
+defined. Each of these functions call a function tt(gun) for which these kinds
+of parameters were also defined. The first time tt(fun) is called it (as
+expected) calls tt(gun(Class &)). Then tt(fun(Class &&)) is called as its
+argument is an anonymous (temporary) object. However, inside tt(fun) the
+anonymous value has received a name, and so it isn't anonymous
+anymore. Consequently, tt(gun(Class &)) is called once again. Finally
+tt(fun(Class const &)) is called, and (as expected) tt(gun(Class const &)) is
+now called.
+    verbinclude(examples/moving.cc)
+
+It is pointless to define a
  hi(function: returning rvalue reference) function having an rvalue reference
 return type. The compiler decides whether or not to use an overloaded member
 expecting an rvalue reference on the basis of the provided argument. If it is

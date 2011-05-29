@@ -13,8 +13,8 @@
             A(B const &b);
     };
 
-    A const operator+(A const &a, B const &b);
-    B const operator+(B const &b, A const &a);
+    A operator+(A const &a, B const &b);
+    B operator+(B const &b, A const &a);
 
     int main()
     {

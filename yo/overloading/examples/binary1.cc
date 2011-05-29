@@ -3,7 +3,7 @@
         public:
             Binary();
             Binary(int value);
-            Binary const operator+(Binary const &rvalue);
+            Binary operator+(Binary const &rvalue);
     };
 
     int main()

@@ -16,7 +16,7 @@
             Time(size_t hours, size_t minutes, size_t seconds);
             Time &operator+=(Time const &rValue);
     };
-    Time const operator+(Time const &lValue, Time const &rValue)
+    Time operator+(Time const &lValue, Time const &rValue)
     {
         Time ret(lValue);
         ret += rValue;
