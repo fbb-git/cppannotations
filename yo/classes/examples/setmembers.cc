@@ -1,4 +1,5 @@
     #include "person.h"                 // given earlier
+    using namespace std;
 
     void Person::setName(string const &name)
     {

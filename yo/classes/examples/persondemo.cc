@@ -1,5 +1,6 @@
     #include <iostream>
     #include "person.h"                 // given earlier
+    using namespace std;
 
     void printperson(Person const &p)
     {

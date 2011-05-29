@@ -1,3 +1,5 @@
+    #include <cstddef>
+
     class IntArray
     {
         int     *d_data;

@@ -7,17 +7,17 @@
             {
                 infoPtr = &PointerData::allInfo;
             }
-            string show()
+            std::string show()
             {
                 return (this->*infoPtr)(4);
             }
         private:
-            string allInfo(int i)
+            std::string allInfo(int i)
             {
                 return "hello";
             }
 
-            string (PointerData::*infoPtr)(int);
+            std::string (PointerData::*infoPtr)(int);
     };
 
     int main()

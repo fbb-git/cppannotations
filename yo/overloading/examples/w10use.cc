@@ -7,6 +7,6 @@
 
         int main()
         {
-            w10(cout) << 3 << " ships sailed to America\n;
+            w10(cout) << 3 << " ships sailed to America\n";
             cout << "And " << w10 << 3 << " more ships sailed too.\n";
         }

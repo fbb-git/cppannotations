@@ -4,7 +4,7 @@
 using namespace std;
 
 template <class T>
-void mswap(T& a, T& b)
+void mswap(T &a, T &b)
 {
     T tmp(std::move(a));
     a = std::move(b);

@@ -1,3 +1,4 @@
+    #include <iostream>
     #include <algorithm>
     #include <iterator>
     using namespace std;
@@ -5,6 +6,7 @@
     class Insertable
     {
         public:
+            typedef int value_type;
             typedef int const &const_reference;
 
             void push_back(int const &)

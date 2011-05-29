@@ -1,5 +1,7 @@
+#include <iostream>
 #include <set>
 #include <utility>
+using namespace std;
 
 int main()
 {
@@ -17,5 +19,5 @@ int main()
     cout << "Element " << *result.first << " was " <<
         (result.second ? "" : "not ") << "inserted\n";
 
-    return (0);
+    return 0;
 }

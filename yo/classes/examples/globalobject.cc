@@ -1,4 +1,5 @@
     #include <iostream>
+    using namespace std;
 
     // a class Test with a constructor function
     class Test
