@@ -5,6 +5,7 @@ template <typename Class>
 Class operator+(Class const &lhs, Class const &rhs)
 {
     cout << "operator+(Class const &, Class const &)\n";
+
     Class tmp(lhs);
     return operator+(std::move(tmp), rhs);
 }
@@ -13,13 +14,13 @@ template <typename Class>
 Class operator+(Class &&lhs, Class const &rhs)
 {
     cout << "operator+(Class &&lhs, Class const &rhs)\n";
+
     return lhs += rhs;
 }
 
 template <typename Class>
 Class operator-(Class const &lhs, Class const &rhs)
 {
-    cout << "operator-(Class const &, Class const &)\n";
     Class tmp(lhs);
     return operator-(std::move(tmp), rhs);
 }
@@ -27,20 +28,19 @@ Class operator-(Class const &lhs, Class const &rhs)
 template <typename Class>
 Class operator-(Class &&lhs, Class const &rhs)
 {
-    cout << "operator-(Class &&lhs, Class const &rhs)\n";
     return lhs -= rhs;
 }
 
-class BinOp
+class Class
 {
     public:
-        BinOp() = default;
+        Class() = default;
 
-        BinOp(BinOp &&tmp)
+        Class(Class &&tmp)
         {
             cout << "Move constructor\n";
         }
-        BinOp &operator+=(BinOp const &rhs)
+        Class &operator+=(Class const &rhs)
         {
             cout << "operator+=\n";
         }
@@ -49,10 +49,10 @@ class BinOp
 
 int main()
 {
-    BinOp lhs;
-    BinOp rhs;
+    Class lhs;
+    Class rhs;
 
-    BinOp result;
+    Class result;
     result = lhs + rhs;
 //    result = lhs - rhs;   // this won't compile as operator-= hasn't been
                             // defined
