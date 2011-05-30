@@ -1,0 +1,37 @@
+As we've seen, by default classes offer a copy constructor and assignment
+operator. These class members offer basic support: data members of primitive
+data types are copied byte-by-byte, for class type data members their
+corresponding coy constructors c.q. assignment operators are called.
+
+Move constructors and move assignment operators, however, are not available by
+default. But their default implementations can easily by added to the class's
+implementation using the tt(default) keyword. 
+
+Here is an example of a class that offers, in addition to the default copy
+constructor and
+assignment operator a default move constructor and assignment operator:
+        verb(
+    class DefaultMove
+    {
+        public:
+            DefaultMove() = default;                // default constructor
+                                                    // default move cons.
+            DefaultMove(DefaultMove &&tmp) = default;   
+                                                    // default move assign.
+            DefaultMove &operator=(DefaultMove &&tmp) = default;   
+    };
+        )
+Be cautious, however, when declaring these defaults. The default
+implementations copy primitive typed data members byte-by-byte from the source
+object to the destination object and call the matching move constructors
+or assignment operators (if existing) for class type data members. If these
+move members do not exist then the matching copy constructors c.q. assignment
+operators are called.
+
+The default move members may come in handy if you know that your class's class
+type data members are move-aware and that your class's primitive typed data
+members require no special handling (e.g., there are no pointers to allocated
+memory). In other situations the best advice is probably to add explicitly
+defined move constructors and move assignment operators to classes that must
+be move-aware.
+    COMMENT(example: examples/defaultmove.cc)

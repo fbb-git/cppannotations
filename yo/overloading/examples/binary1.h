@@ -5,4 +5,4 @@
             Binary(int value);
     };
 
-    Binary operator+(Binary const &l_hand, Binary const &r_hand);
+    Binary operator+(Binary const &lhs, Binary const &rhs);

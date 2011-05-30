@@ -7,14 +7,33 @@ class):
 class's objects must be provided with a copy constructor, an overloaded copy
 assignment operator and a destructor;
     it() Classes using pointers to dynamically allocated memory, owned by the
-class's objects should be provided with a move constructor and a move
+class's objects, should be provided with a move constructor and a move
 assignment operator;
     it() Classes using composition may benefit from move constructors and
 move assignment operators as well. Some classes support neither move nor copy
 construction and assignment (for example: stream classes don't). If your
 class contains data members of such class types then defining move operations
 is pointless.
-    it() In general: if your class supports functions expecting tt(Class const
-&) parameters a corresponding move-aware function expecting tt(Class &&)
-parameters should be considered.
     )
+
+In the previous sections we've also encountered an important  design 
+        hi(move: design principle) 
+    principle that can be applied to move-aware classes:
+    quote(
+    em(Whenever a member of a class receives a tt(const &) to an object of its
+own class and creates a copy of that object to perform its actual actions on,
+then that function's implementation can be implemented by an overloaded
+function expecting an rvalue reference.)
+    )
+    The former function can now call the latter by passing tt(std::move(tmp))
+to it. The advantages of this design principle should be clear: there is only
+one implementation of the actual actions, and the class automatically becomes
+em(move-aware) with respect to the involved function.
+
+    We've seen an initial example of the use of this principle in section
+ref(REVISEDASS). Of course, the principle cannot be applied to the copy
+constructor itself, as you need a copy constructor to make a copy. The copy-
+and move constructors must always be implemented independently from each
+other. 
+
+

@@ -3,9 +3,9 @@ be a very natural extension of the class's functionality. For example, the
 tt(std::string) class has various overloaded forms of tt(operator+).
 
     Most binary operators come in two flavors: the plain binary operator (like
-the tt(+) operator) and the arithmetic assignment variant (like the tt(+=)
+the tt(+) operator) and the binary assignment variant (like the tt(+=)
 operator). Whereas the plain binary operators return values,
-the arithmetic assignment operators return a reference to the
+the binary assignment operators return a reference to the
 object to which the operator was applied. For example, with tt(std::string)
 objects the following code (annotations below the example) may be used:
         verbinclude(examples/binarystring.cc)
@@ -63,14 +63,17 @@ primitive types have no concept of `constructors', `member functions' or
     How, then, are promotions of left-hand operands implemented in statements
 like tt("prefix " + s3)? Since promotions are applied to function arguments,
 we must make sure that both operands of binary operators are arguments. This
-means that plain binary arithmetic operators should be declared as
- hi(operator: free)hi(function: free)em(free operators), also called em(free
-functions). Functions like the plain binary arithmetic operators conceptually
-belong to the class for which they implement the binary operator. Consequently
-they should be declared em(within) the class's header file. We will cover their
-implementations shortly, but here is our first revision of the declaration of
-the class tt(Binary), declaring an overloaded tt(+) operator as a free
-function:
+implies that plain binary operators supporting promotions for
+either their left-hand side operand or right-hand side operand should be
+declared as
+        hi(operator: free)hi(function: free)em(free operators), 
+    also called em(free functions). 
+
+    Functions like the plain binary operators conceptually belong to the class
+for which they implement the binary operator. Consequently they should be
+declared in the class's header file. We will cover their implementations
+shortly, but here is our first revision of the declaration of the class
+tt(Binary), declaring an overloaded tt(+) operator as a free function:
         verbinclude(examples/binary1.h)
 
     By defining binary operators as free functions, the following promotions
@@ -91,29 +94,22 @@ one of the arguments, e.g., tt(a + B(a)) will allow the compiler to resolve
 the ambiguity to the first overloaded tt(+) operator.
     )
 
-    The next step is to implement the corresponding
-overloaded arithmetic assignment operator. As this operator em(always) has a
-left-hand operand which is an object of its own class, it is implemented as a
-true member function. Furthermore, the arithmetic assignment operator should
-return a reference to the object to which the arithmetic operation applies, as
-the object might be modified in the same statement. E.g.,
+    The next step is to implement the corresponding overloaded binary
+assignment operator, having the form tt(@=), with tt(@) being a binary
+operator. As this operator em(always) has a left-hand operand which is an
+object of its own class, it is implemented as a true member
+function. Furthermore, the binary assignment operator should return a
+reference to the object to which the binary operation applies, as the
+object might be modified in the same statement. E.g.,
     tt((s2 += s3) + " postfix"). Here is our second revision of the class
 tt(Binary), showing both the declaration of the plain binary operator and the
-corresponding arithmetic assignment operator:
+corresponding binary assignment operator:
         verbinclude(examples/binary2.h)
-    If a class benefits from being i(move-aware) then for each tt(const)
-reference parameter an overloaded function expecting a tt(const) rvalue
-reference may be considered. With the class tt(Binary) and its tt(operator+)
-this would boil down to the following overloaded tt(operator+) functions:
-        verb(
-    Binary operator+(Binary &&ltmp, Binary const &rhs);
-    Binary operator+(Binary const &lhs,   Binary &&rtmp);
-    Binary operator+(Binary &&ltmp, Binary &&rtmp);
-        )
 
-    When implementing the arithmetic assignment operator the strong guarantee
-should again be kept in mind. Use a temporary object and swap if the
-arithmetic operation might throw. Example:
+How should the binary assignment operator be implemented?  When implementing
+the binary assignment operator the strong guarantee should again be kept in
+mind. Use a temporary object and swap if the binary operation might
+throw. Example:
         verb(
     Binary &operator+=(Binary const &other)
     {
@@ -123,14 +119,41 @@ arithmetic operation might throw. Example:
         return *this;
     }
         )
-    Here, too, defining tt(operator+=(Binary &&tmp)) should be
-considered if tt(Binary) must be a move-aware class.
 
-    Having available the arithmetic assignment operator, implementating
-the plain binary operator is easy. The tt(lhs) argument is
+    It's easy to implement the plain binary operator for classes offering
+the matching binary assignment operator: the tt(lhs) argument is
 copied into a tt(Binary tmp) to which the tt(rhs) operand is added. Then
-tt(tmp) is returned. The copy construction and two statements may be
+tt(tmp) is returned. The copy construction and two statements could be
 contracted into one single return statement, but then compilers usually aren't
-able to apply copy elision resulting in two copy constructions. Usually
-copy elision is performed when the steps are taken separately:
+able to apply copy elision in this case. But
+copy elision em(is) usually used when the steps are taken separately:
         verbinclude(examples/binary3.h)
+
+    But wait! Remember the design principle for move-aware classes that was
+given in section ref(MOVEPRINCIPLE)? When implementing binary operators we're
+doing exactly that what was mentioned in that design principle. A temporay
+object is constructed and the binary assignment operation is applied to the 
+temporary object. 
+
+    If the class tt(Binary) is a move-aware class then we can add a move-aware
+binary operator to our class at very little cost. The actual work is performed
+by the binary assignment operator, as described. However, this operator is
+called from the move-aware binary operator having prototype
+        verb(
+    Binary operator+(Binary &&ltmp, Binary const &rhs);
+        )
+    The traditional binary operator's implementation now simply consists of
+two steps:
+        itemization(
+        it() A copy of the left-hand side operand is made usign the class's
+copy constructor;
+        it() The move-aware binary operator is called, passing it the
+anonymized copy as its left-hand side operand and returning its result as the
+binary operator's result.
+        )
+
+    Here is the declaration and implementation of the traditional and
+move-aware binary assignment operator of the class tt(Binary) for
+tt(operator+):
+
+        verbinclude(examples/binary4.h)
