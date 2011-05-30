@@ -7,15 +7,24 @@ define i(inner types), i(member functions), and i(data members).
 In the previous section the problem of creating a class that might use any of
 a series of allocation schemes was introduced. These allocation schemes all
 depend on the actual data type to use, and so the `template reflex' should
-kick in. Allocation schemes should probably be defined as template
-classes, applying the appropriate allocation procedures to the data type at
-hand. E.g. (using in-class implementations to save some space), the following
-three allocation classes could be defined:
+kick in. 
+
+Allocation schemes should probably be defined as template classes, applying
+the appropriate allocation procedures to the data type at hand. When such
+allocation schemes are used by the familiar STL containers (like
+tt(std::vector, std::stack), etc., then such home-made allocation schemes
+should probably be derived from tt(std::allocator)hi(allocator), to provide
+for the requirements made by these containers. The class template
+tt(std::allocator) is declared by the tthi(memory) header file and the three
+allocation schemes developed here were all derived from tt(std::allocator).
+
+Using in-class implementations for brevity the following allocation classes
+could be defined:
     itemization(
     it() No special allocation takes place, tt(Data) is used `as is':
         verb(
     template <typename Data>
-    class PlainAlloc
+    class PlainAlloc: public std::allocator<Data>
     {
         template<typename IData>
         friend std::ostream &operator<<(std::ostream &out,
@@ -39,7 +48,7 @@ three allocation classes could be defined:
 allocate a new copy of the data:
         verb(
     template <typename Data>
-    class NewAlloc
+    class NewAlloc: public std::allocator<Data>
     {
         template<typename IData>
         friend std::ostream &operator<<(std::ostream &out,
@@ -72,7 +81,7 @@ allocate a new copy of the data:
         reader):
         verb(
     template<typename Data>
-    class PlacementAlloc
+    class PlacementAlloc: public std::allocator<Data>
     {
         template<typename IData>
         friend std::ostream &operator<<(std::ostream &out,
@@ -105,22 +114,24 @@ allocate a new copy of the data:
         )
     )
     The above three classes define em(policies) that may be selected by the
-user of the class tt(Storage), introduced in the previous section. In addition
-to this, additional allocation schemes could be implemented by the user as
-well.
+user of the class tt(Storage) introduced in the previous section. In addition
+to these classes, additional allocation schemes could be implemented by the
+user as well.
 
-    In order to be able to apply the proper allocation scheme to the class
-tt(Storage) it should be designed as a class template itself. The class also
+    To apply the proper allocation scheme to the class tt(Storage),
+tt(Storage) should be designed as a class template itself. The class also
 needs a template type parameter allowing users to specify the data type.
 
-    The data type to be used by a particular allocation scheme can of course
-be specified when the allocation scheme itself is specified. This would result
-in code like this:
+    The data type to be used by a particular allocation scheme could of course
+be specified when specifying the allocation scheme to use. The class
+tt(Storage) would then have two template type parameters, one for the data
+type, one for the allocation scheme:
         verb(
     template <typename Data, typename Scheme>
     class Storage ...
         )
-    tt(Storage) would then be used as follows:
+
+    To use the class tt(Storage) we would then write, e.g.:
         verb(
     Storage<string, NewAlloc<string>> storage;
         )

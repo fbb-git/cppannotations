@@ -61,7 +61,7 @@ inline StringPtr::iterator &StringPtr::iterator::operator--()
 }
 //=
 //POSTDEC
-inline StringPtr::iterator const StringPtr::iterator::operator--(int)
+inline StringPtr::iterator StringPtr::iterator::operator--(int)
 {
     return iterator(d_current--);
 }
@@ -74,7 +74,7 @@ inline StringPtr::iterator &StringPtr::iterator::operator++()
 }
 //=
 //POSTINC
-inline StringPtr::iterator const StringPtr::iterator::operator++(int)
+inline StringPtr::iterator StringPtr::iterator::operator++(int)
 {
     return iterator(d_current++);
 }
@@ -110,15 +110,13 @@ inline bool StringPtr::iterator::operator<(iterator const &other) const
 }
 //=
 //OPADD
-inline StringPtr::iterator const
-        StringPtr::iterator::operator+(int step) const
+inline StringPtr::iterator StringPtr::iterator::operator+(int step) const
 {
     return iterator(d_current + step);
 }
 //=
 //OP-
-inline StringPtr::iterator const
-       StringPtr::iterator::operator-(int step) const
+inline StringPtr::iterator StringPtr::iterator::operator-(int step) const
 {
     return iterator(d_current - step);
 }

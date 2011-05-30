@@ -3,6 +3,7 @@
     #include <sys/wait.h>
     #include <unistd.h>
     #include <string>
+    using namespace std;
 
     int main()
     {

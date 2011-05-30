@@ -5,11 +5,10 @@
 
 template <typename Data,
           template <typename> class Policy,
-          template <typename> class Container = std::vector
+          template <typename, typename> class Container = std::vector
         >
-class Storage: public Container< Policy<Data> >
-{
-};
+class Storage: public Container<Data, Policy<Data>>
+{};
 
 
 #endif

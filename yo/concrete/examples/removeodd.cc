@@ -1,6 +1,7 @@
     #include <iostream>
     #include <algorithm>
     #include <vector>
+    #include <iterator>
     #include "bitand.h"
     using namespace std;
 
@@ -14,7 +15,7 @@
         copy
         (
             vi.begin(),
-            remove_if(vi.begin(), vi.end(), bind2nd(bit_and<int>(), 1)),
+            remove_if(vi.begin(), vi.end(), bind2nd(bitAnd<int>(), 1)),
             ostream_iterator<int>(cout, " ")
         );
         cout << '\n';

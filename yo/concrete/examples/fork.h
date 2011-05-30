@@ -4,7 +4,7 @@
         int d_pid;
 
         public:
-            virtual ~Fork() = default;
+            virtual ~Fork();
             void fork();
 
         protected:
@@ -24,10 +24,4 @@
     {
         return d_pid;
     }
-//=
-//REDIRECT
-    inline void Fork::childRedirections()
-    {}
-    inline void Fork::parentRedirections()
-    {}
 //=

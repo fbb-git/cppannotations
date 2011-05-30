@@ -4,7 +4,7 @@
 #include <ostream>
 
 template<typename Data>
-class PlacementAlloc
+class PlacementAlloc: public std::allocator<Data>
 {
     template<typename IData>
     friend std::ostream &operator<<(std::ostream &out,

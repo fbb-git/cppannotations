@@ -2,6 +2,7 @@
     #include <iterator>
     #include <functional>
     #include <iostream>
+    #include <cstring>
     #include "predicates.h"
     using namespace std;
 
@@ -33,7 +34,7 @@
     };
 //=
 //MAIN
-    int main(int argc)
+    int main(int argc, char **argv)
     {
         Contains contains("aeiou");
         if (argc == 1)

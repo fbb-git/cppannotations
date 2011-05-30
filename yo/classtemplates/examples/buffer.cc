@@ -2,6 +2,5 @@
 
     int main(int argc)
     {
-        Buffer<int, argc>   // won't compile
-            b;
+        Buffer<int, argc> b;    // won't compile
     }

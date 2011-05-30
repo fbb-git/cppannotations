@@ -27,7 +27,7 @@ int main(int argc, char **argv)
 
         case 'n':
         {
-            Storage<string, NewAlloc> storage;
+            Storage<string, NewAlloc, std::vector> storage;
 
             copy(istream_iterator<string>(cin), istream_iterator<string>(),
                     back_inserter(storage));
@@ -64,5 +64,4 @@ int main(int argc, char **argv)
         }
         break;
     }
-    return 0;
 }
