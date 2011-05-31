@@ -1,0 +1,31 @@
+As we've seen in section ref(OVERLOADBINARY) binary operators expecting
+tt(const &) arguments can be implemented in move-aware classes using a
+move-aware binary operator, using a rvalue reference for its first
+argument. This latter function can in turn be implemented using the binary
+assignment member. The following examples illustrated this approach for a
+fictitious class tt(Binary):
+        verbinclude(../../overloading/examples/binary4.h)
+
+Eventually the implementations of the binary operators therefore depend on the
+availability of the binary assignment operator.
+
+Since template functions are not instantiated before their actually used we
+can mention a non-existing function in a template that is never
+instantiated. If such a function would actually be called then the compiler
+would generated an error message, complaining about the missing function.
+
+This allows us to implement all binary operators, movable and non-movable, as
+templates. It is then only be possible to call those binary operators 
+for which a matching binary assignment exists. The template functions
+implementing the above addition binary operators look like this:
+        verbinclude(examples/binary5.h)
+
+The function templates for the other binary operators can easily be added to
+these addition operators. After collecting them in a file tt(binops.h) include
+this file in, e.g., your class header file to add the binary operators to your
+class.
+
+
+
+
+
