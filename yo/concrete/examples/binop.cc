@@ -46,6 +46,10 @@ class Class
         }
 };
 
+Class factory()
+{
+    return Class();
+}
 
 int main()
 {
@@ -54,7 +58,11 @@ int main()
 
     Class result;
     result = lhs + rhs;
+    result = factory() + rhs;
 //    result = lhs - rhs;   // this won't compile as operator-= hasn't been
                             // defined
 }
     
+
+
+
