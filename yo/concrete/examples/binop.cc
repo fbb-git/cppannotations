@@ -36,6 +36,8 @@ class Class
     public:
         Class() = default;
 
+        Class(int) {}
+
         Class(Class &&tmp)
         {
             cout << "Move constructor\n";
@@ -59,6 +61,8 @@ int main()
     Class result;
     result = lhs + rhs;
     result = factory() + rhs;
+//  result = rhs + 2;       // this won't compile: the template functions 
+                            // don't do promotions
 //    result = lhs - rhs;   // this won't compile as operator-= hasn't been
                             // defined
 }
