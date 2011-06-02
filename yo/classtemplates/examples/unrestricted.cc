@@ -1,10 +1,8 @@
 #include <iostream>
 #include <string>
-#include <algorithm>
-#include <iterator>
 #include <memory>
-
-#include <bobcat/fswap>
+#include <sstream>
+#include <cstring>
 
 using namespace std;
 
@@ -39,7 +37,8 @@ struct One
             int tag;
             Type data;
             
-            Tag(Type const &tp)
+            template <typename Data>
+            Tag(Data const &tp)
             :
                 tag(tg),
                 data(tp)
@@ -47,15 +46,28 @@ struct One
         };
 
         Tag<1, One>     one;
-        Tag<2, string>  s;
+        Tag<2, string>  str;
+        Tag<3, std::ostringstream>  oss;
 
         Union(One const &o)
         {
-            new(&one) Tag<1, One>(o);
+            new (&one) Tag<1, One>(o);
         }
         Union(string const &st)
         {
-            new(&s) Tag<2, string>(st);
+            new (&str) Tag<2, string>(st);
+        }
+        Union(ostringstream const &o)
+        {
+            new (&oss) Tag<3, ostringstream>("");
+        }
+
+        void swap(Union &other)
+        {
+            char buffer[sizeof(Union)];
+            memcpy(buffer, this, sizeof(Union));
+            memcpy(this, &other, sizeof(Union));
+            memcpy(&other, buffer, sizeof(Union));
         }
 
         Union(Union const &other)
@@ -63,12 +75,13 @@ struct One
             if (other.one.tag == 1)
                 new(&one) Tag<1, One>(other.one.data);
             else
-                new(&s) Tag<2, string>(other.s.data);
+                new(&str) Tag<2, string>(other.str.data);
         }
 
-        Union &operator=(Union other)
+        Union &operator=(Union const &other)
         {
-            FBB::fswap(*this, other);
+            Union tmp(other);
+            swap(tmp);
             return *this;
         }
 
@@ -77,20 +90,35 @@ struct One
             if (one.tag == 1)
                 one.data.~One();
             else
-                s.data.~string();
+                str.data.~string();
         };
     };
 
 
+    class Surround
+    {
+        int tag;
+        union Union
+        {
+            std::ostringstream ostr;
+            std::string str;
+            int iValue;
 
-int main(int argc, char **argv)
+            ~Union()
+            {
+                // what to do?
+            }
+        };
+    };
+
+main(int argc, char **argv)
 {
     Union un {One()};
     Union us("hi there");
 
     Union u2(un);
 
-    cout << us.s.data << '\n';
+    cout << us.str.data << '\n';
 
     u2 = un;
 }
