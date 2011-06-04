@@ -2,6 +2,14 @@
 using namespace std;
 
 template <typename Class>
+Class operator+(Class &&lhs, Class const &rhs)
+{
+    cout << "operator+(Class &&lhs, Class const &rhs)\n";
+
+    return lhs += rhs;
+}
+
+template <typename Class>
 Class operator+(Class const &lhs, Class const &rhs)
 {
     cout << "operator+(Class const &, Class const &)\n";
@@ -11,11 +19,9 @@ Class operator+(Class const &lhs, Class const &rhs)
 }
 
 template <typename Class>
-Class operator+(Class &&lhs, Class const &rhs)
+Class operator-(Class &&lhs, Class const &rhs)
 {
-    cout << "operator+(Class &&lhs, Class const &rhs)\n";
-
-    return lhs += rhs;
+    return lhs -= rhs;
 }
 
 template <typename Class>
@@ -23,12 +29,6 @@ Class operator-(Class const &lhs, Class const &rhs)
 {
     Class tmp(lhs);
     return operator-(std::move(tmp), rhs);
-}
-
-template <typename Class>
-Class operator-(Class &&lhs, Class const &rhs)
-{
-    return lhs -= rhs;
 }
 
 class Class
