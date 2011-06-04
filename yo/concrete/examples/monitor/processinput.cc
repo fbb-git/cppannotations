@@ -13,7 +13,7 @@
     Monitor::Commands Monitor::next(int *value, string *line)
     {
         if (!getline(cin, *line))
-            exiting(1, "Command::next(): reading cin failed");
+            exiting(1, "Monitor::next(): reading cin failed");
 
         if (*line == "start")
             return START;
