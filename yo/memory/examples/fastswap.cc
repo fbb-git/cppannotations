@@ -35,10 +35,7 @@
         ref2.out() << "hello to 2\n";
 
         ref1.swap(ref2);
-                                                 
+
         ref2.out() << "hello to 1\n";   // more output
         ref1.out() << "hello to 2\n";
     }
-
-
-

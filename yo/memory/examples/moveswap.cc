@@ -7,7 +7,7 @@ using namespace std;
 // derefencing for us
 
 struct Pointers
-{   
+{
     std::ostream *d_ptr1;
     std::ostream *d_ptr2;
 
@@ -21,7 +21,7 @@ Pointers::Pointers(std::ostream *ptr1, std::ostream *ptr)
 {}
 
 struct Refs
-{   
+{
     std::ostream &d_ref;
     std::ostream *d_ptr;
 
@@ -33,4 +33,3 @@ Refs::Refs(std::ostream &ref, std::ostream *ptr)
     d_ref(ref),
     d_ptr(ptr)
 {}
-

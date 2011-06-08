@@ -15,5 +15,5 @@
         Type tmp(lhs);
         return operator+(std::move(tmp), rhs);
     }
-    
+
     #endif

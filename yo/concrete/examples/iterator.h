@@ -81,7 +81,7 @@
         return *this;
     }
     template <typename Class, typename BaseIterator, typename Type>
-    RandomPtrIterator <Class, BaseIterator, Type> 
+    RandomPtrIterator <Class, BaseIterator, Type>
     RandomPtrIterator<Class, BaseIterator, Type>::operator--(int)
     {
         return RandomPtrIterator(d_current--);
@@ -95,7 +95,7 @@
         return *this;
     }
     template <typename Class, typename BaseIterator, typename Type>
-    RandomPtrIterator<Class, BaseIterator, Type> 
+    RandomPtrIterator<Class, BaseIterator, Type>
     RandomPtrIterator<Class, BaseIterator, Type>::operator++(int)
     {
         return RandomPtrIterator(d_current++);

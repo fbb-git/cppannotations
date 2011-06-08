@@ -132,7 +132,7 @@ Union::Union(int i)
 :
     u_int(1, i)
 {}
-    
+
 Union::Union(double real, double imaginary)
 :
     u_complex(2, {real, imaginary})
@@ -150,7 +150,7 @@ Union::~Union()
         case 2:
             u_complex.second.~Type1();
         break;
-    
+
         case 3:
             u_string.second.~Type2();
         break;
@@ -177,7 +177,7 @@ void Union::swap(Union &other)
     memcpy(this, memory,   sizeof(Union));
 }
 
-    
+
 int main()
 {
     Union ustr("hello world");
@@ -187,8 +187,3 @@ int main()
     ustr = Union("hi there, again");
     cout << ustr.asString() << '\n';
 }
-
-    
-
-
-

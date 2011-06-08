@@ -18,10 +18,7 @@ struct Remove<TypeList<Rm, Rm, Tail...>>
 template<typename Rm, typename First, typename ...Tail>
 struct Remove<TypeList<Rm, First, Tail...>>
 {
-    typedef TypeList<First, 
+    typedef TypeList<First,
         typename Remove<TypeList<Rm, Tail...>>::Removed
                     > Removed;
 };
-
-
-    

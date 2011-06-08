@@ -18,4 +18,3 @@
     {
         return lhs += rhs;
     }
-

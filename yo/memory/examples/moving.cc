@@ -46,7 +46,3 @@ int main()
     Class const c0;
     c1.fun(c0);
 }
-
-
-
-

@@ -61,12 +61,8 @@ int main()
     Class result;
     result = lhs + rhs;
     result = factory() + rhs;
-//  result = rhs + 2;       // this won't compile: the template functions 
+//  result = rhs + 2;       // this won't compile: the template functions
                             // don't do promotions
 //    result = lhs - rhs;   // this won't compile as operator-= hasn't been
                             // defined
 }
-    
-
-
-

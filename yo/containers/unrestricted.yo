@@ -20,7 +20,7 @@ class-types. Here is an example of such an unrestricted union:
     Two of the three fields of this union have non-trivial constructors,
 turning this union in an em(unrestricted) union.  As an unrestricted union
 defines at least one field of a type having a non-trivial constructor the
-question becomes how these unions can be constructed and destroyed. 
+question becomes how these unions can be constructed and destroyed.
 
 The destructor of a union consisting of, e.g. a tt(std::string) and a
 tt(double) should of course not call the tt(string)'s destructor if the
@@ -38,8 +38,8 @@ like the following:
         verb(
     error: use of deleted function 'Union2::Union2()'
     error: 'Union::Union()' is implicitly deleted because the default
-            definition would be ill-formed: 
-    error: union member 'Union::u_string' with non-trivial 
+            definition would be ill-formed:
+    error: union member 'Union::u_string' with non-trivial
             'std::basic_string<...>::basic_string() ...'
         )
 
@@ -77,7 +77,7 @@ information within the union about the currently used field.
 field. Conceptually this is easily done by prefixing each field with an
 tt(int) tag. Since we're using unions the tags of the fields would coincide
 and a destructor could simply inspect the tags to find out which field is
-being used. The tag-fields must be parts of the data fields themselves. 
+being used. The tag-fields must be parts of the data fields themselves.
 
 The tt(std::pair) containers can be used to implement this scheme, using their
 tt(first) data members as tt(int) tags, and their tt(seond) data members as
@@ -105,8 +105,8 @@ their constructors:
         u_string(3, str)
     {}
         )
-    
-    Now for the destructor: the destructor should call the appropriate 
+
+    Now for the destructor: the destructor should call the appropriate
 destructor of the currently active data fields having non-trivial
 destructors. So, in our tt(Union) union the tt(u_int) field can be
 ignored. The destructor now has an easy job: depending on the (any) field's
@@ -122,20 +122,20 @@ the field's destructor where needed:
             case 2:
                 u_complex.second.~complex<double>();
             break;
-        
+
             case 3:
                 u_string.second.~string();
             break;
         }
     }
-        )       
+        )
 
     What about changing fields? Once an unrestricted union has received its
 value it keeps that variant until used otherwise. That's in line with the
 traditional union. But to change the interpretation of an unrestricted union's
-class-type field we must make sure that the destructor of that 
+class-type field we must make sure that the destructor of that
 class type field is first called. To do that smoothly we need
-tt(operator=). 
+tt(operator=).
 
     Once again  we encounter a complication: unrestricted unions don't even
 have a default copy constructor. That's again understandable: which field
@@ -153,7 +153,7 @@ with. Here is tt(Union)'s copy constructor:
                 new (&u_int) std::pair<int, int>(other.u_int);
             break;
             case 2:
-                new (&u_complex) 
+                new (&u_complex)
                         std::pair<int, complex<double>>(other.u_complex);
             break;
             case 3:
@@ -162,7 +162,7 @@ with. Here is tt(Union)'s copy constructor:
         }
     }
         )
-    
+
     Preparing for tt(operator=) we first implement tt(Union::swap), swapping
 the current and another tt(Union) object, using fast swapping as discussed in
 section ref(FSWAP):
@@ -171,7 +171,7 @@ section ref(FSWAP):
     {
         std::swap(u_int,     other.u_int);
         std::swap(u_complex, other.u_complex);
-        std::swap(u_string,  other.u_string);    
+        std::swap(u_string,  other.u_string);
     }
         )
     If fast swapping cannot be used, but individual fields em(can) be swapped,
@@ -188,36 +188,35 @@ then swapping is a bit complex. In that case:
 operator that can be implemented em(en-passant), whether the tt(Union)
 supports moving or not:
         verb(
-	Union &Union::operator=(Union &&tmp)
-	{
-	    swap(tmp);
-	    return *this;
-	}
-	
-	Union &Union::operator=(Union const &other)
-	{
-	    Union tmp(other);
-	    return *this = std::move(tmp);
-	}
+        Union &Union::operator=(Union &&tmp)
+        {
+            swap(tmp);
+            return *this;
+        }
+
+        Union &Union::operator=(Union const &other)
+        {
+            Union tmp(other);
+            return *this = std::move(tmp);
+        }
         )
 
 Using simple accessor members to access the field's tt(second) data members
 like the one shown below, a program can now define, copy construct and
 reassign tt(Union)s, and access the active data using accessors:
         verb(
-	std::string &Union::asString()
-	{
-	    return u_string.second;
-	}
-	
-    int main()
-	{
-	    Union ustr("hello world");
-	    Union ucom(12.4, 12.5);
-	
-	    ustr = ucom;
-	    ustr = Union("hi there, again");
-	    cout << ustr.asString() << '\n';
-	}
-        )
+        std::string &Union::asString()
+        {
+            return u_string.second;
+        }
 
+    int main()
+        {
+            Union ustr("hello world");
+            Union ucom(12.4, 12.5);
+
+            ustr = ucom;
+            ustr = Union("hi there, again");
+            cout << ustr.asString() << '\n';
+        }
+        )

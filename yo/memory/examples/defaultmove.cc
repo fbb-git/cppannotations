@@ -59,13 +59,13 @@ Move factory()
     cout << "factory()\n";
     Move tmp;
     return tmp;
-}        
+}
 
 Move factory(Move &&tmp)
 {
     cout << "factory(tmp)\n";
     return std::move(tmp);
-}        
+}
 
 int main()
 {
