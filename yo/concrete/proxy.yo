@@ -1,20 +1,21 @@
 A problem with ti(operator[]) is that it can't distinguish between its
     hi(lvalue: distinguish from rvalue)hi(rvalue: distinguish from lvalue)
  use as an em(lvalue) and as an em(rvalue). It is a familiar misconception to
-think that since
+think that 
         verb(
     Type const &operator[](size_t index) const
         )
- is used as em(rvalue) (since the object isn't modified) that
+ is used as em(rvalue) (as the object isn't modified), and
     that
         verb(
     Type &operator[](size_t index)
         )
- is used as em(lvalue) (since the returned value can be modified).  In fact,
-the compiler distinguishes between the two operators only by the
+ is used as em(lvalue) (as the returned value can be modified).  
+
+The compiler, however, distinguishes between the two operators only by the
 tt(const)-status of the object for which tt(operator[]) is called. With
 tt(const) objects the former operator is called, with non-tt(const) objects
-the latter is always used. It is always used, irrespective of it being  used as
+the latter is always used. It is always used, irrespective of it being used as
 lvalue or rvalue.
 
 Being able to distinguish between lvalues and rvalues can be very
@@ -39,10 +40,10 @@ also dereference pointers in a class storing its data by pointers.
 
 In this section we concentrate on the distinction between using tt(operator[])
 as lvalue and rvalue. Let's assume we have a class tt(Lines) storing lines
-from a file. It's constructor expects the name of a stream from which the
+from a file. Its constructor expects the name of a stream from which the
 lines are read and it offers a non-const tt(operator[]) that can be used as
 lvalue or rvalue (the tt(const) version of tt(operator[]) is omitted as it
-offers no problem because it is always used as rvalue):
+causes no confusion because it is always used as rvalue):
         verbinsert(LINES)(examples/lines0.h)
 
 To distinguish between lvalues and rvalues we must find distinguishing
@@ -88,7 +89,8 @@ inline:
         verbinsert(MEMBERS)(examples/lines.h)
 
 The member tt(Lines::operator[]) can also be implemented inline: it merely
-returns a tt(Proxy) object initialized with the tt(idx)sups(th) tt(string).
+returns a tt(Proxy) object initialized with the tt(string) associated with
+index tt(idx).
 
 Now that the class tt(Proxy) has been developed it can be used in a
 program. Here is an example using the tt(Proxy) object as lvalue or rvalue. On

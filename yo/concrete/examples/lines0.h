@@ -8,6 +8,6 @@
 
         public:
             Lines(std::istream &in);
-            std::std::string &operator[](size_t idx);
+            std::string &operator[](size_t idx);
     };
 //=
