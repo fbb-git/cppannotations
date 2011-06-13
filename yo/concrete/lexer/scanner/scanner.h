@@ -7,7 +7,7 @@
 #include <stack>
 
 //HEAD
-#if ! defined(_SKIP_YYFLEXLEXER_)
+#if ! defined(SKIP_FLEXLEXER_)
 #include <FlexLexer.h>
 #endif
 
@@ -28,10 +28,6 @@ class Scanner: public yyFlexLexer
             d_name(name),
             d_in(0)
         {}
-//        inline bool operator==(FileInfo const &rhs) const
-//        {
-//            return d_name == rhs.d_name;
-//        }
     };
 
     friend bool operator==(FileInfo const &fi, std::string const &name);

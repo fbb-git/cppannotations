@@ -541,7 +541,7 @@ static yyconst flex_int16_t yy_rule_linenum[10] =
 #line 1 "lexer"
 /*PREAMBLE*/
 #line 3 "lexer"
-    #define _SKIP_YYFLEXLEXER_
+    #define SKIP_FLEXLEXER_
     #include "scanner.ih"
 /**/
 /*SYMBOLS*/

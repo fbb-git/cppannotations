@@ -3,7 +3,7 @@
 
 #include "../semantic/semantic.h"
 
-#if ! defined(_SKIP_YYFLEXLEXER_) && ! defined(SYSINC_FLEXLEXER_H_)
+#if ! defined(SKIP_FLEXLEXER_) && ! defined(SYSINC_FLEXLEXER_H_)
 #include <FlexLexer.h>
 #define SYSINC_FLEXLEXER_H_
 #endif
