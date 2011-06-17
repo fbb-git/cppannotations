@@ -1,53 +1,28 @@
-Static tt(const) hi(static data: const) data members may be initialized in the
-class interface if these data members are of integral or built-in primitive
-data types. So, in the following example the first three static data members
-can be initialized since tt(int) and tt(double) are primitive built-in types
-and tt(int) and tt(enum) types are integral types. The static data member
-tt(s_str) cannot be initialized in the class interface since tt(string) is
-neither a primitive built-in nor an integral data type:
+Static tt(const) hi(static data: const) data members should be initialized
+like any other static data member: in source files defining these data
+members.
+
+Usually, if these data members are of integral or built-in primitive
+data types the compiler will accept in-class initializations of such data
+members. However, there is no formal rule requiring the compiler to do
+so. Compilations may or may not succeed depending on the optimizations used by
+the compiler (e.g., using tt(-O2) may result in a successful compilation, but
+        ti(-O0)hi(O0)hi(noopt) 
+    (no-optimalizations) may fail to compile, but then maybe only when shared
+libraries are used...).
+
+In-class initializations of integer constant values (e.g., of types tt(char,
+int, long), etc, maybe tt(unsigned)) is nevertheless possible using (e.g.,
+anonymous) enums.  The following example illustrates how this can be done:
         verb(
     class X
     {
         public:
-            enum Enum
-            {
-                FIRST,
-            };
-
-            static int const s_x = 34;
-            static Enum const s_type = FIRST;
-
-            static double const s_d = 1.2;
-            static string const s_str = "a";    // won't compile
+            enum         { s_x = 34 };
+            enum: size_t { s_maxWidth = 100 };
     };
         )
-    The compiler em(may) decide to initialize static tt(const) data members as
-mere constant values, in which they don't have addresses. If the compiler does
-so, such static tt(const) data members behave as though they were values of
-an tt(enum) defined by the class.  Consequently they are not variables and so
-it is not possible to determine their addresses. Note that trying to obtain
-the address of such a constant value does not create a compilation problem,
-but it em(does) create a linking problem as the static tt(const) variable that
-is initialized as a mere constant value does not exist in addressable memory.
 
-    A statement like tt(int *ip = &X::s_x) may therefore em(compile)
-correctly, but may then fail to em(link).  Static variables that are
-explicitly defined in a source file em(can) be linked correctly, though. So,
-in the following example the address of tt(X::s_x) cannot be solved by the
-linker, but the address of tt(X::s_y) em(can) be determined:
-        verb(
-    class X
-    {
-        public:
-            static int const s_x = 34;
-            static int const s_y;
-    };
-
-    int const X::s_y = 12;
-
-    int main()
-    {
-        int const *ip = &X::s_x;    // compiles, but fails to link
-        ip = &X::s_y;               // compiles and links correctly
-    }
-        )
+    To avoid confusion caused by different compiler options static data
+members should always explicitly be defined and initialized in a source file,
+whether or not tt(const).

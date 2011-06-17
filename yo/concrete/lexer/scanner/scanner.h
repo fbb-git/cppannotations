@@ -36,7 +36,7 @@ class Scanner: public yyFlexLexer
     std::vector<FileInfo>           d_fileInfo;
     std::string                     d_nextSource;
 
-    static size_t const           s_maxDepth = 10;
+    enum: size_t { s_maxDepth = 10 };
 
     public:
         enum Error

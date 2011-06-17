@@ -9,7 +9,7 @@
         {
             char array[2];
         };
-        static T makeT();
+        static T const &makeT();
         static char test(U const &);
         static Char2 test(...);
 

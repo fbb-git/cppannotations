@@ -75,15 +75,25 @@ tell the compiler where it should assume a tt(T):
     T makeT();
         )
     This mysterious function has the magical power of enticing the compiler
-into thinking that a tt(T) object will come out of it. This happens in the
+into thinking that a tt(T) object will come out of it. However, this function
+needs a small modification before it will suit our needs. If, for whatever
+reason, tt(T) happens to be an array then the compiler will choke on tt(T
+makeT()) as functions cannot return arrays. This, however, is easily solved,
+as functions em(can) return em(references) to arrays. So the above declaration
+is changed into:
+        verb(
+    T const &makeT();
+        )
+
+    Next we pass a tt(T const &) to tt(test):
 following code:
         verb(
     test(makeT())
         )
-    Now that the compiler sees tt(test) being called with a tt(T) argument it
-will decide that its return value is tt(Convertible) if a conversion is in
-fact possible. Otherwise it will decide that its return value is
-tt(NotConvertible) (as it selected tt(test(...)) in that case).
+    Now that the compiler sees tt(test) being called with a tt(T const &)
+argument it decides that its return value is tt(Convertible) if a
+conversion is in fact possible. Otherwise it decides that its return value
+is tt(NotConvertible) (as the compiler, in that case, selected tt(test(...))).
 
     The second problem, distinguishing tt(Convertible) from tt(NotConvertible)
 is solved exactly the way tt(isClass) could be determined in section
