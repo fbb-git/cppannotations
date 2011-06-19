@@ -42,3 +42,22 @@ cannot be accessed by other code) and the temporary objects will cease to
 exist shortly after the constructor's call. Here is the implementation of
 tt(Strings) move constructor:
         verbinclude(examples/stringsmove.cc)
+
+In section ref(COPYCONS) it was stated that the copy constructor is almost
+always available. em(Almost) always as the declaration of a move constructor
+suppresses the default availability of the copy constructor. 
+
+The following example shows a simple class tt(Class), declaring a move
+constructor. In the tt(main) function following the class interface a
+tt(Class) object is defined which is then passed to the constructor of a
+second tt(Class) object. Compilation fails with the compiler reporting:
+        verb(
+    error: cannot bind 'Class' lvalue to 'Class&&'
+    error:   initializing argument 1 of 'Class::Class(Class&&)'
+        )
+
+        verbinclude(nocopycons.cc)
+
+    The cure is easy: after declaring a (possibly tt(default)) copy
+constructor the error disappears:
+        verbinclude(examples/copycons.cc)

@@ -35,9 +35,9 @@ class Class
 {
     public:
         Class() = default;
-
-        Class(int) {}
-
+        Class(Class const &other) = default;
+        Class(int) 
+        {}
         Class(Class &&tmp)
         {
             cout << "Move constructor\n";
@@ -57,8 +57,8 @@ int main()
 {
     Class lhs;
     Class rhs;
-
     Class result;
+
     result = lhs + rhs;
     result = factory() + rhs;
 
