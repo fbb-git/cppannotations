@@ -1,21 +1,21 @@
 The function templates introduced in the previous section will not do
-promotions. E.g., a statement like 
+promotions. E.g., a statement like
         verb(
   result = rhs + 2;
         )
-    generates a compilation error as promotions are not recognized by 
+    generates a compilation error as promotions are not recognized by
 the template argument deduction algoritm. Currently, the above statement needs
 to be rewritten to have it accepted by the compiler:
         verb(
   result = rhs + Class(2);
         )
 
-If promotions are welcome, how can we change the arithmetic operator 
+If promotions are welcome, how can we change the arithmetic operator
 function templates so that promotions are performed? With promotions the
 arguments of the operator functions may be of any type, at least one of them
 must be of the class type offering the matching arithmetic assignment
 operator. But when designing the function template we can't say which of the
-two operands will be of that class type. So we have to specify two template 
+two operands will be of that class type. So we have to specify two template
 types parameters for the two parameters of the operator functions. The
 function template must therefore start with something  like this:
         verb(
@@ -24,7 +24,7 @@ function template must therefore start with something  like this:
         )
     At this point we can't yet specify tt(ReturnType). It is tt(LHS) if
 tt(RHS) can be promoted to or is equal to tt(LHS), it is be tt(RHS) if tt(LHS)
-is promoted to tt(RHS). 
+is promoted to tt(RHS).
 
     To determine whether tt(RHS) can be promoted to tt(LHS) we now design a
 simple template meta programming class tt(LpromotesR) using two template type
@@ -43,7 +43,7 @@ ref(TYPECONV), link(type convertibility)(TYPECONV):
         static R const &makeR();
         static char test(L const &);
         static Char2 test(...);
-    
+
         public:
             LpromotesR() = delete;
             enum { yes = sizeof(test(makeR())) == sizeof(char) };
@@ -53,14 +53,14 @@ ref(TYPECONV), link(type convertibility)(TYPECONV):
 tt(R) can be promoted to tt(L), and tt(test(...)) is selected if not. The
 different sizes of the return types of these two tt(test) functions allows the
 compiler to assign 1 or 0 to the class's tt(enum) value tt(yes). The value
-tt(yes) will (correctly) be 0 for tt(R) types mentioned in 
+tt(yes) will (correctly) be 0 for tt(R) types mentioned in
 constructors declared with the tt(explicit) keyword, and it will (correctly)
 be 1 if tt(L) and tt(R) happen to be the same types.
 
     Now that we can determine whether a type can be promoted to another type,
 it is possible to select either tt(LHS) or tt(RHS) as the function template's
 return type. If tt(RHS) can be promoted to tt(LHS) use tt(LHS) as the
-function template's return type, otherwise use RHS. 
+function template's return type, otherwise use RHS.
 
     Of course there is a third possibility: the tt(LHS) and tt(RHS) types
 cannot be used by each other's constructors. In that case, unless there is
@@ -80,7 +80,7 @@ function's return type, we're able to construct our arithmetic operator
 function template supporting promotions:
         verb(
     template <typename LHS, typename RHS>
-        typename FBB::IfElse<FBB::LpromotesR<LHS, RHS>::yes, LHS, RHS>::type 
+        typename FBB::IfElse<FBB::LpromotesR<LHS, RHS>::yes, LHS, RHS>::type
         operator<<(LHS const &lhs, RHS const &rhs)
     {
         typedef typename FBB::IfElse<
