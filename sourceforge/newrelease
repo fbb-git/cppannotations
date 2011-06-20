@@ -1,49 +1,22 @@
 #!/bin/bash
 
-# echo "
-#     Run in .. 'build docs' and 'build zips' and in bin: createhtml and
-#     ziphtml to create the  html zip in zip. Run 'sourcetar l' to
-#     create an archive. 
-# "
+cd ..
+./build clean
+./build svnclean
+./build programs
 
-# \ssh -t fbb,cppannotations@shell.sourceforge.net create
+cd bin
+./createhtml
+./ziphtml
 
+cd ../sourceforge
+yodl2html index || exit 1
+unzip ../zip/cplusplus.html.zip
+mv trunk cppannotations
+
+scp -r index.html cppannotations \
+	fbb,cppannotations@web.sourceforge.net:htdocs/
 
 cd ..
-sourcetar l
-mv ../../c++-annotations_*.tar.gz .
-ln -s ../tmp/docs/zips .
-
-build docs
-build zips
-cd sourceforge
-emacs  release.notes
-
-yodl2html index || exit 1
-
-scp index.html ../tmp/docs/zips/cplusplus.html.zip fbb,cppannotations@shell.sourceforge.net:/home/groups/c/cp/cppannotations/htdocs
-
-echo "
-
-
-Create a shell at sourceforge:
-    \ssh -t fbb,cppannotations@shell.sourceforge.net create
-
-Log in at sourceforge using 
-    ssh fbb,cppannotations@shell.sourceforge.net
-and 
-    cd /home/groups/c/cp/cppannotations/htdocs
-There do:
-    rm -r cppannotations
-    unzip cplusplus.html.zip
-    rm cplusplus.html.zip
-
-Then upload release_notes, c++-annotations_8.1.0*.tar.gz, zips/*  
-to sourceforge:
-
-    sftp fbb,cppannotations@frs.sourceforge.net
-        cd /home/frs/project/c/cp/cppannotations/cppannotations/<new release>
-
-"
-
-
+./build clean
+./build svnclean
