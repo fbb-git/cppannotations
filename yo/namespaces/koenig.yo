@@ -3,16 +3,16 @@ the title of a new i(Ludlum) novel. However, it is not. Instead it refers to
 a bf(C++) technicality.
 
 `Koenig lookup' refers to the fact that if a function is called without
-specifying its namespace, then the namespaces of its arguments are used to
-determine its namespace. If the namespace in which the arguments are defined
-contains such a function, then that function is used. This is called the
-`Koenig lookup'.
+specifying its namespace, then the namespaces of its argument types are used
+to determine the function's namespace. If the namespace in which the argument
+types are defined contains such a function, then that function is used. This
+procedure is called the `Koenig lookup'.
 
-This is illustrated in the following example. The function
+As an illustration consider the next example. The function
 tt(FBB::fun(FBB::Value v)) is defined in the tt(FBB) namespace. It
 can be called without explicitly mentioning its namespace:
         verbinclude(examples/koenig1.cc)
-    The compiler is fairly smart when handling namespaces. If tt(Value) in the
+    The compiler is rather smart when handling namespaces. If tt(Value) in the
 tt(namespace FBB) would have been defined as tt(typedef int Value) then
 tt(FBB::Value) would be recognized as tt(int), thus causing the Koenig lookup
 to fail.
@@ -28,18 +28,18 @@ arguments, one from each namespace. The ambiguity must be resolved by the
 programmer:
         verbinclude(examples/koenig3.cc)
 
-    An interesting subtlety with namespaces is that definitions in
-one namespace may break the code defined in another namespace. It shows that
-namespaces may affect each other and that may backfire if we're not aware of
-their peculiarities. Consider the following example:
+    An interesting subtlety with namespaces is that definitions in one
+namespace may break the code defined in another namespace. It shows that
+namespaces may affect each other and that namespaces may backfire if we're not
+aware of their peculiarities. Consider the following example:
         verbinclude(examples/koenig4.cc)
     Whatever happens, the programmer'd better not use any of the tt(ES::fun)
 functions since it will doubtlessly result in infinite recursion, but that's
 not the point. The point is that the programmer won't even be given the
 opportunity to call tt(ES::fun) since the compilation fails.
 
-    Compilation fails for tt(gun) but not for tt(fun). Why is that? Why is
-tt(ES::fun) flawlessly compiling while tt(ES::gun) isn't? In tt(ES::fun)
+    Compilation fails for tt(gun) but not for tt(fun). But why is that so? Why
+is tt(ES::fun) flawlessly compiling while tt(ES::gun) isn't? In tt(ES::fun)
 tt(fun(x)) is called. As tt(x)'s type is not defined in a namespace the Koenig
 lookup does not apply and tt(fun) calls itself with infinite recursion.
 
