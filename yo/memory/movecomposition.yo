@@ -1,7 +1,7 @@
     Classes not using pointer members pointing to memory controlled by its
 objects (and not having base classes doing so, see chapter ref(INHERITANCE))
 may also  benefit from overloaded members expecting rvalue references. The
-class will benefit from move operations when one or more of the composed data
+class benefits from move operations when one or more of the composed data
 members themselves support move operations.
 
     Move operations cannot be implemented if the class type of a composed data
@@ -25,16 +25,17 @@ incorrect:
         d_address(tmp.d_address)
     {}
         )
-    It is incorrect as it will call tt(string)'s copy constructors rather than
-tt(string)'s move constructors. If you're wondering why this happens then
-remember that move operations are em(only) performed for anonymous objects. To
-the compiler anything having a name isn't anonymous. And so, by implication,
-having available a rvalue reference does em(not) mean that we're referring to
-an anonymous object. But we em(know) that the move constructor is only called
-for anonymous arguments. To use the corresponding tt(string) move operations
-we have to inform the compiler that we're talking about anonymous data members
-as well. For this a cast could be used (e.g., tt(static_cast<Person
-&&>(tmp))), but the C++-0x standard provides the function
+    It is incorrect as it tt(string)'s copy constructors rather than
+tt(string)'s move constructors are called. If you're wondering why this
+happens then remember that move operations are em(only) performed for
+anonymous objects. To the compiler anything having a name isn't anonymous. And
+so, by implication, having available a rvalue reference does em(not) mean that
+we're referring to an anonymous object. But we em(know) that the move
+constructor is only called for anonymous arguments. To use the corresponding
+tt(string) move operations we have to inform the compiler that we're talking
+about anonymous data members as well. For this a cast could be used (e.g.,
+tt(static_cast<Person &&>(tmp))), but the C++-0x standard provides the
+function
  ti(std::move) to i(anonymize) a named object. The correct implementation of
 tt(Person)'s move construction is, therefore:
         verb(
@@ -53,7 +54,7 @@ then these other data types can be initialized as usual. Primitive data type
 members can simply be copied; references can be initialized as usual en
 pointers may use move operations as discussed in the previous section.
 
-The compiler will not call move operations for variables having names.  Let's
+The compiler never calls move operations for variables having names.  Let's
 consider the implications of this by looking at the next example, assuming
 tt(Class) offers a move constructor and a copy constructor:
         verb(

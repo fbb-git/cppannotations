@@ -33,21 +33,22 @@ tt(Strings) objects are called when tt(delete[]) is used, while only the
 first object's destructor is called if the tt([]) is omitted.
 
     Conversely, if tt(delete[]) is called in a situation where tt(delete)
-should have been called the results are unpredictable, and will most likely
-cause the program to crash. This problematic behavior is caused by the way the
-run-time system stores information about the size of the allocated array
-(usually right em(before) the array's first element). If a single object is
-allocated the array-specific information is not available, but it is
-nevertheless assumed present by tt(delete[]). This latter operator will
-interpret bogus values before the array's first element as size information,
-thus usually causing the program to fail.
+should have been called the results are unpredictable, and the program will
+most likely crash. This problematic behavior is caused by the way the run-time
+system stores information about the size of the allocated array (usually right
+em(before) the array's first element). If a single object is allocated the
+array-specific information is not available, but it is nevertheless assumed
+present by tt(delete[]). Thus this latter operator encounters bogus values in
+the memory locations just before the array's first element. It then dutifully
+inteerprets the value it encounters there as size information, usually causing
+the program to fail.
 
     If no destructor is defined, a emi(trivial destructor) is defined by the
 compiler. The trivial destructor ensures that the destructors of composed
 objects (as well as the destructors of em(base classes) if a class is a
 derived class, cf. chapter ref(INHERITANCE)) are called. This has serious
-implications: objects allocating memory will cause a i(memory leak) unless
-precautionary measures are taken (by defining an appropriate
+implications: objects allocating memory create memory leaks hi(memory leak)
+unless precautionary measures are taken (by defining an appropriate
 destructor). Consider the following program:
         verbinclude(examples/stringstorenodelete.cc)
     This program produces no output at all. Why is this? The variable tt(ptr)

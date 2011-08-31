@@ -26,17 +26,17 @@ available.
     How can we distinguish a pointer to a member from `a generic situation',
 not being a pointer to a member? Fortunately, such a distinction is
 possible. A function template specialization can be defined having a parameter
-which is a pointer to a member function. The generic function template will
-then accept any other argument. The compiler will em(select) the former
+which is a pointer to a member function. The generic function template 
+then accepts any other argument. The compiler em(selects) the former
 (specialized) function when the provided type is a class type as class types
 em(may) support a pointer to a member. The interesting verb here is `em(may)':
 the class does not em(have) to define a pointer to member.
 
-    Furthermore, the compiler will not actually em(call) any function: we're
+    Furthermore, the compiler does not actually em(call) any function: we're
 talking compile-time here. All the compiler does is to em(select) the
 appropriate function by evaluating a constant expression.
 
-    So, our intended function template will look like this:
+    So, our intended function template now looks like this:
         verb(
     template <typename ClassType>
     static `some returntype'  fun(void (ClassType::*)());
@@ -45,7 +45,7 @@ appropriate function by evaluating a constant expression.
 shortly. Let's first have a closer look at the function's parameter.  The
 function's parameter defines a pointer to a member returning tt(void). Such a
 function does em(not) have to exist for the concrete class-type that's
-specified when the function is used.  In fact, em(no) implementation will be
+specified when the function is used.  In fact, em(no) implementation is
 provided. The function tt(fun) is only declared as a em(static) member in the
 trait class. It's not implemented and no trait class object is required to
 call it. What, then, is its use?
@@ -62,12 +62,12 @@ a plain ellipsis in its parameter list:
     static `some returntype' fun(...);
         )
     It would be an error to define the generic alternative as a function
-expecting an tt(int). The compiler, when confronted with alternatives, will
-favor the simplest, most specified alternative over a more complex, generic
-one. So, when providing tt(fun) with an argument it will select tt(int)
+expecting an tt(int). The compiler, when confronted with alternatives, 
+favors the simplest, most specified alternative over a more complex, generic
+one. So, when providing tt(fun) with an argument it selects tt(int)
 whenever possible and it won't select tt(fun(void (ClassType::*)())). When
 given the choice between tt(fun(void (ClassType::*)())) and tt(fun(...)) it
-will select the former unless it can't do that.
+selects the former unless it can't do that.
 
     The question now becomes: what argument can be used for both a pointer to
 a member and for the ellipsis? Actually, there is such a `one size fits all'
@@ -75,14 +75,13 @@ argument: 0. The value 0 can be used as argument value to initialize and
 pointers to members alike.
 
     But 0 does not specify a particular class. Therefore, tt(fun) must specify
-an explicit template argument and it will appear in our code as
-tt(fun<Type>(0)), with tt(Type) being the template type parameter of the trait
-class.
+an explicit template argument, appearing in our code as tt(fun<Type>(0)), with
+tt(Type) being the template type parameter of the trait class.
 
     Now for the return type. The function's return type cannot be a simple
 value (like tt(true) or tt(false)). Our eventual intent is to provide the
 trait class with an enum telling us whether the trait class's template
-argument represents a class type or not. That enum will be something like
+argument represents a class type or not. That enum becomes something like
 this:
         verb(
     enum { isClass = some class/non-class distinguishing expression } ;
@@ -109,7 +108,7 @@ compiler.
 another type containing two consecutive tt(char) values a larger type is
 obtained. A tt(char [2]) is of course not a type, but a tt(char[2]) can be
 defined as a data member of a struct, and a struct em(does) define a
-type. That struct will then have a size exceeding 1. E.g.,
+type. That struct then has a size exceeding 1. E.g.,
         verb(
     struct Char2
     {

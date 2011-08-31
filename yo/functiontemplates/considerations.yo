@@ -3,7 +3,7 @@ We've managed to design our first function template:
     Look again at tt(add)'s parameters.  By specifying tt(Type const &)
 rather than tt(Type) superfluous copying is prevented, at the same time
 allowing values of primitive types to be passed as arguments to the
-function. So, when tt(add(3, 4)) is called, tt(int(4)) will be assigned to
+function. So, when tt(add(3, 4)) is called, tt(int(4)) is assigned to
 tt(Type const &rvalue). In general, function parameters should be defined as
 tt(Type const &) to prevent unnecessary copying. The compiler is smart enough
 to handle `references to references' in this case, which is something the
@@ -46,10 +46,10 @@ the compiler decides that tt(Type) apparently is a tt(string const):
     itemization(
     it() In general, function parameters should be specified as tt(Type const
 &) parameters to prevent unnecessary copying.
-    it() The template mechanism is fairly flexible. It will interpret
-formal types as plain types, const types, pointer types, etc., depending on
-the actually provided types. The i(rule of thumb) is that the formal type is
-used as a generic mask for the actual type, with the formal type name covering
+    it() The template mechanism is fairly flexible.  Formal types are
+interpreted as plain types, const types, pointer types, etc., depending on the
+actually provided types. The i(rule of thumb) is that the formal type is used
+as a generic mask for the actual type, with the formal type name covering
 whatever part of the actual type must be covered. Some examples, assuming the
 parameter is defined as tt(Type const &):
             center(
@@ -143,7 +143,7 @@ accepts a numeric value as an argument to one of its constructors. But all
 types, even the primitive types, support default constructors (actually, some
 classes do not implement a default constructor, or make it inaccessible; but
 most do). The default constructor hi(constructor: primitive type) of primitive
-types will initialize their variables to 0 (or tt(false)). Furthermore, the
+types initializes their variables to 0 (or tt(false)). Furthermore, the
 statement tt(Type tp = Type()) is a true initialization: tt(tp) is initialized
 by tt(Type)'s default constructor, rather than using tt(Type)'s copy
 constructor to assign tt(Type)'s copy to tt(tp).
@@ -155,19 +155,19 @@ initializing argument can be provided to an object's definition, like
 tt(string s("hello")). Why, then, is tt(Type tp = Type()) accepted, whereas
 tt(Type tp(Type())) isn't?  When tt(Type tp(Type())) is used it won't result
 in an error message. So we don't immediately detect that it's em(not) a
-tt(Type) object's default initialization. Instead, the compiler will start
+tt(Type) object's default initialization. Instead, the compiler starts
 generating error messages once tt(tp) is used. This is caused by the fact that
-in bf(C++) (and in bf(C) alike) the compiler will do its best to recognize a
+in bf(C++) (and in bf(C) alike) the compiler does its best to recognize a
 function or
  hi(C++: function prevalence rule) function pointer whenever possible: the
 emi(function prevalence rule).  According to this rule tt(Type()) is (because
 of the pair of parentheses) interpreted as a em(pointer to a function)
-expecting no arguments; returning a tt(Type). It will do so unless the
-compiler clearly is unable to do so. In the initialization tt(Type tp =
-Type()) it em(can't) see a pointer to a function as a tt(Type) object cannot
-be given the value of a function pointer (remember: tt(Type()) is interpreted
-as tt(Type (*)()) whenever possible). But in tt(Type tp(Type())) it em(can)
-use the pointer interpretation: tt(tp) is now em(declared) as a em(function)
+expecting no arguments; returning a tt(Type). The compiler will do so unless
+it clearly isn't possible to do so. In the initialization tt(Type tp = Type())
+it em(can't) see a pointer to a function as a tt(Type) object cannot be given
+the value of a function pointer (remember: tt(Type()) is interpreted as
+tt(Type (*)()) whenever possible). But in tt(Type tp(Type())) it em(can) use
+the pointer interpretation: tt(tp) is now em(declared) as a em(function)
 expecting a pointer to a function returning a tt(Type), with tt(tp) itself
 also returning a tt(Type). E.g., tt(tp) could have been defined as:
         verb(

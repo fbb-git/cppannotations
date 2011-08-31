@@ -3,20 +3,21 @@ bf(C++). As we've seen generic algorithms often accept an argument that can
 either be a function object or it can be a plain function. Examples are the
 tt(sort) and tt(find_if) generic algorithms. When the function called by the
 generic algorithm must remember its state a function object is appropriate,
-otherwise a plain function will do.
+otherwise a plain function can be used.
 
 The function or function object is usually not readily available. Often it
 must be defined in or near the location where the generic algorithm is used.
-Often the software engineer will resort to anonymous namespaces in which a
-class or function is defined that is thereupon used by the function calling
-the generic algorithm. If that function is itself a member function the need
-may be felt to allow the function called by the generic algorithm access to
-other members of its class. Often this results in a significant amount of code
-(defining the class); in complex code (to make available software elements
-that aren't native to the called function (object)); and -at the level of the
-source file- code that is irrelevant at the current level of
-specification. Nested classes don't solve these problems and nested classes
-can't be used in templates.
+The software engineer usually accomplished this by defining a class or
+function in the anonymous namespace, passing an object of that class or
+passing that function to a generic algorithm called from some other
+function. If the latter function is itself a member function the need may be
+felt to grant the function called by the generic algorithm access to other
+members of its class. Often this results in a significant amount of code
+(defining the class); or it results in complex code (to make available
+software elements that aren't automatically accessible from the called
+function (object)); and it may result -at the level of the source file- in
+code that is irrelevant at the current level of specification. Nested classes
+don't solve these problems and nested classes can't be used in templates.
 
 A i(lambda function) is an
     i(anonymous function)hi(function: anonymous). Such a function may be
@@ -38,7 +39,7 @@ vector:
     cout << accumulate(vi.begin(), vi.end(), 1,
                 [](int x, int y) { return x * y; });
         )
-    The above lambda function will use the implicit return
+    The above lambda function uses the implicit return
         hi(return type: implicit)
     type tt(decltype(x * y)). An implicit return type can
 only be used if the lambda function has a single statement of the form
@@ -122,7 +123,7 @@ variables passed differently. Example:
         total +=  x * value;
     };
         )
-    Here  tt(total) will be passed by reference, tt(value) by value.
+    Here  tt(total) is passed by reference, tt(value) by value.
 
     Class members may also define lambda functions. Such lambda functions have
 full access to all the class's members. In other words, they are automatically
@@ -150,9 +151,9 @@ defined as friends of the class. Example:
     Note the use of the tt(this) pointer: inside the lambda function it must
 explicitly be used (so,nl()
         tt(this->capitalized(name)) is used rather than
-tt(capitalized(name))). In addition, in situations like these tt(this) will
-automatically be available when either tt([&]) or tt([=]) is used. So, the
-above lambda function could also have been defined as:
+tt(capitalized(name))). In addition, in situations like these tt(this)
+is automatically available when either tt([&]) or tt([=]) is used. So,
+the above lambda function can also be be defined as:
         verb(
                     [&](std::string const &name)
                     {

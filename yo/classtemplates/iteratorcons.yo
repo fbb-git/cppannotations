@@ -10,20 +10,36 @@ class the tthi(iterator) header file must have been included.
 
     In section ref(ITERATORS) the characteristics of iterators were
 discussed. All iterators
- hi(iterator: common characteristics) should support an increment operation, a
-dereference operation and a comparison for (in)equality.
+        hi(iterator: common characteristics) 
+        hi(iterator: requirements)
+    should support (using tt(Iterator) as the generic name of the designed
+iterator class and tt(Type) to represent the (possibly tt(const), in which
+case the associated operator should be a tt(const) member as well) data type to
+which tt(Iterator) objects refer):
+    itemization(
+    it() a prefix increment operator (tt(Iterator &operator++()));
+    it() a dereference operator (tt(Type &operator*()));
+    it() a 'pointer to' operator (tt(Type *operator->()));
+    it() comparison operators testing the (in)equality of two iterator objects
+(tt(bool operator==(Iterator const &other)), tt(bool operator!=(Iterator const
+&other))).
+    )
 
-    When hi(iterator: and generic algorithms) iterators must be used in the
-context of generic algorithms they must meet additional requirements. This is
-caused by the fact that generic algorithms check the types of the iterators
-they receive. Simple pointers are usually accepted, but if an iterator-object
-is used it must be able to specify the kind of iterator it represents.
+    When 
+        hi(iterator: and generic algorithms) 
+    iterators are to be used in the context of generic algorithms they must
+meet additional requirements. This is caused by the fact that generic
+algorithms perform checks on the types of the iterators they receive. Simple
+pointers are usually accepted, but if an iterator-object is used it must be
+able to specify the kind of iterator it represents.
 
-    When deriving a class from the class tt(iterator). The particular
- hi(iterator: class type) type of iterator is defined
-by the class template's em(first) parameter, and the particular
- hi(iterator: data type) data type to which the iterator points is defined by
-the class template's em(second) parameter.
+    When deriving a class from the class tt(iterator) the 
+        hi(iterator: class type) 
+    type of iterator is defined by the class template's em(first) parameter,
+and the 
+        hi(iterator: data type) 
+    data type to which the iterator refers is defined by the class template's
+em(second) parameter.
 
     The type of iterator that is implemented by the derived class
 is specified using a so-called emi(iterator_tag), provided as the
@@ -32,24 +48,87 @@ types, these tags are:
     itemization(
     itht(input_iterator_tag)(std::input_iterator_tag). This tag defines an
 i(InputIterator).  Iterators of this type allow reading operations, iterating
-from the first to the last element of the series to which the iterator refers.
+from the first to the last element of the series to which the iterator
+refers. 
+
+    The InputIterator  dereference operator should be declared as follows:
+        verb(
+    Type const &operator*() const;
+        )
+    Except for the standard operators there are no further requirements for 
+InputIterators.
+
+
     itht(output_iterator_tag)(std::output_iterator_tag). This tag defines an
 i(OutputIterator).  Iterators of this type allow for assignment operations,
 iterating from the first to the last element of the series to which the
 iterator refers.
+
+    The OutputIterator  dereference operator should allow assignment to the
+data its dereference operator refers to. Therefore, the OutputIterator
+dereference operator should be declared as follows:
+        verb(
+    Type &operator*();
+        )
+    Except for the standard operators there are no further requirements for 
+OutputIterators.
+
     itht(forward_iterator_tag)(std::forward_iterator_tag). This tag defines a
         i(ForwardIterator).  Iterators of this type allow reading em(and)
 assignment operations, iterating from the first to the last element of the
 series to which the iterator refers.
+
+    The ForwardIterator  dereference operator should allow assignment to the
+data its dereference operator refers to. Therefore, the ForwardIterator
+dereference operator should be declared as follows:
+        verb(
+    Type &operator*();
+        )
+    Except for the standard operators there are no further requirements for 
+ForwardIterators.
+
+
     itht(bidirectional_iterator_tag)(std::bidirectional_iterator_tag). This
 tag defines a i(BidirectionalIterator). Iterators of this type allow reading
 em(and) assignment operations, iterating step by step, possibly in alternating
 directions, over all elements of the series to which the iterator refers.
+
+    The ForwardIterator dereference operator should allow assignment to the
+data its dereference operator refers to and it should allow stepping
+backward. ForwardIterator should therefore, in addition to the standard
+operators required for iterators, offer the following operators: 
+        verb(
+    Type &operator*();
+    Iterator &operator--();
+        )
+
     itht(random_access_iterator_tag)(std::random_access_iterator_tag). This
 tag defines a i(RandomAccessIterator).  Iterators of this type allow reading
 em(and) assignment operations, iterating, possibly in alternating directions,
 over all elements of the series to which the iterator refers using any
 available (random) stepsize.
+
+    RandomIterator class dereference operators should allow assignment to the
+data they refer to, and, in addition to the standard operators required for
+iterators, offer the following operators:
+    itemization(
+    itt(Type &operator*()), allowing assignment to the data the dereference
+operator refers to;
+    itt(Iterator &operator--()), allowing single steps backward;
+    itt(Type operator-(Iterator const &rhs) const), returning the number of
+data elements between the current and tt(rhs) iterator (returning a negative
+value if tt(rhs) refers to a data element beyond the data element tt(this)
+iterator refers to);
+    itt(Iterator operator+(int step) const), returning an iterator referring
+to a data element tt(step) data elements beyond the data element tt(this)
+iterator refers to;
+    itt(Iterator operator-(int step) const), returning an iterator referring
+to a data element tt(step) data elements before the data element tt(this)
+iterator refers to;
+    itt(bool operator<(Iterator const &rhs) const), returning tt(true) if
+the data element tt(this) iterator refers to is located before the data
+element the tt(rhs) iterator refers to.
+        )
     )
     Each iterator tag assumes that a certain set of operators is
 available. The em(RandomAccessIterator) is the most complex of iterators, as

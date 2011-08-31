@@ -10,16 +10,16 @@ defines the available interface tt(delete vp) calls tt(~Vehicle) and tt(~Land)
 remains out of sight. Assuming that tt(Land) allocates memory a
  i(memory leak) results. Freeing memory is not the only action destructors can
 perform. In general they may perform any action that's necessary when an
-object ceases to exist. But here none of the actions defined by tt(~Land) will
-be performed. Bad news....
+object ceases to exist. But here none of the actions defined by tt(~Land) are
+performed. Bad news....
 
     In bf(C++) this problem is solved by
  hi(destructor: virtual)hi(virtual destructor) em(virtual destructors).  A
 destructor can be declared tt(virtual). When a base class destructor is
-declared virtual the destructor of the actual class pointed to by a base class
-pointer tt(bp) will be called when executing tt(delete bp). Thus, late binding
-is realized for destructors even though the destructors of derived classes
-have unique names. Example:
+declared virtual then the destructor of the actual class pointed to by a base
+class pointer tt(bp) is going to be called when tt(delete bp) is
+executed. Thus, late binding is realized for destructors even though the
+destructors of derived classes have unique names. Example:
         verb(
     class Vehicle
     {
@@ -29,13 +29,13 @@ have unique names. Example:
     };
         )
     By declaring a virtual destructor, the above tt(delete) operation
-(tt(delete vp)) will correctly call tt(Land)'s destructor, rather than
+(tt(delete vp)) correctly calls tt(Land)'s destructor, rather than
 tt(Vehicle)'s destructor.
 
-    Once a destructor is called it will perform as usual, whether or not it
-is a virtual destructor. So, tt(~Land) will first execute its own statements
-and will then call tt(~Vehile). Thus, the above tt(delete vp) statement will
-use late binding to call tt(~Vehicle) and from this point on the object
+    Once a destructor is called it performs as usual, whether or not it
+is a virtual destructor. So, tt(~Land) first executes its own statements
+and then calls tt(~Vehile). Thus, the above tt(delete vp) statement 
+uses late binding to call tt(~Vehicle) and from this point on the object
 destruction proceeds as usual.
 
     Destructors should always be defined tt(virtual) in classes designed as a
@@ -50,6 +50,6 @@ tt(Vehicle::~Vehicle()) may be as simple as:
         )
     Resist the temptation to define virtual destructors (even empty
 destructors)
- hi(destructor: inline) i(inline) as this will complicate class
+ hi(destructor: inline) i(inline) as this complicates class
 maintenance. Section ref(howpolymorphism) discusses the reason behind this
  i(rule of thumb).
