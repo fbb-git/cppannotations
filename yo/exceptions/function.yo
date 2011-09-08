@@ -47,8 +47,8 @@ tt(PersonDb)'s constructor is able to access its tt(d_data) member:
     }
         )
 
-    Unfortunately, this does not help us much. The tt(initialize) member will
-not be able to reassign tt(d_data) and tt(d_size) if tt(PersonDb const pdb)
+    Unfortunately, this does not help us much. The tt(initialize) member is
+unable to reassign tt(d_data) and tt(d_size) if tt(PersonDb const pdb)
 was defined; the tt(initialize) member should at least offer the basic
 exception guarantee and return any resources it has acquired before
 terminating due to a thrown exception; and although tt(d_data) and tt(d_size)
@@ -57,12 +57,13 @@ data member might throw an exception, possibly resulting in violation of the
 basic guarantee.
 
     In the next implementation of tt(PersonDb) assume that constructor
-receives a pointer to an already allocated block of tt(Person) objects. It
-will own the data and is responsible for its eventual destruction.
-Moreover, tt(d_data) and tt(d_size) are also used by a
-composed object tt(PersonDbSupport), having a constructor expecting a
-tt(Person const *) and tt(size_t) argument. Our next implementation may then
-look something like this:
+receives a pointer to an already allocated block of tt(Person) objects. The
+tt(PersonDb) object takes ownership of the allocated memory and it is
+therefore responsible for the allocated memory's eventual destruction.
+Moreover, tt(d_data) and tt(d_size) are also used by a composed object
+tt(PersonDbSupport), having a constructor expecting a tt(Person const *) and
+tt(size_t) argument. Our next implementation may then look something like
+this:
         verb(
     PersonDb::PersonDb(Person *pData, size_t size)
     :
