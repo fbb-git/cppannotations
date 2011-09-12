@@ -22,14 +22,14 @@ defined as the first tt(d_reserved) bytes of the class's input buffer.
 tt(d_reserved). So, a certain number of bytes may be read. Once tt(d_reserved)
 bytes have been read at most tt(d_reserved) bytes can be ungot.
         it() Next, the starting point for reading operations is configured. It
-is called tt(d_base), pointing to a location tt(d_reserved) bytes from the
-start of tt(d_buffer). This will always be the point where buffer refills
-start.
+is called tt(d_base), pointing to a location tt(d_reserved) bytes beyond the
+location represented by tt(d_buffer). This is always the location where buffer
+refills start.
         it() Now that the buffer has been constructed, we're ready to define
 tt(streambuf)'s buffer pointers using tt(setg). As no characters have been
 read yet, all pointers are set to point to tt(d_base). If tt(unget) is
-called at this point, no characters are available, so tt(unget) will
-(correctly) fail.
+called at this point, no characters are available, and tt(unget) 
+(correctly) fails.
         it() Eventually, the refill buffer's size is determined as the
 number of allocated bytes minus the size of the reserved area.
         )
@@ -74,6 +74,6 @@ reads at most 10 characters from the standard input, stopping at
 endOfFile(). A guaranteed unget-buffer of 2 characters is defined in a buffer
 holding 3 characters. Just before reading a character, the program tries to
 unget at most 6 characters. This is, of course, not possible; but the program
-will nicely unget as many characters as possible, considering the actual
+nicely ungets as many characters as possible, considering the actual
 number of characters read:
         verbinclude(examples/fdunget.cc)
