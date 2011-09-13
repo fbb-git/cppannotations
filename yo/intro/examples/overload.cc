@@ -19,5 +19,5 @@
     {
         show(12);
         show(3.1415);
-        show("Hello World\n!");
+        show("Hello World!\n");
     }
