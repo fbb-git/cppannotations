@@ -1,11 +1,11 @@
 Consider classes derived from tt(std::istream) or tt(std::ostream). Such a
 class could be designed as follows:
         verb(
-class XIstream: public std::istream
-{
-    public:
-        ...
-};
+    class XIstream: public std::istream
+    {
+        public:
+            ...
+    };
         )
     Assuming that the tt(streambuf) to which tt(XIstream) interfaces is not
 yet available construction time, tt(XIstream) only offers default
@@ -23,8 +23,8 @@ provided to tt(init).
 Assuming that the tt(streambuf) to which tt(switchStream)'s tt(sb) points
 persists, then tt(switchStream) could simply be implemented like this:
         verb(
-void switchStream(streambuf *sb)
-{
-    init(sb);
-}
+    void switchStream(streambuf *sb)
+    {
+        init(sb);
+    }
         )

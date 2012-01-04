@@ -24,15 +24,15 @@ tt(streambuf) can be used to construct an tt(istream irand), after which
 extractions from tt(irand) produces the next random number, like in the next
 example in which 10 random numbers are generated using stream I/O:
             verb(
-RandBuf buffer;
-istream irand(&buffer);
-
-for (size_t idx = 0; idx != 10; ++idx)
-{
-    size_t next;
-    irand >> next;
-    cout << "next random number: " << next << '\n';
-}
+    RandBuf buffer;
+    istream irand(&buffer);
+    
+    for (size_t idx = 0; idx != 10; ++idx)
+    {
+        size_t next;
+        irand >> next;
+        cout << "next random number: " << next << '\n';
+    }
         )
     The question is, how many random numbers should tt(irand) be able to
 generate? Fortunately, there's no need to answer this question, as
@@ -57,14 +57,14 @@ extraction of the next random number. But it should also not be in
 tt(streambuf)'s public section, as that could easily result in unexpected
 behavior by tt(irand). Consider the following hypothetical example:
         verb(
-RandBuf buffer;
-istream irand(&buffer);
-
-char buffer[] = "12";
-buffer.setg(buffer, ...);   // setg public: buffer now contains 12
-
-size_t next;
-irand >> next;              // not a *random* value, but 12.
+    RandBuf buffer;
+    istream irand(&buffer);
+    
+    char buffer[] = "12";
+    buffer.setg(buffer, ...);   // setg public: buffer now contains 12
+    
+    size_t next;
+    irand >> next;              // not a *random* value, but 12.
         )
 
     Clearly there is a close connection between tt(streambuf) and its derived
@@ -76,15 +76,15 @@ This close connection between base- and derived-classes is realized by a third
 keyword related to the accessibility of class members: ti(protected). Here is
 how the member tt(setg) could have been be declared in a class tt(streambuf):
         verb(
-class streambuf
-{
-    // private data here (as usual)
-    protected:
-        void setg(... parameters ...);  // available to derived classes
-
-    public:
-        // public members here
-};
+    class streambuf
+    {
+        // private data here (as usual)
+        protected:
+            void setg(... parameters ...);  // available to derived classes
+    
+        public:
+            // public members here
+    };
         )
 
 Protected members are members that can be accessed by derived classes, but are

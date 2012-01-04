@@ -46,7 +46,7 @@ for tt(Usage) looks like this:
     class Usage
     {
         public:
-            void fun(Outer<T1>::Inner<T2> &obj);
+            void caller(Outer<T1>::Inner<T2> &obj);
        ...
     };
         )
@@ -64,7 +64,7 @@ ti(::template) construction is required. It tells the compiler that the next
 tt(<) should not be interpreted as a `less than' token, but rather as a
 template type argument. So, the declaration is modified to:
         verb(
-    void fun(Outer<T1>::template Inner<T2> &obj);
+    void caller(Outer<T1>::template Inner<T2> &obj);
         )
     This still doesn't get us where we want to be: after all tt(Inner<T2>) is
 a type, nested under a class template, depending on a template type
@@ -76,16 +76,16 @@ results in a series of error messages, one of them looking like this:
     As is often the case this error message nicely indicates what should be
 done to get it right: add tt(typename):
         verb(
-    void fun(typename Outer<T1>::template Inner<T2> &obj);
+    void caller(typename Outer<T1>::template Inner<T2> &obj);
         )
 
-    Of course, tt(fun) itself is not only just declared, it must also be
+    Of course, tt(caller) itself is not only just declared, it must also be
 implemented. Assume that its implementation should call tt(Inner)'s member
 tt(nested), instantiated for yet another type tt(X). The class template
 tt(Usage) should therefore receive a third template type parameter, called
-tt(T3). Assume it has been defined. To implement tt(fun), we write:
+tt(T3). Assume it has been defined. To implement tt(caller), we write:
         verb(
-    void fun(typename Outer<T1>::template Inner<T2> &obj)
+    void caller(typename Outer<T1>::template Inner<T2> &obj)
     {
         obj.nested<T3>();
     }
@@ -102,7 +102,7 @@ ti(.template) to inform the compiler that what follows is not a `less than'
 operator, but rather a type specification. The function's final implementation
 becomes:
         verb(
-    void fun(typename Outer<T1>::template Inner<T2> &obj)
+    void caller(typename Outer<T1>::template Inner<T2> &obj)
     {
         obj.template nested<T3>();
     }
@@ -113,7 +113,7 @@ define pointer parameters. Had tt(obj) been defined as a pointer parameter the
 implementation would have had to use the tt(->template) construction, rather
 than the tt(.template) construction. E.g.,
         verb(
-    void fun(typename Outer<T1>::template Inner<T2> *ptr)
+    void caller(typename Outer<T1>::template Inner<T2> *ptr)
     {
         ptr->template nested<T3>();
     }
