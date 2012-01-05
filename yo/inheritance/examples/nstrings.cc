@@ -25,7 +25,7 @@ string *nStrings(size_t size, char const *fname)
         }
     };
     in.open(fname);
-    string *sp = new Xstr[10];
+    string *sp = new Xstr[size];
     in.close();
 
     return sp;

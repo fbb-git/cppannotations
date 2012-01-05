@@ -9,7 +9,7 @@
             {
                 cout << "MyClass constructor\n";
             }
-            MyClass(const MyClass &other)
+            MyClass(MyClass const &other)
             {
                 cout << "MyClass copy constructor\n";
             }
