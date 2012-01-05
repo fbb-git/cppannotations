@@ -1,0 +1,57 @@
+#include <iostream>
+
+    template <typename Type>
+    class Range
+    {
+        Type *d_begin;
+        Type *d_end;
+    
+        public: 
+            Range(Type *begin, Type *end)
+            :
+                d_begin(begin),
+                d_end(end)
+            {}
+            Type *begin() const
+            {
+                return d_begin;
+            }
+            Type *end() const
+            {
+                return d_end;
+            }
+    };
+
+    template <typename Type>
+    inline Range<Type> ranger(Type *begin, Type *end)
+    {
+        return Range<Type>(begin, end);
+    }
+
+    struct BigStruct
+    {
+        double array[100];
+        int    last;
+    };
+
+    int countUsed(BigStruct const *bs, int count)
+    {
+        typedef  BigStruct const *BCP;
+
+        static int sum = 0;
+        for (auto &element: ranger(bs, bs + count))
+        {
+            std::cout << sum++ << ' ';
+            //sum += element.last;
+        }
+        std::cout << '\n';
+        return sum;
+    }
+
+ 
+int main()
+{
+    BigStruct data[5];
+
+    countUsed(data, 5);
+}
