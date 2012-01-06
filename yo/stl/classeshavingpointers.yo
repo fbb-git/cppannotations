@@ -26,12 +26,18 @@ implemented like this:
             throw string("Input and/or output stream not available");
     }
         )
-    Of course, the construction could fail. tt(new) could throw an exception,
-the stream constructors could throw an exception or the streams could not be
+    Of course, the construction could fail. tt(new) could throw an exception;
+the stream constructors could throw exceptions; or the streams could not be
 opened in which case an exception is thrown from the constructor's body. Using
-a function try block helps, but if tt(d_in)'s initialization throws then
-tt(d_out) is still a wild pointer. Consequently the pointers would first have
-to be initialized to 0 and only then the initialization can be performed:
+a function try block helps. Note that if tt(d_in)'s initialization throws,
+there's nothing to be worried about. The tt(Filter) object hasn't been
+constructed, its destructor is not be called and processing continues at the
+point where the thrown exception is caught. But tt(Filter)'s destructor is
+also not called when tt(d_out)'s initialization or the constructor's tt(if)
+statement throws: no object, and hence no destructor is called. This may
+result in memory leaks, as tt(delete) isn't called for tt(d_in) and/or
+tt(d_out). To prevent this, tt(d_in) and tt(d_out) must first be initialized
+to 0 and only then the initialization can be performed:
         verb(
     Filter::Filter(char const *in, char const *out)
     try
@@ -51,7 +57,7 @@ to be initialized to 0 and only then the initialization can be performed:
         delete d_in;
     }
         )
-    This may easily get complicated, though. If tt(filter) harbors yet another
+    This quickly gets complicated, though. If tt(Filter) harbors yet another
 data member of a class whose constructor needs two streams then that data
 cannot be constructed or it must itself be converted into a pointer:
         verb(
