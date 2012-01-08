@@ -1,55 +1,57 @@
 Often constructors are specializations of each other, allowing objects to be
-constructed using subsets of arguments for its data members, and/or using
-default argument values for other data members. In many cases classes define
-initialization members that are called by the various constructors. Here is an
-example. A class tt(Stat) is designed as a wrapper class around bf(C)'s
-ti(stat) function. It might define three constructors: one expecting no
-arguments and initializing all data members to appropriate values; a second
-one doing the same, but it calls tt(stat) with the filename provided to the
-constructor and a third one expecting a filename and a search path for the
-provided file name. Rather than repeating the initialization code in each
-constructor, the common code can be factorized into a member tt(init()) which
-is thereupon called by the constructors.
+constructed specifying only subsets of arguments for all of its data members,
+using default argument values for the remaining data members. 
 
-The C++0x standard offers an alternative to this design by allowing
-constructors to call each other. The C++0x standard
-allows constructors to call each other as shown in the following example:
+Before the C++11 standard common practice was to define a member like tt(init)
+performing all initializations common to constructors. Such an tt(init)
+function, however, cannot be used to initialize tt(const) or reference data
+members, nor can it be used to perform so-called em(base class)
+initializations (cf. chapter ref(INHERITANCE)).
+
+Here is an example where such an tt(init) function might have been used. A
+class tt(Stat) is designed as a wrapper class around bf(C)'s bi(stat)(2)
+function. The class might define three constructors: one expecting no
+arguments and initializing all data members to appropriate values; a second
+one doing the same, but it calls tt(stat) for the filename provided to the
+constructor; and a third one expecting a filename and a search path for the
+provided file name. Instead of repeating the initialization code in each
+constructor, the common code can be factorized into a member tt(init) which
+is called by the constructors.
+
+The C++11 standard offers an alternative by allowing
+constructors to call each other. This is called 
+    hi(constructor: delegation)
+    emi(delegating constructors)
+        The C++11 standard
+allows us to delegate constructors as illustrated by the next example:
         verb(
     class Stat
     {
         public:
             Stat()
             :
-                // default initialization of members
+                State("", "")   // no filename/searchpath
             {}
             Stat(std::string const &fileName)
             :
-                Stat()
-            {
-                set(fileName);
-            }
+                Stat(fileName, "")  // only a filename
+            {}
             Stat(std::string const &fileName, std::string const &searchPath)
             :
-                Stat()
+                d_filename(fileName),
+                d_searchPath(searchPath)
             {
-                set(fileName, searchPath);
+                // remaining actions to be performed by the constructor
             }
-            ...
     };
         )
-    There is one em(caveat): bf(C++) considers the object as fully constructed
-once a constructor has normally finished. Once a constructor has finished the
-class's destructor is guaranteed to be called (cf. chapter ref(MEMORY)) and so
-remaining code must make sure that, e.g., all the class's pointer data members
-remain in a valid state. Also, as a prelude to chapter ref(EXCEPTIONS),
-realize that a destructor em(will) be called if a constructor throws an
-exception after having completed the call to another constructor.
 
     bf(C++) allows static const integral data members to be initialized within
 the hi(data member: initialization) class interfaces (cf. chapter
-ref(StaticDataFun)). The i(C++0x) standard adds to this the facility to
-provide all data members (const or non-const, integral or non-integral) with
-a default initialization that is specified by the class interface.
+ref(StaticDataFun)). The i(C++11) standard adds to this the facility to define
+default initializations for plain data members in class interfaces (these data
+members may or may not be tt(const) or of integral types, but (of course) they
+cannot be reference data members).
 
     These default initializations may be overruled by constructors. E.g., if
 the class tt(Stat) uses a data member tt(bool d_hasPath) which is tt(false) by
