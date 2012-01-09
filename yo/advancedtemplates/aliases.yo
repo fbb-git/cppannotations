@@ -1,0 +1,99 @@
+Typedefs are commonly defined using the tt(typedef) keyword. In addition,
+C++11 allows the ti(using) keyword to associate a type and and identifier, but
+different from ti(typedef) it does em(not) define a type. In practice
+tt(typedef) and tt(using) can be used interchangeably.
+
+In addition to function and class templates, C++11 also uses templates to
+define an alias for a set of types. This is called a emi(template
+alias). Template aliases can be specialized. The name of a template alias
+spacialization is a type name.
+
+The name of a template alias is a template name.
+
+A template argument for a template template parameter is either a class
+template or it is a template alias (expressed as 'id expression'
+
+Alias declarations cannot be (partially, explicitly) specialized. Template
+aliases can be specialized.
+
+Examples:
+        verb(
+template <typename T> struct X {...};
+
+template <typename T>
+    using VecT = vector<T, Alloc<T>>;
+
+Vec<int> vi;        // same as vector<int, Alloc<int>> vi;
+
+
+--------------------
+template alias (formerly known as "template typedef")
+How can we make a template that's "just like another template" but possibly with a couple of template arguments specified (bound)? Consider:
+
+
+	template<class T>
+	using Vec = std::vector<T,My_alloc<T>>;  // standard vector using my allocator
+
+	Vec<int> fib = { 1, 2, 3, 5, 8, 13 }; // allocates elements using My_alloc
+
+	vector<int,My_alloc<int>> verbose = fib; // verbose and fib are of the same type
+
+The keyword using is used to get a linear notation "name followed by what it refers to." We tried with the conventional and convoluted typedef solution, but never managed to get a complete and coherent solution until we settled on a less obscure syntax.
+
+Specialization works (you can alias a set of specializations but you cannot specialize an alias) For example:
+
+	template<int>
+	struct int_exact_traits {	// idea: int_exact_trait<N>::type is a type with exactly N bits
+		typedef int type;
+	};
+
+	template<>
+	struct int_exact_traits<8> {
+		typedef char type;
+	};
+
+	template<>
+	struct int_exact_traits<16> {
+		typedef char[2] type;
+	};
+
+	// ...
+
+	template<int N>
+	using int_exact = typename int_exact_traits<N>::type;  // define alias for convenient notation
+
+	int_exact<8> a = 7;	// int_exact<8> is an int with 8 bits
+
+In addition to being important in connection with templates, type aliases can also be used as a different (and IMO better) syntax for ordinary type aliases:
+
+
+typedef void (*PFD)(double);	// C style
+using PF = void (*)(double);	// using plus C-style type
+using P = [](double)->void;	// using plus suffix return type
+
+-------------------------------------------------
+template <typename T>
+using Dictionary = std::map< std::string, T >;
+
+Dictionary<int> ints;
+ints[ "one" ] = 1;
+ints[ "two" ] = 2;
+
+---------------------- the really useful case:
+
+#include <vector>
+
+template <typename Type, template <typename> class Container>
+struct Wrapper: public Container<Type>
+{};
+
+template <typename Type>
+using VT = std::vector<Type>;
+
+int main()
+{
+    Wrapper<int, VT> wi;
+    // Wrapper<int, std::vector> wi2;       ERR!
+}
+
+
