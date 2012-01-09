@@ -1,0 +1,31 @@
+Variadic templates not necesssarily define template types. Non-types can also
+be used with 
+    hi(variadic non-type parameters) 
+        variadic templates. The following function template accepts any series
+of tt(int) values, forwarding these values to a class template. The class
+template defines an tt(enum) value tt(result) which is returned by the
+function, unless no int values were specified, in which case 0 is returned.
+        verb(
+    template <int ... Ints>
+    int forwarder()
+    {
+        return computer<Ints ...>::result;  // forwarding the Ints
+    }
+
+    template <>     // specialization if no ints are provided
+    int forwarder<>()
+    {
+        return 0;
+    }
+
+    // use as:
+    cout << forwarder<1, 2, 3>() << ' ' << forwarder<>() << '\n';
+        )
+    The tt(sizeof) operator can be used for variadic non-type parameters as
+well: tt(sizeof...(Ints)) would return 3 when used in the first function
+template for tt(forwarder<1, 2, 3>()). 
+
+    Variadic non-type parameters are used to define variadic literal
+operators, introduced in section ref(UDL).
+
+
