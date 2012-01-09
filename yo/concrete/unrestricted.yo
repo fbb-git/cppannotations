@@ -1,15 +1,79 @@
-Unions revived at the introduction of C++11's unrestricted unions. 
+Unions revived in bf(C++) at the introduction of C++11's unrestricted unions. 
 In this section we'll have a look at how to used them as 
-semantic values in a Bisonc++ generated parser.
+semantic values in a Bisonc++ generated parser. 
 
-
-    Bisonc++'s semantic value must support
+The just developed polymorphic semantic value had to support
     itemization(
     itt(int) values;
     itt(textual) values of type tt(string);
     )
 
-
+When unrestricted unions are used, the union must be able to support tt(int)
+and tt(string) values. Using the tt(pair) to allow the union to do 
+`introspection' (cf. section ref(UNIONS)), we now define a em(union)
+tt(Semantic) having the following data members:
+        verb(
+    std::pair<int, int>          d_int;
+    std::pair<int, std::string>  d_str;
+        )
+    Since an unrestricted union by default deletes all its standard
+constructors and operators (it must do so, as it cannot tell which data 
+variant is currently active) they must all be implemented explicitly by
+the tt(Semantic) union. To aid the introspection a type is defined, indicating
+whether the variant is an tt(int) or a tt(string), and the default constructor
+simply defines an tt(INT) value 0.
 
 Here is tt(Semantic)'s interface:
-    verbinclude(poly/semantic/semantic.h)
+    verbinclude(unrestricted/semantic/semantic.h)
+
+tt(Semantic) objects are as big as required to accomodate all its
+variants. However, as tt(Semantic) is a union, its constructors and destructor
+cannot predefine or destroy all of its variants. Rather, it must pick the
+appropriate field based on the tt(pair)'s tt(first) field. For tt(int) values
+a simple assignment is OK, but for tt(string) values a constructor and
+destructor must be used. For this, placement new and an explicit destructor
+call is required. Here are tt(Semantic)'s tt(Semantic(Type, char const *)),
+its copy constructor and its destructor:
+        verbinclude(unrestricted/semantic/semantic1.cc)
+        verbinclude(unrestricted/semantic/semantic2.cc)
+        verbinclude(unrestricted/semantic/destructor.cc)
+
+Our little parser only needs to be able to insert semantic values. For this an
+overloaded insertion operator can be used:
+        verbinclude(unrestricted/semantic/operatorinsert.cc)
+
+The remaining members (tt(operator=, swap)) are standard, and need no further
+explanation. 
+
+As tt(Semantic) objects know what type of value they represent, the parser's
+grammar specification needs no modification. Minor modifications for the
+scanner's specification, tt(lexer), however are required. Since tt(Semantic)
+is no longer a wrapper class for a polymorphic base class, using a shared
+pointer, the previously used tt(shared_ptr)'s tt(reset) calls need to be
+replaced by direct assignments of tt(Semantic) values to the tt(*d_semval)
+semantic value. The relevant section of the scanner's specification file
+tt(lexer) now becomes:
+        verb(
+    [0-9]+  {
+                *d_semval = Semantic(Semantic::INT, yytext);
+                return Parser::INT;
+            }
+
+    [a-zA-Z_][a-zA-Z0-9_]*  {
+                *d_semval = Semantic(Semantic::IDENTIFIER, yytext);
+                return Parser::IDENTIFIER;
+            }
+        )
+
+    This is all that is required to change a parser using a polymorphic base
+class to a parser using an unrestricted union. As memory allocation using
+placement new is fast, an unrestricted union is an efficient way to store
+multiple data types. Moreover, the semantic value classes implementing the
+polymorphic semantic value behavior, 
+tt(Base, Int), and tt(Text) are no longer required, nor is the use of the
+tt(shared_ptr) in a wrapper class (the previously used tt(Semantic) value)
+required anymore. All in, using an unrestricted union for the parser's
+semantic values seems like a good deal.
+
+        
+

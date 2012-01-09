@@ -14,7 +14,6 @@ union Semantic
     public:
         enum Type
         {
-            UNDEFINED,
             INT,
             IDENTIFIER
         };
@@ -27,12 +26,11 @@ union Semantic
         Semantic &operator=(Semantic const &rhs);
 
         void swap(Semantic &other);
-
 };
 
 inline Semantic::Semantic()
 :
-    d_int {UNDEFINED, 0}    
+    d_int {INT, 0}    
 {}
 
 #endif
