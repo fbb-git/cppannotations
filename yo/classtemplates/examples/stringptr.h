@@ -106,7 +106,7 @@ inline std::string &StringPtr::iterator::operator*() const
 //CMP
 inline bool StringPtr::iterator::operator<(iterator const &other) const
 {
-    return **d_current < **other.d_current;
+    return d_current < other.d_current;
 }
 //=
 //OPADD
