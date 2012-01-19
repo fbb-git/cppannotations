@@ -52,4 +52,29 @@ called by the program. By adding this i(instantiation function) to the source
 file containing tt(main) we can be sure that all required members are
 instantiated as well. Here is an example of how this can be done:
         verbinclude(examples/extern2.cc)
-    )
+
+    it() Last, but certainly not least: a fully matching 
+        i(instantiation declaration) of a class template (e.g., for
+tt(std::vector<int>)) looks like this:
+            verb(
+    template class std::vector<int>;
+            )
+    Adding this to a source file, however, will instantiate the em(full
+class), i.e., all its members are now instantiated. This may not what you
+want, as it might needlessly inflate your final executable.
+    it() On the other hand, if it is known that the required template members
+have already been instantiated elsewhere, then an emi(extern template)
+declaration can be used to prevent member instantiations in the current
+compilation unit, which may speed up compilation. E.g.,
+            verb(
+            // the compiler assumes that required members of
+            // vector<int> have already been instantiated elsewhere
+    extern template class std::vector<int>;
+
+    int main()
+    {
+        std::vector<int> vi(5);     // constructor and operator[]
+        ++vi[0];                    // are NOT instantiated
+    }
+            )
+
