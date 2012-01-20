@@ -1,0 +1,62 @@
+The hi(thread)tt(std::thread) class implements a (new) thread.  Before using
+tt(Thread) objects the tthi(thread) header file must have been included.
+
+tt(Thread) objects can be constructed empty (in which case no new thread is
+started yet) but they may also be given a function or function object, in
+which case the thread is started immediately.
+
+Alternatively, a function or function object may be em(assigned) to an
+existing tt(thread) object causing a new thread to be launched using that
+function (object).
+
+There are several ways to end a launched thread. Currently a thread ends when
+the function called from the thread object ends. Since the tt(thread) object
+not only accepts functions but also function objects as its argument, a
+emi(local context) may be passed on to the thread. Here are two examples of
+how a thread may be started: in the first example a function is passed on to
+the thread, in the second example is is a function object. The example uses
+the thread member tt(join), discussed below:
+        verbinclude(examples/twothreads.cc)
+
+Thread objects do not implement a copy constructor but a move constructor is
+provided. Threads may be swapped as well, even if they're actually running a
+thread. E.g.,
+        verb(
+    std::thread t1(Thread());
+    std::thread t2(Thread());
+    t1.swap(t2);
+        )
+    According to the current specifications of the tt(thread) class its
+constructor should also be able to accept additional arguments (in addition to
+the function (object) handled by the thread object), but currently that
+facility does not appear to be available. Any object passed to the function
+call operator could of course also be passed using separate members or using
+the object's constructors. This is probably an acceptable makeshift solution
+until multiple arguments can be passed to the thread constructor itself (using
+perfect forwarding, cf. section ref(PERFECT)).
+
+The thread's overloaded assignment operator can also be used to start a
+thread. If the current thread object actually runs a thread it is stopped, and
+the function (object) assigned to the thread object becomes the new running
+thread. E.g.,
+        verb(
+    std::thread thr;    // no thread runs from thr yet
+    thr = Thread();     // a thread is launched
+        )
+    Threads (among which the thread represented by tt(main)) may be forced to
+wait for another threads's completion by calling the other thread's tt(join)
+member. E.g., in the following example tt(main) launches two threads and waits
+for the completion of both:
+        verb(
+    int main()
+    {
+        std::thread t1(Thread());
+        std::thread t2(Thread());
+
+        t1.join();      // wait for t1 to complete
+        t2.join();      // same, t2
+    }
+        )
+    The thread's member tt(detach) can be called to disassociate the current
+thread from its starting thread. When a thread has been disassociated from its
+starting thread it continues to run even after its calling thread has ended.

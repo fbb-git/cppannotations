@@ -1,0 +1,55 @@
+As the number of types in a parameter pack may be obtained using the tt(sizeof)
+operator (cf. section ref(VARIADIC)) it is easy to obtain the number of types
+that were specified with a certain tt(TypeList). For example, the following
+statement displays the value 3:
+        verb(
+    std::cout << TypeList<int, char, bool>::size << '\n';
+        )
+
+However, it's illustrative to see how the number of types specified with a
+tt(TypeList) could be determined if tt(sizeof) hadn't been available.
+
+To obtain the number of types that were specified with a tt(TypeList)
+the following algorithm is used:
+    itemization(
+    it() If the tt(TypeList) contains no types, its size equals zero;
+    it() If the tt(TypeList) contains types, its size equals 1 plus the number
+        of types that follow its  first type.
+    )
+    The algorithm uses recursion to define the length of a tt(TypeList). In
+executable bf(C++) recursion could also be used in comparable situations. For
+example recursion can be used to determine the length of a plain bf(C)
+(ascii-Z) string:
+        verb(
+    size_t c_length(char const *cp)
+    {
+        return *cp == 0 ? 0 : 1 + c_length(cp + 1);
+    }
+        )
+    While bf(C++) functions usually use iteration rather than recursion,
+iteration is not available to template meta programming algorithms. In
+template meta programming repetition em(must) be implemented using
+recursion. Furthermore, while bf(C++) run-time code may use conditions to
+decide whether or not to start the next recursion template meta programming
+cannot do so. Template meta programming algorithms must resort to (partial)
+specializations. The specializations are used to select alternatives.
+
+    The number of types that are specified in a tt(TypeList) can be computed
+using the following alternate implementation of tt(TypeList), using a generic
+tt(struct) declaration and two specialization for the empty and non-empty
+tt(TypeList) (cf. the above description of the algorithm):
+        verb(
+    template <typename ...Types>
+    struct TypeList;
+
+    template <typename Head, typename ...Tail>
+    struct TypeList
+    {
+        enum { size = 1 + TypeList<Tail...>::size };
+    };
+    template <>
+    struct TypeList<>
+    {
+        enum { size = 0 };
+    };
+        )

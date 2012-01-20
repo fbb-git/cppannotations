@@ -1,0 +1,187 @@
+In bf(C++), temporary (rvalue) values are indistinguishable from
+tt(const &) types. the C++11 standard adds a new reference type called an
+    emi(rvalue reference), defined as
+    ti(typename &&).
+
+The name em(rvalue) reference is derived from assignment statements, where the
+variable to the left of the assignment operator is called an emi(lvalue) and
+the expression to the right of the assignment operator is called an
+emi(rvalue). Rvalues are often temporary (or anonymous) values, like values
+returned by functions.
+
+In this parlance the bf(C++) reference should be considered an
+ emi(lvalue reference) (using the notation tt(typename &)). They can be
+contrasted to em(rvalue references) (using the notation tt(typename &&)).
+
+The key to understanding rvalue references is emi(anonymous variable). An
+anonymous variable has no name and this is the distinguishing feature for the
+compiler to associate it automatically with an lvalue reference if it has a
+choice. Before introducing some interesting and new constructions
+that weren't available before C++11 let's first have a look at some
+distinguishing applications of lvalue references. The following function
+returns a temporary (anonymous) value:
+        verb(
+    int intVal()
+    {
+        return 5;
+    }
+        )
+    Although the return value of tt(intVal) can be assigned to an tt(int)
+variable it requires a copying operation, which might become prohibitive when
+a function does not return an tt(int) but instead some large object. A
+em(reference) or em(pointer) cannot be used either to collect the anonymous
+return value as the return value won't survive beyond that. So the following
+is illegal (as noted by the compiler):
+        verb(
+    int &ir = intVal();         // fails: refers to a temporary
+    int const &ic = intVal();   // OK: immutable temporary
+    int *ip = &intVal();        // fails: no lvalue available
+        )
+
+    Apparently it is not possible to modify the temporary returned by
+tt(intVal). But now consider the next function:
+        verb(
+    void receive(int &value)
+    {
+        cout << "int value parameter\n";
+    }
+    void receive(int &&value)
+    {
+        cout << "int R-value parameter\n";
+    }
+        )
+    and let's call this function from tt(main):
+        verb(
+    int main()
+    {
+        receive(18);
+        int value = 5;
+        receive(value);
+        receive(intVal());
+    }
+        )
+    This program produces the following output:
+        verb(
+    int R-value parameter
+    int value parameter
+    int R-value parameter
+        )
+    It shows the compiler selecting tt(receive(int &&value)) in all cases
+where it receives an anonymous tt(int) as its argument. Note that this
+includes tt(receive(18)): a value 18 has no name and thus tt(receive(int
+&&value)) is called. Internally, it actually uses a temporary variable to
+store the 18, as is shown by the following example which modifies tt(receive):
+        verb(
+    void receive(int &&value)
+    {
+        ++value;
+        cout << "int R-value parameter, now: " << value << '\n';
+            // displays 19 and 6, respectively.
+    }
+        )
+    Contrasting tt(receive(int &value)) with tt(receive(int &&value)) has
+nothing to do with tt(int &value) not being a const reference. If
+tt(receive(int const &value)) is used the same results are obtained. Bottom
+line: the compiler selects the overloaded function using the rvalue reference
+if the function is passed an anonymous value.
+
+    The compiler runs into problems if tt(void receive(int &value)) is
+replaced by tt(void receive(int value)), though. When confronted with the
+choice between a value parameter and a reference parameter (either lvalue or
+rvalue) it cannot make a decision and reports an ambiguity. In practical
+contexts this is not a problem. Rvalue refences were added to the language in
+order to be able to distinguish the two forms of references: named values
+(for which lvalue references are used) and anonymous values (for which
+rvalue references are used).
+
+    It is this distinction that allows the implementation of
+ emi(move semantics) and emi(perfect forwarding). At this point the concept of
+emi(move semantics) cannot yet fully be discussed (but see section ref(MOVE)
+for a more thorough discussusion) but it is very well possible to illustrate
+the underlying ideas.
+
+Consider the situation where a function returns a tt(struct Data) containing a
+pointer to dynamically allocated characters. Moreover, the struct defines a
+member function tt(copy(Data const &other)) that takes another tt(Data) object
+and copies the other's data into the current object. The (partial) definition
+of the tt(struct Data) might look like this+footnote(To the observant reader:
+in this example the memory leak that results from using Data::copy()
+should be ignored):
+        verb(
+    struct Data
+    {
+        char *text;
+        size_t size;
+        void copy(Data const &other)
+        {
+            text = strdup(other.text);
+            size = strlen(text);
+        }
+    };
+        )
+    Next, functions tt(dataFactory) and tt(main) are defined as follows:
+        verb(
+    Data dataFactory(char const *txt)
+    {
+        Data ret = {strdup(txt), strlen(txt)};
+        return ret;
+    }
+
+    int main()
+    {
+        Data d1 = {strdup("hello"), strlen("hello")};
+
+        Data d2;
+        d2.copy(d1);                        // 1 (see text)
+
+        Data d3;
+        d3.copy(dataFactory("hello"));      // 2
+    }
+        )
+    At (1) tt(d2) appropriately receives a copy of tt(d1)'s text. But at (2)
+tt(d3) receives a copy of the text stored in the temporary returned by the
+tt(dataFactory) function. As the temporary ceases to exist after the call to
+tt(copy()) two releated and unpleasant consequences are observed:
+        itemization(
+        it() The return value is a temporary object: its only reason for
+existence is to pass its data on to tt(d3). Now tt(d3) copies the
+temporary's data which clearly is somewhat overdone.
+        it() The temporary tt(Data) object is lost following the call to
+tt(copy()). Unfortunately its dynamically allocated data is lost as well
+resulting in a memory leak.
+        )
+    In cases like these em(rvalue reference) should be used. By overloading
+the tt(copy) member with a member tt(copy(Data &&other)) the compiler is able
+to distinguish situations (1) and (2). It now calls the initial tt(copy())
+member in situation (1) and the newly defined overloaded tt(copy()) member in
+situation (2):
+        verb(
+    struct Data
+    {
+        char *text;
+        size_t size;
+        void copy(Data const &other)
+        {
+            text = strdup(other.text);
+        }
+        void copy(Data &&other)
+        {
+            text = other.text;
+            other.text = 0;
+        }
+    };
+        )
+    Note that the overloaded tt(copy()) function merely moves the
+tt(other.text) pointer to the current object's tt(text) pointer followed by
+reassigning 0 to tt(other.text). tt(Struct Data) suddenly has become
+emi(move-aware) and implements em(move semantics), removing the drawbacks of
+the previously shown approach:
+    itemization(
+    it() Instead of making a deep copy (which is required in situation (1)),
+the pointer value is simply moved to its new owner;
+    it() Since the tt(other.text) doesn't point to dynamically allocated
+memory anymore the memory leak is prevented.
+    )
+
+Rvalue references for tt(*this) and initialization of class
+objects by rvalues are not yet supported by the tt(g++) compiler.

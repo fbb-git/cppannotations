@@ -1,0 +1,62 @@
+Before using the predefined function objects presented in this section the
+tthi(functional) header file must have been included.
+
+Function objects play important roles in generic
+algorithms. For example, there exists a generic algorithm tt(sort)
+expecting two iterators defining the range of objects that should be sorted,
+as well as a function object calling the appropriate comparison operator for
+two objects. Let's take a quick look at this situation. Assume strings are
+stored in a vector, and we want to sort the vector in descending order. In
+that case, sorting the vector tt(stringVec) is as simple as:
+            verb(
+        sort(stringVec.begin(), stringVec.end(), greater<string>());
+            )
+    The last argument is recognized as a emi(constructor): it is an
+em(instantiation) of the tt(greater<>) class template, applied to
+tt(strings). This object is called as a function object by the tt(sort)
+generic algorithm. The generic algorithm calls the function object's
+tt(operator()) member to compare two tt(string) objects. The function object's
+tt(operator()) will, in turn, call tt(operator>) of the tt(string) data
+type. Eventually, when tt(sort) returns, the first element of the vector will
+contain the string having the greatest tt(string) value of all.
+
+    The function object's tt(operator()) itself is em(not) visible at this
+point. Don't confuse the parentheses in the `tt(greater<string>())' argument
+with calling tt(operator()). When tt(operator()) is actually used inside
+tt(sort), it receives two arguments: two strings to compare for
+`greaterness'. Since tt(greater<string>::operator()) is defined i(inline), the
+call itself is not actually present in the above tt(sort) call.  Instead
+tt(sort) calls tt(string::operator>) through tt(greater<string>::operator()).
+
+Now that we know that a constructor is passed as argument to (many) generic
+algorithms, we can design our own function objects. Assume we want to sort our
+vector case-insensitively. How do we proceed? First we note that the default
+tt(string::operator<) (for an incremental sort) is not appropriate, as it does
+case sensitive comparisons. So, we provide our own tt(CaseInsensitive) class,
+which compares two strings case insensitively. Using the standard bf(C)
+function ti(strcasecmp), the following program performs the trick. It
+case-insensitively sorts its command-line arguments in ascending alphabetic
+order:
+        verbinclude(examples/strcasecmp.cc)
+    The default constructor of the tt(class CaseInsensitive) is used to
+provide tt(sort) with its final argument. So the only member function that
+must be defined is tt(CaseInsensitive::operator()). Since we know it's called
+with tt(string) arguments, we define it to expect two tt(string) arguments,
+which are used when calling tt(strcasecmp). Furthermore, tt(operator())
+function is defined i(inline), so that it does not produce overhead when
+called by the tt(sort) function. The tt(sort) function calls the function
+object with various combinations of tt(strings). If the compiler grants our
+inline requests, it will in fact call tt(strcasecmp), skipping two extra
+function calls.
+
+The comparison function object is often a emi(predefined function object).
+Predefined function object classes are available for many commonly used
+operations.  In the following sections the available predefined function
+objects are presented, together with some examples showing their use. Near the
+end of the section about function objects emi(function adaptors) are
+introduced.
+
+    Predefined function objects are used predominantly with generic
+algorithms. Predefined function objects exists for arithmetic, relational, and
+logical operations. In section ref(BITFUN) predefined function objects are
+developed performing bitwise operations.

@@ -1,0 +1,72 @@
+
+    The following hi(map constructors) constructors are available for the
+tt(map) container:
+    itemization(
+    it() A tt(map) may be constructed empty:
+        verb(
+    map<string, int> object;
+        )
+    Note that the values stored in maps may be containers themselves. For
+example, the following defines a tt(map) in which the value is a tt(pair): a
+container
+ hi(nested container) hi(container: nested) nested under another container:
+        verb(
+    map<string, pair<string, string>> object;
+        )
+    Note the use of the two
+ hi(>>: with templates)hi(angle brackets: consecutive)
+ i(consecutive closing angle brackets). Before the advent of the i(C++11)
+standard consecutive closing brackets in container type specifications (and
+generally: in the context of template type specifications) resulted in a
+compilation error, as the immediate concatenation of the two closing angle
+brackets would be interpreted by the compiler as a right shift operator
+(oprshift()), which is not what we want here. In compilers supporting the
+C++11 standard this construction is accepted. Compilers not yet implementing
+this feature require a separating blank between two consecutive closing angle
+brackets.
+    it() A map may be initialized using two iterators.  The iterators may
+either point to tt(value_type) values for the map to be constructed, or to
+plain ti(pair) objects. If pairs are used, their tt(first) element represents
+the type of the keys, and their tt(second) element represents the type of the
+values. Example:
+        verb(
+    pair<string, int> pa[] =
+    {
+        pair<string,int>("one", 1),
+        pair<string,int>("two", 2),
+        pair<string,int>("three", 3),
+    };
+
+    map<string, int> object(&pa[0], &pa[3]);
+        )
+    In this example, tt(map<string, int>::value_type) could have been written
+instead of tt(pair<string, int>) as well.
+
+    If tt(begin) represents the first iterator that is used to construct a map
+and if tt(end) represents the second iterator, rangett(begin, end) will be
+used to initialize the map. Maybe contrary to intuition, the tt(map)
+constructor only enters em(new) keys.  If the last element of tt(pa) would
+have been tt("one", 3), only em(two) elements would have entered the tt(map):
+tt("one", 1) and tt("two", 2). The value tt("one", 3) would silently have been
+ignored.
+
+    The tt(map) receives its own copies of the data to which the iterators
+point as illustrated by the following example:
+        verbinclude(examples/mapconstruct.cc)
+
+    When tracing the output of this program, we see that, first, the
+constructor of a tt(MyClass) object is called to initialize the anonymous
+element of the array tt(pairs). This object is then copied into the first
+element of the array tt(pairs) by the copy constructor. Next, the original
+element is not required anymore and is destroyed. At that point the array
+tt(pairs) has been constructed. Thereupon, the tt(map) constructs a temporary
+tt(pair) object, which is used to construct the map element. Having
+constructed the map element, the temporary tt(pair) object is
+destroyed. Eventually, when the program terminates, the tt(pair) element
+stored in the tt(map) is destroyed too.
+    it() A map may be initialized using a copy constructor:
+        verb(
+    extern map<string, int> container;
+    map<string, int> object(container);
+        )
+    )

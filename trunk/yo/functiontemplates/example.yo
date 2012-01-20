@@ -1,0 +1,38 @@
+    With all these overloaded versions in place, we may now start the compiler
+to compile the following function:
+        verb(
+    using namespace std;
+
+    int main()
+    {
+        vector<int> v;
+
+        add(3, 4);          // 1 (see text)
+        add(v);             // 2
+        add(v, 0);          // 3
+    }
+        )
+    itemization(
+    it() In statement 1 the compiler recognizes two identical types, both
+tt(int). It therefore instantiates tt(add<int>), our very first definition
+of the tt(add) template.
+    it() In statement 2 a single argument is used. Consequently, the compiler
+looks for an overloaded version of tt(add) requiring but one argument. It
+finds the overloaded function template expecting a tt(std::vector), deducing
+that the template's type parameter must be tt(int). It instantiates
+        verb(
+    add<int>(std::vector<int> const &)
+        )
+    it() In statement 3 the compiler again encounters an argument list having
+  two arguments. However, this time the types of the arguments aren't equal,
+so tt(add) template's first definition can't be used. But it em(can) use the
+last definition, expecting entities having different types. As a
+tt(std::vector) supports tt(begin) and tt(end), the compiler is now able to
+instantiate the function template
+        verb(
+    add<std::vector<int>, int>(std::vector<int> const &, int const &)
+        )
+    )
+    Having defined the tt(add) function template for two equal and two
+different template type parameters we've exhausted the possibilities for using
+an tt(add) function template having two template type parameters.

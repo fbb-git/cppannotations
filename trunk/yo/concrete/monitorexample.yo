@@ -1,0 +1,64 @@
+    Now that tt(run)'s implementation has been covered, we'll concentrate on
+the various commands users might enter:
+    itemization(
+    it() When the tt(start) command is issued, a new child process is started.
+A new element is added to tt(d_child) by the member tt(createNewChild).  Next,
+the tt(Child) object should start its activities, but the tt(Monitor) object
+can not wait for the child process to complete its activities, as there is no
+well-defined endpoint in the near future, and the user probably wants to be
+able to enter more commands. Therefore, the tt(Child) process must run as a
+emi(daemon). So the forked process terminates immediately, but its own child
+process continues to run (in the background). Consequently,
+tt(createNewChild) calls the child's tt(fork) member. Although it is the
+child's tt(fork) function that is called, it is still the monitor program
+wherein that tt(fork) function is called. So, the em(monitor) program is
+duplicated by tt(fork). Execution then continues:
+    itemization(
+    it() At the tt(Child)'s tt(parentProcess) in its parent process;
+    it() At the tt(Child)'s tt(childProcess) in its child process
+    )
+    As the tt(Child)'s tt(parentProcess) is an empty function, returning
+immediately, the tt(Child)'s parent process effectively continues immediately
+below tt(createNewChild)'s tt(cp->fork()) statement.  As the child process
+never returns (see section ref(CHILD)), the code below tt(cp->fork()) is never
+executed by the tt(Child)'s child process. This is exactly as it should be.
+
+    In the parent process, tt(createNewChild)'s remaining code simply
+adds the file descriptor that's available for reading information from the
+child to the set of input file descriptors monitored by tt(d_select), and
+uses tt(d_child) to  establish the association between that
+file descriptor and the  tt(Child) object's address:
+        verbinsert(CHILD)(examples/monitor/createnewchild.cc)
+    it() Direct communication with the child is required for the tt(stop <nr>)
+and tt(<nr> text) commands. The former command terminates child process
+tt(<nr>), by calling tt(stopChild). This function locates the child process
+having the order number using an anonymous object of the class tt(Find),
+nested inside tt(Monitor). The class tt(Find) simply compares the
+provided tt(nr) with the children's order number returned by their tt(nr)
+members:
+        verbinsert(FINDIMP)(examples/monitor/monitor.h)
+    If the child process having order number tt(nr) was found, its file
+descriptor is removed from tt(d_selector)'s set of input file
+descriptors. Then the child process itself is terminated by the static member
+tt(killChild). The member tt(killChild) is declared as a em(static) member
+function, as it is used as function argument of the tt(for_each) generic
+algorithm by tt(exiting) (see below). Here is tt(killChild)'s
+implementation:
+        verbinsert(KILL)(examples/monitor/monitor.cc)
+    Having terminated the specified child process, the corresponding tt(Child)
+object is destroyed and its pointer is removed from tt(d_child):
+        verbinsert(STOP)(examples/monitor/stopchild.cc)
+    it() The command tt(<nr> text) sends tt(text) to child process tt(nr)
+using the member function tt(sendChild). This function also uses a tt(Find)
+object to locate the child-process having order number tt(nr), and simply
+inserts the text into the writing end of a pipe connected to that child
+process:
+        verbinsert(SEND)(examples/monitor/sendchild.cc)
+    it() When users enter tt(exit) or tt(quit) the member tt(exiting) is
+called.  It terminates all child processes using the ti(for_each) generic
+algorithm (see section ref(FOREACH)) to visit all elements of
+tt(d_child). Then the program itself ends:
+        verbinsert(EXIT)(examples/monitor/monitor.cc)
+    )
+    The program's tt(main) function is simple and needs no further comment:
+        verbinsert(MAIN)(examples/monitor/main.cc)

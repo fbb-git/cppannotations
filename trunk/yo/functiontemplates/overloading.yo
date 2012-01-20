@@ -1,0 +1,102 @@
+Let's once again look at our tt(add) template. That template was designed to
+return the sum of two entities. If we would want to compute the sum of three
+entities, we could write:
+        verb(
+    int main()
+    {
+        add(add(2, 3), 4);
+    }
+        )
+    This is an acceptable solution for the occasional situation. However, if
+we would have to add three entities regularly, an em(overloaded) version of
+the tt(add) function expecting three arguments might be a useful function to
+have. There's a simple solution to this problem: function templates may be
+        hi(overloading: function template)
+        hi(function template: overloading)
+overloaded.
+
+    To define an overloaded function template, merely put multiple definitions
+of the template in its header file. For the tt(add) function this would boil
+down to:
+        verb(
+    template <typename Type>
+    Type add(Type const &lvalue, Type const &rvalue)
+    {
+        return lvalue + rvalue;
+    }
+    template <typename Type>
+    Type add(Type const &lvalue, Type const &mvalue, Type const &rvalue)
+    {
+        return lvalue + mvalue + rvalue;
+    }
+        )
+    The overloaded function does not have to be defined in terms of simple
+values. Like all overloaded functions, a unique set of function parameters is
+enough to define an overloaded function template. For example, here's an
+overloaded version that can be used to compute the sum of the elements of a
+vector:
+        verb(
+    template <typename Type>
+    Type add(std::vector<Type> const &vect)
+    {
+        return accumulate(vect.begin(), vect.end(), Type());
+    }
+        )
+
+COMMENT(OVERLOADING FUNCTION TEMPLATE PARAMETERS)
+
+    When overloading function templates we do not have to restrict ourselves
+to the function's parameter list. The template's type parameter list itself
+may also be
+        hi(templates: overloading type parameter list)
+    overloaded. The last definition of the tt(add) template allows us to
+specify a tt(vector) as its first argument, but no tt(deque) or
+tt(map). Overloaded versions for those types of containers could of course be
+constructed, but how far should we go? A better approach seems to be to look
+for common characteristics of these containers. If found we may be able to
+define an overloaded function template based on these common
+characteristics. One common characteristic of the mentioned containers is that
+they all support tt(begin) and tt(end) members, returning iterators. Using
+this, we could define a template type parameter representing containers that
+must support these members. But mentioning a plain `container type' doesn't
+tell us for what type of data it was instantiated. So we need a second
+template type parameter representing the container's data type, thus
+overloading the template's type parameter list. Here is the resulting
+overloaded version of the tt(add) template:
+        verb(
+    template <typename Container, typename Type>
+    Type add(Container const &cont, Type const &init)
+    {
+        return std::accumulate(cont.begin(), cont.end(), init);
+    }
+        )
+    One may wonder whether the tt(init) parameter could not be left out of the
+parameter list as tt(init) often has a default initialization value. The
+answer is `yes', but there are complications. It em(is) possible to define the
+tt(add) function as follows:
+        verb(
+    template <typename Type, typename Container>
+    Type add(Container const &cont)
+    {
+        return std::accumulate(cont.begin(), cont.end(), Type());
+    }
+        )
+    Note, however, that the template's type parameters were reordered, which
+is necessary because the compiler won't be able to determine tt(Type) in a
+call like:
+        verb(
+    int x = add(vectorOfInts);
+        )
+    After reordering the template type parameters, putting tt(Type) first, an
+explicit template type argument can be provided for the first template type
+parameter:
+        verb(
+    int x = add<int>(vectorOfInts);
+        )
+    In this example we provided a tt(vector<int>) argument. One might wonder
+why we have to specify tt(int) explicitly to allow the compiler to determine
+the template type parameter tt(Type). In fact, we don't. A third kind of
+template parameter exists, a em(template template parameter), allowing the
+compiler to determine tt(Type) directly from the actual container
+argument. Template template parameters are discussed in section
+ref(TEMPTEMPPAR).

@@ -1,0 +1,50 @@
+An essential characteristic of programming languages is that they allow the
+conditional execution of code. For this bf(C++) offers the tt(if) and
+tt(switch) statements. If we want to be able to `program the compiler'
+this feature must also be offered by templates.
+
+Like templates storing values templates making choices do not require any code
+to be executed at run-time. The selection is purely made by the compiler, at
+compile-time. The essence of template meta programming is that we are em(not)
+using or relying on any executable code.  The result of a template meta
+program often is executable code, but that code is a function of decisions
+merely made by the compiler.
+
+Template (member) functions are only instantiated when they are actually
+used. Consequently we can define specializations of functions that are
+mutually exclusive. Thus it is possible to define a specialization that can be
+compiled in situation one, but not in situation two and to define another
+specialization that can be compiled in situation two, but not in situation
+one. Using specializations code can be generated that is tailored to the
+demands of a particular situation.
+
+A feature like this cannot be implemented in run-time executable code. For
+example, when designing a generic storage class the software engineer may
+intend to store em(value class) type objects as well as objects of
+em(polymorphic class) types in the final storage class. Thus the software
+engineer may conclude that the storage class should contain pointers to
+objects, rather than the objects themselves. The initial implementation
+attempt could look like this:
+        verb(
+    template <typename Type>
+    void Storage::add(Type const &obj)
+    {
+        d_data.push_back(
+            d_ispolymorphic ?
+                obj.clone()
+            :
+                new Type(obj)
+        );
+    }
+        )
+    The intent is to use the tt(clone) member function of the class tt(Type)
+if tt(Type) is a polymorphic class and the standard copy constructor if
+tt(Type) is a value class.
+
+    Unfortunately, this scheme usually fails as value classes do not define
+tt(clone) member functions and polymorphic base classes should em(delete)
+their copy constructors (cf. section ref(DEFAULTED)). It doesn't matter to the
+compiler that tt(clone) is never called for value classes and that the copy
+constructor is only available in value classes and not in polymorphic
+classes. It merely has some code to compile, and can't do that because of
+missing members. It's as simple as that.

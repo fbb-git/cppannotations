@@ -1,0 +1,32 @@
+The hi(static_assert)
+        verb(
+    static_assert(constant expression, error message)
+        )
+    utility is defined by the C++11 standard to allow assertions to be made
+within template definitions. Here are two examples of its use:
+        verb(
+    static_assert(BUFSIZE1 == BUFSIZE2,
+                                "BUFSIZE1 and BUFSIZE2 must be equal");
+
+    template <typename Type1, typename Type2>
+    void rawswap(Type1 &type1, Type2 &type2)
+    {
+        static_assert(sizeof(Type1) == sizeof(Type2),
+                        "rawswap: Type1 and Type2 must have equal sizes");
+        // ...
+    }
+        )
+    The first example shows how to avoid yet another preprocessor directive
+        hi(preprocessor directive: error vs. static_assert)
+ (in this case the ti(#error) directive).
+
+The second example shows how tt(static_assert) can be used to ensure that
+a template operates under the right condition(s).
+
+The string defined in tt(static_assert)'s second argument is displayed and
+compilation stops if the condition specified in tt(static_assert)'s first
+argument is tt(false).
+
+Like the tt(#error) preprocessor directive tt(static_assert) is a
+i(compile-time) matter that doesn't have any effect on the i(run-time)
+efficiency of the code in which it is used.

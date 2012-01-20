@@ -1,0 +1,33 @@
+Manipulators taking arguments are implemented as hi(macro) macros: they are
+handled by the i(preprocessor), and are not available beyond the preprocessing
+stage.  The problem appears to be that you can't call a function in an
+insertion sequence: when using multiple oplshift() operators in one statement
+the compiler calls the functions, saves their return values, and then
+uses their return values in the insertion sequence. That invalidates the
+ordering of the arguments passed to your lshift()-operators.
+
+So, one might consider constructing another overloaded oplshift() accepting
+the address of a function receiving not just the ti(ostream) reference, but a
+series of other arguments as well. But this creates the problem that it isn't
+clear how the function should receive its arguments: you can't just call it
+since that takes us back to the above-mentioned problem.  Merely passing its
+address is fine, but then no arguments can be passed to the function.
+
+There exists a solution, based on the use of hi(anonymous object) anonymous
+objects:
+    itemization(
+    it() First, a class is constructed, e.g. tt(Align), whose
+i(constructor) expects multiple arguments. In our example representing,
+respectively, the field width and the alignment.
+    it() Furthermore, we define the function:
+            verb(
+        ostream &operator<<(ostream &ostr, Align const &align)
+            )
+        so we can insert an tt(Align) object into the ostream.
+    )
+    Here is an example of a little program using such a em(home-made)
+manipulator expecting multiple arguments:
+        verbinclude(examples/manipulator.cc)
+    Note that in order to insert an anonymous tt(Align) object into the
+tt(ostream), the oplshift() function em(must) define a tt(Align const &)
+parameter (note the tt(const) modifier).

@@ -1,0 +1,73 @@
+The following  protected members are available for output
+operations. Again, some members may be overridden by derived classes:
+    itemization(
+    ithtq(overflow)
+        (virtual int overflow(int c))
+       (This member function may be overridden by derived classes to flush the
+        characters currently stored in the output buffer to the output device,
+        and then to reset the output buffer pointers so as to represent an
+        empty buffer. Its parameter tt(c) is initialized to the next character
+        to be processed. If no output buffering is used tt(overflow) is called
+        for every single character that is written to the tt(streambuf)
+        object. No output buffering is accomplised by setting the buffer
+        pointers (using, tt(setp), see below) to 0. The
+        i(default implementation) returns endOfFile(), indicating that no
+        characters can be written to the device.
+
+        Classes derived from tt(streambuf) for writing normally at least
+        override tt(overflow). The prototypical example of an overridden
+        tt(overflow) function looks like this:
+            verb(
+    int OFdStreambuf::overflow(int c)
+    {
+        sync();                             // flush the buffer
+        if (c != EOF)                       // write a character?
+        {
+            *pptr() = static_cast<char>(c); // put it into the buffer
+            pbump(1);                       // advance the buffer's pointer
+        }
+        return c;
+    }
+            )
+        )
+    ithtq(pbase)
+        (char *pbase())
+       (tt(Streambuf) maintains three pointers controlling its output buffer:
+        tt(pbase) points to the beginning of the output buffer area. See also
+        figure ref(SBBUFFERS).)
+    ithtq(pptr)
+        (char *epptr())
+       (tt(Streambuf) maintains three pointers controlling its output buffer:
+        tt(epptr) points just beyond the output buffer's last available
+        location. See also figure ref(SBBUFFERS). If tt(pptr) (see below)
+        equals tt(epptr) the buffer must be flushed. This is implemented by
+        calling tt(overflow), see before.)
+    ithtq(pbump)
+        (void pbump(int n))
+       (The location returned by tt(pptr) (see below) is advanced by
+        tt(n). The next character written to the stream will be entered at
+        that location.)
+    ithtq(pptr)
+        (char *pptr())
+       (tt(Streambuf) maintains three pointers controlling its output buffer:
+        tt(pptr) points to the location in the output buffer where the next
+        available character should be written. See also figure
+        ref(SBBUFFERS).)
+    ithtq(setp)
+        (void setp(char *beg, char *beyond))
+       (tt(Streambuf)'s output buffer is initialized to the locations passed
+        to tt(setp). tt(Beg) points to the beginning of the output buffer and
+        tt(beyond) points just beyond the last available location of the
+        output buffer. Use tt(setp(0, 0)) to indicate that i(no buffering)
+        should be used. In that case tt(overflow) is called for every single
+        character to write to the device.)
+    ithtq(xsputn)
+        (virtual streamsize xsputn(char const *buffer, streamsize n))
+       (This member function may be overridden by derived classes to write a
+        series of at most tt(n) characters to the output buffer. The actual
+        number of inserted characters is returned. If endOfFile() is returned
+        writing to the device stops. The default implementation
+        calls tt(sputc) for each individual character, so redefining this
+        member is only necessary if a more efficient implementation is
+        required.)
+    )

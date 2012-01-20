@@ -1,0 +1,73 @@
+When the compiler encounters a function call, it must decide which function to
+call when overloaded functions are available. Earlier we've encountered
+principles like `the most specific function is selected'. This is a
+fairly intuitive description of the compiler's i(function selection) mechanism.
+In this section we'll have a closer look at this mechanism.
+
+Assume we ask the compiler to compile the following tt(main) function:
+        verb(
+    int main()
+    {
+        process(3, 3);
+    }
+        )
+    Furthermore assume that the compiler has encountered the following
+function declarations when it's about to compile tt(main):
+        verb(
+    template <class T>
+    void process(T &t1, int i);                 // 1
+
+    template <class T1, class T2>
+    void process(T1 const &t1, T2 const &t2);   // 2
+
+    template <class T>
+    void process(T const &t, double d);         // 3
+
+    template <class T>
+    void process(T const &t, int i);            // 4
+
+    template <>
+    void process<int, int>(int i1, int i2);     // 5
+
+    void process(int i1, int i2);               // 6
+
+    void process(int i, double d);              // 7
+
+    void process(double d, int i);              // 8
+
+    void process(double d1, double d2);         // 9
+
+    void process(std::string s, int i)          // 10
+
+    int add(int, int);                          // 11
+        )
+    The compiler, having read tt(main)'s statement, must now decide which
+function must actually be called. It proceeds as follows:
+    itemization(
+    it() First, a set of
+ hi(functions: candidate) emi(candidate functions) is constructed. This set
+contains all functions that:
+        itemization(
+        it() are visible at the point of the call;
+        it() have the same names as the called function.
+        )
+        As function 11 has a different name, it is removed from the set. The
+compiler is left with a set of 10 candidate functions.
+
+    it() Second, the set of
+ hi(functions: viable) emi(viable functions) is constructed. Viable functions
+are functions for which i(type conversions) exist that can be applied so as to
+match the types of the function's parameters to the types of the actual
+arguments.
+
+This implies that at least the number of arguments must match the number of
+parameters of the viable functions. Function 10's first argument is a
+tt(string). As a tt(string) cannot be initialized by an tt(int) value no
+approprate conversion exists and function 10 is removed from the list of
+candidate functions.  tt(double) parameters can be retained. Standard
+conversions em(do) exists for tt(int)s to tt(double)s, so all functions having
+ordinary tt(double) parameters can be retained. Therefore, the set of viable
+functions consists of functions 1 through 9.
+    )
+    At this point the compiler tries to determine the types of the template
+type parameters. This step is outlined in the following subsection.

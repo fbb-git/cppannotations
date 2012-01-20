@@ -1,0 +1,27 @@
+Most often a tt(shared_ptr) hi(shared_ptr: initialization) is initialized by a
+dynamically allocated block of memory. The generic form is:
+        verb(
+    shared_ptr<type> identifier(new-expression [, deleter]);
+        )
+    The second argument (tt(deleter)) is optional and 
+ hi(deleter) refers to a function object or free function handling the
+destruction of the allocated memory. A deleter is used, e.g., in situations
+where a double pointer is allocated and the destruction must visit each nested
+pointer to destroy the allocated memory (see below for an illustration).  It
+is used in situations comparable to those encountered with tt(unique_ptr)
+(cf. section ref(UNIQUENEW)).
+
+    Here is an example initializing a tt(shared_ptr) pointing to a tt(string)
+object:
+        verb(
+    shared_ptr<string> strPtr(new string("Hello world"));
+        )
+    The argument that is passed to the constructor is the pointer returned by
+tt(operator new). Note that tt(type) does em(not) mention the pointer.  The
+hi(shared_ptr: used type) type that is used in the tt(shared_ptr) construction
+is the same as the type that is used in tt(new) expressions.
+
+The next example illustrates that two tt(shared_ptrs) indeed share their
+information. After modifying the information controlled by one of the
+objects the information controlled by the other object is modified as well:
+        verbinclude(examples/sharedinsert.cc)

@@ -1,0 +1,60 @@
+Usually, types have names. But an emi(anonymous type) may also be defined:
+        verb(
+    enum
+    {
+        V1, 
+        V2,
+        V3
+    };
+        )
+    Here, the tt(enum) defines an hi(unnamed type) em(unnamed) or
+        hi(type: anonymous, local)
+    emi(anonymous type).
+
+    When defining a function template, the compiler normally 
+deducts the types of its template type parameters from its arguments:
+        verb(
+    template <typename T>
+    void fun(T &&t);
+
+    fun(3);     // T is int
+    fun('c');   // T is char
+        )
+    C++11, however, also allows the following to be used:
+        verb(
+    fun(V1);    // T is a value of the above enum type
+        )
+    Within tt(fun) a tt(T) variable may be defined, even if it's an anonymous
+type: 
+        verb(
+    template <typename T>
+    void fun(T &&t)
+    {
+        T var(t);
+    }
+        )
+
+    C++11 also allows values or objects of 
+        hi(local type)
+    locally defined types to be passed as arguments to function
+templates. E.g.,
+        verb(
+    void definer()
+    {
+        struct Local
+        {
+            double  dVar;
+            int     iVar;
+        };
+        Local local;            // using a local type
+        
+        fun(local);             // OK: T is 'Local'
+    }
+        )
+                
+
+
+    
+
+
+

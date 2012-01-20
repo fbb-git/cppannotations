@@ -1,0 +1,78 @@
+void tryCompile(string source)
+{
+    string obj;
+
+    obj = change_ext(source, "o");
+
+    if (obj newer source)
+        return;
+
+    if (strfind("koenig4.cc"
+                "personconstr.cc"
+                "stringsmove.cc"
+                "binarystring.cc"
+                "stringconversionerror.cc"
+                "binaryambigu.cc"
+                "binary1.cc"
+                "virtconsorg.cc"
+                "refwrap.cc"
+                "ambiguous2.cc"
+                "ambiguous.cc"
+                "buffer.cc"
+                "perfect.cc"
+                "basename1.cc"
+                , source) != -1)
+        return;
+
+    system("g++ --std=c++0x -c " + source);
+}
+
+void compile(string dir)
+{
+    list sources;
+    int idx;
+
+    chdir(dir);
+    printf(dir, "\n");
+
+    sources = makelist("*.cc");
+
+    for (idx = sizeof(sources); idx--; )
+        tryCompile(sources[idx]);
+}
+    
+
+void examples()
+{
+    list dirs;
+    int idx;
+    string cwd;
+
+    cwd = chdir("yo");
+
+    dirs = strtok(
+            "intro/examples:first/examples:namespaces/examples:"
+            "string/examples:iostreams/examples:iostreams/cc:"
+            "classes/examples:memory/examples:exceptions/examples:"
+            "overloading/examples:containers/examples:"
+            "containers/queue:containers/set:inheritance/examples:"
+            "polymorphism/examples:pointermembers/examples:nested/examples:"
+            "stl/examples:generic/examples:functiontemplates/examples:"
+            "classtemplates/examples:advancedtemplates/examples:"
+            "concrete/examples:concrete/examples/monitor"
+            , 
+            ":");
+
+    for (idx = sizeof(dirs); idx--; )
+    {
+        compile(dirs[idx]);
+        chdir(cwd);
+    }
+
+    system(P_NOCHECK, "find ./ -type f -name *.o -delete");
+    exit(0);
+}
+
+
+
+

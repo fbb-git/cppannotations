@@ -1,0 +1,39 @@
+In the i(ANSI/ISO) standard does not include the previously available i(Gnu)
+extension ti(form()) (and ti(scan())) for stream objects. In this section the
+construction of a class ti(oformstream) is described, which is derived from
+    hi(derived class) ti(ostream) and does support tt(form()) and
+ti(vform()). Analogously to tt(oformstream) a tt(class) ti(iscanstream) can be
+developed, supporting tt(scan()) and ti(vscan()). The contruction of this
+latter class is left as an i(exercise) to the reader.
+
+    Here is the class interface and definition. It is annotated below:
+        verbinclude(examples/oformstream.h)
+    itemization(
+    it() At 1 the class is defined: it is derived from tt(ostream), so it
+inherits tt(ostream)'s capabilities.
+    it() At 2 a simple constructor is defined. It expects a reference to a
+tt(std::ostream) object.
+    it() At 3 the member tt(form()) is declared. Its definition is given
+shortly.
+    )
+
+    A program using the class tt(oformstream) is given in the next
+example. It prints a well-known string and some marker text:
+        verbinclude(examples/oformstream.cc)
+
+    In the above example:
+    itemization(
+    it() At 1 the function tt(form()) is defined.
+    it() At 2 the function ti(vsnprintf()) is given a buffer size of 0 and
+tt(0) as the pointer to the buffer. According to the ti(ISO/IEC 9899:1999)
+standard, the function tt(vsnprintf()) returns the number of required
+characters for the formatted string (not including the final emi(ASCII-Z)
+value) (see the tt(vsnprintf()) man page for details and possible alternative
+implementations of tt(vsnprintf())).
+    it() At 3 an ti(auto_ptr) is used to manage the dynamically
+        hi(dynamic allocation) allocated buffer.
+    it() At 4 the text is formatted.
+    it() At 5 the contents of the buffer
+are written to the tt(ostream) base class, and the tt(oformstream) object is
+returned.
+    )

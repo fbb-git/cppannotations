@@ -1,0 +1,35 @@
+As with classes using composition derived classes may benefit from defining a
+ i(move constructor).
+A derived class may offer a move constructor for two reasons:
+    itemization(
+    it() it supports move construction for its  data members
+    it() its base class is move-aware
+    )
+
+    The design of move constructors moving data members was covered in section
+ref(MOVE). A move constructor for a derived class whose base class is
+move-aware must em(anonimize) the rvalue reference before passing it to the
+base class move constructor. The tt(std::move) function should be used when
+implementing the move constructor to move the information in base classes or
+composed objects to their new destination object.
+
+    The first example shows the move constructor for the class tt(Auto),
+assuming it has a movable tt(char *d_brandName) data member and
+assuming that tt(Land) is a move-aware class. The second example shows the
+move constructor for the class tt(Land), assuming that it does not itself have
+movable data members, but that its tt(Vehicle) base class is move-aware:
+        verb(
+    Auto::Auto(Auto &&tmp)
+    :
+        Land(std::move(tmp)),           // anonimize `tmp'
+        d_brandName(tmp.d_brandName)    // move the char *'s value
+    {
+        tmp.d_brandName = 0;
+    }
+
+    Land(Land &&tmp)
+    :
+        Vehicle(std::move(tmp)),    // move-aware Vehicle
+        d_speed(tmp.d_speed)        // plain copying of plain data
+    {}
+        )

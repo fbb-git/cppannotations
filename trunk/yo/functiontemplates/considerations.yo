@@ -1,0 +1,193 @@
+We've managed to design our first function template:
+        verbinclude(examples/add.h)
+    Look again at tt(add)'s parameters.  By specifying tt(Type const &)
+rather than tt(Type) superfluous copying is prevented, at the same time
+allowing values of primitive types to be passed as arguments to the
+function. So, when tt(add(3, 4)) is called, tt(int(4)) is assigned to
+tt(Type const &rvalue). In general, function parameters should be defined as
+tt(Type const &) to prevent unnecessary copying. The compiler is smart enough
+to handle `references to references' in this case, which is something the
+language normally does not support. For example, consider the following
+tt(main) function (here and in the following simple examples it is assumed
+that the template and the required headers and namespace declarations have
+been provided):
+        verb(
+    int main()
+    {
+        size_t const &var = size_t(4);
+        cout << add(var, var) << '\n';
+    }
+        )
+    Here tt(var) is a reference to a constant tt(size_t). It is passed as
+argument to tt(add), thereby initializing tt(lvalue) and tt(rvalue) as tt(Type
+const &) to tt(size_t const &) values. The compiler interprets tt(Type) as
+tt(size_t). Alternatively, the parameters might have been specified using
+tt(Type &), rather than tt(Type const &). The disadvantage of this (non-const)
+specification being that temporary values cannot be passed to the function
+anymore. The following therefore fails to compile:
+        verb(
+    int main()
+    {
+        cout << add(string("a"), string("b")) << '\n';
+    }
+        )
+    Here, a tt(string const &) cannot be used to initialize a tt(string &).
+Had tt(add) defined tt(Type &&) parameters then the above program would have
+compiled just fine. In addition the following example correctly compiles as
+the compiler decides that tt(Type) apparently is a tt(string const):
+        verb(
+    int main()
+    {
+        string const &s = string("a");
+        cout << add(s, s) << '\n';
+    }
+        )
+    What can we deduce from these examples?
+    itemization(
+    it() In general, function parameters should be specified as tt(Type const
+&) parameters to prevent unnecessary copying.
+    it() The template mechanism is fairly flexible.  Formal types are
+interpreted as plain types, const types, pointer types, etc., depending on the
+actually provided types. The i(rule of thumb) is that the formal type is used
+as a generic mask for the actual type, with the formal type name covering
+whatever part of the actual type must be covered. Some examples, assuming the
+parameter is defined as tt(Type const &):
+            center(
+        table(2)(ll)(
+        rowline()
+        row(
+            cell(bf(Provided argument:)) cell(bf(Actually used Type:))
+        )
+        rowline()
+        row(
+            cell(tt(size_t const)) cell(tt(size_t))
+        )
+        row(
+            cell(tt(size_t)) cell(tt(size_t))
+        )
+        row(
+            cell(tt(size_t *)) cell(tt(size_t *))
+        )
+        row(
+            cell(tt(size_t const *)) cell(tt(size_t const *))
+        )
+        rowline()
+        )
+            )
+    )
+    As a second example of a function template, consider the following
+function template:
+        verb(
+    template <typename Type, size_t Size>
+    Type sum(Type const (&array)[Size])
+    {
+        Type tp = Type();
+
+        for (size_t idx = 0; idx < Size; idx++)
+            tp += array[idx];
+
+        return tp;
+    }
+        )
+    This template definition introduces the following new concepts and
+features:
+    itemization(
+    it() The emi(template parameter list). This template parameter list has
+two elements. The first element is a well-known template type parameter, but
+the second element has a very specific type: a tt(size_t). Template parameters
+of specific (i.e., non-formal) types used in template parameter lists are
+called
+ hi(template non-type parameter)em(template non-type parameters).
+    A template non-type parameter defines the type of a
+ i(constant expression), which must be known by the time the template is
+instantiated and which is specified in terms of existing types, such as a
+tt(size_t).
+    it() Looking at the function's head, we see one parameter:
+        verb(
+    Type const (&array)[Size]
+        )
+    This parameter defines tt(array) as a reference to an array having
+tt(Size) elements of type tt(Type) that may not be modified.
+    it() In the parameter definition, both tt(Type) and tt(Size) are
+used. tt(Type) is of course the template's type parameter tt(Type), but
+tt(Size) is also a template parameter. It is a tt(size_t), whose value must be
+inferable by the compiler when it compiles an actual call of the tt(sum)
+function template. Consequently, tt(Size) must be a tt(const) value. Such a
+constant expression is called a em(template non-type parameter), and its type
+is named in the template's parameter list.
+    it() When the function template is called, the compiler must be able to
+infer not only tt(Type)'s concrete value, but also tt(Size)'s value. Since
+the function tt(sum) only has one parameter, the compiler is only able to
+infer tt(Size)'s value from the function's actual argument. It can do so if
+the provided argument is an array (of known and fixed size) rather
+than a pointer to tt(Type) elements. So, in the following tt(main) function
+the first statement will compile correctly but the second statement
+will not:
+        verb(
+    int main()
+    {
+        int values[5];
+        int *ip = values;
+
+        cout << sum(values) << '\n';    // compiles OK
+        cout << sum(ip) << '\n';        // won't compile
+    }
+        )
+    it() Inside the function's body the statement tt(Type tp = Type()) is used
+to initialize tt(tp) to a default value. Note here that no fixed value (like
+0) is used. Any type's default value may be obtained using its default
+constructor
+ hi(template type: initialization)
+    rather than using a fixed numeric value. Of course, not every class
+accepts a numeric value as an argument to one of its constructors. But all
+types, even the primitive types, support default constructors (actually, some
+classes do not implement a default constructor, or make it inaccessible; but
+most do). The default constructor hi(constructor: primitive type) of primitive
+types initializes their variables to 0 (or tt(false)). Furthermore, the
+statement tt(Type tp = Type()) is a true initialization: tt(tp) is initialized
+by tt(Type)'s default constructor, rather than using tt(Type)'s copy
+constructor to assign tt(Type)'s copy to tt(tp).
+
+    It's interesting to note here (although not directly related to the
+current topic) that the syntactic construction tt(Type tp(Type())) em(cannot)
+be used, even though it also looks like a proper initialization. Usually an
+initializing argument can be provided to an object's definition, like
+tt(string s("hello")). Why, then, is tt(Type tp = Type()) accepted, whereas
+tt(Type tp(Type())) isn't?  When tt(Type tp(Type())) is used it won't result
+in an error message. So we don't immediately detect that it's em(not) a
+tt(Type) object's default initialization. Instead, the compiler starts
+generating error messages once tt(tp) is used. This is caused by the fact that
+in bf(C++) (and in bf(C) alike) the compiler does its best to recognize a
+function or
+ hi(C++: function prevalence rule) function pointer whenever possible: the
+emi(function prevalence rule).  According to this rule tt(Type()) is (because
+of the pair of parentheses) interpreted as a em(pointer to a function)
+expecting no arguments; returning a tt(Type). The compiler will do so unless
+it clearly isn't possible to do so. In the initialization tt(Type tp = Type())
+it em(can't) see a pointer to a function as a tt(Type) object cannot be given
+the value of a function pointer (remember: tt(Type()) is interpreted as
+tt(Type (*)()) whenever possible). But in tt(Type tp(Type())) it em(can) use
+the pointer interpretation: tt(tp) is now em(declared) as a em(function)
+expecting a pointer to a function returning a tt(Type), with tt(tp) itself
+also returning a tt(Type). E.g., tt(tp) could have been defined as:
+        verb(
+    Type tp(Type (*funPtr)())
+    {
+        return (*funPtr)();
+    }
+        )
+    it() Comparable to the first function template, tt(sum) also assumes the
+existence of certain public members in tt(Type)'s class. This time
+tt(operator+=) and tt(Type)'s copy constructor.
+    )
+
+    Like class definitions, template definitions should not contain tt(using)
+        hi(templates vs. using)hi(using vs. templates)
+    directives or declarations: the template might be used in a situation
+where such a directive overrides the programmer's intentions: ambiguities or
+other conflicts may result from the template's author and the programmer using
+different tt(using) directives (E.g, a tt(cout) variable defined in the
+tt(std) namespace and in the programmer's own namespace). Instead, within
+template definitions only hi(fully qualified name)hi(name: fully qualified)
+fully qualified names, including all required namespace specifications should
+be used.

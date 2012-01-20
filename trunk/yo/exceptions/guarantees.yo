@@ -1,0 +1,70 @@
+Software should be emi(exception safe): the program should continue to work
+according to its specifications in the face of exceptions. It is not always
+easy to realize exception safety. In this section some guidelines and
+terminology is introduced when discussing exception safety.
+
+Since exceptions may be generated from within all bf(C++) functions,
+exceptions may be generated in many situations. Not all of these situations
+are immediately and intuitively recognized as situations where exceptions can
+be thrown. Consider the following function and ask yourself at which points
+exceptions may be thrown:
+        verb(
+    void fun()
+    {
+        X x;
+        cout << x;
+        X *xp = new X(x);
+        cout << (x + *xp);
+        delete xp;
+    }
+        )
+    If it can be assumed that tt(cout) as used above does not throw an
+exception there are at least 13 opportunities for exceptions to be thrown:
+    itemization(
+    it() tt(X x): the default constructor could throw an exception (#1)
+    it() tt(cout << x): the overloaded insertion operator could throw an
+exception (#2), but its rvalue argument might not be an tt(X) but, e.g., an
+tt(int), and so tt(X::operator int() const) could be called which offers yet
+another opportunity for an exception (#3).
+    it() tt(*xp = new X(x)): the copy constructor may throw an exception (#4)
+and operator new (#5a) too. But did you realize that this latter exception
+might not be thrown from tt(::new), but from, e.g., tt(X)'s own overload of
+tt(operator new)? (#5b)
+    it() tt(cout << (x + *xp)): we might be seduced into thinking that two
+tt(X) objects are added. But it doesn't have to be that way. A separate class
+Y might exist and tt(X) may have a conversion operator tt(operator Y() const),
+and tt(operator+(Y const &lhs, X const &rhs), operator+(X const &lhs, Y const
+&rhs)), and tt(operator+(X const &lhs, X const &rhs)) might all exist. So, if
+the conversion operator exists, then depending on the kind of overload of
+tt(operator+) that is defined either the addition's left-hand side operand
+(#6), right-hand side operand (#7), or tt(operator+) itself (#8) may throw an
+exception. The resulting value may again be of any type and so the overloaded
+tt(cout << return-type-of-operator+) operator may throw an exception
+(#9). Since tt(operator+) returns a temporary object it is destroyed shortly
+after its use. tt(X)'s destructor em(could) throw an exception (#10).
+    it() tt(delete xp): whenever tt(operator new) is overloaded tt(operator
+delete) should be overloaded as well and may throw an exception (#11). And of
+course, tt(X)'s destructor might again throw an exception (#12).
+    it() tt(}): when the function terminates the local tt(x) object is
+destroyed: again an exception could be thrown (#13).
+        )
+ It is stressed here (and further discussed in section ref(CONSEXCEPTIONS))
+that although it is possible for exceptions to leave
+destructors this would violate the bf(C++) standard and so it must be
+prevented in well-behaving bf(C++) programs.
+
+How can we expect to create working programs when exceptions might be thrown
+at this many situations?
+
+Exceptions may be generated in a great many situations, but serious
+problems are prevented when we're able to provide at least one of the
+following i(exception guarantees):
+    itemization(
+    it() The em(basic guarantee): no resources are leaked. In practice this
+means: all allocated memory is properly returned when exceptions are thrown.
+    it() The em(strong guarantee): the program's state remains unaltered when
+an exception is thrown (as an example: the canonical form of the overloaded
+assignment operator provides this guarantee)
+    it() The em(nothrow) guarantee: this applies to code for which it can be
+proven that no exception can be thrown from it.
+    )

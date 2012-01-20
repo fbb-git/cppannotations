@@ -1,0 +1,212 @@
+string stringlist(string path, string subdir, string pattern)
+{
+    list lst;
+    string entry;
+    int idx;
+    string ret;
+
+    path += subdir + "/";
+    chdir(subdir);
+
+    lst = makelist(O_SUBDIR, "*");
+
+    for (idx = sizeof(lst); idx--; )
+        ret += stringlist(path, element(idx, lst), pattern);
+
+    lst = makelist(pattern);
+
+    for (idx = sizeof(lst); idx--; )
+        ret +=  path + element(idx, lst) + " ";
+
+    chdir("..");
+
+    return ret;
+}
+
+void cleanup(string task, string files)
+{
+    list filelist;
+    int idx;
+
+    filelist = strtok(files, " ");
+    
+    if (!exists("tmp/" + task + "-stamp"))
+    {
+        for (idx = sizeof(filelist); idx--; )
+            system("tmp/bin/" + task + " -q " + element(idx, filelist));
+        run("touch tmp/" + task + "-stamp");
+    }
+}
+
+void txtdoc()
+{
+    if (!exists("tmp/docs/txt/cplusplus.txt"))
+    {
+        chdir("yo");
+        system("yodl2txt --no-warnings "
+                "-o ../tmp/docs/txt/cplusplus.txt -l3 cplusplus");
+        chdir("..");
+    }
+}
+
+void htmldoc()
+{
+    list htmlList;
+    int idx;
+    string html;
+
+                                    // cp necessary files for HTML
+    if (!exists("tmp/docs/html/annotations.gif"))
+        system("cp -r html/* tmp/docs/html");
+
+    if (!exists("tmp/docs/html/cplusplus.html"))
+    {
+        chdir("yo");
+        system("yodl2html --no-warnings -l3 cplusplus");
+        system("mv *.html ../tmp/docs/html");
+        chdir("..");
+    }
+
+    chdir("tmp/docs/html");
+
+    if (!exists("index.html"))
+        system("cp ../../../single/* .");
+
+    htmlList = (list)"cplusplus.html" + makelist("cplusplus??.html");
+
+    if (!exists("../../html-stamp"))
+    {
+        for (idx = sizeof(htmlList); idx--; )
+        {
+            html = element(idx, htmlList);
+            system("../../../scripts/patchhtml < " + html + " > _" + html);
+            system("mv _" + html + " " + html);
+        }
+        run("touch ../../html-stamp");
+    }
+
+    if (!exists("contents.html"))
+        system("../../../scripts/htmlcontentspage > contents.html");
+
+    if (!exists("cppindex.html"))
+    {
+        system("grep '^<index' cplusplus.html cplusplus??.html > "
+                                                    "cplusplus.index");
+        system("../../bin/htmlindex < cplusplus.index > cppindex.html");
+    }
+
+    if (!exists("../../htmlidx-stamp"))
+    {
+        for (idx = sizeof(htmlList); idx--; )
+        {
+            html = element(idx, htmlList);
+            system("../../bin/rmindexlines < " + html + " > _" + html);
+            system("mv _" + html + " " + html);
+        }
+        run("touch ../../htmlidx-stamp");
+    }
+
+    chdir(g_cwd);
+}
+
+void latexdoc(string us)
+{
+    string basename;
+    string dvistamp;
+    string latexname;
+    string latexstamp;
+    string pdfname;
+    string psname;
+    string ulatexname;
+    string ulatexstamp;
+    string yodldefine;
+
+                                    // cp necessary files for LaTeX   
+    if (!exists("tmp/docs/latex/cplusplus.sty"))
+        system("cp -r latex/* tmp/docs/latex");
+
+                                    // assign file name variables
+    basename = "cplusplus" + us;
+    latexname = basename + ".latex";
+    ulatexname = "_" + latexname;
+
+    ulatexstamp = "tmp/_" + basename + "-stamp";
+
+                                    // create the _xxx.latex file
+    if (!exists(ulatexstamp))
+    {
+        chdir("yo");
+
+        if (us != "")
+            yodldefine = "--define " + us;
+
+        system("yodl2latex --no-warnings -l3 " + yodldefine +
+                " -o ../tmp/docs/latex/" + ulatexname + " cplusplus");
+        chdir("..");
+        system("touch " + ulatexstamp);
+    }
+
+
+    chdir("tmp/docs/latex");
+    latexstamp = "../../../tmp/" + basename + "-stamp";
+
+                                    // rm blanks around verb() statements
+    if (!exists(latexstamp))
+    {
+        system("../../../scripts/patchlatexverb <" + ulatexname +
+                                               ">" + latexname);
+        system("touch " + latexstamp);
+    }
+     
+                                    // make dvi-file   
+    dvistamp = "../../../tmp/dvi" + us + "-stamp";
+
+    if (!exists(dvistamp))
+    {        
+        system("latex " + latexname);
+        system("latex " + latexname);
+
+        system("sed 's/!/\"!/g' " + basename + ".idx |"
+                    " makeindex -i -o " + basename + ".ind");
+
+        system("../../../scripts/patchlatexidx " + us);
+        system("latex " + latexname);
+
+        system("rm _* *.out");
+        system("touch " + dvistamp);
+    }
+
+    psname = basename + ".ps";
+    if (basename + ".dvi" younger psname)
+        system("dvips -o" + psname + " " + basename);
+
+    pdfname = basename + ".pdf";
+    if (psname younger pdfname)
+        system("ps2pdf " + psname + " " + pdfname);
+
+    chdir(g_cwd);
+}
+
+
+void docs()
+{
+    man();
+
+    programs(1);
+
+    md("tmp/docs/txt tmp/docs/html tmp/docs/latex");
+
+    txtdoc();
+    htmldoc();
+    latexdoc("");
+    latexdoc("us");
+
+    exit(0);
+}
+
+
+
+
+
+
+

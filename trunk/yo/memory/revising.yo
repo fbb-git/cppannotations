@@ -1,0 +1,72 @@
+ The overloaded assignment operator has characteristics also encountered with
+the copy constructor and the destructor:
+    itemization(
+    it() The em(copying of (private) data) occurs (1) in the copy constructor
+and (2) in the overloaded assignment function.
+    it() Allocated memory is deleted (1) in the overloaded assignment function
+and (2) in the destructor.
+    )
+    The copy constructor and the destructor clearly are required. If the
+overloaded assignment operator also needs to return allocated memory and to
+assign new values to its data members couldn't the destructor and copy
+constructor be used for that?
+
+    As we've seen in our discussion of the destructor (section
+ref(DESTRUCTOR)) the destructor can explicitly be called, but that doesn't
+hold true for the (copy) constructor. But let's briefly summarize what an
+overloaded assignment operator is supposed to do:
+    itemization(
+    it() It should delete the dynamically allocated memory controlled by the
+current object;
+    it() It should reassign the current object's data members using a provided
+existing object of its class.
+    )
+    The second part surely looks a lot like copy construction. Copy
+construction becomes even more attractive after realizing that the copy
+constructor also initializes any reference data members the class might
+have. Realizing the copy construction part is easy: just define a local object
+and initialize it using the assignment operator's const reference parameter,
+like this:
+        verb(
+    Strings &operator=(Strings const &other)
+    {
+        Strings tmp(other);
+        // more to follow
+        return *this;
+    }
+        )
+    You may think the optimization tt(operator=(String tmp)) is attractive,
+but let's postpone that for a little while (at least until section ref(MOVE)).
+
+    Now that we've done the copying part, what about the deleting part? And
+isn't there another slight problem as well? After all we copied all right, but
+not into our intended (current, tt(*this)) object.
+
+    At this point it's time to introduce em(swapping). Swapping two variables
+means that the two variables exchange their values. We'll discuss swapping in
+detail in the next section, but let's for now assume that we've added a member
+tt(swap(Strings &other)) to our class tt(Strings). This allows us to
+complete tt(String)'s tt(operator=) implementation:
+        verb(
+    Strings &operator=(Strings const &other)
+    {
+        Strings tmp(other);
+        swap(tmp);
+        return *this;
+    }
+        )
+    This implementation of tt(operator=) is generic: it can be applied to
+every class whose objects are swappable. How does it work?
+    itemization(
+    it() The information in the tt(other) object is used to initialize a
+local tt(tmp) object. This takes care of the copying part of the assignment
+operator;
+    it() Calling tt(swap) ensures that the current object receives its new
+values (with tt(tmp) receiving the current object's original values);
+    it() When tt(operator=) terminates its local tt(tmp) object ceases to
+exist and its destructor is called. As it by now contains the data previously
+owned by the current object, the current object's original data are now
+destroyed, effectively completing the destruction part of the assignment
+operation.
+    )
+    Nice?

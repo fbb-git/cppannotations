@@ -1,0 +1,81 @@
+Inline functions may be implemented em(in the class interface itself). For the
+class tt(Person) this results in the following implementation of tt(name):
+        verb(
+    class Person
+    {
+        public:
+            std::string const &name() const
+            {
+                return d_name;
+            }
+    };
+        )
+    Note that the i(inline) code of the function tt(name) now literally
+occurs inline in the interface of the class tt(Person). The keyword tt(const)
+is again added to the function's header.
+
+    Although members can be defined hi(members: in-class) em(in-class) (i.e.,
+inside the class interface itself), it is considered bad practice
+for the following reasons:
+    itemization(
+    it() Defining members inside the interface contaminates the interface with
+implementations. The interface's purpose is to document what functionality the
+class offers. Mixing member declarations and implementation details
+complicates understanding the interface. Readers need to skip implementation
+details which takes time and makes it hard to grab the `broad picture', and
+thus to understand at a glance what functionality the class's objects are
+offering.
+    it() In-class implementations of private member functions may usually be
+avoided altogether (as they are private members). They should be moved to the
+internal header file (em(unless) inline public members use such inline private
+members).
+    it() Although members that are eligible for inline-coding should remain
+inline, situations do exist where such inline members migrate from an inline
+to a non-inline definition. In-class inline definitions still need editing
+(sometimes considerable editing) before they can be compiled. This additional
+editing is undesirable.
+    )
+    Because of the above considerations inline members should not be defined
+in-class. Rather, they should be defined following the class interface. The
+tt(Person::name) member is therefore preferably defined as follows:
+        verb(
+    class Person
+    {
+        public:
+            std::string const &name() const;
+    };
+
+    inline std::string const &Person::name() const
+    {
+        return d_name;
+    }
+        )
+
+    If it is ever necessary to cancel tt(Person::name)'s inline
+implementation, then this becomes its non-inline implementation:
+        verb(
+    #include "person.ih"
+
+    std::string const &Person::name() const
+    {
+        return d_name;
+    }
+        )
+    Only the tt(inline) keyword needs to be removed to obtain the correct
+non-inline implementation.
+
+Defining members inline has the following effect: whenever an inline-defined
+function is called, the compiler may em(insert the function's body) at the
+location of the function call. It may be that the function itself is never
+actually called.
+
+This construction, where the function code itself is inserted rather than a
+call to the function, is called an i(inline function).  Note that using inline
+functions may result in multiple occurrences of the code of those functions in
+a program: one copy for each invocation of the inline function. This is
+probably OK if the function is a small one, and needs to be executed
+fast. It's not so desirable if the code of the function is extensive. The
+compiler knows this too, and handles the use of inline functions as a
+em(request) rather than a em(command). If the compiler considers the function
+too long, it will not grant the request. Instead it will treat the function as
+a normal function.

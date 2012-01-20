@@ -1,0 +1,88 @@
+    Classes not using pointer members pointing to memory controlled by its
+objects (and not having base classes doing so, see chapter ref(INHERITANCE))
+may also  benefit from overloaded members expecting rvalue references. The
+class benefits from move operations when one or more of the composed data
+members themselves support move operations.
+
+    Move operations cannot be implemented if the class type of a composed data
+member does not support moving or copying. Currently, tt(stream) classes fall
+into this category.
+
+    An example of a move-aware class is the class tt(std:string). A class
+tt(Person) could use composition by defining tt(std::string d_name) and
+tt(std::string d_address). Its move constructor would then have the following
+prototype:
+        verb(
+    Person(Person &&tmp);
+        )
+
+    However, the following implementation of this move constructor is
+incorrect:
+        verb(
+    Person::Person(Person &&tmp)
+    :
+        d_name(tmp.d_name),
+        d_address(tmp.d_address)
+    {}
+        )
+    It is incorrect as it tt(string)'s copy constructors rather than
+tt(string)'s move constructors are called. If you're wondering why this
+happens then remember that move operations are em(only) performed for
+anonymous objects. To the compiler anything having a name isn't anonymous. And
+so, by implication, having available a rvalue reference does em(not) mean that
+we're referring to an anonymous object. But we em(know) that the move
+constructor is only called for anonymous arguments. To use the corresponding
+tt(string) move operations we have to inform the compiler that we're talking
+about anonymous data members as well. For this a cast could be used (e.g.,
+tt(static_cast<Person &&>(tmp))), but the C++-0x standard provides the
+function
+ ti(std::move) to i(anonymize) a named object. The correct implementation of
+tt(Person)'s move construction is, therefore:
+        verb(
+    Person::Person(Person &&tmp)
+    :
+        d_name( std::move(tmp.d_name) ),
+        d_address( std::move(tmp.d_address) )
+    {}
+        )
+    The function tt(std::move) is (indirectly) declared by many header files.
+If no header is already declaring tt(std::move) then include ti(utility).
+
+    When a class using composition not only contains class type data members
+but also other types of data (pointers, references, primitive data types),
+then these other data types can be initialized as usual. Primitive data type
+members can simply be copied; references can be initialized as usual en
+pointers may use move operations as discussed in the previous section.
+
+The compiler never calls move operations for variables having names.  Let's
+consider the implications of this by looking at the next example, assuming
+tt(Class) offers a move constructor and a copy constructor:
+        verb(
+    Class factory();
+
+    void fun(Class const &other);   // a
+    void fun(Class &&tmp);          // b
+
+    void callee(Class &&tmp);
+    {
+        fun(tmp);                   // 1
+    }
+
+    int main()
+    {
+        callee(factory());
+    }
+        )
+    itemization(
+    it() At 1 function a is called. At first sight this might be surprising,
+but tt(fun)'s argument is not an em(anonymous) temporary object but a
+em(named) temporary object.
+    )
+    Realizing that tt(fun(tmp)) might be called twice the compiler's choice is
+understandable. If tt(tmp)'s data would have been grabbed at the first call,
+the second call would receive tt(tmp) without any data. But at the last call
+we might know that  tt(tmp) is never used again and so we might like to ensure
+that tt(fun(Class &&)) is called. For this, once again, tt(std::move) is used:
+        verb(
+    fun(std::move(tmp));            // last call!
+        )

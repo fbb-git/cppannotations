@@ -1,0 +1,43 @@
+    bf(C++)'s syntax allows for hi(assignment: sequential) sequential
+assignments, with the assignment operator associating from right to left. In
+statements like:
+        verb(
+    a = b = c;
+        )
+    the expression tt(b = c) is evaluated first, and its result in turn is
+assigned to tt(a).
+
+    The implementation of the overloaded assignment operator we've encountered
+thus far does not permit such constructions, as it returns tt(void).
+
+    This imperfection can easily be remedied using the tt(this) pointer. The
+overloaded assignment operator expects a reference to an object of its
+class. It can also em(return) a reference to an object of its class. This
+reference can then be used as an argument in sequential assignments.
+
+    The overloaded assignment operator commonly returns a reference to the
+current object (i.e., tt(*this)).  The next version of the overloaded
+assignment operator for the class tt(Person) thus becomes:
+        verb(
+    Person &Person::operator=(Person const &other)
+    {
+        delete[] d_address;
+        delete[] d_name;
+        delete[] d_phone;
+
+        d_address = strdupnew(other.d_address);
+        d_name = strdupnew(other.d_name);
+        d_phone = strdupnew(other.d_phone);
+
+        // return current object as a reference
+        return *this;
+    }
+        )
+    Overloaded operators may themselves be overloaded. Consider the tt(string)
+class, having overloaded assignment operators tt(operator=(std::string const
+&rhs), operator=(char const *rhs)), and several more overloaded
+versions. These additional overloaded versions are there to handle different
+situations which are, as usual, recognized by their argument types. These
+overloaded versions all follow the same mold: when necessary dynamically
+allocated memory controlled by the object is deleted; new values are assigned
+using the overloaded operator's parameter values and tt(*this) is returned.

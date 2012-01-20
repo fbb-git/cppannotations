@@ -1,0 +1,79 @@
+Obviously, the right way to assign one tt(Person) object to another, is
+bf(not) to copy the contents of the object bytewise. A better way is to
+make an equivalent object. One having its own allocated  memory containing
+copies of the original strings.
+
+The way to hi(object: assign) assign a tt(Person) object to another is
+illustrated in fig(rightass).
+    figure(memory/rightass)
+    (Private data and public interface functions of the class Person,
+     using the `correct' assignment.)
+    (rightass)
+    There are several ways to assign a tt(Person) object to another.  One way
+would be to define a special member function to handle the assignment. The
+purpose of this member function would be to create a copy of an object having
+its own tt(name), tt(address) and tt(phone) strings.  Such a member function
+could be:
+        verb(
+    void Person::assign(Person const &other)
+    {
+            // delete our own previously used memory
+        delete[] d_name;
+        delete[] d_address;
+        delete[] d_phone;
+
+            // copy the other Person's data
+        d_name    = strdupnew(other.d_name);
+        d_address = strdupnew(other.d_address);
+        d_phone   = strdupnew(other.d_phone);
+    }
+        )
+    Using tt(assign) we could rewrite the offending function tt(tmpPerson):
+        verb(
+    void tmpPerson(Person const &person)
+    {
+        Person tmp;
+
+            // tmp (having its own memory) holds a copy of person
+        tmp.assign(person);
+
+            // now it doesn't matter that tmp is destroyed..
+    }
+        )
+    This solution is valid, although it only tackles a symptom.  It
+requires the programmer to use a specific member function instead of the
+assignment operator. The original problem (assignment produces wild pointers)
+is still not solved. Since it is hard to `strictly adhere to a rule' a way to
+solve the original problem is of course preferred.
+
+    Fortunately a solution exists using em(operator overloading): the
+possibility bf(C++) offers to redefine the actions of an operator in a given
+context. Operator overloading was briefly mentioned earlier, when the
+operators lshift() and rshift() were redefined to be used with streams (like
+tt(cin), tt(cout) and tt(cerr)), see section ref(CoutCinCerr).
+
+    Overloading the assignment operator is probably the most common form of
+operator overloading in bf(C++). A word of warning is appropriate, though.
+The fact that bf(C++) allows i(operator overloading) does not mean that this
+feature should indiscriminately be used. Here's what you should keep in mind:
+    itemization(
+    it() operator overloading should be used in situations where an operator
+has a defined action, but this default action has undesired side effects in a
+given context. A clear example is the above assignment operator in the
+context of the class tt(Person).
+    it() operator overloading can be used in situations where the operator is
+commonly applied and no surprise is introduced when it's redefined. An example
+where operator overloading is appropriately used is found in the class
+tt(std::string): assiging one string object to another provides the
+destination string with a copy of the contents of the source string. No
+surprises here.
+    it() in all other cases a member function should be defined instead of
+redefining an operator.
+        )
+    An operator should simply do what it is designed to do. The phrase that's
+often encountered in the context of operator overloading is em(do as the
+tt(int)s do). The way operators behave when applied to tt(int)s is what is
+expected, all other implementations probably cause surprises and confusion.
+Therefore, overloading the insertion (lshift()) and extraction (rshift())
+operators in the context of streams is probably ill-chosen: the stream
+operations have nothing in common with bitwise shift operations.

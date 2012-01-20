@@ -1,0 +1,30 @@
+    Earlier, in section ref(REDIR) streams were hi(redirection) redirected
+using the hi(rdbuf)tt(ios::rdbuf) member function. By assigning the
+tt(streambuf) of a stream to another stream, both stream objects access the
+same tt(streambuf), thus implementing redirection at the level of the
+programming language itself.
+
+    This may be fine within the context of a bf(C++) program, but once we
+leave that context the redirection terminates.  The operating system does not
+know about tt(streambuf) objects. This situation is encountered, e.g., when a
+program uses a ti(system) call to start a subprogram. The example program at
+the end of this section uses bf(C++) redirection to redirect the information
+inserted into ti(cout) to a file, and then calls
+        verb(
+    system("echo hello world")
+        )
+    to echo a well-known line of text. Since tt(echo) writes its information
+to the standard output, this would be the program's redirected file if the
+operating system would recognize bf(C++)'s redirection.
+
+    But redirection doesn't happen. Instead, tt(hello world) still appears at
+the program's standard output and the redirected file is left untouched.  To
+write tt(hello world) to the redirected file redirection must be realized at
+the operating system level.  Some operating systems (e.g., i(Unix) and
+friends) provide system calls like ti(dup) and ti(dup2) to accomplish
+this. Examples of the use of these system calls are given in section
+ref(PIPE).
+
+    Here is the example of the em(failing redirection) at the system level
+following  bf(C++) redirection using tt(streambuf) redirection:
+        verbinclude(examples/noredir.cc)

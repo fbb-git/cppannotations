@@ -1,0 +1,68 @@
+Before the advent of the C++11 standard bf(C++) offered basically two ways to
+assign the information pointed to by a data member of a temporary object to an
+em(lvalue) object. Either a copy constructor or reference counting had to be
+used. The C++11 standard adds emi(move semantics) to these two, allowing
+em(transfer) of the data pointed to by a temporary object to its destination.
+
+Moving information is based on the concept of anonymous (temporary)
+data. Temporary values are returned by functions like tt(operator-()) and
+tt(operator+(Type const &lhs, Type const &rhs)), and in general by functions
+returning their results `by value' instead of returning references or
+pointers.
+
+Anonymous values are always short-lived. When the returned values are
+primitive types (tt(int, double), etc.) nothing special happens, but if a
+class-type object is returned by value then its destructor can be called
+immediately following the function call that produced the value. In any case,
+the value itself becomes inaccessible immediately after the call. Of course, a
+temporary return value may be bound to a reference (lvalue or rvalue), but as
+far as the compiler is concerned the value now has a name, which by itself
+ends its status as a temporary value.
+
+In this section we concentrate on anonymous temporary values and show how they
+can be used to improve the efficiency of object construction and assignment.
+These special construction and assignment methods are known as em(move
+construction) and em(move assignment). Classes supporting move operations are
+called hi(class: move-aware)em(move-aware).
+
+Classes allocating their own memory usually benefit from becoming
+move-aware. But a class does not have to use dynamic memory allocation before
+it can benefit from move operations. Most classes using composition (or
+inheritance where the base class uses composition) can benefit from move
+operations as well.
+
+Movable parameters for class tt(Class) take the form tt(Class &&tmp). The
+parameter is a em(rvalue reference), and a rvalue reference only binds to an
+anonymous temporary value. The compiler is required to call functions offering
+movable parameters whenever possible. This happens when the class defines
+functions supporting tt(Class &&) parameters and an anonymous temporary value
+is passed to such functions. Once a temporary value has a name (which already
+happens inside functions defining tt(Class const &) or tt(Class &&tmp)
+parameters as within such functions the names of these parameters are
+available) it is no longer an em(anonymous) temporary value, and within such
+functions the compiler no longer calls functions expecting anonymous
+temporary values when the parameters are used as arguments.
+
+The next example (using inline member implementations for brevity) illustrates
+what happens if a non-const object, a temporary object and a const object are
+passed to functions tt(fun) for which these kinds of parameters were
+defined. Each of these functions call a function tt(gun) for which these kinds
+of parameters were also defined. The first time tt(fun) is called it (as
+expected) calls tt(gun(Class &)). Then tt(fun(Class &&)) is called as its
+argument is an anonymous (temporary) object. However, inside tt(fun) the
+anonymous value has received a name, and so it isn't anonymous
+anymore. Consequently, tt(gun(Class &)) is called once again. Finally
+tt(fun(Class const &)) is called, and (as expected) tt(gun(Class const &)) is
+now called.
+    verbinclude(examples/moving.cc)
+
+It is pointless to define a
+ hi(function: returning rvalue reference) function having an rvalue reference
+return type. The compiler decides whether or not to use an overloaded member
+expecting an rvalue reference on the basis of the provided argument. If it is
+an anonymous temporary it calls the function defining the rvalue reference
+parameter, if such a function is available.
+
+The compiler, when selecting a function to call applies a fairly simple
+algorithm, and also considers copy elision. This is covered shortly (section
+ref(RVO)).

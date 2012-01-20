@@ -1,0 +1,80 @@
+Unless specified otherwise object data members of classes are initialized by
+their default constructors. Using the default constructor might not always be
+the optimal way to intialize an object and it might not even be possible: a
+class might simply not define a default constructor.
+
+Earlier we've encountered the following constructor of the tt(Person):
+        verb(
+    Person::Person(string const &name, string const &address,
+                   string const &phone, size_t mass)
+    {
+        d_name = name;
+        d_address = address;
+        d_phone = phone;
+        d_mass = mass;
+    }
+        )
+ Think briefly about what is going on in this constructor. In the
+constructor's body we encounter assignments to string objects. Since
+assignments are used in the constructor's body their left-hand side objects
+must exist. But when objects are coming into existence constructors em(must)
+have been called. The initialization of those objects is thereupon immediately
+undone by the body of tt(Person)'s constructor. That is
+not only inefficient but sometimes downright impossible. Assume that the class
+interface mentions a tt(string const) data member: a data member whose value
+is not supposed to change at all (like a birthday, which usually  doesn't
+change very much and is therefore a good candidate for a tt(string const) data
+member). Constructing a birthday object and providing it with an initial value
+is OK, but changing the initial value isn't.
+
+The body of a constructor allows assignments to data members. The
+em(initialization) of data members happens before that. bf(C++) defines the
+ emi(member initializer) syntax allowing us to specify the way data members
+are initialized at construction time. Member initializers are specified as a
+list of constructor specifications between  a colon following a constructor's
+parameter list and the opening curly brace of a constructor's body, as
+follows:
+        verb(
+    Person::Person(string const &name, string const &address,
+                   string const &phone, size_t mass)
+    :
+        d_name(name),
+        d_address(address),
+        d_phone(phone),
+        d_mass(mass)
+    {}
+        )
+ Member initialization em(always) occurs when objects are composed in
+classes: if em(no) constructors are mentioned in the member initializer list
+the default constructors of the objects are called. Note that this only holds
+true for em(objects). Data members of primitive data types are em(not)
+initialized automatically.
+
+Member initialization can, however, also be used for primitive data members,
+like tt(int) and tt(double). The above example shows the initialization of the
+data member tt(d_mass) from the parameter tt(mass). When member
+initializers are used the data member could even have the same name as the
+constructor's parameter (although this is deprecated) as there is no ambiguity
+and the first (left) identifier used in a member initializer is always a data
+member that is initialized whereas the identifier between parentheses is
+interpreted as the parameter.
+
+The em(order) in which class type data members are initialized is defined by
+the order in which those members are defined in the composing class
+interface. If the order of the initialization in the constructor differs from
+the order in the class interface, the compiler complains, and reorders the
+initialization so as to match the order of the class interface.
+
+Member initializers should be used as often as possible. As shown it may be
+required to use them (e.g., to initialize const data members, or to initialize
+objects of classes lacking default constructors) but em(not) using member
+initializers also results in inefficient code as the default constructor of a
+data member is always automatically called unless an explicit member
+initializer is specified. Reassignment in the constructor's body following
+default construction is then clearly inefficient. Of course, sometimes it is
+fine to use the default constructor, but in those cases the explicit member
+initializer can be omitted.
+
+As a i(rule of thumb): if a value is assigned to a data member in the
+constructor's body then try to avoid that assignment in favor of using a
+member initializer.

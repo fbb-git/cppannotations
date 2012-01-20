@@ -1,0 +1,31 @@
+The array
+tt(s_handler), storing pointers to functions needs to be initialized as
+well. This can be accomplished in several ways:
+    itemization(
+    it() Since the tt(Commands) enumeration only specifies a fairly limited
+set of commands, compile-time initialization could be considered:
+        verbinsert(HANDLER)(examples/monitor/data.compiletime)
+    The advantage of this is that it's simple, not requiring any run-time
+effort. The disadvantage is of course relatively complex maintenance. If for
+some reason tt(Commands) is modified, tt(s_handler) must be modified as
+well. In cases like these, compile-time initialization often is
+asking for trouble. There is a simple alternative though.
+    it() Looking at tt(Monitor)'s interface we see a static data member
+tt(s_initialize) and a static member function tt(initialize). The static
+member function handles the initialization of the tt(s_handler) array. It
+explicitly assigns the array's elements and any modification in ordering of
+tt(enum Commands)' values is automatically accounted for by recompiling
+tt(initialize):
+        verbinsert(INIT)(examples/monitor/monitor.cc)
+    The member tt(initialize) is a static member and so it can be
+called to initialize tt(s_initialize), a static tt(int) variable. The
+initialization is enforced by placing the initialization statement in the
+source file of a function that is known to be executed. It could be tt(main),
+but if we're tt(Monitor)'s maintainers and only have control over the library
+containing tt(Monitor)'s code then that's not an option. In those cases the
+source file containing the destructor is a em(very) good candidate. If a class
+has only one constructor and it's em(not) defined inline then the
+constructor's source file is a good candidate as well. In tt(Monitor)'s
+current implementation the initialization statement is put in tt(run)'s source
+file, reasoning that tt(s_handler) is only needed when tt(run) is used.
+    )

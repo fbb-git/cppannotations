@@ -1,0 +1,35 @@
+Let us take another look at the implementation of the function
+tt(Person::name()):
+        verb(
+    std::string const &Person::name() const
+    {
+        return d_name;
+    }
+        )
+    This function is used to retrieve the name field of an object of the class
+tt(Person). Example:
+        verb(
+    void showName(Person const &person)
+    {
+        cout << person.name();
+    }
+        )
+    To insert tt(person)'s name the following actions are performed:
+    itemization(
+    it() The function tt(Person::name()) is called.
+    it() This function returns tt(person)'s tt(d_name) as a reference.
+    it() The referenced name is inserted into tt(cout).
+    )
+    Especially the first part of these actions causes some time loss, since an
+extra function call is necessary to retrieve the value of the tt(name) field.
+Sometimes a faster procedure immediately making the tt(d_name) data member
+available is preferred without ever actually calling a function
+tt(name). This can be realized using ti(inline) functions. An inline
+function is a request to the compiler to insert the function's code at the
+location of the function's call. This may speed up execution by avoiding a
+function call, which typically comes with some (stack handling and parameter
+passing) overhead. Note that tt(inline) is a em(request) to the compiler: the
+compiler may decide to ignore it, and em(will) probably ignore it when the
+function's body contains much code. Good programming discipline suggests to be
+aware of this, and to avoid tt(inline) unless the function's body is fairly
+small. More on this in section ref(WHENINLINE).

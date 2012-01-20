@@ -1,0 +1,169 @@
+Before using the generic algorithms presented in this chapter, except for
+those in the tt(Operators) category (defined below), the tthi(algorithm) header
+file must have been included. Before using a generic algorithm in the
+tt(Operators) category the tthi(numeric) header file must have been included.
+
+In the previous chapter the Standard Template Library (STL) was introduced. An
+important element of the STL, the emi(generic algorithms), was not covered in
+that chapter as they form a fairly extensive part of the STL.  Over time the
+STL has grown considerably, mainly as a result of a growing importance and
+appreciation of em(templates). Covering generic algorithm in the STL chapter
+itself would turn that chapter into an unwieldy one and so the generic
+algoritmhs were moved to a chapter of their own.
+
+Generic algorithms perform an amazing task. Due to the strength of templates,
+algorithms could be developed that can be applied to a wide range of different
+data types while maintaining type safety. The prototypical example of this is
+the link(tt(sort))(SORT) generic algorithm. To contrast: while bf(C) requires
+programmers to write callback functions in which type-unsafe tt(void const *)
+parameters have to be used, internally forcing the programmer to resort to
+casts, STL's tt(sort) frequently allows the programmer merely to state
+something akin to
+        verb(
+    sort(first-element, last-element)
+        )
+
+Generic algoritms should be used wherever possible. Avoid the urge to design
+your own code for commonly encountered algorithms. Make it a habit to
+em(first) thoroughly search the generic algorithms for an available
+candidate. The generic algorithms should become your em(weapon of choice) when
+writing code: acquire full familiarity with them and make their use your
+`second nature'.
+
+This chapter's sections cover the STL's i(generic algorithms) in alphabetical
+order. For each algorithm the following information is provided:
+    itemization(
+    it() The required header file;
+    it() The function prototype;
+    it() A short description;
+    it() A short example.
+    )
+    In the prototypes of the algorithms tt(Type) is used to specify a
+i(generic data type). Furthermore, the particular type of iterator (see
+section ref(ITERATORS)) that is required is mentioned as well as other generic
+types that might be required (e.g., performing tt(BinaryOperations), like
+tt(plus<Type>)). Although iterators are commonly provided by abstract
+containers and comparable pre-defined data structrues, at some point you may
+want to design your own iterators. Section ref(ITERATORCONS) offers guidelines
+for constructing your own iterator classes and provides an overview of of
+operators that must be implemented for the various types of iterators.
+
+Almost every generic algorithm expects an iterator range rangeti(first, last),
+defining the series of elements on which the algorithm operates. The iterators
+point to objects or values. When an iterator points to a tt(Type) value or
+object, function objects used by the algorithms usually receive tt(Type const
+&) objects or values. Usually function objects cannot modify the objects they
+receive as their arguments. This does not hold true for em(modifying generic
+algorithms), which em(are) of course able to modify the objects they operate
+upon.
+
+Generic algorithms may be categorized.
+The annotations() distinguishes the following categories
+ hi(generic algorithm: categories) of generic algorithms:
+    itemization(
+    it() Comparators: comparing (ranges of) elements:
+        quote(
+            link(equal)(EQUAL);
+            link(includes)(INCLUDES);
+            link(lexicographical_compare)(LEXCOMP);
+            link(max)(MAX);
+            link(min)(MIN);
+            link(mismatch)(MISMATCH);
+        )
+    it() Copiers: performing copy operations:
+        quote(
+            link(copy)(COPY);
+            link(copy_backward)(COPYBACK);
+            link(partial_sort_copy)(PARTSORTCP);
+            link(remove_copy)(REMOVECP);
+            link(remove_copy_if)(REMOVECPIF);
+            link(replace_copy)(REPLACECP);
+            link(replace_copy_if)(REPLACECPIF);
+            link(reverse_copy)(REVERSECP);
+            link(rotate_copy)(ROTATECP);
+            link(unique_copy)(UNIQUECP);
+        )
+    it() Counters: performing count operations:
+        quote(
+            link(count)(COUNT);
+            link(count_if)(COUNTIF);
+        )
+    it() Heap operators: manipulating a i(max-heap):
+        quote(
+            link(make_heap)(MAKEHEAP);
+            link(pop_heap)(POPHEAP);
+            link(push_heap)(PUSHHEAP);
+            link(sort_heap)(SORTHEAP);
+        )
+    it() Initializers: initializing data:
+        quote(
+            link(fill)(FILL);
+            link(fill_n)(FILLN);
+            link(generate)(GEN);
+            link(generate_n)(GENN);
+        )
+    it() Operators: performing arithmetic operations of some sort:
+        quote(
+            link(accumulate)(ACCU);
+            link(adjacent_difference)(ADJDIFF);
+            link(inner_product)(INNERPROD);
+            link(partial_sum)(PARTSUM);
+        )
+    it() Searchers: performing search (and find) operations:
+        quote(
+            link(adjacent_find)(ADJFIND);
+            link(binary_search)(BINSRCH);
+            link(equal_range)(EQUALRANGE);
+            link(find)(FIND);
+            link(find_end)(FINDEND);
+            link(find_first_of)(FINDFIRST);
+            link(find_if)(FINDIF);
+            link(lower_bound)(LOWERBOUND);
+            link(max_element)(MAXEL);
+            link(min_element)(MINEL);
+            link(search)(SEARCH);
+            link(search_n)(SEARCHN);
+            link(set_difference)(SETDIF);
+            link(set_intersection)(SETINT);whenlatex(nl())
+            link(set_symmetric_difference)(SETSYM);
+            link(set_union)(SETUNI);
+            link(upper_bound)(UPPERBOUND);
+        )
+    it() Shufflers: performing reordering operations (i(sorting),
+            i(merging), i(permuting), i(shuffling), i(swapping)):
+        quote(
+            link(inplace_merge)(INMERGE);
+            link(iter_swap)(ITERSWAP);
+            link(merge)(MERGE);
+            link(next_permutation)(NEXTPERM);
+            link(nth_element)(NTHEL);
+            link(partial_sort)(PARTSORT);
+            link(partial_sort_copy)(PARTSORTCP);
+            link(partition)(PARTIT);
+            link(prev_permutation)(PREVPERM);
+            link(random_shuffle)(SHUFFLE);
+            link(remove)(REMOVE);
+            link(remove_copy)(REMOVECP);
+            link(remove_copy_if)(REMOVECPIF);
+            link(remove_if)(REMOVEIF);
+            link(reverse)(REVERSE);
+            link(reverse_copy)(REVERSECP);
+            link(rotate)(ROTATE);
+            link(rotate_copy)(ROTATECP);
+            link(sort)(SORT);
+            link(stable_partition)(STABPART);
+            link(stable_sort)(STABSORT);
+            link(swap)(SWAP);
+            link(unique)(UNIQUE);
+        )
+    it() Visitors: visiting elements in a range:
+        quote(
+            link(for_each)(FOREACH);
+            link(replace)(REPLACE);
+            link(replace_copy)(REPLACECP);
+            link(replace_copy_if)(REPLACEIF);
+            link(replace_if)(REPLACEIF);
+            link(transform)(TRANSFORM);
+            link(unique_copy)(UNIQUECP);
+        )
+    )

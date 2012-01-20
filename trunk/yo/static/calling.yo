@@ -1,0 +1,68 @@
+    As noted in the previous section, static (public) member functions are
+comparable to classless functions. However, formally this statement is not
+true, as the bf(C++) standard does not prescribe the same calling conventions
+for static member functions as for classless global functions.
+
+    In practice the calling conventions are identical, implying that the
+address of a static member function could be used as an argument of functions
+having parameters that are
+    hi(pointer to function) pointers to (global) functions.
+
+    If unpleasant surprises must be avoided at all cost, it is suggested to
+create global classless emi(wrapper functions) around static member functions
+that must be used as emi(call back) functions for other functions.
+
+    Recognizing that the traditional situations in which call back functions
+are used in bf(C) are tackled in bf(C++) using template algorithms
+(cf. chapter ref(GENERIC)), let's assume that we have a class tt(Person)
+having data members representing the person's name, address, phone and
+mass. Furthermore, assume we want to sort an array of pointers to tt(Person)
+objects, by comparing the tt(Person) objects these pointers point to. Keeping
+things simple, we assume that the following public static member exists:
+        verb(
+    int Person::compare(Person const *const *p1, Person const *const *p2);
+        )
+    A useful characteristic of this member is that it may directly inspect the
+required data members of the two tt(Person) objects passed to the member
+function using pointers to pointers (i(double pointers)).
+
+    Most compilers allow us to pass this function's address as the address of
+the comparison function for the standard bf(C) ti(qsort()) function. E.g.,
+        verb(
+    qsort
+    (
+        personArray, nPersons, sizeof(Person *),
+        reinterpret_cast<int(*)(const void *, const void *)>(Person::compare)
+    );
+        )
+    However, if the compiler uses different calling conventions for static
+members and for classless functions, this might not work. In such a case, a
+classless wrapper function like the following may be used profitably:
+        verb(
+    int compareWrapper(void const *p1, void const *p2)
+    {
+        return
+            Person::compare
+            (
+                reinterpret_cast<Person const *const *>(p1),
+                reinterpret_cast<Person const *const *>(p2)
+            );
+    }
+        )
+    resulting in the following call of the tt(qsort()) function:
+        verb(
+    qsort(personArray, nPersons, sizeof(Person *), compareWrapper);
+        )
+    Note:
+    itemization(
+    it() The wrapper function takes care of any mismatch in the calling
+conventions of static member functions and classless functions;
+    it() The wrapper function handles the required type casts;
+    it() The wrapper function might perform small additional services (like
+dereferencing pointers if the static member function expects references to
+tt(Person) objects rather than double pointers);
+    it() As an aside: in bf(C++) programs functions like tt(qsort()),
+requiring the specification of call back functions are seldom used. Instead
+using existing generic template algorithms is preferred (cf. chapter
+ref(GENERIC)).
+    )

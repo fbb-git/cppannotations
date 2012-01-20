@@ -1,0 +1,155 @@
+In the chapter about containers (chapter ref(CONTAINERS)) it was noted that
+containers own the information they contain. If they contain objects, then
+those objects are destroyed once the containers are destroyed. As pointers are
+not objects their use in containers is discouraged (STL's ti(unique_ptr) and
+ti(shared_ptr) type objects may be used, though).  Although discouraged, we
+might be able to use pointer data types in specific contexts. In the following
+class tt(StringPtr), an ordinary class is derived from the tt(std::vector)
+container that uses tt(std::string *) as its data type:
+        verbinclude(examples/stringptr1.h)
+    This class needs a destructor: as the object stores string pointers, a
+destructor is required to destroy the strings once the tt(StringPtr) object
+itself is destroyed.  Similarly, a copy constructor and overloaded assignment
+is required. Other members (in particular: constructors) are not explicitly
+declared here as they are not relevant to this section's topic.
+
+    Assume that we want to be able to use the tt(sort) generic
+algorithm with tt(StringPtr) objects. This algorithm (see section ref(SORT))
+requires two em(RandomAccessIterators). Although these iterators are available
+(via tt(std::vector)'s tt(begin) and tt(end) members), they return
+iterators to tt(std::string *)s, which cannot sensibly be compared.
+
+    To remedy this, we may define an internal type tt(StringPtr::iterator),
+not returning iterators to pointers, but iterators to the em(objects) these
+pointers point to. Once this tt(iterator) type is available, we can add the
+following members to our tt(StringPtr) class interface, hiding the identically
+named, but useless members of its base class:
+        verb(
+    StringPtr::iterator begin();    // returns iterator to the first element
+    StringPtr::iterator end();      // returns iterator beyond the last
+                                    // element
+        )
+    Since these two members return the (proper) iterators, the elements in a
+tt(StringPtr) object can easily be sorted:
+        verb(
+    int main()
+    {
+        StringPtr sp;               // assume sp is somehow filled
+
+        sort(sp.begin(), sp.end()); // sp is now sorted
+    }
+        )
+    To make this all work, the type tt(StringPtr::iterator) must be
+defined. As suggested by its type name, tt(iterator) is a nested type of
+tt(StringPtr). To use a tt(StringPtr::iterator) in combination
+with the tt(sort) generic algorithm it must also be a
+ti(RandomAccessIterator). Therefore, tt(StringPtr::iterator) itself must be
+derived from the existing class tt(std::iterator).
+
+    To derive a class from tt(std::iterator), both the iterator type and the
+data type the iterator points to must be specified. Caveat: our iterator takes
+care of the tt(string *) dereferencing; so the required data type is
+tt(std::string), and em(not) tt(std::string *). The class tt(iterator)
+therefore starts its interface as:
+        verb(
+    class iterator:
+        public std::iterator<std::random_access_iterator_tag, std::string>
+        )
+    Since its base class specification is quite complex, we could consider
+associating this type with a shorter name using the following tt(typedef):
+        verb(
+    typedef std::iterator<std::random_access_iterator_tag, std::string>
+            Iterator;
+        )
+    In practical situations, if the type (tt(Iterator)) is used only once or
+twice, the type definition only adds clutter to the interface, and is better
+not used.
+
+    Now we're ready to redesign tt(StringPtr)'s class interface. It offers
+members returning (reverse) iterators, and a nested tt(iterator) class. Here
+is its interface:
+        verbinsert(STRINGPTR)(examples/stringptr.h)
+    As usual, the interface offers hooks for a more detailed study of the
+class. 
+    
+    First we have a look at tt(StringPtr::iterator)'s characteristics:
+    itemization(
+    itt(iterator) defines tt(StringPtr) as its friend, so tt(iterator)'s
+constructor may remain private. Only the tt(StringPtr) class itself is now
+able to construct tt(iterator)s, which seems like a sensible thing to
+do. Under the current implementation, em(copy-construction) should of course
+also be possible. Furthermore, since an iterator is already provided by
+tt(StringPtr)'s base class, we can use that iterator to access the information
+stored in the tt(StringPtr) object.
+    it() tt(StringPtr::begin) and tt(StringPtr::end) may simply return
+tt(iterator) objects. They are implementated like this:
+        verbinsert(BEGEND)(examples/stringptr.h)
+    it() All of tt(iterator)'s remaining members are public. It's very easy to
+implement them, mainly manipulating and dereferencing the available iterator
+tt(d_current). A tt(RandomAccessIterator) (which is the most
+complex of iterators) requires a series of operators. They usually
+have very simple implementations, making them good candidates for
+inline-members:
+        itemization(
+        itt(iterator &operator++()); the pre-increment operator:
+            verbinsert(PREINC)(examples/stringptr.h)
+        it() tt(iterator operator++(int)); the post-increment operator:
+            verbinsert(POSTINC)(examples/stringptr.h)
+        it() tt(iterator &)opdecrement()tt(()); the pre-decrement operator:
+            verbinsert(PREDEC)(examples/stringptr.h)
+        it() tt(iterator) opdecrement()tt((int)); the post-decrement operator:
+            verbinsert(POSTDEC)(examples/stringptr.h)
+        itt(iterator &operator=(iterator const &other)); the overloaded
+            assignment operator. Since tt(iterator) objects do not allocate
+            any memory themselves, the default assignment operator can be
+            used.
+        itt(bool operator==(iterator const &rhv) const); testing the equality
+            of two tt(iterator) objects:
+                verbinsert(OPEQ)(examples/stringptr.h)
+        itt(bool operator<(iterator const &rhv) const); testing whether the
+            left-hand side iterator points to an element of the series located
+            em(before) the element pointed to by the right-hand side
+            iterator:
+                verbinsert(CMP)(examples/stringptr.h)
+        itt(int operator-(iterator const &rhv) const); returning the number of
+            elements between the element pointed to by the left-hand side
+            iterator and the right-hand side iterator (i.e., the value to add
+            to the left-hand side iterator to make it equal to the value of
+            the right-hand side iterator):
+                verbinsert(OPSUB)(examples/stringptr.h)
+        itt(Type &operator*() const); returning a reference to the object to
+            which the current iterator points. With an tt(InputIterator) and
+            with all tt(const_iterators), the return type of this overloaded
+            operator should be tt(Type const &). This operator returns a
+            reference to a string. This string is obtained by dereferencing
+            the dereferenced tt(d_current) value. As tt(d_current) is an
+            iterator to tt(string *) elements, two dereference operations are
+            required to reach the string itself:
+                verbinsert(OP*)(examples/stringptr.h)
+        itt(iterator operator+(int stepsize) const); this operator
+            advances the current iterator by tt(stepsize):
+                verbinsert(OPADD)(examples/stringptr.h)
+        itt(iterator operator-(int stepsize) const); this operator
+            decreases the current iterator by tt(stepsize):
+                verbinsert(OP-)(examples/stringptr.h)
+        itt(iterator(iterator const &other)); iterators may be constructed
+            from existing iterators. This constructor doesn't have to be
+            implemented, as the default copy constructor can be used.
+        itt(std::string *operator->() const) is an additionally added
+            operator. Here only one dereference operation is required,
+            returning a pointer to the string, allowing us to access the
+            members of a string via its pointer.
+                verbinsert(OPARROW)(examples/stringptr.h)
+        it() Two more additionally added operators are tt(operator+=) and
+            tt(operator-=). They are not formally required by
+            tt(RandomAccessIterators), but they come in handy anyway:
+                verbinsert(OPARITH)(examples/stringptr.h)
+        )
+    )
+    The interfaces required for other iterator types are simpler, requiring
+only a subset of the interface required by a random access iterator. E.g.,
+the forward iterator is never decremented and never incremented over arbitrary
+step sizes. Consequently, in that case all decrement operators and
+tt(operator+(int step)) can be omitted from the interface. Of course, the tag
+to use would then be tt(std::forward_iterator_tag). The tags (and the set of
+required operators) vary accordingly for the other iterator types.

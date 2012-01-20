@@ -1,0 +1,75 @@
+    In section ref(EXTRACTORS) the insertion operator of the class
+tt(Person) (cf. section ref(ASSIGNMENT)) was implemented like this:
+        verb(
+    ostream &operator<<(ostream &out, Person const &person)
+    {
+        return
+            out <<
+                "Name:    " << person.name() <<  ", "
+                "Address: " << person.address() <<  ", "
+                "Phone:   " << person.phone();
+    }
+        )
+ tt(Person) objects can now be inserted into streams.
+
+    However, this implementation required three member functions to be called,
+which may be considered a source of inefficiency. An improvement would be
+reached by defining a member tt(Person::insertInto) and let tt(operator<<)
+call that function.  These two functions could be defined as follows:
+        verb(
+    std::ostream &operator<<(std::ostream &out, Person const &person)
+    {
+        return person.insertInto(out);
+    }
+    std::ostream &Person::insertInto(std::ostream &out)
+    {
+        return
+            cout << "Name:    " << d_name << ", "
+                    "Address: " << d_address << ", "
+                    "Phone:   " << d_phone;
+    }
+        )
+    As tt(insertInto) is a member function it has direct access to the
+object's data members so no additional member functions must be called when
+inserting tt(person) into tt(out).
+
+    The next step consists of realizing that tt(insertInto) is only defined
+for the benefit of tt(operator<<), and that tt(operator<<), as it is declared
+in the header file containing tt(Person)'s class interface should be
+considered a function belonging to the class tt(Person). The member
+tt(insertInto) can therefore be omitted when tt(operator<<) is declared as a
+friend.
+
+    Friend functions must be declared as friends in the class interface. These
+hi(friend: function declaration) em(friend declarations) are not em(member)
+functions, and so they are independent of the class's tt(private, protected)
+and tt(public) sections. Friend declaration may be placed anywhere in the
+class interface. Convention dictates that friend declaractions are listed
+directly at the top of the class interface. The class tt(Person), using
+tt(friend) declaration for its extraction and insertion operators starts like
+this:
+        verb(
+    class Person
+    {
+        friend std::ostream &operator<<(std::ostream &out, Person &pd);
+        friend std::istream &operator>>(std::istream &in, Person &pd);
+
+        // previously shown interface (data and functions)
+    };
+        )
+    The insertion operator may now directly access a tt(Person) object's data
+members:
+        verb(
+    std::ostream &operator<<(std::ostream &out, Person const &person)
+    {
+        return
+            cout << "Name:    " << person.d_name << ", "
+                    "Address: " << person.d_address << ", "
+                    "Phone:   " << person.d_phone;
+    }
+        )
+    Friend declarations are true declarations. Once a class contains friend
+declarations these friend functions do not have to be declared again below the
+class's interface. This also clearly indicates the class designer's intent:
+the friend functions are declared by the class, and can thus be considered
+functions belonging to the class.

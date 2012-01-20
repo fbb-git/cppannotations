@@ -1,0 +1,73 @@
+Our example class tt(Person) has three string data members and a tt(size_t
+d_mass) data member. Access to these data members is controlled by
+ i(interface functions).
+
+Whenever an object is defined the class's constructor(s) ensure that its data
+members are given `sensible' values. Thus, objects never suffer from
+uninitialized values. Data members may be given new values, but that should
+never be directly allowed. It is a core principle (called
+ emi(data hiding)) of good class design that its data members are private. The
+modification of data members is therefore fully controlled by member functions
+and thus, indirectly, by the class-designer. The class em(encapsulates) all
+actions performed on its data members and due to this
+ emi(encapsulation) the class object may assume the `responsibility' for its
+own data-integrity. Here is a minimal definition of tt(Person)'s manipulating
+members:
+    verbinclude(examples/setmembers.cc)
+ It's a minimal definition in that no checks are performed. But it should be
+clear that checks are easy to implement. E.g., to ensure that a phone number
+only contains digits one could define:
+        verb(
+    void Person::setPhone(string const &phone)
+    {
+        if (phone.find_first_not_of("0123456789") == string::npos)
+            d_phone = phone;
+        else
+            cout << "A phone number may only contain digits\n";
+    }
+        )
+    Similarly, access to the data members is controlled by encapsulating
+emi(accessor) members. Accessors ensure that data members cannot suffer from
+uncontrolled modifications. Since accessors conceptually do not modify the
+object's data (but only retrieve the data) these member functions are given
+the predicate tt(const). They are called hi(member: const)emi(const member)
+em(functions), which, as they are guaranteed not to modify their object's
+data, are available to both modifiable and constant objects (cf. section
+ref(ConstFunctions)).
+
+    To prevent emi(backdoors) we must also make sure that the data member is
+not modifiable through an accessor's return value. For values of
+built-in primitive types that's easy, as they are usually returned by value,
+which are copies of the values found in variables.
+But since objects may be fairly large making copies are usually prevented by
+returning objects by reference. A backdoor is created by returning a data
+member by reference, as in the following example, showing the allowed abuse
+below the function definition:
+        verb(
+    string &Person::name() const
+    {
+        return d_name;
+    }
+
+    Person somebody;
+    somebody.setName("Nemo");
+
+    somebody.name() = "Eve";    // Oops, backdoor changing the name
+        )
+    To prevent the backdoor objects are returned as em(const references) from
+accessors. Here are the implementations of tt(Person)'s accessors:
+    verbinclude(examples/getmembers.cc)
+
+    The tt(Person) class interface remains the starting point for the class
+design: its member functions define what can be asked of a tt(Person)
+object. In the end the implementation of its members merely is a technicality
+allowing tt(Person) objects to do their jobs.
+
+The next example shows how the class tt(Person) may be used. An object is
+initialized and passed to a function tt(printperson()), printing the person's
+data. Note the reference operator in the parameter list of the function
+tt(printperson).  Only a reference to an existing tt(Person) object is passed
+to the function, rather than a complete object.  The fact that
+tt(printperson) does not modify its argument is evident from the fact that
+the parameter is declared tt(const).
+    verbinclude(examples/persondemo.cc)

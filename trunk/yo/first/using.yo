@@ -1,0 +1,65 @@
+In bf(C++) tt(typedef) is commonly used to define shorthand notations for
+complex types. Assume we want to define a shorthand for `a pointer to a
+function expecting a double and an int, and returning an unsigned long long
+int'. Such a function could be:
+        verb(
+    unsigned long long int compute(double, int);
+        )
+    A pointer to such a function has the following form:
+        verb(
+    unsigned long long int (*pf)(double, int);
+        )
+    If this kind of pointer is frequently used, consider defining it using
+tt(typedef): simply put tt(typedef) in front of it and the pointer's name is
+turned into the name of a type. It could be capitalized to let it stand out
+more clearly as the name of a type:
+        verb(
+    typedef unsigned long long int (*PF)(double, int);
+        )
+    After having defined this type, it can be used to declare or define such
+pointers:
+        verb(
+    PF pf = compute;        // initialize the pointer to a function like
+                            // 'compute'
+    void fun(PF pf);        // fun expects a pointer to a function like
+                            // 'compute' 
+        )
+    However, including the pointer in the typedef might not be a very good
+idea, as it masks the fact that tt(pf) is a pointer. After all, tt(PF pf)
+looks more like `tt(int x)' than `tt(int *x)'. To document that tt(pf) is
+in fact a pointer, slightly change the tt(typedef):
+        verb(
+    typedef unsigned long long int FUN(double, int);
+
+    FUN *pf = compute;      // now pf clearly is a pointer.
+        )
+    The scope of typedefs is restricted to compilation units. Therefore,
+typedefs are usually embedded in header files which are then included by
+multiple source files in which the typedefs should be used.
+
+In addition to tt(typedef) the C++11 standard offers the ti(using) keyword to
+associate a type and and identifier. In practice tt(typedef) and tt(using) can
+be used interchangeably. The tt(using) keyword arguably result in more
+readable type definitions. Consider the following three (equivalent)
+definitions: 
+    itemization(
+    it() The traditional, bf(C) style definition of a type, embedding the type
+        name in the definition (turning a variable name into a type name):
+        verb(
+    typedef typedef unsigned long long int FUN(double, int);
+        )
+    it() Apply tt(using) to improve the visibility (for humans) of the type 
+        name, by moving the type  name to the front of the definition:
+        verb(
+    using FUN = unsigned long long int (double, int);   
+        )
+    it() An alternative construction, using a late-specified return type
+        (cf. section ref(AUTO)):
+        verb(
+    using FUN = auto (double, int) -> unsigned long long int; 
+        )
+    )
+
+    
+
+

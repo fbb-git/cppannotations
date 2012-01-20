@@ -1,0 +1,120 @@
+    Reading and writing from and to emi(file descriptors) are not part of the
+bf(C++) standard. But on most operating systems file descriptors em(are)
+available and can be considered a i(device). It seems natural to use the class
+hi(streambuf)tt(std::streambuf) as the starting point for constructing classes
+interfacing such file descriptor devices.
+
+    Below we'll construct classes that can be used to write to a device given
+its file descriptor. The devices may be files, but they could also be i(pipe)s
+or i(socket)s. Section ref(STRBUF) covers reading from such devices; section
+ref(REDIRECTION) reconsiders redirection, discussed earlier in section
+ref(REDIR).
+
+    Using the tt(streambuf) class as a base class it is relatively easy to
+design classes for output operations. The only member function that em(must)
+be overridden is the (virtual) member
+ hi(overflow)
+    tt(int streambuf::overflow(int c)). This member's responsibility is to
+write characters to the device. If tt(fd) is an output file descriptor and if
+output should not be buffered then the member tt(overflow()) can simply be
+implemented as:
+        verb(
+    class UnbufferedFD: public std::streambuf
+    {
+        public:
+            virtual int overflow(int c);
+            ...
+    };
+
+    int UnbufferedFD::overflow(int c)
+    {
+        if (c != EOF)
+        {
+            if (write(d_fd, &c, 1) != 1)
+                return EOF;
+        }
+        return c;
+    }
+        )
+    The argument received by tt(overflow) is either written to the file
+descriptor (and returned from tt(overflow)), or endOfFile() is returned.
+
+    This simple function does not use output buffering. For various reasons,
+using a buffer is usually a good idea (see also the next section).
+
+    When output buffering is used, the tt(overflow) member is a bit more
+complex as it is only called when the buffer is full. Once the buffer is full,
+we em(first) have to flush the buffer. Flushing the buffer is the
+responsibility of the (virtual) function hi(sync)tt(streambuf::sync).  Since
+tt(sync) is a virtual function, classes derived from tt(streambuf) may
+redefine tt(sync) to flush a buffer tt(streambuf) itself doesn't know about.
+
+    Overriding tt(sync) and using it in tt(overflow) is not all that has to be
+done. When the object of the class defining the buffer reaches the end of its
+lifetime the buffer may be only partially full. In that situation the buffer
+must also be flushed. This is easily done by simply calling tt(sync) from the
+class's destructor.
+
+    Now that we've considered the consequences of using an output buffer,
+we're almost ready to design our derived class. Several more features
+are added as well, though:
+    itemization(
+    it() First, we should allow the user of the class to specify the size of
+the output buffer.
+    it() Second, it should be possible to construct an object of our class
+before the file descriptor is actually known. Later, in section ref(FORK)
+we'll encounter a situation where this feature is actually used.
+    )
+    To save some space in the annotations(), the successful completion of the
+functions designed here is not checked in the example code. In `real life'
+implementations these checks should of course not be omitted.  Our class
+tt(OFdnStreambuf) has the following characteristics:
+    itemization(
+    it() Its member functions use low-level functions operating on file
+descriptors. So apart from tt(streambuf) the tthi(unistd.h) header file must
+have been read by the compiler before its member functions can be compiled.
+    it() The class is derived from tt(std::streambuf).
+    it() It defines three data members. These data members keep track of,
+respectively, the size of the buffer, the file descriptor, and the buffer
+itself. Here is the full class interface
+        verbinsert(CLASS)(examples/fdout.h)
+    it() Its default constructor merely initializes the buffer to 0. Slightly
+more interesting is its constructor expecting a file descriptor and a buffer
+size. This constructor passes its arguments on to the class's tt(open)
+member (see below). Here are the constructors:
+        verbinsert(CONS)(examples/fdout.h)
+    it() The destructor calls tt(sync), flushing any characters stored in the
+output buffer to the device. In implementations not using a buffer the
+destructor can be given a default implementation:
+        verbinsert(DESTR)(examples/fdout.h)
+    This implementation does not close the device. It is left as an exercise
+to the reader to change this class in such a way that the device is optionally
+closed (or optionally remains open). This approach was adopted by, e.g., the
+        url(Bobcat library)(http://bobcat.sourceforge.net).
+        hi(Bobcat library)hi(http://bobcat.sourceforge.net) See also section
+ref(IFDNBUF).
+    it() The ti(open) member initializes the buffer.  Using
+hi(setp)tt(streambuf::setp), the begin and end points of the buffer are
+defined. This is used by the tt(streambuf) base class to initialize
+hi(pbase)tt(streambuf::pbase), hi(pptr)tt(streambuf::pptr), and
+hi(epptr)tt(streambuf::epptr):
+        verbinsert(OPEN)(examples/fdout.h)
+    it() The member ti(sync) flushes the as yet unflushed contents of the
+buffer to the device. After the flush the buffer is reinitialized using
+tt(setp). After successfully flushing the buffer tt(sync) returns 0:
+        verbinsert(SYNC)(examples/fdout.h)
+    it() The member hi(overflow)tt(streambuf::overflow) is also
+overridden. Since this member is called from the tt(streambuf) base class when
+the buffer is full it should first call tt(sync) to flush the buffer to the
+device. Next it should write the character tt(c) to the (now empty)
+buffer. The character tt(c) should be written using tt(pptr) and
+hi(pbump)tt(streambuf::pbump).  Entering a character into the buffer should be
+implemented using available tt(streambuf) member functions, rather than `by
+hand' as doing so might invalidate tt(streambuf)'s internal bookkeeping. Here
+is tt(overflow)'s implementation:
+        verbinsert(OVERFLOW)(examples/fdout.h)
+    )
+    The next program uses the tt(OFfdStreambuf) class to copy its standard
+input to file descriptor ti(STDOUT_FILENO), which is the symbolic name of the
+file descriptor used for the standard output:
+        verbinclude(examples/fdout.cc)

@@ -1,0 +1,131 @@
+This section is modified when the first or second part of the version number
+changes (and sometimes for the third part as well).
+    itemization(
+    it() Version 9.1.0 adds several new sections describing elements of
+the language that by now have been implemented in Gnu's tt(g++) compiler
+version 4.7. In the Annotations's contents these sections are clearly marked
+as tt(C++11, 4.7). For section marked by merely tt(C++11) it is assumed that
+at least Gnu's compiler version 4.6 is available. Sections marked as tt(C++,
+?) refer to elements in the C++11 (C++11) standard that haven't been
+implemented yet in Gnu's tt(g++) compiler. Since tt(C++11) is now the
+`official' name of the new standard, references to C++0x have been replaced by
+C++11. 
+
+    Installation limits of various integral types are frequently obtained
+using tt(#define)s set in the tt(<climits>) header file. However, the
+tt(numeric_limits) template offers a (preferred) alternative, as
+tt(numeric_limits) can also be used when defining templates. See chapter
+ref(TEMPLATES) for details.
+
+    To the distribution's ./contributions directory I added Jurjen Bokma's
+(jurjen dot bokma at rug dot nl) 'makebook' recipe for creating a neatly bound
+C++ Annotations book. The result is fabulous! Thanks, Jurjen!
+
+    From now on, this `what's new' overview of changes to the Annotations is
+restricted to the current and previous major release. Previous modifications
+can be found in the distribution's tt(whatsnew.yo.old) file.
+
+    Finally, typos were repaired. 
+
+    it() Version 9.0.0 was released following an extensive discussion with
+several members of the C++ standards committee about the form of move special
+members (move constructors, move assignment operators, other functions
+defining rvalue type parameters). This discussion, in particular the
+discussions I had with Dave Abrahams, Jonathan Wakely and Herb Sutter
+resulted, eventually, in the annotations() relaxing the principle of
+const-correctness, and in modifying the declarations and implementations of
+move special members in this release. This shift in position (adopted by the
+annotations() since its very early releases) profoundly affects much of the
+annotations()'s contents, and warrants an upgrade to the next major release.
+
+    The principle of const-correctness has always been visible in the
+annotations(), defining return values of arithmetic binary operators like
+tt(operator+) as tt(const) return values. Here the annotations() also applied
+another principle: `do as the ints do'. When (e.g.,) adding two tt(int)-values
+the result is customarily considered immutable. I.e., tt((a + 5) += 4) makes
+no sense, with the compiler refusing to compile the statement. But is tt(a +
+5) a constant? There is no simple answer to that question. Before the advent
+of C++11 I thought the answer was `yes', but strangely enough, the answer was
+not always `yes'. If the above tt(a) is of type tt(std::string) then tt((a +
+"b") += "c") suddenly em(is) accepted by the compiler. The annotations() never
+adopted this scheme, but stuck to the rule `do as the ints do' by defining the
+return types of functions returning values as tt(const) values.
+
+    C++11 added rvalue references to the language, and then I eventually was
+convinced that defining  tt(const) return values should in general be
+avoided. As C++11 allows temporaries to be associated with rvalue references,
+a completely  new situation is created. Suddenly intermediate
+tt(int) values em(can) be modified, as illustrated by the following snippet of
+code:
+        verb(
+    void fun(int &&tmp)
+    {
+        tmp += 4;       // compiles OK
+    }
+    int main()
+    {
+        int a = 8;
+        fun(a + 5);
+    }
+        )
+    The snippet of code also shows the standard definition of an rvalue
+reference as an entity of type `tt(Type &&)'. This definition of rvalue
+reference parameters is now used all over the annotations(), together with
+using non-const return types of functions returning values.
+
+    Many readers have submitted suggestions for improvements since version
+8.3.1 was released. A big `thank you' to all of you, but in particular to
+bf(Francesco Poli) who continued to send in suggestions for improvements for a
+period of almost two years. His suggestions were an invaluable source of
+improvement for almost every single section of the annotations(). Thanks,
+Francesco, for all the effort you've put in improving this document!
+
+    Finally, in version 9.0.0 sections were added and sometimes moved. The
+section about em(unrestricted unions) was completed and moved to the
+`Containers' chapter, and a new section about adding binary operators to
+classes using function templates was added to the annotations()' final chapter
+(concrete examples).
+    it() Version 8.3.1: usually a subminor version isn't explicitly
+mentioned in this section, but in this case the changes from 8.3.0 to 8.3.1
+were the result of many, many small and not so small corrections submitted by
+Francesco Poli who did a very thorough close reading job on the
+Annotations. Thanks again, Francesco, for all your contributions!
+    it() Version 8.3.0 adds sections about various (member) function adaptors
+and adds/rephrases several sections about statistical distribution functions
+(chapter ref(STL)). When covering elements from the C++-0x standard it is
+assumed that the Gnu tt(g++) compiler version 4.4 is available. With elements
+of the C++-0x standard requiring versions beyond 4.4 the required versions
+are explicitly mentioned, if already known. All suggestions sent in by various
+readers have also been processed, their help to improve the quality of the
+annotations() is greatly appreciated: thanks!
+    it() Version 8.2.0 adds a section about casting tt(shared_ptrs) (section
+ref(SHAREDCAST)) and about sharing arrays of objects (ref(SHAREDARRAY)).
+    it() Version 8.1.0 was released following a complete overhaul of the
+annotations(), with two pre-leases in between. Many inconsistencies that had
+crept into the text and examples were removed, streamlining the text and
+synchronizing examples with the text.  All of the code examples have received
+a work-over, replacing tt(endl) by tt('\n'), making virtual functions private,
+etc., etc. The sections labeled tt(C++11) were improved and sections showing
+tt(C++11) now also mention the tt(g++) version in which the new feature will
+be made available, using tt(?) if this is as yet unknown. No version is shown
+if the feature is already available in tt(g++) 4.3 (or in one of its
+subreleases, like 4.3.3).  I received a host of suggestions from Francesco
+Poli (thanks, Francesco (and several others), for all the effort you've put
+into sending me those corrections).
+    it() Version 8.0.0 was released as a result of the upcoming new bf(C++)
+standard+footnote(ti(http://en.wikipedia.org/wiki/C++11)) becoming (partially)
+available in the Gnu tt(g++)
+    compiler+footnote(http://gcc.gnu.org/projects/cxx0x.html).
+    Not all new elements of the new standard (informally called the C++0x
+standard) are available right now, and new subreleases of the bf(C++)
+Annotations will appear once more elements become implemented in the tt(g++)
+compiler.  In section ref(COMPILATION) the way to activate the new standard is
+shown, and new sections covering elements of the new standard show tt(C++11)
+in their section-titles.
+
+        Furthermore, two new chapters were added: the STL chapter is now split
+in two. The STL chapter now covers the STL except for the em(Generic
+Algorithms) which are now discussed in a separate chapter. Name spaces,
+originally covered by the introductory chapter are now also covered in a
+separate chapter.
+    )

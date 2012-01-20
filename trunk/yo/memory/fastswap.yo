@@ -1,0 +1,39 @@
+    As we've seen with placement tt(new) objects can be constructed in blocks
+of memory of tt(sizeof(Class)) bytes large. And so, two objects of the same
+class each occupy tt(sizeof(Class)) bytes.
+
+    If objects of our class can be swapped, and if our class's data members do
+not refer to data actually involved in the swapping operation then a very fast
+swapping method that is based on the fact that we know how large our objects
+are  can be implemented.
+
+In this fast-swap method we merely swap the contents of the tt(sizeof(Class))
+bytes. This procedure may be applied to classes whose objects may be swapped
+using a member-by-member swapping operation and can (in practice, although
+this probabaly overstretches the allowed operations as described by the
+bf(C++) ANSI/ISO standard) also be used in classes having reference data
+members. It simply defines a buffer of tt(sizeof(Class)) bytes and performs a
+circular ti(memcpy) operation. Here is its implementation for a hypothetical
+class tt(Class). It results in very fast swapping:
+        verb(
+    #include <cstring>
+
+    void Class::swap(Class &other)
+    {
+        char buffer[sizeof(Class)];
+        memcpy(buffer, &other, sizeof(Class));
+        memcpy(&other, this,   sizeof(Class));
+        memcpy(this,   buffer, sizeof(Class));
+    }
+        )
+
+    Here is a simple example of a class defining a reference data member and
+offering a tt(swap) member implemented like the one above. The reference data
+members are initialized to external streams. After running the program tt(one)
+contains two em(hello to 1) lines, tt(two) contains two em(hello to 2) lines
+(for brevity all members of tt(Reference) are defined inline):
+
+    verbinclude(examples/fastswap.cc)
+
+Fast swapping should only be used for self-defined classes for which it can be
+proven that fast-swapping does not corrupt its objects, when swapped.

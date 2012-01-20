@@ -1,0 +1,74 @@
+    Operators tt(new) and tt(delete) are used when an object or variable is
+allocated. One of the advantages of the operators tt(new) and
+tt(delete) over functions like ti(malloc) and ti(free) is that tt(new) and
+tt(delete) call the corresponding object constructors and destructors.
+
+    The allocation of an object by operator tt(new) is a two-step
+process. First the memory for the object itself is allocated. Then its
+constructor is called, initializing the object. Analogously to the
+construction of an object, the destruction is also a two-step process: first,
+the destructor of the class is called deleting the memory controlled by the
+object. Then the memory used by the object itself is freed.
+
+    Dynamically allocated arrays of objects can also be handled by tt(new) and
+tt(delete). When allocating an array of objects using operator tt(new) the
+default constructor is called for each object in the array. In cases like this
+operator ti(delete[]) must be used to ensure that the destructor is called for
+each of the objects in array.
+
+    However, the addresses returned by tt(new Type) and tt(new Type[size])
+are of identical types, in both cases a tt(Type *). Consequently it cannot be
+determined by the type of the pointer whether a pointer to dynamically
+allocated memory points to a single entity or to an array of entities.
+
+    What happens if tt(delete) rather than tt(delete[]) is used? Consider the
+following situation, in which the destructor tt(~Strings) is modified so
+that it tells us that it is called.  In a tt(main) function an array of two
+tt(Strings) objects is allocated by tt(new), to be deleted by tt(delete
+[]). Next, the same actions are repeated, albeit that the tt(delete) operator
+is called without tt([]):
+        verbinclude(examples/stringstoredelete.cc)
+    From the generated output, we see that the destructors of the individual
+tt(Strings) objects are called when tt(delete[]) is used, while only the
+first object's destructor is called if the tt([]) is omitted.
+
+    Conversely, if tt(delete[]) is called in a situation where tt(delete)
+should have been called the results are unpredictable, and the program will
+most likely crash. This problematic behavior is caused by the way the run-time
+system stores information about the size of the allocated array (usually right
+em(before) the array's first element). If a single object is allocated the
+array-specific information is not available, but it is nevertheless assumed
+present by tt(delete[]). Thus this latter operator encounters bogus values in
+the memory locations just before the array's first element. It then dutifully
+inteerprets the value it encounters there as size information, usually causing
+the program to fail.
+
+    If no destructor is defined, a emi(trivial destructor) is defined by the
+compiler. The trivial destructor ensures that the destructors of composed
+objects (as well as the destructors of em(base classes) if a class is a
+derived class, cf. chapter ref(INHERITANCE)) are called. This has serious
+implications: objects allocating memory create memory leaks hi(memory leak)
+unless precautionary measures are taken (by defining an appropriate
+destructor). Consider the following program:
+        verbinclude(examples/stringstorenodelete.cc)
+    This program produces no output at all. Why is this? The variable tt(ptr)
+is defined as a pointer to a pointer. The dynamically allocated array
+therefore consists of pointer variables and pointers are of a primitive type.
+No destructors exist for  primitive typed variables. Consequently only the
+array itself is returned, and no tt(Strings) destructor is called.
+
+    Of course, we don't want this, but require the tt(Strings) objects
+pointed to by the elements of tt(ptr) to be deleted too. In this case we have
+two options:
+    itemization(
+    it() In a for-statement visit all the elements of the tt(ptr) array,
+calling tt(delete) for each of the array's elements. This procedure was
+demonstrated in the previous section.
+    it() A i(wrapper) class is designed around a pointer (to, e.g., an object
+of some class, like tt(Strings)).  Rather than using a pointer to a
+pointer to tt(Strings) objects a pointer to an array of wrapper-class
+objects is used. As a result tt(delete[] ptr) calls the destructor of each of
+the wrapper class objects, in turn calling the tt(Strings) destructor for
+their tt(d_strings) members. Example:
+        verbinclude(examples/wrapper.cc)
+    )

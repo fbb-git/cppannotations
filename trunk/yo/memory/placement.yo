@@ -1,0 +1,101 @@
+A remarkable form of operator tt(new) is called the emi(placement new)
+ hi(new: placement) operator. Before using placement tt(new) the tthi(memory)
+header file must have been included.
+
+Placement tt(new) is passed an existing block of memory into which tt(new)
+initializes an object or value.  The block of memory should be large enough to
+contain the object, but apart from that there are no further requirements. It
+is easy to determine how much memory is used by en entity (object or variable)
+of type tt(Type): the
+ ti(sizeof) operator returns the number of bytes used by an tt(Type) entity.
+
+Entities may of course dynamically allocate memory for their own use.
+Dynamically allocated memory, however, is not part of the entity's memory
+`footprint' but it is always made available externally to the entity
+itself. This is why tt(sizeof) returns the same value when applied to
+different tt(string) objects that return different length and capacity values.
+
+The placement tt(new) operator uses the following syntax (using tt(Type) to
+indicate the used data type):
+        verb(
+    Type *new(void *memory) Type(arguments);
+        )
+    Here, tt(memory) is a block of memory of at least tt(sizeof(Type)) bytes
+and tt(Type(arguments)) is any constructor of the class tt(Type).
+
+    The placement tt(new) operator is useful in situations where classes set
+aside memory to be used later. This is used, e.g., by tt(std::string) to
+change its capacity. Calling tt(string::reserve) may enlarge that capacity
+without making memory beyond the string's length immediately available to the
+tt(string) object's users. But the object itself em(may) use its additional
+memory. E.g, when information is added to a tt(string) object it can draw
+memory from its capacity rather than performing a reallocation for each single
+character that is added to its contents.
+
+    Let's apply that philosophy to a class tt(Strings) storing tt(std::string)
+objects. The class defines a tt(string *d_memory) accessing the memory holding
+its tt(d_size) string objects as well as tt(d_capacity - d_size) reserved
+memory. Assuming that a default constructor initializes tt(d_capacity) to 1,
+doubling tt(d_capacity) whenever an additional tt(string) must be stored, the
+class must support the following essential operations:
+    itemization(
+    it() doubling its capacity when all its spare memory (e.g., made available
+by tt(reserve)) has been consumed;
+    it() adding another tt(string) object
+    it() properly deleting the installed strings and memory when a
+tt(Strings) object ceases to exist.
+    )
+    The private member tt(void Strings::reserve) is called when the current
+capacity must be enlarged to tt(d_capacity). It operates as follows:
+    First new, raw, memory is allocated (line 1). This memory is in no way
+initialized with strings. Then the available strings in the old memory are
+copied into the newly allocated raw memory using placement new (line 2). Next,
+the old memory is deleted (line 3).
+    verbinsert(RESERVE)(examples/strings.cc)
+
+    The member tt(append) adds another tt(string) object to a tt(Strings)
+object. A (public) member tt(reserve(request)) (enlarging tt(d_capacity) if
+necessary and if enlarged calling tt(reserve())) ensures that the tt(String)
+object's capacity is sufficient. Then placement tt(new) is used to install the
+latest string into the raw memory's appropriate location:
+    verbinsert(APPEND)(examples/strings.cc)
+
+    At the end of the tt(String) object's lifetime, and during enlarging
+operations all currently used dynamically allocated memory must be
+returned. This is made the responsibility of the member tt(destroy), which is
+called by the class's destructor and by tt(reserve()). More about the
+destructor itself in link(the next section)(DESTRUCTOR), but the
+implementation of the support member tt(destroy) is discussed below.
+
+    With placement tt(new) an interesting situation is encountered. Objects,
+possibly themselves allocating memory, are installed in memory that may or may
+not have been allocated dynamically, but that is usually not completely filled
+with such objects. So a simple tt(delete[]) can't be used.  On the other hand,
+a tt(delete) for each of the objects that em(are) available can't be used
+either, since those tt(delete) operations would also try to delete the memory
+of the objects themselves, which wasn't dynamically allocated.
+
+    This peculiar situation is solved in a peculiar way, only encountered in
+cases where placement tt(new) is used: memory allocated by objects initialized
+using placement tt(new) is returned by
+        hi(destructor: explicit call)
+    em(explicitly) calling the object's destructor.  The destructor is
+declared as a member having as its name the class name preceded by a tilde,
+not using any arguments. So, tt(std::string)'s destructor is named
+tt(~string). An object's destructor em(only) returns memory allocated by the
+object itself and, despite of its name, does em(not) destroy its object.  Any
+memory allocated by the em(strings) stored in our class tt(Strings) is
+therefore properly destroyed by explicitly calling their
+destructors. Following this tt(d_memory) is back to its initial status: it
+again points to raw memory. This raw memory is then returned to the common
+pool by tt(operator delete):
+    verbinsert(DESTROY)(examples/strings.cc)
+
+    So far, so good. All is well as long as we're using but one object. What
+about allocating an array of objects? Initialization is performed as usual.
+But as with tt(delete), tt(delete[]) cannot be called when the buffer was
+allocated statically. Instead, when multiple objects were initialized using
+placement tt(new) in combination with a statically allocated
+buffer all the objects' destructors must be called explicitly, as in the
+following example:
+        verbinsert(CODE)(examples/placement2.cc)

@@ -1,0 +1,57 @@
+The following hi(generator: random number)generators are available:
+center(
+table(5)(lllll)(
+rowline()
+rowfive(Class template)(Integral/Floating point)(Quality)(Speed)(Size of state)
+rowline()
+rowfive(ti(linear_congruential_engine))(Integral)(Medium)(Medium)(1)
+rowfive(ti(subtract_with_carry_engine))(Both)(Medium)(Fast)(25)
+rowfive(mersenne_twister_engine)(Integral)(Good)(Fast)(624)
+rowline()
+))
+
+The ti(linear_congruential_engine) random number generator computes
+    center(tt(value)+subs(i+1)tt( = OPENPARa * value)subs(i)tt( +
+                                                              c+CLOSEPAR % m))
+    It expects template arguments for, respectively, the data type to contain
+the generated random values; the multiplier tt(a); the additive constant
+tt(c); and the modulo value tt(m). Example:
+        verb(
+    linear_congruential_engine<int, 10, 3, 13> lincon;
+        )
+    The tt(linear_congruential) generator may be seeded by providing its
+constructor with a seeding-argument. E.g., tt(lincon(time(0))).
+
+
+The ti(subtract_with_carry_engine) random number generator computes
+    center(tt(value)+subs(i)tt( = OPENPARvalue)+subs(i-s)tt( -
+                                                            value)+subs(i-r)\
+        tt( - carry)+subs(i-1)tt(CLOSEPAR % m))
+    It expects template arguments for, respectively, the data type to contain
+the generated random values; the modulo value tt(m); and the subtractive
+constants tt(s) and tt(r). Example:
+        verb(
+    subtract_with_carry_engine<int, 13, 3, 13> subcar;
+        )
+    The tt(subtract_with_carry_engine) generator may be seeded by providing
+its constructor with a seeding-argument. E.g., tt(subcar(time(0))).
+
+The predefined tt(mersenne_twister_engine mt19937) (predefined using a
+tt(typedef) defined by the tthi(random) header file) is used in the examples
+below. It can be constructed using
+    hi(mt19937)`tt(mt19937 mt)' or it can be seeded by providing its
+constructor with an argument (e.g., tt(mt19937 mt(time(0)))).
+    Other ways to initialize the tt(mersenne_twister_engine) are beyond the
+scope of the annotations() (but see Lewis+hi(Lewis, P.A.W.) em(et
+al.)footnote(
+    Lewis, P.A.W., Goodman, A.S., and Miller, J.M. (1969), A pseudorandom
+number generator for the System/360, IBM Systems Journal, 8, 136-146.) (1969)).
+
+The random number generators may also be seeded by calling their members
+tt(seed)  accepting tt(unsigned long) values or generator functions (as in
+tt(lc.seed(time(0)), lc.seed(mt))).
+
+The random number generators offer members ti(min) and ti(max)
+returning, respectively, their minimum and maximum values (inclusive). If a
+reduced range is required the generators can be nested in a function or class
+adapting the range.

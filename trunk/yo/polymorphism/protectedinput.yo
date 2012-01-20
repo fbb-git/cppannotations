@@ -1,0 +1,119 @@
+Several protected member functions are available for input operations. The
+member functions marked tt(virtual) may or course be redefined in derived
+classes:
+    itemization(
+    ithtq(eback)
+        (char *eback())
+       (tt(Streambuf) maintains three pointers controlling its input buffer:
+        tt(eback) points to the `end of the putback' area: characters can
+        safely be put back up to this position. See also figure
+        ref(SBBUFFERS). tt(Eback) points to the em(beginning) of the input
+        buffer.)
+    ithtq(egptr)
+        (char *egptr())
+       (tt(Egptr) points just beyond the last character that can be retrieved
+        from the input buffer. See also figure ref(SBBUFFERS). If tt(gptr)
+        equals tt(egptr) the buffer must be refilled. This should be
+        implemented by calling tt(underflow), see below.)
+    ithtq(gbump)
+        (void gbump(int n))
+        (The object's tt(gptr) (see below) is advanced over  tt(n) positions.)
+    ithtq(gptr) (char *gptr()) (tt(Gptr) points to the next character to be
+        retrieved from the object's input buffer. See also figure
+        ref(SBBUFFERS).)
+    ithtq(pbackfail)
+        (virtual int pbackfail(int c))
+       (This member function may be overridden by derived classes to do
+        something intelligent when putting back character tt(c) fails. One
+        might consider restoring the old read pointer when input buffer's
+        begin has been reached. This member function is called when ungetting
+        or putting back a character fails. In particular, it is called when
+            itemization(
+            itt(gptr() == 0): no buffering used,
+            itt(gptr() == eback()): no more room to push back,
+            itt(*gptr() != c): a different character than the next character
+                to be read must be pushed back.
+            )
+       If tt(c == endOfFile()) then the input device must be reset by one
+        character position. Otherwise tt(c) must be prepended to the
+        characters to be read. The function should return endOfFile() on
+        failure. Otherwise 0 can be returned.)
+    ithtq(setg)
+        (void setg(char *beg, char *next, char *beyond))
+       (This member function initializes an input buffer. tt(beg) points to
+        the beginning of the input area, tt(next) points to the next character
+        to be retrieved, and tt(beyond) points to the location just beyond the
+        input buffer's last character. Usually tt(next) is at least tt(beg +
+        1), to allow for a put back operation. No input buffering is used when
+        this member is called as tt(setg(0, 0, 0)). See also the member
+        tt(uflow), below.)
+    ithtq(showmanyc)
+        (virtual streamsize showmanyc())
+       ((Pronounce: s-how-many-c) This member function may be overridden by
+        derived classes. It must return a guaranteed lower bound on the number
+        of characters that can be read from the device before tt(uflow) or
+        tt(underflow) returns endOfFile(). By default 0 is returned (meaning
+        no or some characters are returned before the latter two functions
+        return endOfFile()). When a positive value is returned then the next
+        call of tt(u(nder)flow) does not return endOfFile().)
+    ithtq(uflow)
+        (virtual int uflow())
+       (This member function may be overridden by derived classes to reload an
+        input buffer with fresh characters. Its default implementation is to
+        call tt(underflow) (see below). If tt(underflow()) fails, endOfFile()
+        is returned.  Otherwise, the next available character is
+        returned as tt(*gptr()) following a tt(gbump(-1)). tt(Uflow) also
+        moves the pending character that is returned to the backup
+        sequence. This is different from tt(underflow()), which merely returns
+        the next available character, but does not alter the input pointer
+        positions.
+
+        When em(no) input buffering is required this function,
+        rather than tt(underflow), can be overridden to produce the next
+        available character from the device to read from.)
+    ithtq(underflow)
+        (virtual int underflow())
+       (This member function may be overridden by derived classes to read
+        another character from the device. The default implementation is to
+        return endOfFile().
+
+        It is called when
+            itemization(
+            it() there is no input buffer (tt(eback() == 0))
+            itt(gptr() >= egptr()): the input buffer is exhausted.
+            )
+
+        Often, when buffering is used, the complete buffer
+        is not refreshed as this would make it impossible to put back
+        characters immediately following a reload. Instead, buffers are often
+        refreshed in halves. This system is called a emi(split buffer).
+
+        Classes derived from tt(streambuf) for reading normally at least
+        override tt(underflow). The prototypical example of an overridden
+        tt(underflow) function looks like this:
+            verb(
+    int underflow()
+    {
+        if (not refillTheBuffer())  // assume a member d_buffer is available
+            return EOF;
+                                    // reset the input buffer pointers
+        setg(d_buffer, d_buffer, d_buffer + d_nCharsRead);
+
+                                    // return the next available character
+                                    // (the cast is used to prevent
+                                    // misinterpretations of 0xff characters
+                                    // as EOF)
+        return static_cast<unsigned char>(*gptr());
+    }
+            )
+        )
+    ithtq(xsgetn)
+        (virtual streamsize xsgetn(char *buffer, streamsize n))
+       (This member function may be overridden by derived classes to retrieve
+        at once tt(n) characters from the input device. The default
+        implementation is to call tt(sbumpc) for every single character
+        meaning that by default this member (eventually) calls tt(underflow)
+        for every single character. The function returns the actual number of
+        characters read or endOfFile(). Once endOfFile() is returned the
+        tt(streambuf) stops reading the device.)
+    )

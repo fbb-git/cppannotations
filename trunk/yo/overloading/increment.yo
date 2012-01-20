@@ -1,0 +1,110 @@
+Overloading the i(increment operator) hi(operator++)(tt(operator++)) and
+    i(decrement operator) hi(operator--)(opdecrement()) introduces a small
+problem: there are two versions of each operator, as they may be used as
+em(postfix operator) (e.g., tt(x++)) or as em(prefix operator) (e.g.,
+tt(++x)).
+
+    Used as em(postfix) operator, the value's object is returned as an
+emi(rvalue), temporary const object and the post-incremented variable itself
+disappears from view. Used as em(prefix) operator, the variable is
+incremented, and its value is returned as emi(lvalue) and it may be altered
+again by modifying the prefix operator's return value. Whereas these
+characteristics are not em(required) when the operator is overloaded, it is
+strongly advised to implement these characteristics in any overloaded
+increment or decrement operator.
+
+    Suppose we define a emi(wrapper class) around the tt(size_t) value
+type. Such a class could offer the following (partially shown) interface:
+        verb(
+    class Unsigned
+    {
+        size_t d_value;
+
+        public:
+            Unsigned();
+            explicit Unsigned(size_t init);
+
+            Unsigned &operator++();
+    }
+        )
+    The class's last member declares the em(prefix) overloaded increment
+operator. The returned em(lvalue) is tt(Unsigned &). The member is easily
+implemented:
+        verb(
+    Unsigned &Unsigned::operator++()
+    {
+        ++d_value;
+        return *this;
+    }
+        )
+
+    To define the em(postfix) operator, an overloaded version of the operator
+is defined, expecting a (dummy) tt(int) argument. This might be considered a
+emi(kludge), or an acceptable application of function overloading. Whatever
+your opinion in this matter, the following can be concluded:
+    itemization(
+    it() Overloaded increment and decrement operators em(without parameters)
+are em(prefix) operators, and should return em(references) to the current
+object.
+    it() Overloaded increment and decrement operators em(having an int
+parameter) are em(postfix) operators, and should return a value which
+is a copy of the object at the point where its postfix operator is used.
+    )
+    The postfix increment operator is declared as follows in the class
+tt(Unsigned)'s interface:
+        verb(
+    Unsigned operator++(int);
+        )
+    It may be implemented as follows:
+        verb(
+    Unsigned Unsigned::operator++(int)
+    {
+        Unsigned tmp(*this);
+        ++d_value;
+        return tmp;
+    }
+        )
+    Note that the operator's parameter is not used. It is only part of the
+implementation to em(disambiguate) the prefix- and postfix operators in
+implementations and declarations.
+
+    In the above example the statement incrementing the current object offers
+the em(nothrow) guarantee as it only involves an operation on a
+primitive type. If the initial copy construction throws then the original
+object is not modified, if the return statement throws the object has safely
+been modified. But incrementing an object could itself throw exceptions. How
+to implement the increment operators in that case? Once again, tt(swap) is our
+friend. Here are the pre- and postfix operators offering the strong guarantee
+when the member tt(increment) performing the increment operation may throw:
+        verb(
+    Unsigned &Unsigned::operator++()
+    {
+        Unsigned tmp(*this);
+        tmp.increment();
+        swap(tmp);
+        return *this;
+    }
+    Unsigned Unsigned::operator++(int)
+    {
+        Unsigned tmp(*this);
+        tmp.increment();
+        swap(tmp);
+        return tmp;
+    }
+        )
+    The postfix increment operator first creates a copy of the current
+object. That copy is incremented and then swapped with the current object. If
+tt(increment) throws the current object remains unaltered; the swap operation
+ensures that the original object is returned and the current object becomes
+the incremented object.
+
+    When calling the increment or decrement operator using its full member
+function name then any tt(int) argument passed to the function results in
+calling the postfix operator. Omitting the argument results in calling the
+prefix operator. Example:
+        verb(
+    Unsigned uns(13);
+
+    uns.operator++();     // prefix-incrementing uns
+    uns.operator++(0);    // postfix-incrementing uns
+        )

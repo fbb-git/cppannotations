@@ -1,0 +1,33 @@
+Earlier in the annotations() (section ref(EMPTYTHROW)) we hinted at the
+possibility of designing a class tt(Exception) whose tt(process) member
+would behave differently, depending on the kind of exception that was
+thrown. Now that we've introduced i(polymorphism) we can further develop this
+example.
+
+It probably does not come as a surprise that our class tt(Exception) should be
+a polymorphic base class from which special exception handling classes can be
+derived. In section ref(EMPTYTHROW) a member tt(severity) was used offering
+functionality that may be replaced by members of the tt(Exception) base class.
+
+The base class tt(Exception) may be  designed as follows:
+        verbinclude(examples/exception.h)
+    Objects of this class may be inserted into tt(ostream)s but the core
+element of this class is the virtual member function tt(action), by default
+rethrowing an exception.
+
+A derived class tt(Warning) simply prefixes the thrown warning text by the
+text tt(Warning:), but a derived class tt(Fatal) overrides
+tt(Exception::action) by calling hi(terminate)tt(std::terminate), forcefully
+terminating the program.
+
+    Here are the classes tt(Warning) and tt(Fatal)
+        verbinclude(examples/warning.h)
+        verbinclude(examples/fatal.h)
+
+When the example program is started without arguments it throws a
+tt(Fatal) exception, otherwise it throws a tt(Warning) exception. Of
+course, additional exception types could also easily be defined. To make the
+example compilable the tt(Exception) destructor is defined above tt(main). The
+default destructor cannot be used, as it is a virtual destructor. In practice
+the destructor should be defined in its own little source file:
+        verbinclude(examples/emptythrow.cc)

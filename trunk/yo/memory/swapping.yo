@@ -1,0 +1,95 @@
+Many classes (e.g., tt(std::string)) offer ti(swap) members allowing us to
+swap two of their objects. The em(Standard Template Library) (STL, cf. chapter
+ref(STL)) offers various functions related to swapping. There is even a
+tt(swap) em(generic algorithm) (cf. section ref(SWAP)), which is commonly
+implemented using the assignment operator. When implementing a tt(swap) member
+for our class tt(Strings) it could be used, provided that all of tt(String)'s
+data members can be swapped. As this is true (em(why) this is true is
+discussed shortly) we can augment tt(class Strings) with a tt(swap) member:
+        verb(
+    void Strings::swap(Strings &other)
+    {
+        swap(d_string, other.d_string);
+        swap(d_size, other.d_size);
+    }
+        )
+    Having added this member to tt(Strings) the copy-and-swap implementation
+of tt(String::operator=) can now be used.
+
+    When two variables (e.g., tt(double one) and tt(double two)) are swapped,
+each one holds the other one's value after the swap. So, if tt(one == 12.50)
+and tt(two == -3.14) then after tt(swap(one, two) one == -3.14) and tt(two ==
+12.50).
+
+    Variables of primitive data types (pointers and the built-in types) can be
+swapped, class-type objects can be swapped if their classes offer a tt(swap)
+member.
+
+    So should we provide our classes with a swap member, and if so, how should
+it be implemented?
+
+    The above example (tt(Strings::swap)) shows the standard way to implement
+a tt(swap) member: each of its data members are swapped in turn. But there are
+situations where a class cannot implement a swap member this way, even if the
+class only defines data members of primitive data types. Consider the
+situation depicted in figure ref(SWAPLIST).
+
+    figure(memory/fswap)(Swapping a linked list)(SWAPLIST)
+
+In this figure there are four objects, each object has a pointer pointing to
+the next object. The basic organization of such a class looks like this:
+        verb(
+    class List
+    {
+        List *d_next;
+        ...
+    };
+        )
+    Initially four objects have their tt(d_next) pointer set to the next
+object: 1 to 2, 2 to 3, 3 to 4. This is shown in the upper half of the
+figure. At the bottom half it is shown what happens if objects 2 and 3 are
+swapped: 3's tt(d_next) point is now at object 2, which still points to 4; 2's
+tt(d_next) pointer points to 3's address, but 2's tt(d_next) is now at object
+3, which is therefore pointing to itself. Bad news!
+
+Another situation where swapping of objects goes wrong happens with classes
+having data members pointing or referring to data members of the same
+object. Such a situation is shown in figure ref(SWAPSELF).
+
+  figure(memory/fswap2)(Swapping objects with self-referential data)(SWAPSELF)
+
+Here, objects have two data members, as in the following class setup:
+        verb(
+    class SelfRef
+    {
+        size_t *d_ownPtr;       // initialized to &d_data
+        size_t d_data;
+    };
+        )
+    The top-half of figure ref(SWAPSELF) shows two objects; their upper data
+members pointing to their lower data members. But if these objects are swapped
+then the situation shown in the figure's bottom half is encountered. Here the
+values at addresses a and c are swapped, and so, rather than pointing to their
+bottom data members they suddenly point to other object's data members. Again:
+bad news.
+
+The common cause of these failing swapping operations is easily recognized:
+simple swapping operations must be avoided when data members point or refer to
+data that is involved in the swapping. If, in figure ref(SWAPSELF) the a and c
+data members would point to information outside of the two objects (e.g., if
+they would point to dynamically allocated memory) then the simple swapping
+would succeed.
+
+However, the difficulty encountered with swapping tt(SelfRef) objects does not
+imply that two tt(SelfRef) objects cannot be swapped; it only means that we
+must be careful when designing tt(swap) members. Here is an implementation of
+tt(SelfRef::swap):
+        verb(
+    void SelfRef::swap(SelfRef &other)
+    {
+        swap(d_data, other.d_data);
+    }
+        )
+    In this implementation swapping leaves the self-referential data member
+as-is, and merely swaps the remaining data. A similar tt(swap) member could be
+designed for the linked list shown in figure ref(SWAPLIST).

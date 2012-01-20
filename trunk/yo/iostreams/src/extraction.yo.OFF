@@ -1,0 +1,69 @@
+With the em(extraction) operator, a similar situation holds true as with the
+insertion operator, the extraction operator operating comparably to the
+tt(scanf()) function. I.e., white space characters are skipped. Also, the
+operator doesn't expect em(pointers) to variables that should be given new
+values, but em(references) (with the exception of the tt(char *), but
+tt(string) variables are used as references).
+
+Consider the following code:
+
+verb(
+    int
+        i1,
+        i2;
+    char
+        c;
+
+    cin >> i1 >> i2;                // see (1)
+
+    while (cin >> c && c != '.')    // see (2)
+        process(c);
+
+    char                            // see (3)
+        buffer[80];
+                                    // see (3)
+    while (cin >> buffer)
+        process(buffer);
+)
+
+This example shows several characteristics of the extraction operator worth
+noting. Assume the input consists of the following lines:
+
+verb(
+    125
+    22
+    h e l l o
+    w o r l d .
+    this example shows
+    that we're not yet done
+    with C++
+)
+
+starteit()
+    eit() In the first part of the example two int values are extracted
+        from the input:
+        these values are assigned, respectively, to tt(i1)  and tt(i2).
+        White-space (newlines, spaces, tabs) is skipped, and the values
+        125 and 22 are assigned to tt(i1) and tt(i2).
+
+        If the assignment em(fails), e.g., when there are no numbers to be
+        converted, the result of the extraction operator evaluates to a zero
+        result, which can be used for testing purposes, as in:
+
+        center(tt(if (!(cin >> i1))))
+    eit() In the second part, characters are read. However, white space is
+        skipped, so the characters of the words tt(hello) and tt(world) are
+        produced by tt(cin), but the blanks that appear in between are not.
+
+        Furthermore, the final tt('.') is not processed, since that one's
+        used as a sentinel: the delimiter to end the tt(while)-loop, when the
+        extraction is still successful.
+    eit() In the third part, the argument of the extraction operator is yet
+        another type of variable: when a tt(char *) is passed, white-space
+        delimited strings are extracted. So, here the words tt(this, example,
+        shows, that, we're, not, yet, done, with) and tt(C++) are returned.
+
+        Then, the end of the information is reached. This has two consequences:
+        First, the tt(while)-loop terminates. Second, an empty string is
+        copied into the tt(buffer) variable.
+endeit()

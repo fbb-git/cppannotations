@@ -1,0 +1,68 @@
+To add operator overloading to  a class, the class interface is simply
+provided  with a (usually em(public)) member function naming the particular
+operator. That member function is thereupon implemented.
+
+To overload the assignment operator tt(=), a member tt(operator=(Class const
+&rhs)) is added to the class interface.  Note that the function name consists
+of two parts: the keyword ti(operator), followed by the operator itself.  When
+we augment a class interface with a member function tt(operator=), then that
+operator is em(redefined) for the class, which prevents the default operator
+from being used. In the link(previous section)(OVERLOADASSIGN) the function
+tt(assign) was provided to solve the problems resulting from using the
+default assignment operator. Rather than using an ordinary member
+function bf(C++) commonly uses a dedicated operator generalizing the
+operator's default behavior to the class in which it is defined.
+
+The tt(assign) member mentioned before may be redefined as follows (the member
+tt(operator=) presented below is a first, rather unsophisticated, version of
+the overloaded assignment operator.  It will shortly be improved):
+        verb(
+    class Person
+    {
+        public:                             // extension of the class Person
+                                            // earlier members are assumed.
+            void operator=(Person const &other);
+    };
+        )
+    Its implementation could be
+        verb(
+    void Person::operator=(Person const &other)
+    {
+        delete[] d_name;                      // delete old data
+        delete[] d_address;
+        delete[] d_phone;
+
+        d_name = strdupnew(other.d_name);   // duplicate other's data
+        d_address = strdupnew(other.d_address);
+        d_phone = strdupnew(other.d_phone);
+    }
+        )
+    This member's actions are similar to those of the previously mentioned
+member tt(assign), but this member is automatically called when the assignment
+operator tt(=) is used. Actually there are em(two) ways to
+call overloaded operators as shown in the next example:
+        verb(
+    void tmpPerson(Person const &person)
+    {
+        Person tmp;
+
+        tmp = person;
+        tmp.operator=(person);  // the same thing
+    }
+        )
+    Overloaded operators are seldom called explicitly, but explicit calls must
+be used (rather than using the plain operator syntax) when you explicitly
+em(want) to call the overloaded operator from a pointer to an object (it is
+also possible to dereference the pointer first and then use the plain operator
+syntax, see the next example):
+        verb(
+    void tmpPerson(Person const &person)
+    {
+        Person *tmp = new Person;
+
+        tmp->operator=(person);
+        *tmp = person;          // yes, also possible...
+
+        delete tmp;
+    }
+        )

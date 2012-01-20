@@ -1,0 +1,189 @@
+The header file tthi(climits) defines constants for various types, e.g.,
+ti(INT_MAX) defines the maximum value that can be stored in an tt(int).
+
+The disadvantage of the limits defined in tt(climits) is that they are fixed
+limits. Let's assume you write a function template that receives an argument
+of a certain type. E.g,
+        verb(
+    template<typename Type>
+    Type operation(Type &&type);
+        )
+    Assume this function should return the largest negative value for tt(Type)
+if tt(type) is a negative value and the largest positive value if tt(type) is
+a positive value. However, 0 should be returned if the type is not an integral
+value.
+
+    How to proceed? 
+
+    Since the constants in tt(climits) can only be used if the type to use is
+already known, the only approach seems to be to create function template
+specializations for the various integral types, like:
+        verb(
+    template<>
+    int operation<int>(int &&type)
+    {
+        return type < 0 ? INT_MIN : INT_MAX;
+    }
+        )
+
+The facilities provided by i(numeric_limits) provide an alternative. To use
+these facilities the header file tthi(limits) header file must be included.
+
+The class template tt(numberic_limits) offer various members answering all
+kinds of questions that could be asked of numeric types. Before introducing
+these members, let's have a look at how we could implement the tt(operation)
+function template as just one single function template:
+        verb(
+    template<typename Type>
+    Type operation(Type &&type)
+    {
+        return 
+            not numeric_limits<Type>::is_integer ? 0 :
+            type < 0 ? numeric_limits<Type>::min() :    
+                       numeric_limits<Type>::max();
+    }
+        )
+    Now tt(operation) can be used for all the language's primitive types.
+    
+    Here is an overview of the facilities offered by tt(numeric_limits). Note
+that the member functions defined by tt(numeric_limits) return tt(constexpr)
+values. A member `tt(member)' defined by tt(numeric_limits) for type tt(Type)
+can be used as follows:
+        verb(
+    numeric_limits<Type>::member    // data members
+    numeric_limits<Type>::member()  // member functions
+        )
+    All tt(numeric_limits) member functions return tt(consexpr) values.
+
+    itemization(
+    ithtq(denorm_min)(Type denorm_min())(
+        if available for tt(Type): its minimum positive denormalized value;
+        otherwise it returns tt(numeric_limits<Type>::min()).
+    )
+    ithtq(digits)(int digits)(
+        the number of non-sign bits used by tt(Type) values, or (floating
+        point types) the number of digits in the mantissa are returned.
+    )
+    ithtq(digits10)(int digits10)(
+        the number of digits that are required to represent a tt(Type) value
+        without  changing it.
+    )
+    ithtq(epsilon)(Type constexpr epsilon())(
+        The difference for tt(Type) between the smallest value exceeding 1 and
+        1 itself.
+    )
+    ithtq(has_denorm)(float_denorm_style has_denorm)(
+        hi(float_denorm_style)
+        hi(denorm_style)
+        denormalized floating point value representations use a variable
+        number of exponent bits. The tt(has_denorm) member returns information
+        about denormalized values for type tt(Type):
+        itemization(
+        itt(denorm_absent): tt(Type) does not allow denormalized values;
+        itt(denorm_indeterminate): tt(Type) may or may not use denormalized
+            values; the compiler cannot determine this compile-time;
+        itt(denorm_present): tt(Type) uses denormalized values;
+        )
+    )
+    ithtq(has_denorm_loss)(bool has_denorm_loss)(
+        tt(true) if a loss of accuracy was detected as a result of using
+        denormalization (rather than being an inexact result).
+    )
+    ithtq(has_infinity)(bool has_infinity)(
+        tt(true) if tt(Type) has a representation for positive infinity.
+    )
+    ithtq(has_quiet_NaN)(bool has_quiet_NaN)(
+        tt(true) if tt(Type) has a representation for a non-signaling
+        hi(NaN)`i(Not-a-Number)' value.
+    )
+    ithtq(has_signaling_NaN)(bool has_signaling_NaN)(
+        tt(true) if tt(Type) has a representation for a signaling
+        `Not-a-Number' value.
+    )
+    ithtq(infinity)(Type constexpr infinity())(
+        if available for tt(Type): its positive infiniy value.
+    )
+    ithtq(is_bounded)(bool is_bounded)(
+        tt(true) if tt(Type) contains a finite set of values.
+    )
+    ithtq(is_exact)(bool is_exact)(
+        tt(true) if tt(Type) uses an exact representation.
+    )
+    ithtq(is_iec559)(bool is_iec559)( 
+        tt(true) if tt(Type) uses the i(IEC-559) (i(IEEE-754)) standard. Such
+        types always return tt(true) for tt(has_infinity, has_quiet_NaN) and
+        tt(has_signaling_NaN), while tt(infinity(), quiet_NaN()) and
+        tt(signaling_NaN()) return non-zero values.
+    )
+    ithtq(is_integer)(bool is_integer)(
+        tt(true) if tt(Type) is an integral type.
+    )
+    ithtq(is_modulo)(bool is_modulo)(
+        tt(true) if tt(Type) is a `modulo' type. Values of modulo types can
+        always be added, but the addition may `wrap around' producing a
+        smaller tt(Type) result than either of the addition's two operands.
+    )
+    ithtq(is_signed)(bool is_signed)(
+        tt(true) if tt(Type) is signed.
+    )
+    ithtq(is_specialized)(bool is_specialized)(
+        tt(true) for specializations of tt(Type).
+    )
+    ithtq(max)(T constexpr max())(
+        tt(Type)'s maximum value.
+    )
+    ithtq(min)(T constexpr min())( 
+        tt(Type)'s minimum value. For denormalized floating point types the
+        minimum positive normalized value.
+    )
+    ithtq(max_exponent)(int max_exponent)( 
+        maximum positive integral value for the exponent of a floating point
+        type tt(Type) producing a valid tt(Type) value.
+    )
+    ithtq(max_exponent10)(int max_exponent10)( 
+        maximum integral value for the exponent that can be used for base 10,
+        producing a valid tt(Type) value. 
+    )
+    ithtq(min_exponent)(int min_exponent)( 
+        minimum negative integral value for the exponent of a floating point
+        type tt(Type) producing a valid tt(Type) value.
+    )
+    ithtq(min_exponent10)(int min_exponent10)( 
+        minimum negative integral value for the exponent that can be used for
+        base 10, producing a valid tt(Type) value. 
+    )
+    ithtq(quiet_NaN)(Type constexpr quiet_NaN())(
+        if available for tt(Type): its a non-signaling `Not-a-Number' value.
+    )
+    ithtq(radix)(int radix)(        
+        if tt(Type) is an integral type: base of the representation; if
+        tt(Type) is a floating point type: the base of the exponent of the
+        representation. 
+    )
+    ithtq(round_error)(Type constexpr round_error())( 
+        the maximum rounding error for tt(Type).
+    )
+    ithtq(round_style)(float_round_style round_syle)( 
+        the rounding style used by tt(Type). It has one of the following
+        tt(enum) ti(float_round_style) 
+                hi(round_style) values:
+        itemization(
+        itt(round_toward_zero): values are rounded toward zero;
+        itt(round_to_nearest): values are rounded to the nearest representable
+            value;
+        itt(round_toward_infinity):values are rounded toward infinity;
+        itt(round_toward_neg_infinity): if it rounds toward negative infinity;
+        itt(round_indeterminate): if the rounding style is indeterminable at
+            compile-time. 
+        )
+    )
+    ithtq(signaling_NaN)(Type constexpr signaling_NaN())(
+        if available for tt(Type): its a signaling `Not-a-Number' value.
+    )
+    ithtq(tinyness_before)(bool tinyness_before)(
+        tt(true) if tt(Type) allows tinyness to be detected before rounding.
+    )
+    ithtq(traps)(bool traps)(
+        tt(true) if tt(Type) implements trapping.
+    )
+    )

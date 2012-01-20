@@ -1,0 +1,42 @@
+Occasionaly, the linker generates an error like the following:
+ hi(undefined reference to vtable) hi(vtable: undefined reference)
+        verb(
+    In function `Derived::Derived()':
+        : undefined reference to `vtable for Derived'
+        )
+    This error is generated when a virtual function's implementation is
+missing in a derived class, but the function is mentioned in the derived
+class's interface.
+
+    Such a situation is easily encountered:
+    itemization(
+    it() Construct a (complete) base class defining a virtual member function;
+    it() Construct a Derived class mentioning the virtual function in its
+        interface;
+    it() The Derived class's virtual function is not implemented. Of course,
+the compiler doesn't know that the derived class's function is not implemented
+and will, when asked, generate code to create a derived class object;
+    it() Eventually, the linker is unable to find the derived class's virtual
+member function. Therefore, it is unable to construct the derived class's
+vtable;
+    it() The linker complains with the message:
+        verb(
+    undefined reference to `vtable for Derived'
+        )
+    )
+    Here is an example producing the error:
+        verbinclude(examples/vtable.cc)
+    It's of course easy to correct the error: implement the derived class's
+missing virtual member function.
+
+    Virtual functions should em(never) be implemented inline. Since the vtable
+contains the addresses of the class's virtual functions, these functions must
+have addresses and so they must have been compiled as real (out-of-line)
+functions. By defining virtual functions inline you run the risk that the
+compiler simply overlooks those functions as they may very well never be
+explicitly called (but only polymorphically, from a base class pointer or
+reference). As a result their addresses may never enter their class's vtables
+(and even the vtable itself might remain undefined), causing linkage problems
+or resulting in programs showing unexpected behavior. All these kinds of
+problems are simply avoided: em(never) define virtual members inline (see also
+section ref(NOTINLINE)).

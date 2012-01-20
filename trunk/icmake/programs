@@ -1,0 +1,49 @@
+
+//  SEE ALSO src/htmlindex/build FOR A G++ VERSION
+
+#define GPP "g++"
+#define GCC "gcc"
+
+//#define GPP "g++-4.6"
+//#define GCC "gcc-4.6"
+
+void programs(int docs)
+{
+    md("tmp/bin");
+    
+    if (docs)
+    {
+        if (!exists("tmp/bin/htmlindex"))
+        {
+            chdir("src/htmlindex");
+            run("./build");
+            chdir("../../");
+        }
+
+        if (!exists("tmp/bin/rmindexlines"))
+            run(GPP " " CPPOPT  
+            " -o tmp/bin/rmindexlines src/rmindexlines/rmindexlines.cc -s");
+
+        return;
+    }
+
+    if (!exists("tmp/bin/paren"))
+        run(GPP " " CPPOPT " -o tmp/bin/paren src/paren/paren.cc -lbobcat -s");
+
+    if (!exists("tmp/bin/trim"))
+        run(GPP " " CPPOPT  " -o tmp/bin/trim src/trim/trim.cc -s");
+
+    if (!exists("tmp/bin/tab"))
+    {
+        chdir("src/tab");
+        run(GCC " " COPT  " -o ../../tmp/bin/tab *.c -lfl -s");
+        chdir("../../");
+    }
+}
+
+
+
+
+
+
+

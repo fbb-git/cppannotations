@@ -1,0 +1,64 @@
+In addition to function and class templates, C++11 also uses templates to
+define an alias for a set of types. This is called a 
+    emi(template alias). Template aliases can be specialized. The name of a
+template alias is a type name.
+
+Template aliases can be used as arguments to template template
+parameters. This allows us to avoid the `unexpected default parameters' you
+may encounter when using template template parameters.  E.g., defining a
+template specifying a tt(template <typename> class Container) is fine, but it
+is impossible to specify a container like tt(vector) or tt(set) as template
+template argument, as tt(vector) and tt(set) containers also define a second
+template parameter, specifying their allocation policy. 
+
+Template aliases are defined as tt(using) declarations, specifying an alias
+for an existing (maybe partially or fully specialized) template type. In the
+following example tt(Vector) is defined as an alias for tt(vector):
+        verb(
+    template <typename Type>
+    using Vector = std::vector<Type>;
+
+    Vector<int> vi;             // same as std::vector<int>
+    std::vector<int> vi2(vi);   // copy construction: OK
+        )
+    So, what's the point of doing this?
+    Looking at the tt(vector) container, we see that it defines two, rather
+than one, template parameters, the second parameter being the allocation
+policy tt(_Alloc), by default set to tt(std::allocator<_Tp>):
+        verb(
+    template<typename _Tp, typename _Alloc = std::allocator<_Tp> >
+    class vector: ...
+        )
+    Now define a class template tt(Generic) defining a template template
+parameter: 
+        verb(
+    template <typename Type, template <typename> class Container>
+    class Generic: public Container<Type>
+    {
+        ...
+    };
+        )
+    Most likely, tt(Generic) offers members made available by the container
+that is actually used to create the tt(Generic) object, and adds to those some
+members of it own. However, a simple container like tt(std::vector) cannot be
+used, as tt(std::vector) doesn't match a tt(template <typename> class
+Container>) parameter; it requires a tt(template <typename, typename> class
+Container>) template template parameter.
+
+    The tt(Vector) template alias, however, em(is) defined as a template
+having one template type parameter, and it uses the vector's default
+allocator. Consequently, passing a tt(Vector) to tt(Generic) works fine:
+        verb(
+    Generic<int, Vector> giv;       // OK
+    Generic<int, std::vector> err;  // won't compile: 2nd argument mismatch
+        )
+
+    With the aid of a small template alias it is also possible to use a
+completely different kind of container, like a tt(map), with tt(Generic):
+        verb(
+    template <typename Type>
+    using MapString = std::map<Type, std::string>;
+
+    Generic<int, MapString> gim;    // uses map<int, string>
+        )
+

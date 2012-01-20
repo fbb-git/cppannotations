@@ -1,0 +1,159 @@
+    In various classes overloading binary operators (like ti(operator+)) can
+be a very natural extension of the class's functionality. For example, the
+tt(std::string) class has various overloaded forms of tt(operator+).
+
+    Most binary operators come in two flavors: the plain binary operator (like
+the tt(+) operator) and the binary assignment variant (like the tt(+=)
+operator). Whereas the plain binary operators return values,
+the binary assignment operators return a reference to the
+object to which the operator was applied. For example, with tt(std::string)
+objects the following code (annotations below the example) may be used:
+        verbinclude(examples/binarystring.cc)
+    itemization(
+    it() at tt(// 1) the contents of tt(s3) is added to tt(s2). Next, tt(s2)
+is returned, and its new contents are assigned to tt(s1). Note that tt(+=)
+returns tt(s2) itself.
+    it() at tt(// 2) the contents of tt(s3) is also added to tt(s2), but as
+tt(+=) returns tt(s2) itself, it's possible to add some more to tt(s2)
+    it() at tt(// 3) the tt(+) operator returns a tt(std::string) containing
+the concatenation of the text tt(prefix) and the contents of tt(s3). This
+string returned by the tt(+) operator is thereupon assigned to tt(s1).
+    it() at tt(// 4) the tt(+) operator is applied twice. The effect is:
+        enumeration(
+        eit() The first tt(+) returns a tt(std::string) containing
+the concatenation of the text tt(prefix) and the contents of tt(s3).
+        eit() The second tt(+) operator takes this returned string as its left
+hand value, and returns a string containing the concatenated text of its left
+and right hand operands.
+        eit() The string returned by the second tt(+) operator represents the
+value of the expression.
+        )
+    )
+
+    Consider the following code, in which a class tt(Binary) supports
+an overloaded tt(operator+):
+        verbinclude(examples/binary1.cc)
+    Compilation of this little program fails for statement tt(// 2), with the
+compiler reporting an error like:
+        verb(
+    error: no match for 'operator+' in '3 + b2'
+        )
+    Why is statement tt(// 1) compiled correctly whereas statement tt(// 2)
+won't compile?
+
+    In order to understand this remember em(promotions). As we have seen in
+section ref(EXPLICIT), constructors expecting a single argument may be
+implicitly activated when an argument of an appropriate type is
+provided. We've encountered this repeatedly with tt(std::string) objects,
+where an tt(ASCII-Z) string may be used to initialize a tt(std::string)
+object.
+
+    Analogously, in statement tt(// 1), the tt(+) operator is called for the
+tt(b2) object. This operator expects another tt(Binary) object as its right
+hand operand. However, an tt(int) is provided. As a constructor
+tt(Binary(int)) exists, the tt(int) value is first promoted to a tt(Binary)
+object. Next, this tt(Binary) object is passed as argument to the
+tt(operator+) member.
+
+    In statement tt(// 2) no promotions are available: here the tt(+) operator
+is applied to an lvalue that is an tt(int). An tt(int) is a primitive type and
+primitive types have no concept of `constructors', `member functions' or
+`promotions'.
+
+    How, then, are promotions of left-hand operands implemented in statements
+like tt("prefix " + s3)? Since promotions are applied to function arguments,
+we must make sure that both operands of binary operators are arguments. This
+implies that plain binary operators supporting promotions for
+either their left-hand side operand or right-hand side operand should be
+declared as
+        hi(operator: free)hi(function: free)em(free operators),
+    also called em(free functions).
+
+    Functions like the plain binary operators conceptually belong to the class
+for which they implement the binary operator. Consequently they should be
+declared in the class's header file. We cover their implementations
+shortly, but here is our first revision of the declaration of the class
+tt(Binary), declaring an overloaded tt(+) operator as a free function:
+        verbinclude(examples/binary1.h)
+
+    By defining binary operators as free functions, the following promotions
+are possible:
+    itemization(
+    it() If the left-hand operand is of the intended class type, the right
+hand argument is promoted whenever possible;
+    it() If the right-hand operand is of the intended class type, the left
+hand argument is promoted whenever possible;
+    it() No promotions occur when none of the operands are of the intended
+class type;
+    it() An ambiguity occurs when promotions to different classes are possible
+for the two operands. For example:
+        verbinclude(examples/binaryambigu.cc)
+    Here, both overloaded tt(+) operators are possible when compiling
+the statement tt(a + a). The ambiguity must be solved by explicitly promoting
+one of the arguments, e.g., tt(a + B(a)) allows the compiler to resolve
+the ambiguity to the first overloaded tt(+) operator.
+    )
+
+    The next step is to implement the corresponding overloaded binary
+assignment operator, having the form tt(@=), with tt(@) being a binary
+operator. As this operator em(always) has a left-hand operand which is an
+object of its own class, it is implemented as a true member
+function. Furthermore, the binary assignment operator should return a
+reference to the object to which the binary operation applies, as the
+object might be modified in the same statement. E.g.,
+    tt((s2 += s3) + " postfix"). Here is our second revision of the class
+tt(Binary), showing both the declaration of the plain binary operator and the
+corresponding binary assignment operator:
+        verbinclude(examples/binary2.h)
+
+How should the binary assignment operator be implemented?  When implementing
+the binary assignment operator the strong guarantee should again be kept in
+mind. Use a temporary object and swap if the binary operation might
+throw. Example:
+        verb(
+    Binary &operator+=(Binary const &other)
+    {
+        Binary tmp(*this);
+        tmp.add(other);     // this may throw
+        swap(tmp);
+        return *this;
+    }
+        )
+
+    It's easy to implement the plain binary operator for classes offering
+the matching binary assignment operator: the tt(lhs) argument is
+copied into a tt(Binary tmp) to which the tt(rhs) operand is added. Then
+tt(tmp) is returned. The copy construction and two statements could be
+contracted into one single return statement, but then compilers usually aren't
+able to apply copy elision in this case. But
+copy elision em(is) usually used when the steps are taken separately:
+        verbinclude(examples/binary3.h)
+
+    But wait! Remember the design principle for move-aware classes that was
+given in section ref(MOVEPRINCIPLE)? When implementing binary operators we're
+doing exactly that what was mentioned in that design principle. A temporay
+object is constructed and the binary assignment operation is applied to the
+temporary object.
+
+    If the class tt(Binary) is a move-aware class then we can add a move-aware
+binary operator to our class at very little cost. The actual work is performed
+by the binary assignment operator, as described. However, this operator is
+called from the move-aware binary operator having prototype
+        verb(
+    Binary operator+(Binary &&ltmp, Binary const &rhs);
+        )
+    The traditional binary operator's implementation now simply consists of
+two steps:
+        itemization(
+        it() A copy of the left-hand side operand is made usign the class's
+copy constructor;
+        it() The move-aware binary operator is called, passing it the
+anonymized copy as its left-hand side operand and returning its result as the
+binary operator's result.
+        )
+
+    Here is the declaration and implementation of the traditional and
+move-aware binary assignment operator of the class tt(Binary) for
+tt(operator+):
+
+        verbinclude(examples/binary4.h)

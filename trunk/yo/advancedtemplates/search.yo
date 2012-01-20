@@ -1,0 +1,37 @@
+To determine whether a particular type (called em(SearchType) below) is
+present in a given tt(TypeList), an algorithm is used that either defines
+`index' as -1 (if SearchType is not an element of the tt(TypeList) ) or it
+defines `index' as the index of the first occurrence of SearchType in
+the tt(TypeList). The following algorithm is used:
+    itemization(
+    it() If the tt(TypeList) is empty, `index' is -1;
+    it() If the tt(TypeList)'s first element equals   SearchType, `index' is 0;
+    it() Otherwise  `index' is:
+        itemization(
+        it() -1 if searching for SearchType in tt(TypeList)'s tail results in
+            `index' == -1;
+        it() Otherwise (SearchType was found in tt(TypeList)'s tail) index is
+            set to 1 + the index obtained when searching for SearchType in the
+            tt(TypeList)'s tail.
+        )
+    )
+    The algorithm is implemented using a variadic template struct
+tt(ListSearch) expecting a parameter pack:
+        verbinsert(LISTSEARCH)(examples/listsearch.h)
+    Specializations handle the alternatives mentioned with the algorithm:
+    itemization(
+    it() If tt(TypeList) is empty, `index' is -1:
+        verbinsert(EMPTY)(examples/listsearch.h)
+
+    it() If tt(TypeList)'s head  equals SearchType, `index'
+        is 0. Note that tt(SearchType) is explicitly mentioned as the
+            tt(TypeList)'s first element:
+        verbinsert(TAIL)(examples/listsearch.h)
+
+    it() Otherwise a search is performed on the tt(TypeList)'s tail. The index
+            value returned by this search is stored in a tt(tmp) enum value,
+            which is then used to determine index's value.
+        verbinsert(FULL)(examples/listsearch.h)
+    )
+    Here is an example showing  how tt(ListSearch) can be used:
+        verbinsert(EXAMPLE)(examples/listsearch.cc)

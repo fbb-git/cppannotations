@@ -1,0 +1,47 @@
+    In chapter ref(IOStreams) we encountered the class tt(fstream), one class
+offering features of tt(ifstream) and tt(ofstream). In chapter
+ref(INHERITANCE) we learned that a class may be derived from multiple base
+classes. Such a derived class inherits the properties of all its base
+classes. Polymorphism can also be used in combination with multiple
+inheritance.
+
+Consider what would happen if more than one `path' leads from the derived
+class up to its (base) classes. This is illustrated in the next (fictitious)
+example where a class tt(Derived) is doubly derived from tt(Base):
+        verb(
+    class Base
+    {
+        int d_field;
+        public:
+            void setfield(int val);
+            int field() const;
+    };
+    inline void Base::setfield(int val)
+    {
+        d_field = val;
+    }
+    inline int Base::field() const
+    {
+        return d_field;
+    }
+
+    class Derived: public Base, public Base
+    {
+    };
+        )
+    Due to the double derivation, tt(Base)'s functionality now occurs twice in
+tt(Derived). This results in i(ambiguity): when the function tt(setfield()) is
+called for a tt(Derived) class object, which function will that be as there
+are two of them? The scope resolution operator won't come to the rescue and so
+the bf(C++) compiler cannot compile the above example and (correctly)
+identifies an error.
+
+The above code clearly duplicates its base class in the derivation, which can
+of course easily be avoided by not doubly deriving from tt(Base) (or by using
+composition (!)). But duplication of a base class can also occur through
+ i(nested inheritance), where an object is derived from, e.g., an tt(Auto) and
+from an tt(Air) (cf. section ref(VehicleSystem)). Such a class would be needed
+to represent, e.g., a flying car+footnote(such as the one in James Bond
+vs. the Man with the Golden Gun...). An tt(AirAuto) would ultimately contain
+two tt(Vehicles), and hence two tt(mass) fields, two tt(setMass())
+functions and two tt(mass()) functions. Is this what we want?

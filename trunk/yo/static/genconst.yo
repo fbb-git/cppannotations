@@ -1,0 +1,154 @@
+In bf(C) macros are often used to let the preprocessor perform simple
+calculations. These hi(macro) em(macro functions) may have arguments,
+as illustrated in the next example:
+        verb(
+    #define xabs(x) ((x) < 0 ? -(x) : (x))
+        )
+
+The disadvantages of macros are well-known. The main reason for avoiding
+macros is that they are not parsed by the compiler, but are processed by the
+i(preprocessor) resulting in mere text replacements and thus avoid type-safety
+or syntactic checks of the macro definition by itself. Furthermore, since
+macros are processed by the preprocessor their use is unconditional, without
+acknowledging the context in which they are applied. ti(NULL) is an infamous
+example. Ever tried to define an tt(enum) symbol tt(NULL)? or tt(EOF)? Chances
+are that, if you did, the compiler threw strange error messages at you.
+
+Generalized hi(const: generalized expression)
+            hi(generalized const expression)
+    const expressions can be used as an alternative. 
+
+Generalized const expressions are recognized by the modifier tt(constexpr) (a
+keyword), that is applied to the expression's type.
+
+There is a small syntactic difference between the use of the tt(const)
+modifier and the use of the tt(constexpr) modifier.  While the tt(const)
+modifier can be applied to definitions and declarations alike, the
+tt(constexpr) modifier can only be applied to definitions:
+        verb(
+    extern int const externInt;     // OK: declaration of const int
+    extern int constexpr error;     // ERROR: not a definition
+        )
+
+Variables defined with the tt(constexpr) modifier have constant (immutable)
+values. But generalized const expressions are not just used to define constant
+variables; they have other applications as well. The tt(constexpr) keyword is
+usually applied to functions, turning the function into a
+    hi(function: constant-expression) 
+    emi(constant-expression function).
+
+    A constant-expression function should not be confused with a function
+returning a tt(const) value (although a constant-expression function em(does)
+return a (const) value).  A constant expression function has the
+following characteristics:
+    itemization(
+    it() it returns a value;
+    it() its return type is given the tt(constexpr) modifier;
+    it() its body consists of one single return statement
+    )
+    Such functions are also called 
+        hi(named constant expression)
+        em(named constant expressions with parameters).
+
+These constant expression functions may or may not be called with arguments
+that have been evaluated compile-time (not just `const arguments', as a
+tt(const) parameter value is not evaluated compile-time). If they are called
+with compile-time evaluated arguments then the returned value is considered a
+tt(const) value as well. 
+
+This allows us to encapsulate expressions that can be evaluated compile-time
+in functions, and it allows us to use these functions in situations where
+previously the expressions themselves had to be used. The encapsulation
+reduces the number of occurrences of the expressions to one, simplifying
+maintenance and reduces the probability of errors.
+
+If arguments that could not be compile-time evaluated are passed to
+constant-expression functions, then these functions act like any other
+function, in that their return values are no longer considered constant
+expressions. 
+
+Assume some two-dimensional arrays must be converted to one-dimensional
+arrays. The one-dimensional array must have tt(nrows * ncols + nrows +
+ncols + 1) elements, to store row, column, and total marginals, as well as the
+elements of the source array itself. Furthermore assume that tt(nrows) and
+tt(ncols) have been defined as globally available tt(size_t const) values
+(they could be a class's static data). The one-dimensional arrays are data
+members of a class or struct, or they are also defined as global arrays.
+
+Now that constant-expression functions are available the expression returning
+the number of the required elements can be encapsulated in such a function:
+        verb(
+    size_t const nRows = 45;
+    size_t const nCols = 10;
+
+    size_t constexpr nElements(size_t rows, size_t cols)
+    {
+        return nRows * nCols + nRows + nCols + 1;
+    }
+
+        ....
+
+    int intLinear[ nElements(nRows, nCols) ];
+
+    struct Linear
+    {
+        double d_linear[ nElements(nRows, nCols) ];
+    };
+        )
+    If another part of the program needs to use a linear array for an array of
+different sizes then the constant-expression function can also be used. E.g.,
+        verb(
+    string stringLinear[ nElements(10, 4) ];
+        )
+
+    Constant-expression functions can be used in other constant expression
+functions as well. The following constant-expression function returns half the
+value, rounded upwards, that is returned by tt(nElements):
+        verb(
+    size_t constexpr halfNElements(size_t rows, size_t cols)
+    {
+        return (nElements(rows, cols) + 1) >> 1;
+    }
+        )
+
+    Classes should not expose their data members to external software, so as
+to reduce coupling between classes and external software. But if a class
+defines a tt(static const size_t) data member then that member's value could
+very well be used to define entities living outside of the class's scope, like
+the number of elements of an array or to define the value of some enum. In
+situations like these constant-expression functions are the perfect tool to
+maintain proper data hiding:
+        verb(
+    class Data
+    {
+        static size_t const s_size = 7;
+
+        public:
+            static size_t constexpr size();
+            size_t constexpr mSize();
+    };
+
+    size_t constexpr Data::size()
+    {
+        return s_size;
+    }
+
+    size_t constexpr Data::mSize()
+    {
+        return size();
+    }
+
+    double data[ Data::size() ];        // OK: 7 elements
+    short data2[ Data().mSize() ];      // also OK: see below
+        )
+    Please note the following:
+    itemization(
+    it() Constant-expression functions are implicitly declared inline;
+    it() Non-static constant-expression member functions are implicitly
+        tt(const), and a tt(const) member modifier for them is optional;
+    it() Constant values (e.g., static constant data members) used by
+        constant-expression functions must be known by the time the compiler
+        encounters the functions' definitions. That's why tt(s_size) was
+        initialized in tt(Data)'s class interface.
+    )
+

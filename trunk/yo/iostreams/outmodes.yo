@@ -1,0 +1,48 @@
+The following i(file modes) or i(file flags) are available when constructing
+or opening tt(ofstream) (or tt(istream), see section ref(IFSTREAM))
+objects. The values are of type hi(openmode)tt(ios::openmode). Flags may be
+combined using the tt(bitor) operator.
+        itemization(
+        ithtq(app)(ios::app)
+            (reposition the stream to its end before every output command (see
+also tt(ios::ate) below). The
+file is created if it doesn't yet exist. When opening a stream in this mode
+any existing contents of the file are kept.)
+        ithtq(ate)(ios::ate)
+            (start initially at the end of the file.  Note that any existing
+contents are em(only) kept if some other flag tells the object to do so. For
+example tt(ofstream out("gone", ios::ate)) em(rewrites) the file tt(gone),
+because the implied tt(ios::out) causes the rewriting. If rewriting of an
+existing file should be prevented, the tt(ios::in) 
+        hi(in)hi(file rewriting: preventing) 
+    mode should be specified too. However, when tt(ios::in) is specified the
+file must already exist. The tt(ate) mode only initially positions the file at
+the end of file position. After that information may be written in the middle
+of the file using tt(seekp). When the tt(app) mode is used information is
+em(only) written at end of file (effectively ignoring tt(seekp) operations).)
+        ithtq(binary)(ios::binary)
+            (open a file in hi(file: binary mode)binary mode (used on systems
+distinguishing text- and binary files, like i(MS-Windows)).
+        )
+        ithtq(in)(ios::in)
+            (open the file for reading. The file must exist.)
+        ithtq(out)(ios::out)
+            (open the file for writing. Create it if it doesn't yet exist. If
+it exists, the i(file is rewritten).)
+        ithtq(trunc)(ios::trunc)
+        (start initially with an empty file.  Any existing contents of the
+file are lost.)
+        )
+    The following combinations of file flags have special meanings:
+        verb(
+    in | out:           The stream may be read and written. However, the
+                        file must exist.
+    in | out | trunc:   The stream may be read and written. It is
+                        (re)created empty first.
+        )
+    An interesting subtlety is that the tt(open) members of the tt(ifstream,
+ofstream) and tt(fstream) classes have a second parameter of type
+tt(ios::openmode). In contrast to this, the tt(bitor) operator returns an
+tt(int) when applied to two enum-values. The question why the tt(bitor)
+operator may nevertheless be used here is answered in a later chapter
+(cf. section ref(EnumOverload)).

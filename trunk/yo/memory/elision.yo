@@ -1,0 +1,129 @@
+When the compiler selects a member function (or constructor) it applies a
+simple set of rules, matching arguments with parameter types.
+
+Below two tables are shown. The first table should be used in cases where a
+function argument has a name, the second table should be used in cases where
+the argument is anonymous. In each table select the const or non-const column
+and then use the topmost overloaded function that is available having the
+specified parameter type.
+
+The tables do not handle functions defining value parameters.  If a function
+has overloads expecting, respectively, a value parameter and some form of
+reference parameter the compiler reports an ambiguity when such a function is
+called. In the following selection procedure we may assume, without loss of
+generality, that this ambiguity does not occur and that all parameter types
+are reference parameters.
+
+Parameter types matching a function's argument of type tt(T) if the argument
+is:
+    itemization(
+    it() a em(named)  argument (an lvalue or a named rvalue)
+        center(
+    table(3)(ccc)(
+        rowline()
+        row(cell()  cells(2)(the argument is:))
+        row(
+            cell()  cell(non-const)  cell(const)
+        )
+        rowline()
+        row(
+            cell(Use the topmost) cell((T &))
+        )
+        row(
+            cell(available function) cell((T const &))  cell((T const &))
+        )
+        rowline()
+    )
+        )
+        Example: for an tt(int x) argument a function tt(fun(int &)) is selected
+rather than a function tt(fun(int const &)). If no tt(fun(int &)) is available
+the tt(fun(int const &)) function is used. If neither is available the
+compiler reports an error.
+
+    it() an em(anonymous) argument (an anonymous temporary or a literal value)
+        center(
+    table(3)(ccc)(
+        rowline()
+        row(cell()  cells(2)(the argument is:))
+        row(
+            cell() cell(non-const)  cell(const)
+        )
+        rowline()
+        row(
+            cell(Use the topmost) cell((T &&))
+        )
+        row(
+            cell(available function) cell((T const &&))  cell((T const &&))
+        )
+        row(
+            cell(available function) cell((T const &))  cell((T const &))
+        )
+        rowline()
+        ))
+        Example: when the return value of an tt(int arg()) function is passed
+to a function tt(fun) for which various overloaded versions are available
+tt(fun(int &&)) is selected. If this function is unavailable but tt(fun(int
+const &)) is, then the latter function is used.  If none of these two
+functions is available the compiler reports an error.
+        )
+    The tables show that eventually em(all) arguments can be used with a
+function specifying a tt(T const &) parameter. For em(anonymous) arguments a
+similar em(catch all) is available having a higher priority: tt(T const &&)
+matches all anonymous arguments. Functions having this signature are normally
+not defined as their implementations are (should be) identical to the
+implementations of the functions expecting a tt(T const &) parameter. Since
+the temporary can apparently not be modified a function defining a tt(T const
+&&) parameter has no alternative but to copy the temporary's resources. As
+this task is already performed by functions expecting a tt(T const &), there
+is no need for implenting functions expecting tt(T const &&) parameters.
+
+    As we've seen the move constructor grabs the information from a temporary
+for its own use. That is OK as the temporary is going to be destroyed after
+that anyway. It also means that the temporary's data members are
+modified.
+
+    Having defined appropriate copy and/or move constructors it may be
+somewhat surprising to learn that the compiler may decide to stay clear of a
+copy or move operation. After all making em(no) copy and em(not) moving is
+more efficient than copying or moving.
+
+The option the compiler has to avoid making copies (or perform move
+operations) is called emi(copy elision) or emi(return value optimization). In
+all situations where copy or move constructions are appropriate the compiler
+may apply copy elision. Here are the rules. In sequence the compiler considers
+the following options, stopping once an option can be selected:
+    itemization(
+    it() if a copy or move constructor exists, try copy elision
+    it() if a move constructor exists, move.
+    it() if a copy constructor exists, copy.
+    it() report an error
+    )
+ All modern compilers apply copy elision. Here are some examples where it may
+be encountered:
+        verb(
+    class Elide;
+
+    Elide fun()         // 1
+    {
+        Elide ret;
+        return ret;
+    }
+
+    void gun(Elide par);
+
+    Elide elide(fun()); // 2
+
+    gun(fun());         // 3
+        )
+    itemization(
+    it() At 1 tt(ret) may never exist. Instead of using tt(ret) and copying
+tt(ret) eventually to tt(fun)'s return value it may directly use the area used
+to contain tt(fun)'s return value.
+    it() At 2 tt(fun)'s return value may never exist. Instead of defining an
+area containing tt(fun)'s return value and copying that return value to
+tt(elide) the compiler may decide to use tt(elide) to create tt(fun)'s return
+value in.
+    it() At 3 the compiler may decide to do the same for gun's tt(par)
+parameter: tt(fun)'s return value is directly created in tt(par)'s area, thus
+eliding the copy operation from tt(fun)'s return value to tt(par).
+    )

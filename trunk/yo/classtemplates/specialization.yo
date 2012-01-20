@@ -1,0 +1,61 @@
+The class tt(CirQue) can be used for many different types. Their common
+characteristic is that they can simply be pointed at by the class's tt(d_data)
+member. But this is not always as simple as it looks. What if tt(Data) turns
+out to be a tt(vector<int>)? For such data types the vanilla tt(CirQue)
+implementation cannot be used and a specialization could be considered. When
+considering a specialization one should also consider inheritance. Often a
+class derived from the class template accepting the incompatible data
+structure as its argument but otherwise equal to the original class template
+can easily be designed. The developmental advantage of inheritance over
+specialization is clear: the inherited class inherits the members of its base
+class while the specialization inherits nothing. All members defined by the
+original class template must be implemented again by the class template's
+specialization.
+
+The specialization considered here is a true specialization in that the
+data members and representation used by the specialization greatly differ from
+the original tt(CirQue) class template. Therefore all members defined by the
+orginal class template must be modified to fit the specialization's data
+organization.
+
+    Like function template specializations class template specializations
+start with a template header that may or may not have an empty template
+parameter list. If the template parameters are directly specialized by the
+specialization it remains empty (e.g., tt(CirQue)'s template type parameter
+tt(Data) is specialized for tt(char *) data). But the template parameter list
+may show tt(typename Data) when specializing for a tt(vector<Data>), i.e., a
+vector storing any type of data. This leads to the following principle:
+    quote(hi(template: specialization) A template specialization is recognized
+by the template argument list following a function or class template's
+em(name) and em(not) by an empty template parameter list. Class template
+specializations may have non-empty template parameter lists. If so, a
+emi(partial class template specialization) is defined.)
+
+    A completely specialized class has the following characteristics:
+    itemization(
+    it() The class template specialization must be provided after the generic
+class template definition. As it is a specialization the compiler
+must first have seen the original class template;
+    it() The completely specialized class template's template parameter list
+is empty;
+    it() All of the class's template parameters are given explicit type names
+or (for the non-type parameters) explicit values. These explicitations are
+provided in a template parameter specification list (surrounded by angle
+brackets) that is inserted immediately after the specialized template's class
+em(name);
+    it() All members of the specialized class template use specialized types
+and values where original template parameters are used in the original
+template definition;
+    it() All original template's members (maybe with the exception of some
+constructors) em(should) be redefined by the specialization. If a member is
+left out of the specialization, it cannot be used for a specialized class
+template object;
+    it() The specialization may define additional members (but maybe shouldn't
+as it breaks the one-to-one correspondence between the original and
+specialized class template);
+    it() Member functions of specialized class templates may be declared by
+the specializing class and implemented below their class interface. If their
+implementations follow the class interface they may em(not) begin with a
+tt(template <>) header, but must immediately start with the member function's
+header.
+    )

@@ -1,0 +1,35 @@
+Before using the reference wrappers discussed in this section the
+tthi(functional) header file must have been included.
+
+Situations exist where the compiler is unable to infer that a reference rather
+than a value is passed to a function template. In the following example the
+function template  tt(outer) receives tt(int x) as its argument and the
+compiler dutifully infers that tt(Type) is tt(int):
+        verbinsert(INT)(examples/refwrap.cc)
+    Compilation will of course fail and the compiler nicely reports the
+inferred type, e.g.:
+    verb(
+    In function 'void outer(Type) [with Type = int]': ...
+    )
+
+Unfortunately the same error is generated when using tt(call) in the next
+example. The function tt(call) is a template expecting a function that takes
+an argument which is then itself modified, and a value to pass on to that
+function. Such a function is, e.g., tt(sqrtArg) expecting a reference to a
+tt(double), which is modified by calling tt(std::sqrt).
+        verbinsert(DOUBLE)(examples/refwrap.cc)
+ Assuming tt(double value = 3) then tt(call(sqrtArg, value)) does not modify
+tt(value) as the compiler infers tt(Arg) to be tt(double) and hence passes
+tt(value) by value.
+
+To have tt(value) itself changed the compiler must be informed that tt(value)
+must be passed by reference. Note that it might not be acceptable to define
+tt(call)'s template argument as tt(Arg &) as em(not) changing the actual
+argument might be appropriate in some situations.
+
+The C++11 standard offers the ti(CHAR(r)ef(arg)) and ti(cref(arg))
+ hi(reference wrapper)em(reference wrappers) that take an argument and
+return it as a reference-typed argument. To actually change tt(value) it can
+be passed to tt(call) using tt(ref(value)) as shown in the following tt(main)
+function:
+        verbinsert(MAIN)(examples/refwrap.cc)

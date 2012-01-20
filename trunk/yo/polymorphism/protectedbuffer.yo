@@ -1,0 +1,39 @@
+Several protected members are related to buffer management and positioning:
+    itemization(
+    ithtq(setbuf)
+        (virtual streambuf *setbuf(char *buffer, streamsize n))
+       (This member function may be overridden by derived classes to install a
+        buffer. The default implementation is to do nothing. It is called by
+        tt(pubsetbuf).)
+    it()hi(seekoff)
+        tt(virtual
+            pos_type seekoff+OPENPARoff_type offset, ios::seekdir way,)nl()
+            tt(ios::openmode mode = ios::in | ios::out+CLOSEPAR)
+       quote(This member function may be overridden by derived classes to
+        reset the next pointer for input or output to a new relative
+        position (using
+       hi(cur)hi(beg)tt(ios::beg, ios::cur) or hi(end)tt(ios::end)). The
+        default implementation indicates failure by returning -1. The function
+        is called when tt(tellg) or tt(tellp) are called. When derived class
+        supports seeking, then it should also define this function to handle
+        repositioning requests. It is called by ti(pubseekoff). The
+        new position or an invalid position (i.e., -1) is returned.)
+    it() hi(seekpos)
+        tt(virtual pos_type seekpos+OPENPARpos_type offset,
+            ios::openmode mode =)nl()
+            tt(ios::in | ios::out+CLOSEPAR):
+       quote(This member function may be overridden by derived classes to
+        reset the next pointer for input or output to a new absolute
+        position (i.e, relative to tt(ios::beg)). The default implementation
+        indicates failure by returning -1.)
+    ithtq(sync)
+        (virtual int sync())
+       (This member function may be overridden by derived classes to flush the
+        output buffer to the output device or to reset the input device just
+        beyond the position of the character that was returned last. It
+        returns 0 on success, -1 on failure. The default implementation (not
+        using a buffer) is to return 0, indicating successful syncing. This
+        member is used to ensure that any characters that are still buffered
+        are written to the device or to put unconsumed characters back to the
+        device when the tt(streambuf) object ceases to exist.)
+   )

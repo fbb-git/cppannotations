@@ -1,0 +1,80 @@
+Although it em(is) possible to define another function template tt(add) this
+introduces an ambiguity as the compiler won't be able to choose which of
+the two overloaded versions defining two differently typed function parameters
+should be used. For example when defining:
+        verb(
+    #include "add.h"
+
+    template <typename T1, typename T2>
+    T1 add(T1 const &lvalue, T2 const &rvalue)
+    {
+        return lvalue + rvalue;
+    }
+    int main()
+    {
+        add(3, 4.5);
+    }
+        )
+    the compiler reports an ambiguity like the following:
+        verb(
+        error: call of overloaded `add(int, double)' is ambiguous
+        error: candidates are: Type add(const Container&, const Type&)
+                                    [with Container = int, Type = double]
+        error:                 T1 add(const T1&, const T2&)
+                                    [with T1 = int, T2 = double]
+        )
+    Now recall the overloaded function template accepting three arguments:
+        verb(
+    template <typename Type>
+    Type add(Type const &lvalue, Type const &mvalue, Type const &rvalue)
+    {
+        return lvalue + mvalue + rvalue;
+    }
+        )
+    It may be considered as a disadvantage that only equally typed arguments
+are accepted by this function (three tt(int)s, three tt(double)s, etc.). To
+remedy this we define yet another overloaded function template, this time
+accepting arguments of any type.  This function template can only be used if
+tt(operator+) is defined between the function's actually used types, but apart
+from that there appears to be no problem. Here is the overloaded version
+accepting arguments of any type:
+        verb(
+    template <typename Type1, typename Type2, typename Type3>
+    Type1 add(Type1 const &lvalue, Type2 const &mvalue, Type3 const &rvalue)
+    {
+        return lvalue + mvalue + rvalue;
+    }
+        )
+    Now that we've defined the above two overloaded function templates
+expecting three arguments let's call tt(add) as follows:
+        verb(
+    add(1, 2, 3);
+        )
+    Should we expect an ambiguity here? After all, the compiler might select
+the former function, deducing that tt(Type == int), but it might also select
+the latter function, deducing that tt(Type1 == int, Type2 == int) and tt(Type3
+== int). Remarkably, the compiler reports no ambiguity.
+
+No ambiguity is reported because of the following. If overloaded template
+functions are defined using em(less) and em(more) specialized template type
+parameters (e.g., less specialized: all types different vs. more specialized:
+        hi(function templates: specialized type parameters) all types equal)
+then the compiler selects the more specialized function whenever possible.
+
+    As a i(rule of thumb): overloaded function templates must allow a unique
+combination of template type arguments to be specified to prevent ambiguities
+when selecting which overloaded function template to instantiate.  The
+em(ordering) of template type parameters in the function template's type
+parameter list is not important. E.g., trying to instantiate one of the
+following function templates results in an ambiguity:
+        verb(
+    template <typename T1, typename T2>
+    void binarg(T1 const &first, T2 const &second)
+    {}
+    template <typename T1, typename T2>
+    void binarg(T2 const &first, T1 const &second)
+    {}
+        )
+    This should not come as a surprise. After all, template type parameters
+are just formal names. Their names (tt(T1), tt(T2) or tt(Whatever)) have no
+concrete meanings.

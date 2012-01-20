@@ -1,0 +1,80 @@
+Comparable to the constructor, classes may define a emi(destructor).  This
+function is the constructor's counterpart in the sense that it is invoked when
+an object ceases to exist. A destructor is usually called automatically, but
+that's not always true. The destructors of dynamically allocated objects are
+not automatically activated, but in addition to that: when a program is
+interrupted by an hi(exit: avoid)tt(exit) call, only the destructors of
+already initialized global objects are called.  In that situation destructors
+of objects defined em(locally) by functions are also em(not) called. This is
+one (good) reason for avoiding tt(exit) in bf(C++) programs.
+
+Destructors obey the following syntactical requirements:
+    itemization(
+    it() a destructor's name is equal to its class name prefixed by a tilde;
+    it() a destructor has no arguments;
+    it() a destructor has no return value.
+    )
+    Destructors are declared in their class interfaces. Example:
+        verb(
+    class Strings
+    {
+        public:
+            Strings();
+            ~Strings();     // the destructor
+    };
+        )
+    By convention the constructors are declared first. The destructor is
+declared next, to be followed by other member functions.
+
+    A destructor's hi(destructor: main task) main task is to ensure that
+memory allocated by an object is properly returned when the object ceases to
+exist. Consider the following interface of the class tt(Strings):
+        verbinsert(STRINGSTORE)(examples/strings.h)
+
+The constructor's task is to initialize the data fields of the object. E.g,
+its constructors are defined as follows:
+        verbinsert(CONS)(examples/stringstore.cc)
+    As objects of the class tt(Strings) allocate memory a destructor is
+clearly required. Destructors may or may not be called automatically. Here are
+the rules:
+    itemization(
+    it() Destructors are em(only) called for fully constructed objects.
+bf(C++) considers the object to be fully constructed once at least one of its
+constructors has normally completed. It used to be em(the) constructor, but as
+C++11 supports constructor delegation, multiple constructors can be activated
+for a single object; hence `at least one constructor'.
+The remaining rules only apply to fully constructed objects;
+
+    it() Destructors of local non-static objects are called automatically when
+the execution flow leaves the block in which they were defined; the
+destructors of objects defined somewhere in the outer block of a function are
+called just before the function terminates.
+    it() Destructors of static or global objects are called when the program
+itself terminates.
+    it() The destructor of a dynamically allocated object is called by
+tt(delete) using the object's address as its operand;
+    it() The destructors of a dynamically allocated array of objects are
+called by tt(delete[]) using the address of the array's first element as its
+operand;
+    it() The destructor of an object initialized by placement tt(new) is
+activated  by explicitly calling the object's destructor.
+    )
+    The destructor's task is to ensure that all memory that is
+dynamically allocated and controlled only by the object
+itself is returned. The task of the tt(Strings)'s
+destructor would therefore be to delete the memory to which tt(d_string)
+points. Its implementation is:
+        verbinsert(DESTR)(examples/stringstore.cc)
+
+    The next example shows tt(Strings) at work. In tt(process)
+a tt(Strings store) is created, and its data are displayed. It returns a
+dynamically allocated tt(Strings) object to tt(main). A
+tt(Strings *) receives the address of the allocated object and deletes the
+object again. Another tt(Strings) object is then created in a block of
+memory made available locally in tt(main), and an
+    hi(destructor: explicit call)explicit call to tt(~Strings) is required
+to return the memory allocated by that object. In the example only once a
+tt(Strings) object is automatically destroyed: the local tt(Strings)
+object defined by tt(process). The other two tt(Strings) objects require
+explicit actions to prevent memory leaks.
+        verbinclude(examples/stringstoreexample.cc)

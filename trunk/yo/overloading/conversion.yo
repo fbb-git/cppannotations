@@ -1,0 +1,176 @@
+    A class may be constructed around a built-in type. E.g., a class
+tt(String), constructed around the ti(char *) type. Such a class may define
+all kinds of operations, like assignments. Take a look at the following class
+interface, designed after the tt(string) class:
+        verb(
+    class String
+    {
+        char *d_string;
+
+        public:
+            String();
+            String(char const *arg);
+            ~String();
+            String(String const &other);
+            String const &operator=(String const &rvalue);
+            String const &operator=(char const *rvalue);
+    };
+        )
+    Objects of this class can be initialized from a tt(char const *), and also
+from a tt(String) itself. There is an overloaded assignment operator, allowing
+the assignment from a tt(String) object and from a tt(char const
+*)+footnote(Note that the assignment from a tt(char const *) also allows the
+null-pointer. An assignment like tt(stringObject = 0) is perfectly in order.).
+
+    Usually, in classes that are less directly linked to their data than this
+tt(String) class, there will be an emi(accessor member function), like a
+member tt(char const *String::c_str() const). However, the need to use this
+latter member doesn't appeal to our intuition when an array of tt(String)
+objects is defined by, e.g., a class tt(StringArray). If this latter class
+provides the ti(operator[]) to access individual tt(String) members, it would
+most likely offer at least the following class interface:
+        verb(
+    class StringArray
+    {
+        String *d_store;
+        size_t d_n;
+
+        public:
+            StringArray(size_t size);
+            StringArray(StringArray const &other);
+            StringArray const &operator=(StringArray const &rvalue);
+            ~StringArray();
+
+            String &operator[](size_t index);
+    };
+        )
+    This interface allows us to assign tt(String) elements to each other:
+        verb(
+    StringArray sa(10);
+
+    sa[4] = sa[3];  // String to String assignment
+        )
+    But it is also possible to assign a tt(char const *) to an element of
+tt(sa):
+        verb(
+    sa[3] = "hello world";
+        )
+    Here, the following steps are taken:
+    itemization(
+    it() First, tt(sa[3]) is evaluated. This results in a tt(String) reference.
+    it() Next, the tt(String) class is inspected for an overloaded assignment,
+        expecting a tt(char const *) to its right-hand side. This operator is
+        found, and the string object tt(sa[3]) receives its new value.
+    )
+    Now we try to do it the other way around: how to em(access) the
+tt(char const *) that's stored in tt(sa[3])? The following attempt fails:
+        verb(
+    char const *cp = sa[3];
+    )
+    It fails since we would need an overloaded assignment operator for the
+'class tt(char const *)'. Unfortunately, there isn't such a class, and
+therefore we can't build that overloaded assignment operator (see also section
+ref(OverloadableOperators)). Furthermore, em(casting) won't work as the
+compiler doesn't know how to cast a tt(String) to a tt(char const *).  How
+to proceed?
+
+    One possibility is to define an accessor member function tt(c_str()):
+        verb(
+    char const *cp = sa[3].c_str()
+        )
+    This compiles fine but looks clumsy.... A far better approach would be to
+use a emi(conversion operator).
+
+    A em(conversion operator) is a kind of overloaded operator, but this time
+the overloading is used to cast the object to another type.
+In class interfaces, the general form of a
+conversion operator is:
+        verb(
+    operator <type>() const;
+        )
+    Conversion operators usually are tt(const) member functions: they are
+automatically called when their objects are used as em(rvalues) in expressions
+having a tt(type) em(lvalue).  Using a conversion operator a tt(String)
+object may be interpreted as a tt(char const *) rvalue, allowing us to perform
+the above assignment.
+
+Conversion operators are somewhat dangerous. The conversion is automatically
+performed by the compiler and unless its use is perfectly transparent it may
+confuse those who read code in which conversion operators are used. E.g.,
+novice bf(C++) programmers are frequently confused by statements like `tt(if
+(cin) ...)'.
+
+    As a i(rule of thumb): classes should define at most one conversion
+operator. Multiple conversion operators may be defined but frequently result
+in ambiguous code. E.g., if a class defines tt(operator bool() const) and
+tt(operator int() const) then passing an object of this class to a function
+expecting a tt(size_t) argument results in an ambiguity as an tt(int) and a
+tt(bool) may both be used to initialize a tt(size_t).
+
+    In the current example, the class tt(String) could define the following
+conversion operator for tt(char const *):
+        verb(
+    String::operator char const *() const
+    {
+        return d_string;
+    }
+        )
+    Notes:
+    itemization(
+    it() Conversion operators do not define return types. The conversion
+operator returns a value of the type specified beyond the tt(operator)
+keyword.
+    it() In certain situations (e.g., when a tt(String) argument is passed to
+a function specifying an i(ellipsis) parameter) the compiler needs a hand to
+disambiguate our intentions. A tt(static_cast) solves the problem.
+    it() With em(template functions) conversion operators may not work
+immediately as expected. For example, when defining a conversion operator
+tt(X::operator std::string const() const) then tt(cout << X()) won't
+compile. The reason for this is explained in section ref(SPECIALIZING), but a
+shortcut allowing the conversion operator to work is to define the following
+overloaded tt(operator<<) function:
+        verb(
+    std::ostream &operator<<(std::ostream &out, std::string const &str)
+    {
+        return out.write(str.data(), str.length());
+    }
+        )
+    )
+    Conversion operators are also used when objects of classes defining
+conversion operators are inserted into streams. Realize that the right hand
+sides of insertion operators are function parameters that are initialized by
+the operator's right hand side arguments. The rules are simple:
+    itemization(
+    it() If a class tt(X) defining a conversion operator also defines an
+insertion operator accepting an tt(X) object the insertion operator is used;
+    it() Otherwise, if the type returned by the conversion operator is
+insertable then the conversion operator is used;
+    it() Otherwise, a compilation error results. Note that this happens if the
+type returned by the conversion operator itself defines a conversion operator
+to a type that may be inserted into a stream.
+    )
+    In the following example an object of class tt(Insertable) is directly
+inserted; an object of the class tt(Convertor) uses the conversion operator;
+an object of the class tt(Error) cannot be inserted since it does not define
+an insertion operator and the type returned by its conversion operator cannot
+be inserted either (tt(Text) em(does) define an tt(operator int() const), but
+the fact that a tt(Text) itself cannot be inserted causes the error):
+        verbinclude(examples/stringconversionerror.cc)
+
+    Some final remarks regarding conversion operators:
+    itemization(
+    it() A conversion operator should be a `natural extension' of the
+facilities of the object. For example, the stream classes define tt(operator
+bool()), allowing constructions like tt(if (cin)).
+    it() A conversion operator should return an em(rvalue). It should do so to
+enforce data-hiding and because it is the intended use of the conversion
+operator. Defining a conversion operator as an em(lvalue) (e.g., defining an
+tt(operator int &()) conversion operator) opens up a back door, and the
+operator can only be used as em(lvalue) when explicitly called (as in:
+tt(x.operator int&() = 5)). Don't use it.
+    it() Conversion operators should be defined as tt(const) member functions
+as they don't modify their object's data members.
+    it() Conversion operators returning composed objects should return const
+references to these objects whenever possible to avoid calling the composed
+object's copy constructor.
+    )

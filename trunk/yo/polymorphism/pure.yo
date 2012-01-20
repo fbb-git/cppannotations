@@ -1,0 +1,77 @@
+The base class tt(Vehicle) is provided with its own concrete implementations
+of its virtual members (tt(mass) and tt(setMass)).  However, virtual member
+functions do not necessarily em(have) to be implemented in base classes.
+
+When the implementations of virtual members are omitted from base classes the
+class imposes requirements upon derived classes. The derived classes are
+required to provide the `missing implementations'
+
+This approach, in some languages (like bf(C#, Delphi)
+ hi(Java interface) and bf(Java)) known as an emi(interface), defines a
+ emi(protocol). Derived classes em(must) obey the protocol by implementing the
+as yet not implemented members. If a class contains at least one member whose
+implementation is missing no objects of that class can be defined.
+
+Such incompletely defined classes are always base classes. They enforce a
+protocol by merely declaring names, return values and arguments of some of
+their members. These classes are call hi(class: abstract)
+ emi(abstract classes) or em(abstract base classes).  Derived classes become
+non-abtract classes by implementing the as yet not implemented members.
+
+Abstract base classes are the foundation of many em(design patterns)
+ hi(design pattern) (cf. em(Gamma et al.) (1995))
+ hi(Gamma, E.), allowing the programmer to create highly
+ emi(reusable software). Some of these design patterns are covered by the
+annotations() (e.g, the emi(Template Method) in section ref(FORK)), but for a
+thorough discussion of design patterns the reader is referred to Gamma em(et
+al.)'s book.
+
+Members that are merely declared in base classes are called
+ emi(pure virtual functions). A virtual member becomes a pure virtual member
+by postfixing ti(= 0) to its declaration (i.e., by replacing the semicolon
+ending its declaration by `tt(= 0;)'). Example:
+        verb(
+    #include <iosfwd>
+    class Base
+    {
+        public:
+            virtual ~Base();
+            virtual std::ostream &insertInto(std::ostream &out) const = 0;
+    };
+    inline std::ostream &operator<<(std::ostream &out, Base const &base)
+    {
+        return base.insertInto(out);
+    }
+        )
+    All classes derived from tt(Base) em(must) implement the tt(insertInto)
+member function, or their objects cannot be constructed. This is neat: all
+objects of class types derived from tt(Base) can now always be inserted into
+ti(ostream) objects.
+
+    Could the i(virtual destructor) of a base class ever be a pure virtual
+function? The answer to this question is no. First of all, there is no need to
+enforce the availability of destructors in derived classes as destructors are
+provided by default (unless a destructor is declared with the tt(= delete)
+attribute using the new C++11 standard). Second, if it is a pure virtual
+member its implementation does not exist. However, derived class destructors
+eventually call their base class destructors. How could they call base class
+destructors if their implementations are lacking? More about this in the next
+section.
+
+    Often, but not necessarily, pure virtual member functions are
+tt(const) hi(const member functions) member functions. This allows the
+construction of constant derived class objects. In other situations this might
+not be necessary (or realistic), and
+ i(non-constant member functions) might be required. The general rule for
+tt(const) member functions also applies to pure virtual functions: if the
+member function alters the object's data members, it cannot be a tt(const)
+member function.
+
+Abstract base classes frequently don't have
+ hi(classes: without data members) data members.  However, once a base class
+declares a pure virtual member it em(must) be declared identically in derived
+classes. If the implementation of a pure virtual function in a derived class
+alters the derived class object's data, then em(that) function cannot be
+declared as a tt(const) member. Therefore, the author of an abstract base
+class should carefully consider whether a pure virtual member function should
+be a tt(const) member function or not.

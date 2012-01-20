@@ -1,0 +1,52 @@
+    The next example, defining tt(MapType) as a map having plain types or
+pointers for either its key or value types, illustrates this approach:
+        verb(
+    template <typename Key, typename Value, int selector>
+    class Storage
+    {
+        typedef typename IfElse<
+                    selector == 1,              // if selector == 1:
+                    map<Key, Value>,            // use map<Key, Value>
+
+                    typename IfElse<
+                        selector == 2,          // if selector == 2:
+                        map<Key, Value *>,      // use map<Key, Value *>
+
+                        typename IfElse<
+                            selector == 3,      // if selector == 3:
+                            map<Key *, Value>,  // use map<Key *, Value>
+                                                // otherwise:
+                            map<Key *, Value *> // use map<Key *, Value *>
+
+                        >::type
+                    >::type
+                >::type
+                MapType;
+
+        MapType d_map;
+
+        public:
+            void add(Key const &key, Value const &value);
+        private:
+            void add(Key const &key, Value const &value, IntType<1>);
+           ...
+    };
+    template <typename Key, typename Value, int selector>
+    inline void Storage<selector, Key, Value>::add(Key const &key,
+                                                   Value const &value)
+    {
+        add(key, value, IntType<selector>());
+    }
+        )
+    The principle used in the above examples is: if class templates may use
+data types that depend on template non-type parameters, an tt(IfElse) struct
+can be used to select the appropriate data types. Knowledge about the various
+data types may also be used to define overloaded member functions. The
+implementations of these overloaded members may then be optimized to the
+various data types. In programs only one of these alternate functions (the one
+that is optimized to the actually used data types) will then be instantiated.
+
+    The private tt(add) functions define the same parameters as the public
+tt(add) wrapper function, but add a specific tt(IntType) type, allowing the
+compiler to select the appropriate overloaded version based on the template's
+non-type selector parameter.

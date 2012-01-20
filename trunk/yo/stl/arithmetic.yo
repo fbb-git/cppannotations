@@ -1,0 +1,76 @@
+The hi(function object: arithmetic)hi(arithmetic function object) arithmetic
+function objects support the standard i(arithmetic operations): addition,
+subtraction, multiplication, division, modulo and negation. These function
+objects invoke the corresponding operators of the data types for which they
+are instantiated. For example, for addition the function object tt(plus<Type>)
+hi(plus) is available. If we replace tt(Type) by tt(size_t) then the addition
+operator for tt(size_t) values is used, if we replace tt(Type) by tt(string),
+the addition operator for strings is used. For example:
+        verbinclude(examples/plus.cc)
+    Why is this useful? Note that the function object can be used with all
+kinds of data types (not only with the predefined datatypes) supporting the
+operator called by the function object.
+
+Suppose we want to perform an operation on a left hand side operand which is
+always the same variable and a right hand side argument for which, in turn,
+all elements of an array should be used. E.g., we want to compute the sum of
+all elements in an array; or we want to concatenate all the strings in a
+text-array. In situations like these function objects come in handy.
+
+As stated, function objects are heavily used in the context of the generic
+algorithms, so let's take a quick look ahead at yet another one.
+
+    The generic algorithm tt(accumulate) visits all elements specified by an
+iterator-range, and performs a requested binary operation on a common element
+and each of the elements in the range, returning the accumulated result after
+visiting all elements specified by the iterator range. It's easy to use this
+algorithm. The next program accumulates all command line arguments and prints
+the final string:
+        verbinclude(examples/plusaccumulate.cc)
+    The first two arguments define the (iterator) range of elements to visit,
+the third argument is tt(string). This anonymous string object provides an
+initial value. We could also have used
+        verb(
+    string("All concatenated arguments: ")
+        )
+    in which case the tt(cout) statement could simply have been
+tt(cout << result << '\n').
+    The string-addition operation is used, called from tt(plus<string>). The
+final concatenated string is returned.
+
+    Now we define a class tt(Time), overloading ti(operator+). Again, we can
+apply the predefined function object tt(plus), now tailored to our newly
+defined datatype, to add times:
+        verbinclude(examples/classtypeplus.cc)
+    The design of the above program is fairly straightforward.  tt(Time)
+defines a constructor, it defines an insertion operator and it defines its own
+tt(operator+), adding two time objects. In tt(main) four tt(Time) objects are
+stored in a tt(vector<Time>) object. Then, tt(accumulate) is used to compute
+the accumulated time. It returns a tt(Time) object, which is inserted into
+tt(cout).
+
+    While the first example did show the use of a em(named) function object,
+the last two examples showed the use of  emi(anonymous) objects that were
+passed to the (tt(accumulate)) function.
+
+    The STL supports the following set of arithmetic function objects.  The
+function call operator (tt(operator())) of these function objects calls the
+matching arithmetic operator for the objects that are passed to the function
+call operator, returning that arithmetic operator's return value. The
+arithmetic operator that is actually called is mentioned below:
+    itemization(
+    itht(plus)(plus<>): calls the binary ti(operator+);
+    itht(minus)(minus<>): calls the binary ti(operator-);
+    itht(multiplies)(multiplies<>): calls the binary ti(operator*);
+    itht(divides)(divides<>): calls ti(operator/);
+    itht(modulus)(modulus<>):  calls ti(operator%);
+    itht(negate)(negate<>): calls the unary tt(operator-). This arithmetic
+function object is a unary function object as it expects one argument.
+    )
+    In the next example the ti(transform) generic algorithm is used to toggle
+the signs of all elements of an array. tt(Transform)
+expects two iterators, defining the range of objects to be transformed; an
+iterator defining the begin of the destination range (which may be the same
+iterator as the first argument); and a function object defining a unary
+operation for the indicated data type.
+        verbinclude(examples/negate.cc)

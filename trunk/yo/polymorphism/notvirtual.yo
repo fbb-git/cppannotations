@@ -1,0 +1,78 @@
+Virtual inheritance can be used to merge multiply occurring base
+classes. However, situations may be encountered where multiple occurrences of
+base classes is appropriate. Consider the definition of a tt(Truck) (cf.
+section ref(Truck)):
+        verb(
+    class Truck: public Auto
+    {
+        int d_trailer_mass;
+
+        public:
+            Truck();
+            Truck(int engine_mass, int sp, char const *nm,
+                   int trailer_mass);
+
+            void setMass(int engine_mass, int trailer_mass);
+            int mass() const;
+    };
+    Truck::Truck(int engine_mass, int sp, char const *nm,
+                  int trailer_mass)
+    :
+        Auto(engine_mass, sp, nm)
+    {
+        d_trailer_mass = trailer_mass;
+    }
+    int Truck::mass() const
+    {
+        return                  // sum of:
+            Auto::mass() +    //   engine part plus
+            trailer_mass;         //   the trailer
+    }
+        )
+    This definition shows how a tt(Truck) object is constructed to contain two
+mass fields: one via its derivation from tt(Auto) and one via its own tt(int
+d_trailer_mass) data member. Such a definition is of course valid, but it
+could also be rewritten. We could derive a tt(Truck) from an tt(Auto)
+em(and) from a tt(Vehicle), thereby explicitly requesting the double presence
+of a tt(Vehicle); one for the mass of the engine and cabin, and one for the
+mass of the trailer. A slight complication is that a class organization like
+        verb(
+    class Truck: public Auto, public Vehicle
+        )
+    is not accepted by the bf(C++) compiler. As a tt(Vehicle) is already part
+of an tt(Auto), it is therefore not needed once again. This organzation may,
+however be forced using a small trick. By creating an additional class
+inheriting from tt(Vehicle) and deriving tt(Truck) from that additional class
+rather than directly from tt(Vehicle) the problem is solved. Simply derive a
+class tt(TrailerVeh) from tt(Vehicle), and then tt(Truck) from tt(Auto) and
+tt(TrailerVeh):
+        verb(
+    class TrailerVeh: public Vehicle
+    {
+        public:
+            TrailerVeh(int mass)
+            :
+                Vehicle(mass)
+            {}
+    };
+    class Truck: public Auto, public TrailerVeh
+    {
+        public:
+            Truck();
+            Truck(int engine_mass, int sp, char const *nm, int trailer_mass);
+            void setMass(int engine_mass, int trailer_mass);
+            int mass() const;
+    };
+    inline Truck::Truck(int engine_mass, int sp, char const *nm,
+                        int trailer_mass)
+    :
+        Auto(engine_mass, sp, nm),
+        TrailerVeh(trailer_mass)
+    {}
+    inline int Truck::mass() const
+    {
+        return                      // sum of:
+            Auto::mass() +        //   engine part plus
+            TrailerVeh::mass();   //   the trailer
+    }
+        )

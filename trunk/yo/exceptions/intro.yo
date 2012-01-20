@@ -1,0 +1,41 @@
+bf(C) supports several ways for a program to react to situations breaking
+the normal unhampered flow of a program:
+    itemization(
+    it() The function may notice the abnormality and issue a message. This is
+probably the least disastrous reaction a program may show.
+    it() The function in which the abnormality is observed may decide to stop
+its intended task, returning an i(error code) to its caller. This is a great
+example of i(postponing decisions): now the em(calling function) is faced with
+a problem. Of course the calling function may act similarly, by passing the
+error code up to em(its) caller.
+    it() The function may decide that things are going out of hand, and may
+call ti(exit) to terminate the program completely. A tough way to handle a
+problem if only because the destructors of local objects aren't activated.
+    it() The function may use a combination of the functions ti(setjmp) and
+ti(longjmp) to enforce non-local exits. This mechanism implements a kind
+of ti(goto) jump, allowing the program to continue at an outer level,
+skipping the intermediate levels which would have to be visited if a series of
+returns from nested functions would have been used.
+    )
+    In bf(C++) all these i(flow-breaking methods) are still
+available. However, of the mentioned alternatives, tt(setjmp) and
+tt(longjmp)  isn't frequently encountered in bf(C++) (or even in bf(C))
+programs, due to the fact that the program flow is completely disrupted.
+
+bf(C++) offers emi(exceptions) as the preferred alternative to, e.g.,
+tt(setjmp) and tt(longjmp). Exceptions allow bf(C++) programs to perform a
+controlled i(non-local return), without the disadvantages of tt(longjmp) and
+tt(setjmp).
+
+Exceptions are the proper way to bail out of a situation which cannot be
+handled easily by a function itself, but which is not disastrous enough for
+a program to terminate completely. Also, exceptions provide a flexible layer
+of control between the short-range ti(return) and the crude ti(exit).
+
+In this chapter exceptions are covered. First an example is given of the
+different impact exceptions and the tt(setjmp/longjmp) combination have on
+programs. This example is followed by a discussion of the formal aspects
+of exceptions. In this part the guarantees our software should be able
+to offer when confronted with exceptions are presented. Exceptions and their
+guarantees have consequences for constructors and destructors. We'll encounter
+these consequences at the end of this chapter.

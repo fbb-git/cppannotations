@@ -1,0 +1,63 @@
+A derived class inherits functionality from its base class (or base classes,
+as bf(C++) supports multiple inheritance, cf. section ref(MULTIPLE)). When a
+derived class object is constructed it is built on top of its base class
+object. As a consequence the base class must have been constructed before the
+actual derived class elements can be initialized. This results in some
+requirements that must be observed when defining
+ hi(constructor: of derived classes) derived class constructors.
+
+A constructor exists to initialize the object's data members. A derived class
+constructor is also responsible for the proper initialization of its base
+class. Looking at the definition of the class tt(Land) introduced earlier
+(section ref(VehicleSystem)), its constructor could simply be defined as
+follows:
+        verb(
+    Land::Land(size_t mass, size_t speed)
+    {
+        setMass(mass);
+        setspeed(speed);
+    }
+        )
+    However, this implementation has several disadvantages.
+    itemization(
+    it() When constructing a derived class object a base class constructor is
+em(always) called before any action is performed on the derived class object
+itself. By default the base class's i(default constructor) is going to be
+called.
+    it() Using the base class constructor only to reassign new values to its
+data members in the derived class constructor's body usually is inefficient,
+but sometimes sheer impossible as in situations where base class reference or
+const data members must be initialized. In those cases a specialized base
+class constructor must be used instead of the base class default constructor.
+    )
+    A derived class's base class may be initialized using a dedicated base
+class constructor by calling the base class constructor in the derived class
+constructor's initializer clause. Calling a base class constructor in a
+constructor's initializer clause is called a
+ emi(base class initializer). The base class initializer must be called before
+initializing any of the derived class's data members and when using the base
+class initializer none of the derived class data members may be used. When
+constructing a derived class object the base class is constructed first and
+only after that construction has successfully completed
+the derived class data members are available for initialization. tt(Land)'s
+constructor may therefore be improved:
+        verb(
+    Land::Land(size_t mass, size_t speed)
+    :
+        Vehicle(mass),
+        d_speed(speed)
+    {}
+        )
+
+    Derived class constructors always by default call their base class's
+default constructor. This is of course not correct for a derived class's
+ i(copy constructor). Assuming that the class tt(Land) must be provided with a
+copy constructor it may use the tt(Land const &other) to represent the other's
+base class:
+        verb(
+    Land::Land(Land const &other)   // assume a copy constructor is needed
+    :
+        Vehicle(other),             // copy-construct the base class part.
+        d_speed(other.speed)        // copy-construct Land's data members
+    {}
+        )

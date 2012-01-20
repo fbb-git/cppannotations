@@ -1,0 +1,89 @@
+    Classes may be adapted in such a way that their objects may be inserted
+into and extracted from, respectively, a tt(std::ostream) and
+tt(std::istream).
+
+    The class tt(std::ostream) defines insertion operators for primitive
+types, such as tt(int), tt(char *), etc.. In this section we learn how to
+extend the existing functionality of classes (in particular tt(std::istream)
+and tt(std::ostream)) in such a way that they can be used also in combination
+with classes developed much later in history.
+
+    In particular we will show how the
+ i(insertion operator) can be overloaded allowing the insertion of any type of
+object, say tt(Person) (see chapter ref(MEMORY)), into an tt(ostream). Having
+defined such an overloaded operator we're able to use the following code:
+        verb(
+    Person kr("Kernighan and Ritchie", "unknown", "unknown");
+
+    cout << "Name, address and phone number of Person kr:\n" << kr << '\n';
+        )
+    The statement tt(cout) lshift() tt(kr) uses oplshift().  This member
+function has two operands: an tt(ostream &) and a tt(Person &). The required
+action is defined in an overloaded emi(free function) oplshift() expecting two
+arguments:
+        verb(
+                                // declared in `person.h'
+    std::ostream &operator<<(std::ostream &out, Person const &person);
+
+                                // defined in some source file
+    ostream &operator<<(ostream &out, Person const &person)
+    {
+        return
+            out <<
+                "Name:    " << person.name() << ", "
+                "Address: " << person.address() << ", "
+                "Phone:   " << person.phone();
+    }
+        )
+    The free function oplshift() has the following noteworthy characteristics:
+    itemization(
+    it() The function returns a reference to an tt(ostream) object,
+to enable `chaining' of the insertion operator.
+    it() The two operands of oplshift() are passed to the free function as its
+arguments. In the example, the parameter tt(out) was initialized by tt(cout),
+the parameter tt(person) by tt(kr).
+    )
+
+    In order to overload the em(extraction) operator for, e.g., the tt(Person)
+class, members are needed modifying the class's private data members. Such
+ hi(modifier)em(modifiers) are normally offered by the class interface. For
+the tt(Person) class these members could be the following:
+        verb(
+    void setName(char const *name);
+    void setAddress(char const *address);
+    void setPhone(char const *phone);
+        )
+    These members may easily be implemented: the memory
+pointed to by the corresponding data member must be deleted, and the data
+member should point to a copy of the text pointed to by the parameter. E.g.,
+        verb(
+    void Person::setAddress(char const *address)
+    {
+        delete[] d_address;
+        d_address = strdupnew(address);
+    }
+        )
+    A more elaborate function should check the reasonableness of the new
+address (tt(address) also shouldn't be a 0-pointer). This
+however, is not further pursued here. Instead, let's have a look at the final
+ hi(>>)hi(operator>>)oprshift(). A simple implementation is:
+        verb(
+    istream &operator>>(istream &in, Person &person)
+    {
+        string name;
+        string address;
+        string phone;
+
+        if (in >> name >> address >> phone)    // extract three strings
+        {
+            person.setName(name.c_str());
+            person.setAddress(address.c_str());
+            person.setPhone(phone.c_str());
+        }
+        return in;
+    }
+        )
+    Note the stepwise approach that is followed here. First, the required
+information is extracted using available extraction operators. Then, if that
+succeeds, em(modifiers) are used to modify the data members of the object to
+be extracted. Finally, the stream object itself is returned as a reference.

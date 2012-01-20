@@ -1,0 +1,101 @@
+Namespaces can be nested. Here is an example:
+        verb(
+    namespace CppAnnotations
+    {
+        namespace Virtual
+        {
+            void *pointer;
+        }
+    }
+        )
+    The variable tt(pointer) is defined in the tt(Virtual) namespace, that
+itself is nested under the tt(CppAnnotations) namespace. To refer to this
+variable the following options are available:
+    itemization(
+    it() The emi(fully qualified name) can be used. A fully qualified name of
+an entity is a list of all the namespaces that are encountered until reaching
+the definition of the entity. The namespaces and entity are glued together by
+the scope resolution operator:
+        verb(
+    int main()
+    {
+        CppAnnotations::Virtual::pointer = 0;
+    }
+        )
+        it() A tt(using) declaration for tt(CppAnnotations::Virtual) can be
+provided. Now tt(Virtual) can be used without any prefix, but
+tt(pointer) must be used with the tt(Virtual::) prefix:
+        verb(
+    using CppAnnotations::Virtual;
+
+    int main()
+    {
+        Virtual::pointer = 0;
+    }
+        )
+        it() A tt(using) declaration for tt(CppAnnotations::Virtual::pointer)
+can be used. Now tt(pointer) can be used without any prefix:
+        verb(
+    using CppAnnotations::Virtual::pointer;
+
+    int main()
+    {
+        pointer = 0;
+    }
+        )
+        it() A tt(using) directive or directives can be used:
+        verb(
+    using namespace CppAnnotations::Virtual;
+
+    int main()
+    {
+        pointer = 0;
+    }
+        )
+    Alternatively, two separate tt(using) directives could have been used:
+        verb(
+    using namespace CppAnnotations;
+    using namespace Virtual;
+
+    int main()
+    {
+        pointer = 0;
+    }
+        )
+        it() A combination of tt(using) declarations and tt(using)
+directives can be used. E.g., a tt(using) directive can be used for
+the tt(CppAnnotations) namespace, and a tt(using) declaration can be used for
+the tt(Virtual::pointer) variable:
+        verb(
+    using namespace CppAnnotations;
+    using Virtual::pointer;
+
+    int main()
+    {
+        pointer = 0;
+    }
+        )
+    )
+
+    At every tt(using) directive all entities of that namespace can be used
+without any further prefix. If a namespace is nested, then that namespace can
+also be used without any further prefix. However, the entities defined in the
+nested namespace still need the nested namespace's name. Only after applying a
+tt(using) declaration or directive the qualified name of the nested namespace
+can be omitted.
+
+    When fully qualified names are preferred but a long name like
+                   centt(CppAnnotations::Virtual::pointer)
+    is nevertheless considered too long, a emi(namespace alias) may be used:
+                centt(namespace CV = CppAnnotations::Virtual;)
+    This defines tt(CV) as an em(alias) for the full name. The
+variable tt(pointer) may now be accessed using:
+        verb(
+    CV::pointer = 0;
+        )
+    A namespace alias can also be used in a tt(using) declaration or
+directive:
+        verb(
+    namespace CV = CppAnnotations::Virtual;
+    using namespace CV;
+        )

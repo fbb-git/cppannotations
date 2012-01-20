@@ -1,0 +1,222 @@
+We end this chapter on abstract containers with a small detour, introducing
+additions to the tt(union) concept, made available by the C++11
+standard. Although unions should not themselves be considered abstract
+containers, having covered containers has put us in a good position to
+introduce and illustrate emi(unrestricted unions).
+
+The C++11 standard adds unrestricted unions to C++'s data structuring
+capabilities. Whereas the traditional tt(union) can only contain primitive
+data, unrestricted unions allow data fields of types for which non-trivial
+constructors have been defined. Such data fields commonly are of
+class-types. Here is an example of such an unrestricted union:
+        verb(
+    union Union
+    {
+        int u_int;
+        std::complex<double, double> u_complex;
+        std::string u_string;
+    };
+        )
+    Two of the three fields of this union have non-trivial constructors,
+turning this union in an em(unrestricted) union.  As an unrestricted union
+defines at least one field of a type having a non-trivial constructor the
+question becomes how these unions can be constructed and destroyed.
+
+The destructor of a union consisting of, e.g. a tt(std::string) and a
+tt(double) should of course not call the tt(string)'s destructor if the
+union's last (or only) use referred to its tt(double) field. Likewise, when
+the tt(std::string) field is being used, but a switch is made from the
+tt(std::string) to the tt(double) field the tt(std::string)'s destructor
+should be called before any assignment to the tt(double) field.
+
+These tasks are too difficult for the compiler to solve, and the compiler will
+therefore em(not) implement default constructors and destructors for
+unrestricted unions, leaving the implementations of the union's constructors
+and destructor to the software engineer. If we try to define an unrestricted
+union like the above one using its default constructor we see an error message
+like the following:
+        verb(
+    error: use of deleted function 'Union2::Union2()'
+    error: 'Union::Union()' is implicitly deleted because the default
+            definition would be ill-formed:
+    error: union member 'Union::u_string' with non-trivial
+            'std::basic_string<...>::basic_string() ...'
+        )
+
+Although the compiler is unable to provide the appropriate member functions,
+em(we) can, as we know in what context the union is used. So let's create some
+constructors, where the various constructors each pick a field to initialize:
+        verb(
+    Union::Union(int i)
+    :
+        u_int(i)
+    {}
+    Union::Union(double real, double imaginary)
+    :
+        u_complex(real, imaginary)
+    {}
+    Union::Union(std::string const &str)
+    :
+        u_string(str)
+    {}
+        )
+    But like the constructor, the compiler doesn't implement a destructor
+either: too complex for the compiler to determine what the last used field was
+and have the unrestricted union's destructor do its thing. Like the
+constructors we must implement the unrestricted union's destructor ourselves.
+
+    The destructor should destroy tt(u_string)'s data if that is its currently
+active field; tt(u_complex)'s data if em(that) is its currently active field
+and do nothing if tt(u_int) is its currently active field. But how would the
+destructor know this? It doesn't the way we've set up things as there is no
+information within the union about the currently used field.
+
+    Here is one way to solve this problem:
+
+    Assume we provide each field with a tag that is unique for its
+field. Conceptually this is easily done by prefixing each field with an
+tt(int) tag. Since we're using unions the tags of the fields would coincide
+and a destructor could simply inspect the tags to find out which field is
+being used. The tag-fields must be parts of the data fields themselves.
+
+The tt(std::pair) containers can be used to implement this scheme, using their
+tt(first) data members as tt(int) tags, and their tt(seond) data members as
+the data types proper. Here are the definitions of the union's data fields and
+their constructors:
+        verb(
+    union Union
+    {
+        std::pair<int, int> u_int;
+        std::pair<int, std::complex<double>> u_complex;
+        std::pair<int, std::string> u_string;
+
+        // member declarations here
+    };
+    Union::Union(int i)
+    :
+        u_int(1, i)
+    {}
+    Union::Union(double real, double imaginary)
+    :
+        u_complex(2, {real, imaginary})
+    {}
+    Union::Union(std::string const &str)
+    :
+        u_string(3, str)
+    {}
+        )
+
+    Now for the destructor: the destructor should call the appropriate
+destructor of the currently active data fields having non-trivial
+destructors. So, in our tt(Union) union the tt(u_int) field can be
+ignored. The destructor now has an easy job: depending on the (any) field's
+tt(first) data member it picks the right destructor. Since the data fields
+weren't dynamically allocated, we don't use tt(delete). Instead we use the
+procedure previously encountered with em(placement new), explicitly calling
+the field's destructor where needed:
+        verb(
+    Union::~Union()
+    {
+        switch (u_int.first)
+        {
+            case 2:
+                u_complex.second.~complex<double>();
+            break;
+
+            case 3:
+                u_string.second.~string();
+            break;
+        }
+    }
+        )
+
+    What about changing fields? Once an unrestricted union has received its
+value it keeps that variant until used otherwise. That's in line with the
+traditional union. But to change the interpretation of an unrestricted union's
+class-type field we must make sure that the destructor of that
+class type field is first called. To do that smoothly we need
+tt(operator=).
+
+    Once again  we encounter a complication: unrestricted unions don't even
+have a default copy constructor. That's again understandable: which field
+should be initialized by the copy constructor? But as we've implemented a
+means of determining the currently active field the problem is easily solved,
+once we realize that the memory in the destination object is waiting to be
+used and that placement new is the tool to perform the initialization
+with. Here is tt(Union)'s copy constructor:
+        verb(
+    Union::Union(Union const &other)
+    {
+        switch (other.u_int.first)
+        {
+            case 1:
+                new (&u_int) std::pair<int, int>(other.u_int);
+            break;
+            case 2:
+                new (&u_complex)
+                        std::pair<int, complex<double>>(other.u_complex);
+            break;
+            case 3:
+                new (&u_string) std::pair<int, string>(other.u_string);
+            break;
+        }
+    }
+        )
+
+    Preparing for tt(operator=) we first implement tt(Union::swap), swapping
+the current and another tt(Union) object, using fast swapping as discussed in
+section ref(FSWAP):
+        verb(
+    void Union::swap(Union &other)
+    {
+        std::swap(u_int,     other.u_int);
+        std::swap(u_complex, other.u_complex);
+        std::swap(u_string,  other.u_string);
+    }
+        )
+    If fast swapping cannot be used, but individual fields em(can) be swapped,
+then swapping is a bit complex. In that case:
+    itemization(
+    it() Make a copy of tt(other)'s currently active field
+    it() Assign the current object's currently active field to tt(other)'s
+        matching field;
+    it() Assign the copy of tt(other)'s previously active field to the current
+        object
+    )
+
+    The tt(operator=) member is now implemented using the move-assignment
+operator that can be implemented em(en-passant), whether the tt(Union)
+supports moving or not:
+        verb(
+        Union &Union::operator=(Union &&tmp)
+        {
+            swap(tmp);
+            return *this;
+        }
+
+        Union &Union::operator=(Union const &other)
+        {
+            Union tmp(other);
+            return *this = std::move(tmp);
+        }
+        )
+
+Using simple accessor members to access the field's tt(second) data members
+like the one shown below, a program can now define, copy construct and
+reassign tt(Union)s, and access the active data using accessors:
+        verb(
+        std::string &Union::asString()
+        {
+            return u_string.second;
+        }
+
+    int main()
+        {
+            Union ustr("hello world");
+            Union ucom(12.4, 12.5);
+
+            ustr = ucom;
+            ustr = Union("hi there, again");
+            cout << ustr.asString() << '\n';
+        }
+        )

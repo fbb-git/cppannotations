@@ -1,0 +1,84 @@
+The C++11 standard adds i(multi threading) to bf(C++) through the bf(C++)
+standard library.
+
+label(PTHREADS)
+The annotations() don't discuss the concepts behind multi threading. It is a
+topic by itself and many good reference sources exist (cf.  i(Nichols, B),
+em(et al.)'s
+        url(Pthreads Programming)(http://oreilly.com/catalog/), O'Reilly
+        hi(Pthreads Programming)hi(http://oreilly.com/catalog/)
+    for some good introductions to multi-threading).
+
+Multi threading facilities are offered by the class hi(thread)
+tt(std::thread). Its constructor and assignment operator accept a function or
+function object that handles the thread created by the tt(thread) object.
+
+Thread synchronization is handled by objects of the class hi(mutex)
+tt(std::mutex) and hi(condition variable) condition variables are implemented
+by the class hi(condition_variable) tt(std::condition_variable).
+
+In order to use multi threading in bf(C++) programs the Gnu tt(g++) compiler
+requires the use of the tt(-pthread)
+        hi(compiler flag: -pthread)hi(multi threading: -pthread)
+ flag. E.g., to compile a multi-threaded program defined in a source file
+tt(multi.cc) the compiler must be called as follows:
+        verb(
+    g++ --std=c++0x -pthread -Wall multi.cc
+        )
+
+Threads in bf(C++) are very much under development. It is likely that in the
+near future features will be added and possibly redefined. The next sections
+should therefore be read with this in mind.
+
+COMMENT(
+
+What if you don't want to share your data? What if you want exactly the
+opposite: For each thread to have its own copy? This is the scenario addressed
+by the new thread_local storage duration keyword.
+
+Thread Local Data
+
+The thread_local keyword can be used with any object declaration at namespace
+scope at local scope, and specifies that such a variable is thread local. Each
+thread thus has its own copy of that variable, and that copy exists for the
+entire duration of that thread. It is essentially a per-thread static
+variable, so each thread's copy of a variable declared at local scope is
+initialized the first time that particular thread passes through the
+declaration, and they retain their values until that thread exits:
+
+
+    std::string foo(std::string const& s2)
+    {
+        thread_local std::string s="hello";
+
+        s+=s2;
+        return s;
+    }
+
+
+In this function, each thread's copy of s starts life with the contents
+"hello." Every time the function is called, the supplied string is appended to
+that thread's copy of s. As you can see from this example, this even works
+with class types that have constructors and destructors (such as std::string),
+which is an improvement over the pre-C++11 compiler extensions.
+
+Thread-local storage isn't the only change to the concurrency support in the
+core language: There's also a brand new multi-threading aware memory model,
+with support for atomic operations.
+
+The New Memory Model and Atomic Operations
+
+Sticking to using locks and condition variables to protect your data, you
+won't need to worry about the memory model. The memory model guarantees to
+protect your data from race conditions-if you use locks correctly. You'll get
+undefined behavior if you don't.
+
+If you're working at a really low-level and providing high-performance library
+facilities, then it's important to know the details -which are too complicated
+to go into here. For now, it's enough to know that C++11 has a set of atomic
+types corresponding to the built-in integer types and void pointers -and a
+template std::atomic<>-which can be used to create an atomic version of a
+simple user-defined type. You can look up the relevant documentation for the
+details.
+
+END)

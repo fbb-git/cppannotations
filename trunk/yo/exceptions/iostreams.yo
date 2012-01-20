@@ -1,0 +1,32 @@
+The bf(C++) I/O library was used well before exceptions were available in
+bf(C++). Hence, normally the classes of the iostream library do not throw
+exceptions. However, it is possible to modify that behavior using the
+ ti(ios::exceptions) member function. This function has two overloaded
+versions:
+    itemization(
+    ithtq(exceptions (function))(ios::iostate exceptions())
+        (hi(iostate)this member returns the i(state flags) for which the
+         stream will throw exceptions;)
+    itt(void exceptions(ios::iostate state))
+        quote(hi(iostate)this member causes the stream to throw an exception
+            when state tt(state) is observed.)
+    )
+    In the I/O library, exceptions are objects of the class
+ hi(failure class) tt(ios::failure), derived from hi(exception class)
+tt(ios::exception). A tt(std::string const &message) may be specified when
+defining a tt(failure) object. Its message may then be  retrieved using its
+ hi(what) tt(virtual char const *what() const) member.
+
+    Exceptions should be used in exceptional circumstances. Therefore, we
+think it is questionable to have stream objects throw exceptions for fairly
+normal situations like endOfFile(). Using exceptions to handle input errors
+might be defensible (e.g., in situations where input errors should not occur
+and imply a corrupted file) but often aborting the program with an appropriate
+error message would probably be the more appropriate action. As an example
+consider the following interactive program using exceptions to catch incorrect
+input:
+        verbinclude(examples/ioexceptions.cc)
+
+By default, exceptions raised from within tt(ostream) objects are caught by
+these objects, which set their tt(ios::badbit) as a result. See also the
+link(paragraph on this issue)(STRBUFLABEL) in section ref(STREAMBUF).

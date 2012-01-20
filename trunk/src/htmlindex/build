@@ -1,0 +1,388 @@
+#!/usr/bin/icmake -qt/tmp/htmlindex
+
+string
+    CLASSES;
+
+void setClasses()
+{
+    CLASSES += " aux indexentry";
+}
+
+
+#define COMPILER "g++"
+#define COMPILER "g++-4.5"
+
+// COPT: the set of C-options
+#define COPT "--std=c++0x -Wall -g -O2 "
+
+// LOPT: the set of linker options
+#define LOPT "-s"
+
+#define ECHO_REQUEST ON
+
+// Extra libraries required. Remove lib and .a from the library names.
+// E.g., #define LIBS "m Xt" to link libm.a and libXt.a explicitly
+// Specify libs from the most specific to the most general one.
+#define LIBS "bobcat"
+
+// Extra library-paths required. 
+// E.g., #define LIBPATH "/some/path /some/other/path" to search these paths
+// apart from the default paths
+#define LIBPATH ""
+
+//      DO NOT ALTER THINGS BELOW THIS LINE
+string                                      // contain options for
+    libs,                                   // extra libs, e.g., "-lrss -licce"
+    libpath,                                // extra lib-paths, eg, "-L../rss"
+    copt,
+    lopt,
+    libxxxa;                                // expanded lib-name
+
+string
+    ofiles,                             // wildcards for o-files
+    sources,                            // sources to be used
+    wild,                               // wildcard of extension
+    current;                            // contains name of current dir.
+/*
+                                O B J F I L E S . I M
+*/
+
+list objfiles(list files)
+{
+    string
+        file,
+        objfile;
+    int
+        i;
+
+    for (i = 0; i < sizeof(files); i++)
+    {
+        file = element(i, files);           // determine element of the list
+
+        objfile = "./o/" + change_ext(file, "o");    // make obj-filename
+
+        if (objfile younger file)           // objfile is younger
+        {
+            files -= (list)file;            // remove the file from the list
+            i--;                            // reduce i to test the next
+        }
+    }
+    return (files);
+}
+/*
+                                 parser.im
+*/             
+
+void parser()
+{
+    chdir("parser/gramspec");
+    system("grambuild");
+    chdir("..");
+
+    if 
+    (
+        exists("grammar")
+        &&
+        "grammar" younger "parser.cc"
+    )                                   // new parser needed
+    {
+        exec("bisonc++", "-d", "-o", "parser.cc", "grammar");
+        printf("Note: the compilation of parser.cc may produce "
+               "several compiler warnings.\n");
+    }
+        
+    chdir("..");
+}
+/*
+                                 scanner.im
+*/             
+
+void scanner()
+{
+    chdir("scanner");
+    
+    if 
+    (                                           // new lexer needed
+        exists("lexer")
+        &&
+        (
+            "lexer" younger "yylex.cc"
+            ||
+            "../parser/parser.h" younger "yylex.cc" 
+        )
+    )
+    {
+        exec("flex++",
+#ifdef INTERACTIVE
+                    "-I", 
+#endif
+                    "-oyylex.cc", "lexer");
+                    
+        printf("Note: the compilation of yylex.cc may produce "
+               "several compiler warnings.\n");
+    }
+                    
+    chdir("..");
+}
+/*
+                                A L T E R E D . I M
+*/
+
+list altered(list files, string target)
+{
+    int
+        i;
+    string
+        file;
+
+    for (i = 0; i < sizeof(files); i++)     // try all elements of the list
+    {
+        file = element(i, files);           // use element i of the list
+            
+        if (file older target)              // a file is older than the target
+        {
+            files -= (list)file;            // remove the file from the list
+            i--;                            // reduce i to inspect the next
+        }                                   // file of the list
+    }
+    return (files);                         // return the new list
+}
+/*
+                            F I L E L I S T . I M
+*/
+
+list file_list(string type, string library)
+{
+    list
+        files;
+
+    files = makelist(type);                 // make all files of certain type
+
+    files = objfiles(files);                // remove if younger .obj exist
+
+    return (files);
+}
+/*
+                        L I N K . I M
+*/
+
+void link(string library, string exe)
+{
+    exec(COMPILER, "-o", exe, 
+        ofiles,
+        libs, "-L.", libpath, lopt
+    );
+}
+
+/*
+                            C C O M P I L E . I M
+*/
+
+void c_compile(list cfiles)
+{
+        string
+                nextfile;
+        int
+                i;
+                
+    if (!exists("o"))
+        system("mkdir o");
+                                                      
+    if (sizeof(cfiles))                 // files to compile ?
+    {
+        printf(current, "\n");
+        
+                                        // compile all files separately
+        for (i = 0; nextfile = element(i, cfiles); i++)
+        {
+                exec(COMPILER,
+                "-c -o o/" + change_ext(nextfile, "o") + " "
+                COPT + " " +
+                copt + " " + nextfile);
+        }
+    }
+}
+/*
+                            U P D A T E L I . I M
+*/
+
+void updatelib(string library)
+{
+    list
+        arlist,
+        objlist;
+    string
+        to,
+        from;
+
+    objlist = makelist("*.o");
+
+    if (!sizeof(objlist))
+        return;
+
+    printf("\n");
+
+    exec("ar", "rvs", library, "*.o");
+    exec("rm", "*.o");
+
+    printf("\n");
+}
+
+void prefix_class(string class_id)
+{
+    list
+        o_files;
+    string
+        o_file;
+    int
+        i;
+
+    o_files = makelist("*.o");
+
+    for (i = 0; o_file = element(i, o_files); i++)
+        exec("mv", o_file, class_id + o_file);
+}
+/*
+                                S T D C P P . I M
+*/
+
+void std_cpp(string library)
+{
+    list
+        cfiles;
+
+    cfiles = file_list(wild, library);      // make list of all cpp-files
+
+    c_compile(cfiles);                      // compile cpp-files
+}
+
+/*
+                                C P P M A K E . C
+
+    CPP files are processed by stdmake.
+
+    Arguments of CPPMAKE:
+
+    cpp_make(
+        string mainfile,    : name of the main .cpp file, or "" for library
+                              maintenance
+        string library,     : name of the local library to use/create
+                                (without lib prefix, .a suffix
+                                 if main is given here, libmain.a is created)
+        string exe,         : (path) name of the exe file to create
+        )
+
+    Both mainfile and library MUST be in the current directory
+*/
+
+void cpp_make(string mainfile, string library, string exe)
+{
+    int
+        n,
+        index;
+    list
+        classes;
+    string
+        cwd;
+
+#ifdef BISON++
+    CLASSES += "parser ";
+    if (exists("parser"))                  // subdir parser exists
+        parser(); 
+#endif
+
+#ifdef FLEX++
+    CLASSES += "scanner ";
+    if (exists("scanner"))                  // subdir scannerexists
+        scanner(); 
+#endif
+    
+    setClasses();                           // remaining classes
+
+    cwd = chdir(".");
+        
+    ofiles = "o/*.o";                       // std set of o-files
+
+    classes = strtok(CLASSES, " ");         // list of classes
+
+    if (n = sizeof(classes))
+        ofiles += " */o/*.o";               // set ofiles for no LIBRARY use
+
+    wild = sources;
+                                            // make library name
+    libxxxa = chdir(".") + "lib" + library + ".a";
+
+                                            // first process all classes
+    for (index = 0; index < n; index++)
+    {                   
+        current = element(index, classes);  // next class to process
+        chdir(current);                     // change to directory
+
+        current = "subdir " + current;
+        std_cpp (libxxxa);                // compile all files
+        chdir( cwd);                      // go back to parent dir
+    }
+
+
+    current = "auxiliary " + wild + " files";
+    std_cpp (libxxxa);                    // compile all files in current dir
+    
+    for (index = 0; index < n; index++)
+    {
+        current = element(index, classes);  // determine class name
+        chdir( current);                  // chdir to a class directory.
+        chdir(cwd);                       // go back to parent dir
+    }
+
+    current = "";                           // no class anymore
+
+    if (mainfile != "")                     // mainfile -> do link
+        link(library, exe);
+}
+/*
+                        S E T L I B S . I M
+*/
+void setlibs()
+{       
+    int
+        n,
+        index;
+    list
+        cut;
+        
+    cut = strtok(LIBS, " ");        // cut op libraries
+    n = sizeof(cut);
+    for (index = 0; index < n; index++)
+        libs += " -l" + element(index, cut);
+    
+#ifdef FLEX++
+    libs += " -lfl";
+#endif
+    
+    cut = strtok(LIBPATH, " ");     // cut up the paths
+    n = sizeof(cut);
+    for (index = 0; index < n; index++)
+        libpath += " -L" + element(index, cut);
+}
+
+
+void main()
+{
+
+    echo(ECHO_REQUEST);
+
+    sources = "*.cc";
+
+    setlibs();
+
+    lopt = LOPT;
+
+    system("mkdir -p ../../tmp/bin");   // make destination if it doesn't 
+                                        // already exist
+    cpp_make
+    (
+        "htmlindex.cc",          // program source
+        "htmlindex",                    // program library
+        "../../tmp/bin/htmlindex"                     // binary program
+    );
+}

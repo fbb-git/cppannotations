@@ -1,0 +1,46 @@
+    Different from an ordinary function that results in code once the compiler
+reads its definition a template is not instantiated when its definition is
+read. A template is merely a em(recipe) telling the compiler how to create
+particular code once it's time to do so. It's indeed very much like a recipe
+in a cooking book. You reading how to bake a cake doesn't mean you have
+actually baked that cake by the time you've read the recipe.
+
+    So, when is a function template actually instantiated? There are two
+situations where the compiler decides to instantiate templates:
+    itemization(
+    it() They are instantiated when they are used (e.g., the function
+tt(add) is called with a pair of tt(size_t) values);
+    it() When addresses of function templates are taken they are instantiated.
+Example:
+        verb(
+    char (*addptr)(char const &, char const &) = add;
+        )
+    )
+    The location of statements causing the compiler to instantiate a template
+is called the template's
+        hi(template: point of instantiation)
+    emi(point of instantiation). The point of instantiation has serious
+implications for the function template's code. These implications are
+discussed in section ref(NAMERESFUN).
+
+    The compiler is not always able to deduce the template's type parameters
+unambiguously. When the compiler reports an ambiguity it must be solved by the
+software engineer. Consider the following code:
+        verbinclude(examples/ambiguous2.cc)
+    When this little program is compiled, the compiler reports an ambiguity it
+cannot resolve. It has two candidate functions as for each overloaded version
+of tt(fun) an tt(add) function can be instantiated:
+        verb(
+    error: call of overloaded 'fun(<unknown type>)' is ambiguous
+    note: candidates are: int fun(size_t (*)(int*, size_t))
+    note:                 double fun(double (*)(double*, size_t))
+        )
+    Such situations should of course be avoided. Function templates can only
+be instantiated if there's no ambiguity. Ambiguities arise when multiple
+functions emerge from the compiler's function selection mechanism (see section
+ref(FUNCTIONSELECTION)). It is up to us to resolve the ambiguities. They
+em(could) be resolved using a blunt ti(static_cast) (by which we select among
+alternatives, all of them possible and available):
+        verbinclude(examples/cast.cc)
+    But it's good practice to avoid type casts wherever possible. How to do
+this is explained in the next section (ref(TEMPFUNEXPLICIT)).
