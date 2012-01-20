@@ -48,4 +48,3 @@ int &RandomIterator::operator*()
 {
     return d_value;
 }
-

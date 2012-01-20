@@ -38,8 +38,7 @@ ForwardIterator &ForwardIterator::operator++()
     return *this;
 }
 
-int &ForwardIterator::operator*() 
+int &ForwardIterator::operator*()
 {
     return d_value;
 }
-

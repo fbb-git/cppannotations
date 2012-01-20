@@ -30,7 +30,7 @@ union Semantic
 
 inline Semantic::Semantic()
 :
-    d_int {INT, 0}    
+    d_int {INT, 0}
 {}
 
 #endif

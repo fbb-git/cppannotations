@@ -46,8 +46,7 @@ BidirectionalIterator &BidirectionalIterator::operator--()
     return *this;
 }
 
-int &BidirectionalIterator::operator*() 
+int &BidirectionalIterator::operator*()
 {
     return d_value;
 }
-

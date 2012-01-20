@@ -38,7 +38,7 @@ OutputIterator &OutputIterator::operator++()
     return *this;
 }
 
-int &OutputIterator::operator*() 
+int &OutputIterator::operator*()
 {
     return d_value;
 }
