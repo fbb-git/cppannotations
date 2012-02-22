@@ -36,43 +36,38 @@ using mutexes. Although proper synchronization is realized, the
 synchronization is performed time and again for every thread. The
 C++11 standard offers several ways to perform a proper initialization:
     itemization(
-    it() First, a emi(constexpr) em(constructor) may be defined. Constexpr
-constructors are currently not yet supported by the tt(g++) compiler and they
-are not yet discussed in the annotations().
-
-    COMMENT(
-First, suppose your constructor is declared with the new constexpr keyword and
-satisfies the requirements for constant initialization. In this case, an
-object of static storage duration, initialized with that constructor, is
-guaranteed to be initialized before any code is run as part of the static
-initialization phase. This is the option chosen for std::mutex, because it
-eliminates the possibility of race conditions with initialization of mutexes
-at a global scope:
-
-
-class my_class
+    it() First, suppose your constructor is declared with the ti(constexpr)
+keyword (cf. section ref(CONSTEXPR)), satisfying the requirements for constant
+initialization. In this case, an object of static storage lifetime,
+initialized using that constructor, is guaranteed to be initialized before any
+code is run as part of the static initialization phase. This is the option
+chosen for tt(std::mutex), because it eliminates the possibility of race
+conditions with initialization of mutexes at a global scope. Here is an
+example, using in-class implementations for brevity: 
+    verb(
+    class MyClass
     {
-        int i;
+        int d_i;
 
-    public:
-        constexpr my_class():i(0){}
+        public:
+            constexpr MyClass(int i = 0)
+            :
+                d_i(0)
+            {}
 
-        my_class(int i_):i(i_){}
-
-        void do_stuff();
+        void action();
     };
 
-    my_class x; // static initialization with constexpr constructor
+    MyClass myObject;   // static initialization with constexpr constructor
 
     int foo();
-    my_class y(42+foo()); // dynamic initialization
+    myClass other(42 + foo());  // dynamic initialization
 
     void f()
     {
-        y.do_stuff(); // is y initialized?
+        other.action();         // is other initialized in some thread?
     }
-        END)
-
+        )
     it() Second, a static variable defined within a compound statement may be
 used (e.g., a static local variable within a function body).  In C++ static
 variables hi(static variable: initialization) defined within a compound
