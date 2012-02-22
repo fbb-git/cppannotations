@@ -206,37 +206,6 @@ initializations that would have been used if the union fields were members
 become statements using the placement new operator in the bodies of the
 constructors. 
 
->>>>>>>>>>>>>>>>>>>> WIP
-
-    likewise.  (or move) 
-how to initialize constructor's member initialization
-section).already exists by the time the me These are implemented by calling
-the appropriate constructor
-
-    Now for the destructor: the destructor should call the appropriate
-destructor of the currently active data fields having non-trivial
-destructors. So, in our tt(Union) union the tt(u_int) field can be
-ignored. The destructor now has an easy job: depending on the (any) field's
-tt(first) data member it picks the right destructor. Since the data fields
-weren't dynamically allocated, we don't use tt(delete). Instead we use the
-procedure previously encountered with em(placement new), explicitly calling
-the field's destructor where needed:
-        verb(
-    Union::~Union()
-    {
-        switch (u_int.first)
-        {
-            case 2:
-                u_complex.second.~complex<double>();
-            break;
-
-            case 3:
-                u_string.second.~string();
-            break;
-        }
-    }
-        )
-
     What about changing fields? Once an unrestricted union has received its
 value it keeps that variant until used otherwise. That's in line with the
 traditional union. But to change the interpretation of an unrestricted union's
@@ -244,33 +213,9 @@ class-type field we must make sure that the destructor of that
 class type field is first called. To do that smoothly we need
 tt(operator=).
 
-    Once again  we encounter a complication: unrestricted unions don't even
-have a default copy constructor. That's again understandable: which field
-should be initialized by the copy constructor? But as we've implemented a
-means of determining the currently active field the problem is easily solved,
-once we realize that the memory in the destination object is waiting to be
-used and that placement new is the tool to perform the initialization
-with. Here is tt(Union)'s copy constructor:
-        verb(
-    Union::Union(Union const &other)
-    {
-        switch (other.u_int.first)
-        {
-            case 1:
-                new (&u_int) std::pair<int, int>(other.u_int);
-            break;
-            case 2:
-                new (&u_complex)
-                        std::pair<int, complex<double>>(other.u_complex);
-            break;
-            case 3:
-                new (&u_string) std::pair<int, string>(other.u_string);
-            break;
-        }
-    }
-        )
+FBB WIP ==================================================================
 
-    Preparing for tt(operator=) we first implement tt(Union::swap), swapping
+    Preparing for tt(operator=) we first implement tt(MultiData::swap), swapping
 the current and another tt(Union) object, using fast swapping as discussed in
 section ref(FSWAP):
         verb(
