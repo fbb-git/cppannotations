@@ -1,53 +1,37 @@
-/*PREAMBLE*/
-%{
-    #define SKIP_FLEXLEXER_
-    #include "scanner.ih"
-%}
-/**/
 /*SYMBOLS*/
-%option yyclass="Scanner" outfile="yylex.cc" c++ 8bit warn noyywrap yylineno
-%option debug
+%filenames scanner
+%debug
 
 %x      comment
 %x      include
 
-eolnComment     "//".*
-anyChar         .|\n
 /**/
-/* --------------------------------------------------------------------------
-                               Flex rules area:
-                               ~~~~~~~~~~~~~~~~
-     Regular expressions below here define what the lexer will recognize.
-   ----------------------------------------------------------------------- */
 /*RULES*/
 %%
-    /*
-        The comment-rules: comment lines are ignored.
-    */
-{eolnComment}
-"/*"                    BEGIN comment;
-<comment>{anyChar}
-<comment>"*/"           BEGIN INITIAL;
+//                           Flexc++ rules area:
+//                           ~~~~~~~~~~~~~~~~~~~
+//   The following regular expressions define what the lexer will recognize.
 
-    /*
-        File switching: #include <filepath>
-    */
-#include[ \t]+"<"       BEGIN include;
-<include>[^ \t>]+       d_nextSource = yytext;
-<include>">"[ \t]*\n    {
-                            BEGIN INITIAL;
-                            pushSource(YY_CURRENT_BUFFER, YY_BUF_SIZE);
-                        }
-<include>{anyChar}      throw invalidInclude;
+    // The comment-rules: comment is ignored.
+//.*                    // ignore eoln comment
+"/*"                    begin(StartCondition_::comment);
+<comment>{
+    .|\n                // ignore all characters in std C comment
+    "*/"                begin(StartCondition_::INITIAL);
+}
 
-    /*
-        The default rules: eating all the rest, echoing it to output
-    */
-{anyChar}               ECHO;
+    // File switching: #include <filepath>
+#include[ \t]+"<"      begin(StartCondition_::include);
+<include>{
+    [^ \t>]+            d_nextSource = matched();
+    ">"[ \t]*\n         switchStream();
+    .|\n                throw INVALIDINCLUDE;
+}
 
-    /*
-        The <<EOF>> rule: pop a pushed file, or terminate the lexer
-    */
+    // The default rule: echo anything else to std::cout
+.|\n                    ECHO;
+
+    
 <<EOF>>                 {
                             if (!popSource(YY_CURRENT_BUFFER))
                                 yyterminate();
