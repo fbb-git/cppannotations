@@ -213,6 +213,81 @@ class-type field we must make sure that the destructor of that
 class type field is first called. To do that smoothly we need
 tt(operator=).
 
+If the fields of the union may be swapped using fast swapping (cf. section
+ref(FSWAP)), and if that also holds true for the other tt(MultiData) fields,
+then tt(MultiData)'s assignment operator's implementation is standard:
+        verb(
+    MultiData &MultiData::operator=(MultiData const &other)
+    {
+        MultiData tmp(other);       // this may throw: OK
+        fastSwap(tmp);              // swap offers the no-throw guarantee
+        return *this;
+    }
+        )
+    But now assume fast-swapping cannot be used for tt(Union)'s fields. How to
+implement the assignment operator in that case?
+
+    If fast swapping is not possible, then an exception-safe solution becomes
+complex. Assuming that both objects use different fields, then these  are the
+steps we have to take: 
+    itemization(
+    it() First save the current union in a block of memory. This merely 
+involves tt(memcpy) operations, which do not throw.
+    it() Then use placement new to copy the other object's union field into
+the current object. If this throws,
+        itemization(
+        it() catch the exception, return the saved byted back to their
+original location, and continue: we have rolled-back tp our previous (valid)
+state. 
+        )
+    it() We still have to delete the original field's allocated data. To do
+so, we perform the following steps:
+        itemization(
+        it() Swap the current union's new contents with the contents in the
+previously saved block. 
+        it() Directly call the original type's destructor, destroying any
+memory the original object has allocated
+        it() Swap the current union's new contents once again, re-installing the
+other object's copy back into the union.
+        )
+        As none of the above steps will throw, we have committed the new
+situation.
+    )
+    Here is the implementation, assuming the current object's type is tt(INT),
+and the other object's type is tt(STRING); the approach can easily be
+generalized for unions having other fields:
+        verb(
+    MultiData &MultiData::operator=(MultiData const &other)
+    {
+
+        char block[sizeof(Union)];
+        memcpy(block, d_u);         // save the original situation
+        try
+        {
+            new (&d_u) std::string(other.du.u_string);  // maybe throws
+            
+            // it didn't throw: destroy the original data
+            fastSwap(block, &d_u);
+            d_u.u_int.~int();
+            memcpy(&d_u, block, sizeof(Union));
+
+        MultiData tmp(other);       // this may throw: OK
+
+                
+        fastSwap(tmp);
+        return *this;
+    }
+        )
+
+        
+        if (d_tag == STRING)        // or a switch
+            d_u.u_string) std::string(std::move(tmp.d_u.u_string));
+        else
+            d_u.u_int = tmp.d_u.u_int;
+    }
+        )
+
+
 FBB WIP ==================================================================
 
     Preparing for tt(operator=) we first implement tt(MultiData::swap), swapping
