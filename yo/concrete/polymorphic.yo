@@ -1,67 +1,81 @@
-Bisonc++ may use polymorphic semantic values. Their use is covered
-in this section. The described method is a direct result of a suggestion
-initially brought forward by Dallas A. Clement in September 2007.
+Instead of using unions to store various semantic values tt(bisonc++) could
+also use a polymorphic base class to handle semantic values of various
+types. Using a polymorphic base class is covered in this section. The
+described method is a direct result of a suggestion initially brought forward
+by Dallas A. Clement in September 2007.
 
 One may wonder why tt(union)s are still used by Bisonc++, as bf(C++) offers
-inherently superior constructs to combine multiple types into one type. The
-support by C++11 for unrestricted unions may result in tt(union)s being
-re-evaluated, but bf(C++) traditionally offers a good alternative for the use
-of tt(union)s: a polymorphic base class and a series of derived classes
-implementing the alternative data types. 
+inherently superior ways to handle multiple semantic types: a poymorphic base
+class and a series of derived classes implementing the alternative data types.
 
-Below, a polymorphic base class (the class tt(Base)) is developed. As it is a
-polymorphic base class it has the following characteristics:
-    itemization(
-    it() Its destructor is virtual (and has a default implementation);
-    it() Objects of the derived classes may be obtained from a
-        pure virtual tt(ownClone) member implementing a so-called em(virtual
-        constructor) (cf. the emi(virtual constructor) i(design pattern),
-        em(Gamma et al.) (1995)); hi(Gamma, E.);
-    it() To obtain a clone of the current (derived class) object, the
-        interface function tt(clone) must be called. It calls tt(ownClone) and
-        forms a layer between the derived class implementations of
-        tt(ownClone) and the user-software. Right now it only calls
-        tt(ownClone), but by not defining it as an inline function ti(clone)
-        can easily be extended once that is required;
-    it() Several convenient utility members are defined: a pure virtual
-        tt(insert) member and an overloaded tt(operator<<) to
-        allow derived objects to be inserted into tt(ostream) objects.
-    )
-    Here is  bf(Base)'s interface:
-    verbinclude(poly/base/base.h)
+On the other hand, a polymorphic base class also seems to imply a lot of
+additional work: classes must be derived from a base class, virtual members
+must be declared and overridden in derived classes, and the base class must be
+aware of the relevant interfaces of all derived classes. All this does more to
+hinder than to promote the construction of reusable software. So, how to
+proceed? It turns out that the required effort to implement and use
+polymorphic semantic values is fairly small. In fact, only a very basic
+polymorphic semantic base class needs to be implemented. Having defined the
+polymorphic base class template meta programming techniques can be used to let
+the compiler create all derived classes we might need. The amount of works
+turns out to be astonishingly small. What about the `free lunch'? Well, the
+approach works fine in situations where we either can deduct the actual
+semantic value from the grammar (i.e., the syntax) itself, or where we
+occasionally are willing to use a switch to select the actual semantic
+value. This rather weak assumption holds true for the grammar used by the
+program developed in this section, so let's get on with it!
 
-Instead of using fields of a  classical tt(union) we are now using
-classes that are derived from the class tt(Base). For example:
-    itemization(
-    it() Objects of the class tt(Int) contain tt(int) values. Here is
-its interface (and implementation):
-        verbinclude(poly/int/int.h)
-    it() Objects of the class tt(Text) contain text. These objects can be
-used, e.g., to store the names of identifiers recognized by a lexical scanner.
-Here is the interface of the class tt(Text):
-        verbinclude(poly/text/text.h)
-    )
-    The polymorphic tt(Base) can't immediately be used as the parser's
-semantic value type for various reasons:
-    itemization(
-    it() A tt(Base) class object cannot contain derived class's data members,
-so plain tt(Base) class objects cannot be used to store the parser's semantic
-values.
-    it() It's not possible to define a tt(Base) class reference as a semantic
-value either as containers cannot store references.
-    it() Finally, the semantic value should not be a pointer to a tt(Base)
-class object. Although a pointer would offer programmers the benefits of the
-polymorphic nature of the tt(Base) class, it would also require them to keep
-track of all memory used by tt(Base) objects, thus countering many of the
-benefits of using a polymorphic base class.
-    )
+The program developed in this section recognizes input consisting of lines
+either using text (identifiers) or numbers (int-values). The grammar actually
+is very simple, symbolizing function calls of the form 
+        verb(
+    ident '(' arglist ')' ';'
+        )
+with tt(arglist) a comma-separated list of tt(ident)s and tt(int)s:
+        verb(
+    arglist:
+        arglist ',' value
+    |
+        value
+    ;
+    value:
+        IDENT
+    |
+        INT
+    ;
+        ) 
+or assignments of the form:
+        verb(
+    ident '=' int ';'
+        )
+    The essential characteristic of these simple rules is that two different
+semantic value types are used. More types could easily have been added:
+doubles, vectors, complex numbers, sets; you name it. 
 
-To solve the above problems, a em(wrapper class) tt(Semantic) around a
-tt(Base) pointer is used. To simplify memory bookkeeping tt(Semantic) itself
-is defined as a class derived from tt(std::shared_ptr) (cf. section
-ref(SHAREDPTR)). This allows us to benefit from default implementations of the
-copy constructor, the overloaded assignment operator, and the destructor.
-tt(Semantic) itself offers an overloaded insertion operator allowing us to
-insert the object that is controlled by the tt(Semantic) object and derived
-from tt(Base) into an tt(ostream). Here is tt(Semantic)'s interface:
-    verbinclude(poly/semantic/semantic.h)
+    Our semantic value must accomodate all these different types, and must
+also allow us to determine the actual type that's stored in a semantic value
+in cases where we cannot deduct the actual type merely from the syntax (which
+happens, e.g., for the different semantic values types contained in an 
+tt(arglist).
+
+    In the following sections we'll develop the parser using a polymorphic
+base class to handle its semantic values. To prevent excessive copying of
+semantic values the parser's actual semantic value is not the semantic value
+itself but a tt(spSemBase), which is a wrapper around a
+tt(std::shared_ptr<SemBase>), where tt(SemBase) is our polymorphic base
+class (cf. section ref(SPSEMBASE)). 
+
+    We'll develop the generic tt(Semantic) class template in steps:
+    itemization(
+    it() In the next section we'll start by defining em(tags) for the various
+semantic data types;
+    it() Next, support structs are developed allowing us to indicate whether
+semantic data can be modified by the parser or not;
+    it() Following this, a trait class is developed allowing us to obtain data
+types from tags;
+    it() Another trait class is needed to determine the data type that is
+returned by the conversion operators of the different semantic data types;
+    it() Hereafter the polymorphic base class tt(SemBase) is developed;
+    it() Finally, de class template tt(Semantic) is defined, allowing us to
+define various semantic value classes, all derived from tt(SemBase)
+    )

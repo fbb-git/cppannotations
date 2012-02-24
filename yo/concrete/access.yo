@@ -1,0 +1,40 @@
+How to access the data that are actually stored inside a semantic value class
+that is derived from the semantic values polymorphic base class? 
+
+Depending on the status (mutable or immutable) and type (basic or class type)
+of the actual semantic data we recognize three situations:
+    itemization(
+    it() If the data within the semantic value class are mutable, then an
+accessor should return a reference to the data stored within the semantic
+value class;
+    it() Immutable non-class type values should be made available by value;
+    it() Immutable class type values should be made available as const
+references. 
+    )
+
+Next, a trait class template tt(Trait) is defined, requiring a tt(Tag)
+template non-type parameter. This trait class uses the tt(Tag) to determine
+the data type that is associated with the tt(Tag), making its local type
+tt(DataType) as synonym of that data type. 
+
+Next, to determine whether an actual data type is a class type or a basic type
+template meta programming, as outlined in section ref(CLASSORNOT), is used.
+
+Using template meta programming a value tt(isBasicType) of an tt(enum: bool)
+anonymous enum is set to true if tt(DataType) represents a basic data
+type. This enum also defines a value tt(isMutable) indicating whether or not
+the actual data stored in a semantic value class is mutable or not.
+
+Next, conditional to the combinations of tt(isMutable) and tt(isBasicType) 
+the tt(Trait) trait class defines the type tt(ReturnType). For this the
+available tt(std::conditional) trait class is used (cf. section
+ref(TRAITSCPPX)). 
+
+Now we're able, e.g., to state tt(Trait<Tag::INT>::DataType) to obtain the
+tt(int) data type, or to state tt(Trait<Tag::VECTOR>::ReturnType) to obtain
+the `tt(std::vector<std::shared_ptr<SemBase>> &)' return type.
+
+Here is the implementation of the trait class template tt(Trait):
+        verbinsert(CLASSTRAIT)(poly2/sembase/sembase.h)
+    
+    

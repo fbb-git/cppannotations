@@ -1,12 +1,6 @@
 #!/bin/bash
 
 case "$1" in
-    ("")
-        echo "
-usage: 'build prog' to build the program, 'build clean' to cleanup
-"
-        exit 1
-    ;;
     (prog)
         cd parser
         bisonc++ grammar || exit 1
@@ -14,13 +8,13 @@ usage: 'build prog' to build the program, 'build clean' to cleanup
         flexc++ lexer || exit 1
         cd ..
 
-        g++ --std=c++0x -Wall -ocalc *.cc */*.cc -lbobcat || exit 1
+        g++ --std=c++0x -Wall -opoly *.cc */*.cc -lbobcat || exit 1
         echo "
-ready; run the program as './calc'
+ready; run the program as './poly < input'
 "
     ;;
     (clean)
-        rm -f calc 
+        rm -f poly 
         cd parser
         rm -f parse.cc parserbase.h 
         cd ../scanner
@@ -29,6 +23,12 @@ ready; run the program as './calc'
 done
 "   
         ;;
+    (*)
+        echo "
+usage: 'build prog' to build the program, 'build clean' to cleanup
+"
+        exit 1
+    ;;
 esac
     
 exit 1

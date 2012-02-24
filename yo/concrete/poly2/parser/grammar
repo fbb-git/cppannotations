@@ -1,0 +1,60 @@
+%filenames parser
+%scanner                ../scanner/scanner.h
+%print-tokens
+%baseclass-preinclude   ../spsembase/spsembase.h
+
+%stype   spSemBase
+
+%token INT IDENT 
+
+%%
+
+rules:
+    rules rule
+|
+    rule
+;
+
+int:
+    INT
+    {
+        $$ = new Semantic<Tag::INT>(A2x(d_scanner.matched()).to<int>());
+    }
+;
+
+ident:
+    IDENT
+    {
+        $$ = new Semantic<Tag::TEXT>(d_scanner.matched());
+    }
+;
+
+arglist:
+    arglist ',' value
+    {
+        $1->as<Tag::VECTOR>().push_back($3);
+    }
+|
+    value
+    {
+        $$ = semVector($1);
+    }
+;
+
+value:
+    int
+|
+    ident
+;
+
+rule:
+    ident '(' arglist ')' ';'
+    {
+        display($1, $3);
+    }
+|
+    ident '=' int ';'
+    {
+          cout << $1->as<Tag::TEXT>() << " = " << $3->as<Tag::INT>() << ";\n";
+    }
+;

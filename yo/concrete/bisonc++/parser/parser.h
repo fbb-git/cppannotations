@@ -8,7 +8,6 @@
 #include "parserbase.h"
 #include "../scanner/scanner.h"
 
-
 #undef Parser
 class Parser: public ParserBase
 {
@@ -21,11 +20,13 @@ class Parser: public ParserBase
 
     private:
         template <typename Type>
-            Type exec(char c, Type left, Type right);
+        Type exec(char c, Type left, Type right);
+
         template <typename Type>
-            Type neg(Type op);
+        Type neg(Type op);
+
         template <typename Type>
-            Type convert();
+        Type convert();
 
         void display(int x);
         void display(double x);
@@ -43,8 +44,8 @@ class Parser: public ParserBase
         void errorRecovery();
         int lookup(bool recovery);
         void nextToken();
+        void print__();
 };
-
 
 inline double Parser::d(int i)
 {
@@ -68,7 +69,7 @@ Type Parser::neg(Type op)
 template <typename Type>
 Type Parser::convert()
 {
-    Type ret = FBB::A2x(d_scanner.YYText());
+    Type ret = FBB::A2x(d_scanner.matched());
     d_rpn << " " << ret << " ";
     return ret;
 }
@@ -80,7 +81,7 @@ inline void Parser::error(char const *msg)
 
 inline int Parser::lex()
 {
-    return d_scanner.yylex();
+    return d_scanner.lex();
 }
 
 inline void Parser::print()
