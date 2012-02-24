@@ -1,40 +1,30 @@
-/*SYMBOLS*/
+//SYMBOLS
 %filenames scanner
 %debug
+%max-depth 3
 
 %x      comment
 %x      include
+//=
 
-/**/
-/*RULES*/
+//RULES
 %%
-//                           Flexc++ rules area:
-//                           ~~~~~~~~~~~~~~~~~~~
-//   The following regular expressions define what the lexer will recognize.
-
     // The comment-rules: comment is ignored.
 //.*                    // ignore eoln comment
-"/*"                    begin(StartCondition_::comment);
+"/*"                    begin(StartCondition__::comment);
 <comment>{
     .|\n                // ignore all characters in std C comment
-    "*/"                begin(StartCondition_::INITIAL);
+    "*/"                begin(StartCondition__::INITIAL);
 }
 
     // File switching: #include <filepath>
-#include[ \t]+"<"      begin(StartCondition_::include);
+#include[ \t]+"<"      begin(StartCondition__::include);
 <include>{
     [^ \t>]+            d_nextSource = matched();
-    ">"[ \t]*\n         switchStream();
-    .|\n                throw INVALIDINCLUDE;
+    ">"[ \t]*\n         switchSource();
+    .|\n                throw runtime_error("Invalid include statement");
 }
 
     // The default rule: echo anything else to std::cout
-.|\n                    ECHO;
-
-    
-<<EOF>>                 {
-                            if (!popSource(YY_CURRENT_BUFFER))
-                                yyterminate();
-                        }
-%%
-/**/
+.|\n                    echo();
+//=
