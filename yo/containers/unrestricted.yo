@@ -1,4 +1,4 @@
-We end this chapter on abstract containers with a small detour, introducing
+We end this chapter about abstract containers with a small detour, introducing
 additions to the tt(union) concept, made available by the C++11
 standard. Although unions should not themselves be considered abstract
 containers, having covered containers has put us in a good position to
@@ -13,156 +13,39 @@ class-types. Here is an example of such an unrestricted union:
     union Union
     {
         int u_int;
-        std::complex<double, double> u_complex;
         std::string u_string;
     };
         )
-    Two of these fields have non-trivial constructors,
-turning this union in an em(unrestricted) union.  As an unrestricted union
-defines at least one field of a type having a non-trivial constructor the
-question becomes how these unions can be constructed and destroyed.
+    One of these fields has a non-trivial constructor, turning this union in
+an em(unrestricted) union.  As an unrestricted union defines at least one
+field of a type having a non-trivial constructor the question becomes how
+these unions can be constructed and destroyed.
 
-The destructor of a union consisting of, e.g. a tt(std::string) and a
-tt(double) should of course not call the tt(string)'s destructor if the
-union's last (or only) use referred to its tt(double) field. Likewise, when
+The destructor of a union consisting of, e.g. a tt(std::string) and an
+tt(int) should of course not call the tt(string)'s destructor if the
+union's last (or only) use referred to its tt(int) field. Likewise, when
 the tt(std::string) field is used, and a switch is made next from the
-tt(std::string) to the tt(double) field, tt(std::string)'s destructor
-should be called before any assignment to the tt(double) field.
+tt(std::string) to the tt(int) field, tt(std::string)'s destructor
+should be called before any assignment to the tt(double) field takes place.
 
-These tasks are too difficult for the compiler to solve, and the compiler will
-therefore em(not) implement default constructors and destructors for
-unrestricted unions, leaving the implementations of these members to the
-software engineer. If we try to define an unrestricted union like the above
-one using its default constructor, an error message like the following is
-issued:
+The compiler does not solve this issue for us, and in fact does em(not)
+implement default constructors or destructors for unrestricted unions. If we
+try to define an unrestricted union like the one shown above, an error message
+like the following is issued:
         verb(
-    error: use of deleted function 'Union2::Union2()'
+    error: use of deleted function 'Union::Union()'
     error: 'Union::Union()' is implicitly deleted because the default
             definition would be ill-formed:
     error: union member 'Union::u_string' with non-trivial
             'std::basic_string<...>::basic_string() ...'
         )
 
-Although the compiler is unable to provide the appropriate member functions,
-em(we) can, as we know in what context the union is used. So let's create some
-constructors, where the various constructors each pick a field to initialize:
-        verb(
-    Union::Union(int i)
-    :
-        u_int(i)
-    {}
-    Union::Union(double real, double imaginary)
-    :
-        u_complex(real, imaginary)
-    {}
-    Union::Union(std::string const &str)
-    :
-        u_string(str)
-    {}
-        )
-    But the compiler doesn't implement a destructor either: it is too complex
-for the compiler to determine what the last used field was, letting the
-unrestricted union's destructor do its thing. Like the constructors we must
-implement the unrestricted union's destructor ourselves.
 
-    The destructor should destroy tt(u_string)'s data if that is its currently
-active field; tt(u_complex)'s data if em(that) is its currently active field
-and do nothing if tt(u_int) is its currently active field. But how would the
-destructor know this? It doesn't the way we've set up things as there is no
-information within the union about the currently used field.
+========================================================================
 
-    Here is one way to solve this problem:
 
-    If the unrestricted union is embedded in a larger aggregate, like a class
-or a struct, then the class or struct may contain a tag data member storin the
-currently active union-field. The tag could be of an enumeration type, defined
-by the surrounding aggregate. The unrestricted union is then completely
-handled by the surrounding aggregate.
 
-Here is a declaration of such an unrestricted union, to be used subsequently
-by a class. It offers an tt(int) field and a tt(string) field and constructors
-are provided for both fields. There is also a default constructor, but it
-performs no actions, intentionally leaving the unrestricted union in an
-invalid state. A destructor must explicitly be declared (and defined) as well,
-as the compiler cannot determine how to destroy an unrestricted
-union. But neither can we. We postpone our decision about what to
-do by providing an empty implementation of the union's destructor:
-        verb(
-    union Union
-    {
-        int                  u_int;
-        std::string          u_string;
 
-        Union();
-        Union(int i);
-        Union(std::string const &str);
-        ~Union();
-    };
-
-    Union::Union()
-    {}
-    Union::Union(int i)
-    :
-        u_int(i)
-    {}
-    Union::Union(std::string const &str)
-    :
-        u_string(str)
-    {}
-    Union::~Union()
-    {}
-        )
-    Next we construct a class tt(MultiData) offering a tag and a tt(Union):
-        verb(
-    class MultiData
-    {
-        public:
-            enum Tag
-            {
-                INT,
-                STRING
-            };
-    
-        private:
-            Tag d_tag;
-            Union d_u;
-    };
-    So far, so good. Nothing happens, so nothing is either allocated or
-destroyed. Next declare some constructors, e.g.:
-        verb(
-            MultiData(int value);
-            MultiData(std::string const &txt);
-        )
-    For the class-type union field tt(u_string) a constructor must be
-called. But now we encounter a problem:
-    itemization(
-    it() the tt(u_string) union field does not yet exist at member
-initialization time. Consequently, this fails to compile:
-        verb(
-    MultiData::MultiData(std::string const &txt)
-    :
-        d_tag(STRING),
-        d_u.u_string(txt)
-    {}
-        )
-    it() The tt(u_string) em(does) exist when the constructor's body
-starts. But now we cannot assign tt(txt) to it, as tt(u_string) hasn't been
-initialized, since the union's default constructor didn't perform any actions.
-But this behavior was indended. After all, only now we know which field to
-initialize. Initialization of a union field after its memory has become
-available is easy: placement new is our friend, and here is the constructor's
-proper implementation:
-        verb(
-    MultiData::MultiData(std::string const &txt)
-    :
-        d_tag(STRING)
-    {
-        new (&d_u.u_string) std::string(txt);
-    }
-        )
-    Note that the body's statement is a true initialization, and not a
-re-assignment of a previously initialized field in the constructor's member
-initialization section.
 
     tt(MultiData)'s destructor must do a bit more work, as it must inspect
 tt(d_tag) to determine what to do. Usually using a switch, but here a simple

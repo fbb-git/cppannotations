@@ -1,0 +1,16 @@
+tt(Data)'s destructor is confronted with a data member which is an
+unrestricted union. As the union's destructor doesn't perform any actions, 
+the union's proper destruction is delegated to tt(Data)'s
+destructor. Fortunately, tt(d_tag) tells tt(Data)'s destructor what field to
+destroy. For tt(Tag::INT) no actions are required, but for tt(Tag::STRING)
+memory allocated by tt(u_string) must be returned again. For this the explicit
+destructor call is required, as tt(~string()) will do just that: it will
+return any memory allocated by a tt(std::string) object. tt(Data)'s
+destructor, therefore, looks like this:
+        verb(
+    Data::~Data()
+    {
+        if (d_tag == Tag::STRING)
+            d_union.u_string.~string();
+    }
+        )

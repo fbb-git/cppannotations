@@ -1,0 +1,55 @@
+Next, we'll embed the unrestricted union in a surrounding aggregate: tt(class
+Data). We want to allow tt(Data)'s users to request tags, so the tt(enum Tag)
+is defined in a public section. But tt(Union) itself is for tt(Data)'s
+internal use only, so it is declared in tt(Data)'s private section. Using a
+tt(struct) we start in a public section:
+        verb(
+    struct Data
+    {
+        enum Tag
+        {
+            INT,
+            STRING
+        };
+    
+        private:
+            union Union
+            {
+                int                  u_int;
+                std::string          u_string;
+            
+                // ...: declarations of members
+            };
+
+            Tag d_tag;
+            Union d_union;
+    };            
+        )
+    tt(Data)'s constructors receive tt(int) or tt(string) values, but the
+relevant union fields cannot be initialized using tt(Data) constructors's
+member initializers, as the union fields aren't data members of the struct
+tt(Data). However, by providing tt(Union) with constructors initializing
+particular fields, tt(d_union) em(can) be initialized from specific data
+types. E.g.,
+        verb(
+    // Add Union constructors to Union:
+    Union(int value)
+    :
+        u_int(value)
+    {}
+    Union(std::string const &str)
+    :
+        u_string(str)
+    {}
+    // Add Data constructors to Data: 
+    Data::Data(std::string const &str)
+    :
+        d_tag(STRING),
+        d_union(str)
+    {}
+    Data::Data(int value)
+    :
+        d_tag(INT),
+        d_union(value)
+    {}
+        )

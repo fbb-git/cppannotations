@@ -8,7 +8,7 @@
 using namespace std;
 using namespace FBB;
 
-class MultiData
+class Data
 {
     public:
         enum Tag
@@ -22,112 +22,130 @@ class MultiData
         {
             int                  u_int;
             std::string          u_string;
+
+            Union(int value);
+            Union(std::string const &init);
+            Union(Tag tag, Union const &other);
+
+            ~Union();                       // no action
+            void destroy(Tag myTag);        // use this instead
         
-            ~Union()
-            {};
-            Union()
-            {};
-            Union(Union const &other)
-            {};
-            Union &operator=(Union const &other)    // bluntly copies bytes
-            {
-                memcpy(this, &other, sizeof(Union));
-                return *this;
-            }
+            void copy(Union const &other, Tag otag);
+            bool assign(Tag myTag, Union const &other, Tag otag);
         };
 
         Tag d_tag;
-        Union d_u;
+        Union d_union;
     
     public:
             // constructors
-        MultiData(std::string const &str)
-        :
-            d_tag(STRING)
-        {
-            new (&d_u) string(str);
-        }
+        Data(std::string const &str);
+        Data(int value);
 
-        MultiData(int value)
-        :
-            d_tag(INT)
-        {
-            d_u.u_int = value;
-        }
-
-        MultiData(MultiData const &other)
-        :
-            d_tag(other.d_tag)
-        {
-            copy(other);
-        }
-        
-            // destructor
-        ~MultiData()
-        {
-            destroy(d_u);
-        }
-
-            // overloaded assignment operator
-        MultiData &operator=(MultiData const &rhs)
-        {
-            Union saved;
-            saved = d_u;                    // copy the current union
-
-            try
-            {
-                copy(rhs);                  // placement new initialization
-                destroy(saved);             // delete the other memory
-
-                d_tag = rhs.d_tag;
-            }
-            catch (...)
-            {
-                d_u = saved;                // roll back
-            }
-            return *this;
-        }
-
-                // accessors
-        string const &str() const
-        {
-            return d_u.u_string;
-        }
-        int value() const
-        {
-            return d_u.u_int;
-        }
-
-    private:
-            // copy (or use placement new) the other union fields to d_u
-        void copy(MultiData const &other)
-        {
-            if (other.d_tag == INT)
-                d_u.u_int = other.d_u.u_int;
-            else
-                new (&d_u) string(other.d_u.u_string);
-        }
-            // Swap the new union contents with the saved union, restoring 
-            // the saved info into the current union.
-            // then delete the original union value
-            // then put back the new union (now in 'saved') into d_u
-        void destroy(Union &saved)
-        {
-            fswap(d_u, saved);
-            if (d_tag == STRING)
-                d_u.u_string.~string();
-            d_u = saved;
-        }
+        Data(Data const &other);
+        ~Data();
+        Data &operator=(Data const &rhs);
+        string const &str() const;
+        int value() const;
 };
+
+bool Data::Union::assign(Tag myTag, Union const &other, Tag otag)
+{
+    char saved[sizeof(Union)];
+    memcpy(saved, this, sizeof(Union));
+    bool ret = true;
+    try
+    {
+        copy(other, otag);
+        fswap(*this, *reinterpret_cast<Union *>(saved));
+        destroy(myTag);
+    }
+    catch (...)
+    {
+        ret = false;
+    }
+    memcpy(this, saved, sizeof(Union));        // roll back
+}
+
+Data::Union::Union(Tag tag, Union const &other)
+{
+    copy(other, tag);
+}
+
+void Data::Union::destroy(Tag myTag)
+{
+    if (myTag == Tag::STRING)
+        u_string.~string();
+}
+
+void Data::Union::copy(Union const &other, Tag otag)
+{
+    if (otag == INT)
+        u_int = other.u_int;
+    else
+        new (this) string(other.u_string);
+}
+
+inline Data::Union::~Union()
+{};
+inline Data::Union::Union(int value)
+:
+    u_int(value)
+{}
+inline Data::Union::Union(std::string const &str)
+:
+    u_string(str)
+{}
+
+
+Data::Data(Data const &other)
+:
+    d_tag(other.d_tag),
+    d_union(d_tag, other.d_union)
+{}
+
+    // destructor
+Data::~Data()
+{
+    d_union.destroy(d_tag);
+}
+
+    // overloaded assignment operator
+Data &Data::operator=(Data const &rhs)
+{
+    if (d_union.assign(d_tag, rhs.d_union, rhs.d_tag))
+        d_tag = rhs.d_tag;
+}
+
+        // accessors
+inline string const &Data::str() const
+{
+    return d_union.u_string;
+}
+inline int Data::value() const
+{
+    return d_union.u_int;
+}
+
+Data::Data(std::string const &str)
+:
+    d_tag(STRING),
+    d_union(str)
+{}
+Data::Data(int value)
+:
+    d_tag(INT),
+    d_union(value)
+{}
 
 int main(int argc, char **argv)
 {
-    MultiData v(2);
+    Data v(2);
 
     cout << v.value() << '\n';
 
-    MultiData a("hi");
-    MultiData b("lo");
+    Data a("hi");
+    Data b("lo");
 
     cout << a.str() << ' ' << b.str() << '\n';
 
