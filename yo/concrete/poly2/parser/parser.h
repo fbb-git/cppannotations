@@ -24,7 +24,6 @@ class Parser: public ParserBase
                                         // lexical scanner. 
         void print();                   // use, e.g., d_token, d_loc
 
-        STYPE__ semVector(STYPE__ const &first);
         void display(STYPE__ const &id, STYPE__ &vect);
 
     // support functions for parse():

@@ -1,20 +1,22 @@
+//HEAD
 %filenames parser
 %scanner                ../scanner/scanner.h
-%print-tokens
 %baseclass-preinclude   ../spsembase/spsembase.h
-
-%stype   spSemBase
+%stype                  spSemBase
 
 %token INT IDENT 
-
+//=
 %%
 
+//RULES
 rules:
     rules rule
 |
     rule
 ;
+//=
 
+//INT
 int:
     INT
     {
@@ -28,6 +30,14 @@ ident:
         $$ = new Semantic<Tag::TEXT>(d_scanner.matched());
     }
 ;
+//=
+
+//ARGS
+value:
+    int
+|
+    ident
+;
 
 arglist:
     arglist ',' value
@@ -37,16 +47,13 @@ arglist:
 |
     value
     {
-        $$ = semVector($1);
+        $$ = new Semantic<Tag::VECTOR>(
+                        vector<shared_ptr<SemBase const>> {$1});
     }
 ;
+//=
 
-value:
-    int
-|
-    ident
-;
-
+//RULE
 rule:
     ident '(' arglist ')' ';'
     {
@@ -58,3 +65,5 @@ rule:
           cout << $1->as<Tag::TEXT>() << " = " << $3->as<Tag::INT>() << ";\n";
     }
 ;
+//=
+
