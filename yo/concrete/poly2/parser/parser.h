@@ -14,14 +14,14 @@ class Parser: public ParserBase
 {
     // $insert scannerobject
     Scanner d_scanner;
-        
+
     public:
         int parse();
 
     private:
         void error(char const *msg);    // called on (syntax) errors
         int lex();                      // returns the next token from the
-                                        // lexical scanner. 
+                                        // lexical scanner.
         void print();                   // use, e.g., d_token, d_loc
 
         void display(STYPE__ const &id, STYPE__ &vect);
@@ -45,7 +45,7 @@ inline int Parser::lex()
     return d_scanner.lex();
 }
 
-inline void Parser::print()         
+inline void Parser::print()
 {
     print__();           // displays tokens if --print was specified
 }

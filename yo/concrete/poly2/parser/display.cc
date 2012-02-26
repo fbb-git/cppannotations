@@ -25,4 +25,3 @@ void  Parser::display(STYPE__ const &id, STYPE__ &vect)
 
     cout << ")\n";
 }
-

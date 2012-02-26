@@ -11,7 +11,7 @@ class spSemBase: public std::shared_ptr<SemBase>
         template <typename Type>
         spSemBase(Type *obj);
 };
-        
+
 template <typename Type>
 inline spSemBase::spSemBase(Type *obj)
 :

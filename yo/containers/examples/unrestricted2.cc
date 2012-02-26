@@ -32,7 +32,7 @@ struct Data
 
             ~Union();                       // no action
             void destroy(Tag myTag);        // use this instead
-            
+
             void assign(Tag myTag, Union const &other, Tag otag);
             void assign(Tag myTag, Union &&tmp, Tag otag);
 
@@ -45,7 +45,7 @@ struct Data
 
         Tag d_tag;
         Union d_union;
-    
+
     public:
             // constructors
         Data(std::string const &str);
@@ -65,7 +65,7 @@ void Data::Union::swap(Tag myTag, Union &other, Tag oTag)
 {
     Union tmp(*this, myTag);
 
-    destroy(myTag);    
+    destroy(myTag);
     copy(other, oTag);
 
     other.destroy(oTag);
@@ -74,7 +74,7 @@ void Data::Union::swap(Tag myTag, Union &other, Tag oTag)
 
 void Data::Union::assign(Tag myTag, Union const &other, Tag otag)
 {
-    char saved[sizeof(Union)];          
+    char saved[sizeof(Union)];
     memcpy(saved, this, sizeof(Union));         // raw copy: saved <- *this
     try
     {
@@ -99,12 +99,12 @@ void Data::Union::assign(Tag myTag, Union &&tmp, Tag otag)
     {
         copy(std::move(tmp), otag);
         fswap(*this, *reinterpret_cast<Union *>(saved));
-        destroy(myTag);                         
-        memcpy(this, saved, sizeof(Union));     
+        destroy(myTag);
+        memcpy(this, saved, sizeof(Union));
     }
-    catch (...)                                 
+    catch (...)
     {
-        memcpy(this, saved, sizeof(Union));     
+        memcpy(this, saved, sizeof(Union));
         throw;
     }
 }
@@ -243,9 +243,3 @@ int main(int argc, char **argv)
 
 
 }
-
-
-
-
-
-

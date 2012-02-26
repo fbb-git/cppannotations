@@ -24,19 +24,21 @@ only needs one additional function declaration: tt(switchSource).
 
     Switching streams is handled as follows: once the scanner has extracted a
 filename from an tt(#include) directive, a switch to another file is realized
-by tt(switchSource).  This member calls tt(pushStream),
-defined by tt(flexc++), to stack the current input stream and to switch to the
-stream whose name is stored in tt(d_nextSource). This also ends the
-tt(include) mini-scanner, so tt(begin(StartCondition__::INITIAL)) is called to
-return to the default scanning mode. Here is its source:
+by tt(switchSource).  This member calls tt(pushStream), defined by
+tt(flexc++), to stack the current input stream and to switch to the stream
+whose name is stored in tt(d_nextSource). This also ends the tt(include)
+mini-scanner, so to return the scanner to its default scanning mode
+tt(begin(StartCondition__::INITIAL)) is called. Here is its source:
         verbinclude(lexer/scanner/switchsource.cc)
     The member tt(pushStream), defined by tt(flexc++), handles all necessary
-checks, throwing a tt(std::runtime_error) exception if the file could not be
-opened and a tt(std::length_error) if too many files are stacked.
-    it() The member performing the lexical scan is defined by tt(flexc++) in
+checks, throwing an exception if the file could not be opened or if too many
+files are stacked.
+
+    The member performing the lexical scan is defined by tt(flexc++) in
 tt(Scanner::lex), and this member can be called by code to process the tokens
 returned by the scanner.
-    )
+
+
 
 
 

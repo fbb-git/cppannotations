@@ -10,8 +10,8 @@ class SemBase;
 
 //TAG
 enum class Tag          // defines the various semantic values
-{                       // Tags are used to instantiate the proper 
-    INT,                // Semantic type, deriving from a polymorphic base 
+{                       // Tags are used to instantiate the proper
+    INT,                // Semantic type, deriving from a polymorphic base
     TEXT,               // class
     VECTOR,
 };
@@ -27,7 +27,7 @@ namespace {     // IUO
     {                                       // not be mutable. By deriving
         enum: bool { isMutable = true };    // BasicTrait, below, from
     };                                      // either Mutable or Immutable
-                                            // this trait is associated with 
+                                            // this trait is associated with
     struct Immutable                        // a semantic value BasicTrait.
     {
         enum: bool { isMutable = false };
@@ -84,7 +84,7 @@ namespace {     // IUO
     {
         char _[2];
     };
-    
+
     struct C1
     {
         char _;
@@ -100,8 +100,8 @@ namespace {     // IUO
     struct Trait: public TagTrait<tg_>
     {
         typedef typename Trait<tg_>::DataType DataType;
-        enum: bool 
-        { 
+        enum: bool
+        {
             isMutable = Trait<tg_>::isMutable,
             isBasicType = sizeof(test<DataType>(0)) == sizeof(C1)
         };
@@ -111,8 +111,8 @@ namespace {     // IUO
                 isMutable,
                     DataType &,
                     typename std::conditional<
-                        isBasicType, 
-                            DataType, 
+                        isBasicType,
+                            DataType,
                             DataType const &
                     >::type
             >::type ReturnType;
@@ -130,10 +130,10 @@ namespace {     // IUO
     // a *very* lightweight SemBase base class: there's only a virtual
     // destructor. No other virtual members are required. Downcasting itself
     // is encapsulated in its 'as' member, allowing constructions like
-   ///      $1->as<Tag::STRING>() 
+   ///      $1->as<Tag::STRING>()
    /// to downcast the $1 SemBase to a Semantic<Tag::STRING>, and then,
     // usually by implication, to a std::string, using the Semantic's
-    // conversion operator. 
+    // conversion operator.
 //SEMBASE
 class SemBase
 {
@@ -160,8 +160,8 @@ inline SemBase::SemBase(Tag tag)
 :
     d_tag(tag)
 {}
- 
-  
+
+
     // The Semantic class template is derived from SemBase. It always defines
     // its data member as mutable (I can't do this under template control, but
     // I could define, e.g., two anonymous structs holding, respectively, a
@@ -211,8 +211,5 @@ inline   typename Trait<tg_>::ReturnType   SemBase::as() const
     return dynamic_cast<Semantic<tg_> const &>(*this);
 }
 //=
-     
+
 #endif
-
-
-

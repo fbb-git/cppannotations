@@ -20,5 +20,3 @@ catch (exception const &exc)
     cerr << exc.what() << '\n';
     return 1;
 }
-
-

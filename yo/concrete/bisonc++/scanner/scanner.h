@@ -13,7 +13,7 @@ class Scanner: public ScannerBase
     public:
         explicit Scanner(std::istream &in = std::cin,
                                 std::ostream &out = std::cout);
-        
+
         // $insert lexFunctionDecl
         int lex();
 
@@ -22,7 +22,7 @@ class Scanner: public ScannerBase
         int executeAction__(size_t ruleNr);
 
         void print();
-        void preCode();     // re-implement this function for code that must 
+        void preCode();     // re-implement this function for code that must
                             // be exec'ed before the patternmatching starts
 };
 
@@ -33,16 +33,15 @@ inline Scanner::Scanner(std::istream &in, std::ostream &out)
 {}
 
 
-inline void Scanner::preCode() 
+inline void Scanner::preCode()
 {
     // optionally replace by your own code
 }
 
-inline void Scanner::print() 
+inline void Scanner::print()
 {
     print__();
 }
 
 
 #endif // Scanner_H_INCLUDED_
-
