@@ -1,6 +1,6 @@
 In addition to the literal operators discussed in section ref(UDLITERALS) the
 C++11 standard also offers a function template literal operator, matching the
-prototype 
+prototype
         verb(
     template <char ...Chars>
     Type operator "" _identifier()
@@ -11,14 +11,14 @@ but merely a variadic non-type parameter list.
     Its argument must be an int constant, as is also expected by the literal
 operator defining an tt(unsigned long long int) parameter. All the characters
 of the int constant are passed as individual tt(char) non-type template
-arguments to the literal operator. 
+arguments to the literal operator.
 
     For example, if tt(_NM2km) is a literal operator function template, it can
 be called as tt(80_NM2km). The function template is then actually called as
 tt(_NM2km<'8', '0'>()). If this function template merely uses template meta
 programming techniques and only processes integral data then its actions can
 be performed completely compile-time. To illustrate this, let's assume
-tt(NM2km) only processes and returns unsigned values. 
+tt(NM2km) only processes and returns unsigned values.
 
 The function template tt(_NM2km) can forward its argument to a class template,
 defining an enum constant tt(value), and that performs the required
@@ -29,7 +29,7 @@ function template tt(_NM2km):
     size_t constexpr operator "" _NM2km()
     {
         return static_cast<suze_t>(             // forward Chars to NM2km
-                NM2km<0, Chars ...>::value * 1.852);   
+                NM2km<0, Chars ...>::value * 1.852);
     }
             )
     The class template tt(NM2km) defines three non-type parameters: tt(acc)
@@ -44,8 +44,8 @@ elements of the parameter pack, represented by tt(Chars ...):
     template <size_t acc, char c, char  ...Chars>
     struct NM2km
     {
-        enum 
-        { 
+        enum
+        {
             value = NM2km<10 * acc + c - '0', Chars ...>::value
         };
     };
@@ -56,13 +56,13 @@ specialization of tt(NM2km) is available:
     template <size_t acc, char c>   // empty parameter pack
     struct NM2km<acc, c>
     {
-        enum 
-        { 
-            value = 10 * acc + c - '0' 
+        enum
+        {
+            value = 10 * acc + c - '0'
         };
     };
         )
-    
+
     This works fine, but of course not in cases where binary, octal, or
 hexadecimal values must also be interpreted. In that case we must first
 determine whether the first character(s) indicate a special number
@@ -73,20 +73,20 @@ now called from the tt(_NM2km) literal operator:
     size_t constexpr operator "" _NM2km()
     {
         return static_cast<size_t>(         // forward Chars to NM2kmBase
-                NM2kmBase<Chars ...>::value * 1.852);   
+                NM2kmBase<Chars ...>::value * 1.852);
     }
             )
     The tt(NM2kmBase) class template normally assumes the decimal number
 system, passing base value 10 and initial sum 0 to tt(NM2km). The tt(NM2km)
 class template is provided with an additional (first) non-type parameter
 representing the base value of the number system to use. Here is
-tt(NM2kmBase): 
+tt(NM2kmBase):
         verb(
-    template <char ...Chars> 
+    template <char ...Chars>
     struct NM2kmBase
     {
-        enum 
-        { 
+        enum
+        {
             value = NM2km<10, 0, Chars ...>::value
         };
     };
@@ -97,7 +97,7 @@ the first (one or two) characters:
     template <char ...Chars>
     struct NM2kmBase<'0', Chars ...>        // "0..."
     {
-        enum 
+        enum
         {                                   // octal value: base 8
             value = NM2km<8, 0, Chars ...>::value
         };
@@ -106,7 +106,7 @@ the first (one or two) characters:
     template <char ...Chars>
     struct NM2kmBase<'0', 'b', Chars ...>   // "0b..."
     {
-        enum 
+        enum
         {                                   // binary value: base 2
             value = NM2km<2, 0, Chars ...>::value
         };
@@ -115,13 +115,13 @@ the first (one or two) characters:
     template <char  ...Chars>
     struct NM2kmBase<'0', 'x', Chars ...>   // "0x..."
     {
-        enum 
+        enum
         {                                   // hex value: base 16
             value = NM2km<16, 0, Chars ...>::value
         };
     };
         )
-    
+
     tt(NM2km) is implemented as before, albeit that it can now handle
 various number systems. The conversion from character to numeric value is left
 to a small support function template, tt(cVal):
@@ -135,14 +135,14 @@ to a small support function template, tt(cVal):
     template <size_t base, size_t acc, char c, char  ...Chars>
     struct NM2km
     {
-        enum 
-        { 
-            value = NM2km<base, base * acc + cVal<c>(), 
+        enum
+        {
+            value = NM2km<base, base * acc + cVal<c>(),
                                         Chars ...>::value
         };
     };
 
-    template <size_t base, size_t acc, char c> 
+    template <size_t base, size_t acc, char c>
     struct NM2km<base, acc, c>
     {
         enum { value = base * acc + cVal<c>() };

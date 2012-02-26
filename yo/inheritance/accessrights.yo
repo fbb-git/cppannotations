@@ -26,7 +26,7 @@ example in which 10 random numbers are generated using stream I/O:
             verb(
     RandBuf buffer;
     istream irand(&buffer);
-    
+
     for (size_t idx = 0; idx != 10; ++idx)
     {
         size_t next;
@@ -41,15 +41,15 @@ number. RandBuf, therefore, operates as follows:
         itemization(
         it() It generates a random number;
         it() It is passed in textual form to its base class tt(streambuf);
-        it() The tt(istream) object extracts this random number, merely 
+        it() The tt(istream) object extracts this random number, merely
             using tt(streambuf)'s interface;
         it() this process is repeated for subsequent random numbers;
         )
-    Once tt(RandBuf) has stored the text representation of the next 
+    Once tt(RandBuf) has stored the text representation of the next
 random number in some buffer, it must tell its base class (tt(streambuf))
 where to find the random number's characters. For this tt(streambuf) offers a
 member tt(setg), expecting the location and size of the buffer holding the
-random number's characters. 
+random number's characters.
 
     The member tt(setg) clearly cannot be declared in tt(streambuf)'s
 private section, as tt(RandBuf) must use it to prepare for the
@@ -59,10 +59,10 @@ behavior by tt(irand). Consider the following hypothetical example:
         verb(
     RandBuf buffer;
     istream irand(&buffer);
-    
+
     char buffer[] = "12";
     buffer.setg(buffer, ...);   // setg public: buffer now contains 12
-    
+
     size_t next;
     irand >> next;              // not a *random* value, but 12.
         )
@@ -70,7 +70,7 @@ behavior by tt(irand). Consider the following hypothetical example:
     Clearly there is a close connection between tt(streambuf) and its derived
 class tt(RandBuf). By allowing tt(RandBuf) to specify the buffer from
 which tt(streambuf) reads characters tt(RandBuf) remains in control,
-denying other parts of the program to break its well-defined behavior. 
+denying other parts of the program to break its well-defined behavior.
 
 This close connection between base- and derived-classes is realized by a third
 keyword related to the accessibility of class members: ti(protected). Here is
@@ -81,17 +81,17 @@ how the member tt(setg) could have been be declared in a class tt(streambuf):
         // private data here (as usual)
         protected:
             void setg(... parameters ...);  // available to derived classes
-    
+
         public:
             // public members here
     };
         )
 
 Protected members are members that can be accessed by derived classes, but are
-not part of a class's public interface. 
+not part of a class's public interface.
 
 Avoid the temptation to declare em(data members) in a class's protected
-section: it's a sure sign of bad class design as it needlessly results in 
+section: it's a sure sign of bad class design as it needlessly results in
 tight coupling of base and derived classes. the principle of i(data hiding)
 should not be abandoned now that the keyword tt(protected) has been
 introduced. If a derived class (but not other parts of the software) should
@@ -99,7 +99,3 @@ be given access to its base class's data, use member functions:
 accessors and modifiers declared in the base class's protected
 section. This enforces the intended restricted access without resulting in
 tightly coupled classes.
-
-
-
-

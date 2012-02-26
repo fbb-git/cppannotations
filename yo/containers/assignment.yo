@@ -15,7 +15,7 @@ It depends. It depends on whether tt(Data) objects can be em(fast swapped)
 (cf. section ref(FSWAP)) or not. If tt(Union)'s fields can be fast swapped
 then we can simply swap bytes and we're done. In that case tt(Union) does not
 require any additional members (to be specific: it won't need an assignment
-operator). 
+operator).
 
 But now assume that tt(Union)'s fields cannot be fast swapped. How to
 implement an exception-safe assignment (i.e., an assignment offering the
@@ -29,7 +29,7 @@ tt(Union), implementing tt(Data)'s assignment operators as follows:
             d_tag = rhs.d_tag;
         return *this;
     }
-    
+
     Data &Data::operator=(Data &&tmp)
     {
         if (d_union.assign(d_tag, std::move(tmp.d_union), tmp.d_tag))
@@ -49,7 +49,7 @@ standard swapping. It involves three steps:
     it() tt(rhs = tmp): assign the tmp object to the rhs
     )
     Usually we assume that these steps do not throw exceptions, as tt(swap)
-itself shouldn't throw exceptions. How could we implement 
+itself shouldn't throw exceptions. How could we implement
 swapping for our union? Assume the fields are known (easily done by passing
 tt(Tag) values to tt(Union::swap)):
     itemization(
@@ -59,7 +59,7 @@ tt(Tag) values to tt(Union::swap)):
         standard lhs.y = rhs.y)
     it() in-place destroy rhs.y; placement new initialize rhs.x from tmp
 (alternatively: placement new default initialize rhs.x, then do the standard
-rhs.x = tmp) 
+rhs.x = tmp)
     )
 
 By bf(C++)-standard requirement, the in-place destruction won't throw. Since
@@ -71,10 +71,10 @@ provided with the following tt(swap) member:
     void Data::Union::swap(Tag myTag, Union &other, Tag oTag)
     {
         Union tmp(*this, myTag);    // save lhs
-    
+
         destroy(myTag);             // destroy lhs
         copy(other, oTag);          // assign rhs
-    
+
         other.destroy(oTag);        // destroy rhs
         other.copy(tmp, myTag);     // save lhs via tmp
     }
@@ -86,7 +86,7 @@ realized:
     Data &Data::operator=(Data const &rhs)
     {
         Data tmp(rhs);  // tmp(std::move(rhs)) for the move assignment
-    
+
         d_union.swap(d_tag, tmp.d_union, tmp.d_tag);
         swap(d_tag, tmp.d_tag);
 
@@ -110,7 +110,7 @@ provide tt(Data) with an 'commit or roll-back' assignment operator like this:
 
 How to implement tt(Union::assign)? Here are the steps tt(assign) must take:
     itemization(
-    it() First save the current union in a block of memory. This merely 
+    it() First save the current union in a block of memory. This merely
 involves a non-throwing tt(memcpy) operation;
     it() Then use placement new to copy the other object's union field into
 the current object. If this throws:
@@ -125,16 +125,16 @@ so, we perform the following steps:
         it() (Fast) swap the current union's new contents with the contents in
 the previously saved block;
         it() Call tt(destroy) for the now restored original union;
-        it() Re-install the new union from the memory block. 
+        it() Re-install the new union from the memory block.
         )
         As none of the above steps will throw, we have committed the new
 situation.
     )
-    Here is the implementation of the `commit or roll-back' tt(Union::assign): 
+    Here is the implementation of the `commit or roll-back' tt(Union::assign):
         verb(
     void Data::Union::assign(Tag myTag, Union const &other, Tag otag)
     {
-        char saved[sizeof(Union)];          
+        char saved[sizeof(Union)];
         memcpy(saved, this, sizeof(Union));     // raw copy: saved <- *this
         try
         {

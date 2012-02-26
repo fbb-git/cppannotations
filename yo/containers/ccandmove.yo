@@ -8,7 +8,7 @@ are declared:
         verb(
     Union(Union const &other) = delete;
     Union &operator=(Union const &other) = delete;
-    
+
     Union(Union const &other, Tag tag);
     Union(Union &&tmp, Tag tag);
         )
@@ -22,20 +22,20 @@ section, and have identical parameter lists as the above constructors:
     void copy(Union const &other, Tag tag);
     void copy(Union &&other, Tag tag);
         )
-    
+
 The constructors merely have to call these tt(copy) members:
         verb(
     inline Data::Union::Union(Union const &other, Tag tag)
     {
         copy(other, tag);
     }
-    
+
     inline Data::Union::Union(Union &&tmp, Tag tag)
     {
         copy(std::move(tmp), tag);
     }
         )
-    
+
 Interestingly, no `initialization followed by assignment' happens here:
 tt(d_union) has not been initialized in any way by the the time we reach the
 statement blocks of the above constructors. But upon reaching the statement
