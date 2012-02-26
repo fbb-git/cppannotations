@@ -1,2 +1,60 @@
-tt(Data)'s copy and move constructors cannot use tt(Union)'s copy and move
-constructors, as these latter constructors do not perform actions. 
+tt(Union)'s copy and move constructors suffer from the same problem as
+tt(Union)'s destructor does: the union does not know which is its currently
+active field. But again: tt(Data) does, and by defining `extended' copy and
+move constructors, also receiving a tt(Tag) argument, these extended
+constructors can perform their proper initializations. The tt(Union)'s copy-
+and move-constructors are deleted, and extended copy- and move constructors
+are declared:
+        verb(
+    Union(Union const &other) = delete;
+    Union &operator=(Union const &other) = delete;
+    
+    Union(Union const &other, Tag tag);
+    Union(Union &&tmp, Tag tag);
+        )
+
+Shortly we'll encounter a situation where we must be able to initialize a
+block of memory using an existing tt(Union) object. This task can be performed
+by tt(copy) members, whose implementations are trivial, and which may be used
+by the above constructors. They can be declared in tt(Union)'s private
+section, and have identical parameter lists as the above constructors:
+        verb(
+    void copy(Union const &other, Tag tag);
+    void copy(Union &&other, Tag tag);
+        )
+    
+The constructors merely have to call these tt(copy) members:
+        verb(
+    inline Data::Union::Union(Union const &other, Tag tag)
+    {
+        copy(other, tag);
+    }
+    
+    inline Data::Union::Union(Union &&tmp, Tag tag)
+    {
+        copy(std::move(tmp), tag);
+    }
+        )
+    
+Interestingly, no `initialization followed by assignment' happens here:
+tt(d_union) has not been initialized in any way by the the time we reach the
+statement blocks of the above constructors. But upon reaching the statement
+blocks, tt(d_union) memory is merely raw memory. This is no problem, as the
+tt(copy) members use placement new to initialize the tt(Union)'s memory:
+        verb(
+    void Data::Union::copy(Union const &other, Tag otag)
+    {
+        if (tag == INT)
+            u_int = other.u_int;
+        else
+            new (this) string(other.u_string);
+    }
+
+    void Data::Union::copy(Union &&tmp, Tag tag)
+    {
+        if (tag == INT)
+            u_int = tmp.u_int;
+        else
+            new (this) string(std::move(tmp.u_string));
+    }
+        )

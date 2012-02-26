@@ -1,21 +1,19 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
-#include <vector>
 
 #include <bobcat/fswap>
 
 using namespace std;
 using namespace FBB;
 
-class Data
+struct Data
 {
-    public:
-        enum Tag
-        {
-            INT,
-            STRING
-        };
+    enum Tag
+    {
+        INT,
+        STRING
+    };
 
     private:
         union Union
@@ -25,13 +23,24 @@ class Data
 
             Union(int value);
             Union(std::string const &init);
-            Union(Tag tag, Union const &other);
+
+            Union(Union const &other) = delete;
+            Union &operator=(Union const &other) = delete;
+
+            Union(Union const &other, Tag tag);
+            Union(Union &&tmp, Tag tag);
 
             ~Union();                       // no action
             void destroy(Tag myTag);        // use this instead
-        
-            void copy(Union const &other, Tag otag);
-            bool assign(Tag myTag, Union const &other, Tag otag);
+            
+            void assign(Tag myTag, Union const &other, Tag otag);
+            void assign(Tag myTag, Union &&tmp, Tag otag);
+
+            void swap(Tag myTag, Union &other, Tag otag);
+
+            private:
+                void copy(Union const &other, Tag tag);
+                void copy(Union &&other, Tag tag);
         };
 
         Tag d_tag;
@@ -43,33 +52,71 @@ class Data
         Data(int value);
 
         Data(Data const &other);
+        Data(Data &&tmp);
         ~Data();
         Data &operator=(Data const &rhs);
+        Data &operator=(Data &&rhs);
+
         string const &str() const;
         int value() const;
 };
 
-bool Data::Union::assign(Tag myTag, Union const &other, Tag otag)
+void Data::Union::swap(Tag myTag, Union &other, Tag oTag)
+{
+    Union tmp(*this, myTag);
+
+    destroy(myTag);    
+    copy(other, oTag);
+
+    other.destroy(oTag);
+    other.copy(tmp, myTag);
+}
+
+void Data::Union::assign(Tag myTag, Union const &other, Tag otag)
+{
+    char saved[sizeof(Union)];          
+    memcpy(saved, this, sizeof(Union));         // raw copy: saved <- *this
+    try
+    {
+        copy(other, otag);                      // *this = other: may throw
+                                                // *this <-> saved
+        fswap(*this, *reinterpret_cast<Union *>(saved));
+        destroy(myTag);                         // destroy original *this
+        memcpy(this, saved, sizeof(Union));     // install new *this
+    }
+    catch (...)                                 // copy threw
+    {
+        memcpy(this, saved, sizeof(Union));     // roll back: restore *this
+        throw;
+    }
+}
+
+void Data::Union::assign(Tag myTag, Union &&tmp, Tag otag)
 {
     char saved[sizeof(Union)];
     memcpy(saved, this, sizeof(Union));
-    bool ret = true;
     try
     {
-        copy(other, otag);
+        copy(std::move(tmp), otag);
         fswap(*this, *reinterpret_cast<Union *>(saved));
-        destroy(myTag);
+        destroy(myTag);                         
+        memcpy(this, saved, sizeof(Union));     
     }
-    catch (...)
+    catch (...)                                 
     {
-        ret = false;
+        memcpy(this, saved, sizeof(Union));     
+        throw;
     }
-    memcpy(this, saved, sizeof(Union));        // roll back
 }
 
-Data::Union::Union(Tag tag, Union const &other)
+inline Data::Union::Union(Union const &other, Tag tag)
 {
     copy(other, tag);
+}
+
+inline Data::Union::Union(Union &&tmp, Tag tag)
+{
+    copy(std::move(tmp), tag);
 }
 
 void Data::Union::destroy(Tag myTag)
@@ -78,12 +125,20 @@ void Data::Union::destroy(Tag myTag)
         u_string.~string();
 }
 
-void Data::Union::copy(Union const &other, Tag otag)
+void Data::Union::copy(Union const &other, Tag tag)
 {
-    if (otag == INT)
+    if (tag == INT)
         u_int = other.u_int;
     else
         new (this) string(other.u_string);
+}
+
+void Data::Union::copy(Union &&tmp, Tag tag)
+{
+    if (tag == INT)
+        u_int = tmp.u_int;
+    else
+        new (this) string(std::move(tmp.u_string));
 }
 
 inline Data::Union::~Union()
@@ -101,7 +156,13 @@ inline Data::Union::Union(std::string const &str)
 Data::Data(Data const &other)
 :
     d_tag(other.d_tag),
-    d_union(d_tag, other.d_union)
+    d_union(other.d_union, d_tag)
+{}
+
+Data::Data(Data &&tmp)
+:
+    d_tag(tmp.d_tag),
+    d_union(std::move(tmp.d_union), d_tag)
 {}
 
     // destructor
@@ -113,8 +174,23 @@ Data::~Data()
     // overloaded assignment operator
 Data &Data::operator=(Data const &rhs)
 {
-    if (d_union.assign(d_tag, rhs.d_union, rhs.d_tag))
-        d_tag = rhs.d_tag;
+    Data tmp(rhs);
+
+    d_union.swap(d_tag, tmp.d_union, tmp.d_tag);
+    swap(d_tag, tmp.d_tag);
+
+//    if (d_union.assign(d_tag, rhs.d_union, rhs.d_tag))
+//        d_tag = rhs.d_tag;
+
+    return *this;
+}
+
+Data &Data::operator=(Data &&tmp)
+{
+    d_union.assign(d_tag, std::move(tmp.d_union), tmp.d_tag);
+    d_tag = tmp.d_tag;
+
+    return *this;
 }
 
         // accessors

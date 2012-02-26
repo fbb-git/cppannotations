@@ -1,11 +1,11 @@
 We end this chapter about abstract containers with a small detour, introducing
 additions to the tt(union) concept, made available by the C++11
-standard. Although unions should not themselves be considered abstract
-containers, having covered containers has put us in a good position to
-introduce and illustrate emi(unrestricted unions).
+standard. Although unions themselves aren't `abstract containers', having
+covered containers has put us in a good position to introduce and illustrate
+    emi(unrestricted unions).
 
 The C++11 standard adds unrestricted unions to C++'s data structuring
-capabilities. Whereas the traditional tt(union) can only contain primitive
+capabilities. Whereas the traditional union can only contain primitive
 data, unrestricted unions allow data fields of types for which non-trivial
 constructors have been defined. Such data fields commonly are of
 class-types. Here is an example of such an unrestricted union:
@@ -16,10 +16,10 @@ class-types. Here is an example of such an unrestricted union:
         std::string u_string;
     };
         )
-    One of these fields has a non-trivial constructor, turning this union in
-an em(unrestricted) union.  As an unrestricted union defines at least one
-field of a type having a non-trivial constructor the question becomes how
-these unions can be constructed and destroyed.
+    One of its fields defines a constructor, turning this union into an
+em(unrestricted) union.  As an unrestricted union defines at least one field
+of a type having a constructor the question becomes how these unions can be
+constructed and destroyed.
 
 The destructor of a union consisting of, e.g. a tt(std::string) and an
 tt(int) should of course not call the tt(string)'s destructor if the
@@ -28,205 +28,14 @@ the tt(std::string) field is used, and a switch is made next from the
 tt(std::string) to the tt(int) field, tt(std::string)'s destructor
 should be called before any assignment to the tt(double) field takes place.
 
-The compiler does not solve this issue for us, and in fact does em(not)
-implement default constructors or destructors for unrestricted unions. If we
-try to define an unrestricted union like the one shown above, an error message
-like the following is issued:
+The compiler does not solve the issue for us, and in fact does em(not)
+implement default constructors or destructors for unrestricted unions at
+all. If we try to define an unrestricted union like the one shown above, an
+error message like the following is issued:
         verb(
     error: use of deleted function 'Union::Union()'
     error: 'Union::Union()' is implicitly deleted because the default
             definition would be ill-formed:
     error: union member 'Union::u_string' with non-trivial
             'std::basic_string<...>::basic_string() ...'
-        )
-
-
-========================================================================
-
-
-
-
-
-    tt(MultiData)'s destructor must do a bit more work, as it must inspect
-tt(d_tag) to determine what to do. Usually using a switch, but here a simple
-tt(if)-statement can be used:
-        verb(
-    MultiData::~MultiData()
-    {
-        if (d_tag == STRING)
-            d_u.u_string.~string();
-    }
-        )
-
-    Copy and move constructors can be implemented analogously. Here is
-tt(MultiData)'s copy constructor:
-        verb(
-    MultiData::MultiData(MultiData const &other)
-    :
-        d_tag(other.d_tag)
-    {
-        if (d_tag == STRING)        // or a switch
-            new (&d_u.u_string) std::string(other.d_u.u_string);
-        else
-            d_u.u_int = other.d_u.u_int;
-    }
-        )
-    Assuming tt(std::string) offers a move constructor, then this is
-tt(MultiData)'s move constructor:
-        verb(
-    MultiData::MultiData(MultiData &&tmp)
-    :
-        d_tag(tmp.d_tag),
-    {
-        if (d_tag == STRING)        // or a switch
-            d_u.u_string) std::string(std::move(tmp.d_u.u_string));
-        else
-            d_u.u_int = tmp.d_u.u_int;
-    }
-        )
-    The rule of thumb for creating these constructors is: the member
-initializations that would have been used if the union fields were members
-become statements using the placement new operator in the bodies of the
-constructors. 
-
-    What about changing fields? Once an unrestricted union has received its
-value it keeps that variant until used otherwise. That's in line with the
-traditional union. But to change the interpretation of an unrestricted union's
-class-type field we must make sure that the destructor of that
-class type field is first called. To do that smoothly we need
-tt(operator=).
-
-If the fields of the union may be swapped using fast swapping (cf. section
-ref(FSWAP)), and if that also holds true for the other tt(MultiData) fields,
-then tt(MultiData)'s assignment operator's implementation is standard:
-        verb(
-    MultiData &MultiData::operator=(MultiData const &other)
-    {
-        MultiData tmp(other);       // this may throw: OK
-        fastSwap(tmp);              // swap offers the no-throw guarantee
-        return *this;
-    }
-        )
-    But now assume fast-swapping cannot be used for tt(Union)'s fields. How to
-implement the assignment operator in that case?
-
-    If fast swapping is not possible, then an exception-safe solution becomes
-complex. Assuming that both objects use different fields, then these  are the
-steps we have to take: 
-    itemization(
-    it() First save the current union in a block of memory. This merely 
-involves tt(memcpy) operations, which do not throw.
-    it() Then use placement new to copy the other object's union field into
-the current object. If this throws,
-        itemization(
-        it() catch the exception, return the saved byted back to their
-original location, and continue: we have rolled-back tp our previous (valid)
-state. 
-        )
-    it() We still have to delete the original field's allocated data. To do
-so, we perform the following steps:
-        itemization(
-        it() Swap the current union's new contents with the contents in the
-previously saved block. 
-        it() Directly call the original type's destructor, destroying any
-memory the original object has allocated
-        it() Swap the current union's new contents once again, re-installing the
-other object's copy back into the union.
-        )
-        As none of the above steps will throw, we have committed the new
-situation.
-    )
-    Here is the implementation, assuming the current object's type is tt(INT),
-and the other object's type is tt(STRING); the approach can easily be
-generalized for unions having other fields:
-        verb(
-    MultiData &MultiData::operator=(MultiData const &other)
-    {
-
-        char block[sizeof(Union)];
-        memcpy(block, d_u);         // save the original situation
-        try
-        {
-            new (&d_u) std::string(other.du.u_string);  // maybe throws
-            
-            // it didn't throw: destroy the original data
-            fastSwap(block, &d_u);
-            d_u.u_int.~int();
-            memcpy(&d_u, block, sizeof(Union));
-
-        MultiData tmp(other);       // this may throw: OK
-
-                
-        fastSwap(tmp);
-        return *this;
-    }
-        )
-
-        
-        if (d_tag == STRING)        // or a switch
-            d_u.u_string) std::string(std::move(tmp.d_u.u_string));
-        else
-            d_u.u_int = tmp.d_u.u_int;
-    }
-        )
-
-
-FBB WIP ==================================================================
-
-    Preparing for tt(operator=) we first implement tt(MultiData::swap), swapping
-the current and another tt(Union) object, using fast swapping as discussed in
-section ref(FSWAP):
-        verb(
-    void Union::swap(Union &other)
-    {
-        std::swap(u_int,     other.u_int);
-        std::swap(u_complex, other.u_complex);
-        std::swap(u_string,  other.u_string);
-    }
-        )
-    If fast swapping cannot be used, but individual fields em(can) be swapped,
-then swapping is a bit complex. In that case:
-    itemization(
-    it() Make a copy of tt(other)'s currently active field
-    it() Assign the current object's currently active field to tt(other)'s
-        matching field;
-    it() Assign the copy of tt(other)'s previously active field to the current
-        object
-    )
-
-    The tt(operator=) member is now implemented using the move-assignment
-operator that can be implemented em(en-passant), whether the tt(Union)
-supports moving or not:
-        verb(
-        Union &Union::operator=(Union &&tmp)
-        {
-            swap(tmp);
-            return *this;
-        }
-
-        Union &Union::operator=(Union const &other)
-        {
-            Union tmp(other);
-            return *this = std::move(tmp);
-        }
-        )
-
-Using simple accessor members to access the field's tt(second) data members
-like the one shown below, a program can now define, copy construct and
-reassign tt(Union)s, and access the active data using accessors:
-        verb(
-        std::string &Union::asString()
-        {
-            return u_string.second;
-        }
-
-    int main()
-        {
-            Union ustr("hello world");
-            Union ucom(12.4, 12.5);
-
-            ustr = ucom;
-            ustr = Union("hi there, again");
-            cout << ustr.asString() << '\n';
-        }
         )

@@ -1,16 +1,23 @@
-tt(Data)'s destructor is confronted with a data member which is an
-unrestricted union. As the union's destructor doesn't perform any actions, 
-the union's proper destruction is delegated to tt(Data)'s
-destructor. Fortunately, tt(d_tag) tells tt(Data)'s destructor what field to
-destroy. For tt(Tag::INT) no actions are required, but for tt(Tag::STRING)
-memory allocated by tt(u_string) must be returned again. For this the explicit
-destructor call is required, as tt(~string()) will do just that: it will
-return any memory allocated by a tt(std::string) object. tt(Data)'s
-destructor, therefore, looks like this:
+tt(Data)'s destructor has a data member which is an unrestricted union. As the
+union's destructor can't perform any actions, the union's proper destruction
+is delegated to a member, tt(Union::destroy) destroying the fields for which
+destructors are defined. As tt(d_tag) stores the currently used tt(Union)
+field, tt(Data)'s destructor can pass tt(d_tag) to tt(Union::destroy) to
+inform it about which field should be destroyed.
+
+tt(Union::destroy) does not need to perform any action for tt(INT) tags, but
+for tt(STRING) tags the memory allocated by tt(u_string) must be returned. For
+this an explicit destructor call is used. tt(Union::destroy) and 
+tt(Data)'s destructor are therefore implemented like this:
         verb(
+    void Data::Union::destroy(Tag myTag)
+    {
+        if (myTag == Tag::STRING)
+            u_string.~string();
+    }
+
     Data::~Data()
     {
-        if (d_tag == Tag::STRING)
-            d_union.u_string.~string();
+        d_union.destroy(d_tag);
     }
         )
