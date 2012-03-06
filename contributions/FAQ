@@ -10,8 +10,8 @@
 >         return
 >             Person::compare
 >             (
->                 reinterpret_cast<Person const *const *>(p1),
->                 reinterpret_cast<Person const *const *>(p2)
+>                 static_cast<Person const *const *>(p1),
+>                 static_cast<Person const *const *>(p2)
 >             );
 >     }
 
@@ -25,10 +25,8 @@ intention. Person::compare's prototype is
 which mentions two consts: the parameters are pointers to pointers should not
 be modified nor should be modified what these latter pointers point to.
 
-Hence two consts in the reinterpret cast. The last const matches the const in
-void const *, and the first const matches the intention of Person::compare's
+Hence two consts in the static cast. The last const matches the const in void
+const *, and the first const matches the intention of Person::compare's
 function. Leave out the last const and the compiler complains, leave out the
 first const and the compiler will pass a non-const pointer to a const *
-parameter, which by itself is OK, but blurrs your intention. Reinterpret_casts
-are extremely dangerous beasts, and I think the closer to stick to your
-intention here the better you document what you intend.
+parameter, which by itself is OK, but blurrs your intention. 
