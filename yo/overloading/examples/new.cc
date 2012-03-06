@@ -26,7 +26,7 @@
             void operator delete[](void *mem)
             {
                 cout << "Deleting memory at " << mem << ", containing: " <<
-                    *reinterpret_cast<int *>(mem) << "\n";
+                    *static_cast<int *>(mem) << "\n";
                 ::operator delete(mem);
             }
     };

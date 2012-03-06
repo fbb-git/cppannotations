@@ -3,7 +3,7 @@
 //OPEX
 istream &std::operator>>(istream &str, field const &params)
 {
-    return reinterpret_cast<Fistream *>(&str)->setField(params);
+    return static_cast<Fistream *>(&str)->setField(params);
 }
 //=
 
@@ -19,7 +19,7 @@ Fistream::Fistream(istream &stream)
 Fistream::Fistream(char const *name, ios::openmode mode)
 :
     istream(new filebuf()),
-    d_filebuf(reinterpret_cast<filebuf *>(rdbuf())),
+    d_filebuf(static_cast<filebuf *>(rdbuf())),
     d_streambuf(d_filebuf.get()),
     d_width(0)
 {
