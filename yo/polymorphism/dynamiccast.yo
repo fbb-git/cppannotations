@@ -3,9 +3,12 @@ or hi(base class: converting to derived class) reference to, respectively, a
 i(derived class) pointer or reference. This is also called emi(down-casting)
 as direction of the cast is em(down) the inheritance tree.
 
-A dynamic cast is performed at i(run-time). A prerequisite for using a dynamic
-cast hi(dynamic cast: prerequisite) is the existence of at least one virtual
-member function in the base class.
+A dynamic cast's actions are determined i(run-time); it can only be used if
+the base class declares at least one virtual member function. For the dynamic
+cast to succeed, the destination class's tt(Vtable) must be equal to the
+tt(Vtable) to which the dynamic cast's argument refers to, lest the cast fails
+and returns 0 (if a dynamic cast of a pointer was requested) or throws a
+tt(std::bad_cast) exception (if a dynamic cast of a reference was requested).
 
 In the following example a pointer to the class tt(Derived) is obtained from
 the tt(Base) class pointer tt(bp):
@@ -41,17 +44,19 @@ the tt(Base) class pointer tt(bp):
     }
         )
     In the condition of the above tt(if) statement the success of the dynamic
-cast is verified. This verification must be performed at em(run-time), as the
-actual class of the objects to which the pointer points is only known then.
+cast is verified. This verification is performed at em(run-time), as the
+actual class of the objects to which the pointer points is only known by then.
+
 If a base class pointer is provided, the dynamic cast operator returns 0 on
 failure and a pointer to the requested derived class on success.
 
     Assume a tt(vector<Base *>) is used. Such a vector's pointers may point to
 objects of various classes, all derived from tt(Base). A dynamic cast
 returns a pointer to the specified class if the base class pointer indeed
-points to an object of the specified class and returns 0 otherwise. So we could
-determine the actual class of an object a pointer points to by performing a
-series of checks to find the actual derived class to which a base class
+points to an object of the specified class and returns 0 otherwise. 
+
+We could determine the actual class of an object a pointer points to by
+performing a series of checks to find the derived class to which a base class
 pointer points. Example:
         verb(
     class Base
@@ -74,6 +79,7 @@ pointer points. Example:
             cout << "bp points to a Derived2 class object\n";
     }
         )
+
     Alternatively, a reference to a base class object may be available. In
 this case the tt(dynamic_cast) operator throws an i(exception) if the down
 casting fails. Example:
@@ -97,7 +103,8 @@ that of the tt(static_cast).
 When the tt(static_cast) is used, we tell the compiler that it must convert a
 pointer or reference to its expression type to a pointer or reference of its
 destination type. This holds true whether the base class declares virtual
-members or not. So the following will compile fine:
+members or not. Consequently, all the tt(static_cast)'s actions can be
+determined by the compiler, and the following compiles fine:
         verb(
     class Base
     {
@@ -121,14 +128,14 @@ members or not. So the following will compile fine:
 object is cast to a tt(Derived2) class reference. The compiler has no problems
 with this, as tt(Base) and tt(Derived2) are related by inheritance. 
 
-    Semantically, however, this makes no sense as tt(bp) in fact points to a
-tt(Derived1) class object, which is detected by a tt(dynamic_cast).  A
+    Semantically, however, it makes no sense as tt(bp) in fact points to a
+tt(Derived1) class object. This is detected by a tt(dynamic_cast).  A
 tt(dynamic_cast), like the tt(static_cast), converts related pointer or
 reference types, but the tt(dynamic_cast) provides a run-time safeguard. The
 dynamic cast fails when the requested type doesn't match the actual type of
-the object we're pointing at. The tt(dynamic_cast)'s purpose is also much more
-restricted than the tt(static_cast)'s purpose, as it can only be used for
-downcasting to derived classes having virtual members.
+the object we're pointing at. In addition, the tt(dynamic_cast)'s use is much
+more restricted than the tt(static_cast)'s use, as the tt(dynamic_cast) can
+only be used for downcasting to derived classes having virtual members.
 
 In the end a dynamic cast is a cast, and casts should be avoided whenever
 possible. When the need for dynamic casting arises ask yourself whether the
