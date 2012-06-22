@@ -1,0 +1,37 @@
+Usually a tt(shared_ptr) is initialized at definition time 
+with a pointer to a newly allocated object. Here is an example:
+        verb(
+    std::shared_ptr<string> sptr(new std::string("hello world"))
+        )
+    In such statements em(two) memory allocation calls are used: one for the
+allocation of the tt(std::string) and one used interally by
+tt(std::shared_ptr)'s constructor itself. 
+
+    The two allocations can be combined into one single allocation (which is
+also slightly more efficient than explicitly calling tt(shared_ptr)'s
+constructor) using the ti(make_shared) template. The function template
+tt(std::make_shared) has the following prototype:
+        verb(
+    template<class Type, class ...Args>
+    std::shared_ptr<Type> std::make_shared(Args ...args);
+        )
+    Before using tt(make_shared) the tthi(memory) header file must have
+been included.
+
+    This function template allocates an object of class tt(Type), passing
+tt(args) to its constructor (using em(perfect forwarding), see section
+ref(PERFECT)), and returns a tt(shared_ptr) initialized with the address of
+the newly allocated tt(Type) object.
+
+    Here is how the above tt(sptr) object can be initialized 
+using tt(std::make_shared). Notice the use of tt(auto) which frees us from
+having to specify tt(sptr)'s type explicitly:
+        verb(
+    auto sptr(std::make_shared<std::string>("hello world"));
+        )
+    After this initialization tt(std::shared_ptr<std::string> sptr) has been
+defined and initialized. It could be used as follows:
+        verb(
+    std::cout << *sptr << '\n';
+        )
+    

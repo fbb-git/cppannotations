@@ -59,6 +59,10 @@ ostream &operator<<(ostream &out, Object const &obj)
 
 int main()
 {
+    auto sptr(make_shared<string>("hello world"));
+
+    cout << *sptr << '\n';
+
     auto sp = make_shared<Object>(10);
 
     auto shared(sp);
