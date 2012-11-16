@@ -13,21 +13,21 @@ In this parlance the bf(C++) reference should be considered an
  emi(lvalue reference) (using the notation tt(typename &)). They can be
 contrasted to em(rvalue references) (using the notation tt(typename &&)).
 
-The key to understanding rvalue references is emi(anonymous variable). An
-anonymous variable has no name and this is the distinguishing feature for the
-compiler to associate it automatically with an lvalue reference if it has a
-choice. Before introducing some interesting and new constructions
-that weren't available before C++11 let's first have a look at some
-distinguishing applications of lvalue references. The following function
-returns a temporary (anonymous) value:
+The key to understanding rvalue references is the concept of an 
+ emi(anonymous variable). An anonymous variable has no name and this is the
+distinguishing feature for the compiler to associate it automatically with an
+rvalue reference if it has a choice. Before introducing some interesting and
+new constructions that weren't available before C++11 let's first have a look
+at some standard situations where em(lvalue) references are used. The
+following function returns a temporary (anonymous) value:
         verb(
     int intVal()
     {
         return 5;
     }
         )
-    Although the return value of tt(intVal) can be assigned to an tt(int)
-variable it requires a copying operation, which might become prohibitive when
+    Although tt(intVal)'s return value  can be assigned to an tt(int)
+variable it requires copying, which might become prohibitive when
 a function does not return an tt(int) but instead some large object. A
 em(reference) or em(pointer) cannot be used either to collect the anonymous
 return value as the return value won't survive beyond that. So the following
@@ -39,13 +39,13 @@ is illegal (as noted by the compiler):
         )
 
     Apparently it is not possible to modify the temporary returned by
-tt(intVal). But now consider the next function:
+tt(intVal). But now consider these functions:
         verb(
-    void receive(int &value)
+    void receive(int &value)            // note: lvalue reference
     {
         cout << "int value parameter\n";
     }
-    void receive(int &&value)
+    void receive(int &&value)           // note: rvalue reference
     {
         cout << "int R-value parameter\n";
     }
@@ -66,9 +66,9 @@ tt(intVal). But now consider the next function:
     int value parameter
     int R-value parameter
         )
-    It shows the compiler selecting tt(receive(int &&value)) in all cases
-where it receives an anonymous tt(int) as its argument. Note that this
-includes tt(receive(18)): a value 18 has no name and thus tt(receive(int
+    The program's output shows the compiler selecting tt(receive(int &&value))
+in all cases where it receives an anonymous tt(int) as its argument. Note that
+this includes tt(receive(18)): a value 18 has no name and thus tt(receive(int
 &&value)) is called. Internally, it actually uses a temporary variable to
 store the 18, as is shown by the following example which modifies tt(receive):
         verb(
