@@ -1,0 +1,29 @@
+Most containers use a special object for allocating the memory that is managed
+by them. This object is called an i(allocator), and it's type is (usually by
+default) specified when a container is constructed. A container's allocator
+can be obtained using the container's tt(get_allocator) member, which returns
+a copy of the allocator used by the container. Allocators offer the following
+members:
+    itemization(
+    itht(address)(value_type *address(value_type &object))
+        quote(returns the address of tt(object).)
+    itht(allocate)(value_type *allocate(size_t count))
+        quote(allocates raw memory for holding tt(count) values of the
+container's tt(value_type).)
+    itht(construct)(void construct(value_type *object, Arg &&...args))
+        quote(using placement new, uses the arguments following tt(object) to
+install a value at tt(object).)
+    itht(destroy)(void destroy(value_type *object))
+        quote(calls tt(object)'s destructor (but doesn't deallocate
+tt(object)'s own memory).)
+    itht(deallocate)(void deallocate(value_type *object, size_t count))
+        quote(calls tt(operator delete) to delete object's memory, previously
+allocated by tt(allocate).)
+    itht(max_size)(size_t max_size())
+        quote(returns the maximum number of elements that tt(allocate) can
+allocate.)
+    )
+    Here is an example, using the allocator of a vector of strings (see
+section ref(VECTOR) below for a description of the tt(vector) container):
+    verbinclude(examples/allocate.cc)
+
