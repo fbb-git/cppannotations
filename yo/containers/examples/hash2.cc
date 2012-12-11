@@ -2,6 +2,7 @@
     #include <iostream>
     #include <string>
     #include <cstring>
+
     using namespace std;
 
     struct EqualCp
@@ -15,12 +16,15 @@
     {
         size_t operator()(char const *str) const
         {
-            return hash<std::string const &>()(str);
+            return std::hash<std::string>()(str);
         }
     };
     int main()
     {
         unordered_map<char const *, int, HashCp, EqualCp> months;
+        // or explicitly:
+            unordered_map<char const *, int, HashCp, EqualCp> 
+                                      monthsTwo(61, HashCp(), EqualCp());
 
         months["april"] = 30;
         months["november"] = 31;
