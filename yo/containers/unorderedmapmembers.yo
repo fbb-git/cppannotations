@@ -1,0 +1,142 @@
+The tt(unordered_map) supports the index operator operating identically to the
+tt(map)'s index operator: a (const) reference to the tt(ValueType) associated
+with the provided tt(KeyType)'s value is returned. If not yet available, the
+key is added to the tt(unordered_map), and a default tt(ValueType) value is
+returned. In addition, it supports tt(operator==).
+
+The tt(unordered_map) provides the following
+ hi(unordered_map: member functions) member functions (tt(key_type,
+value_type) etc. refer to the types defined by the tt(unordered_map)):
+        itemization(
+        ithtq(at)(mapped_type &at(key_type const &key))
+            (returns a reference to the unordered_map's tt(mapped_type)
+associated with tt(key). If the key is not stored in the tt(unordered_map) an
+tt(std::out_of_range) exception is thrown.)
+        ithtq(begin)(unordered_map::iterator begin())
+            (returns an i(iterator) pointing to the first
+element in the unordered_map, returning tt(end) if the unordered_map is empty.)
+        ithtq(bucket)(size_t bucket(key_type const &key)):
+            (returns the index location where tt(key) is stored. If
+tt(key) wasn't stored yet tt(bucket) adds tt(value_type(key, Value())) before
+returning its index position.)
+        ithtq(bucket_count)(size_t bucket_count())
+            (returns the number of slots used by the containers. Each slot may
+contain one (or more, in case of collisions) tt(value_type) objects.)
+        ithtq(bucket_size)(size_t bucket_size(size_t index))
+            (returns the number of tt(value_type) objects stored at bucket
+position tt(index).)
+        ithtq(cbegin)(unordered_map::const_iterator cbegin())
+            (returns a i(const_iterator) pointing to the first 
+element in the unordered_map, returning tt(cend) if the unordered_map is empty.)
+        ithtq(cend)(unordered_map::const_iterator cend())
+            (returns a i(const_iterator) pointing just beyond the
+unordered_map's last element.)
+        ithtq(clear)(void clear())
+            (erases all the unordered_map's elements.)
+        ithtq(count)(size_t count(key_type const &key))
+            (returns the number of times a tt(value_type) object using
+tt(key_type) tt(key) is stored in the tt(unordered_map) (which is either one
+or zero).)
+        ithtq(emplace)
+                (pair<iterator, bool> emplace(Args &&...args))
+            (a tt(value_type) object is constructed from tt(emplace)'s
+arguments. If the tt(unordered_map) already contained an object using the same
+tt(key_type) value, then a tt(std::pair) is returned containing an iterator
+pointing to the object using the same tt(key_type) value and the value
+tt(false). If no such tt(key_type) value was found, the newly constructed
+object is inserted into the tt(unordered_map), and the returned tt(std::pair)
+contains an iterator pointing to the newly inserted inserted tt(value_type)
+as well as the value tt(true).)
+        ithtq(emplace_hint)(iterator emplace_hint(const_iterator position,
+                            Args &&...args))
+            (a tt(value_type) object is constructed from the member's
+arguments, and the newly created element is inserted into the
+tt(unordered_map), unless the (at tt(args)) provided key already exists. The
+implementation may or may not use tt(position) as a em(hint) to start looking
+for an insertion point. The returned tt(iterator) points to the tt(value_type)
+using the provided key. It may refer to an already existing tt(value_type) or
+to a newly added tt(value_type); an existing tt(value_type) is not
+replaced. If a new value em(was) added, then the container's size has been
+incremented when tt(emplace_hint) returns.)
+    ithtq(empty)(bool empty())
+            (returns tt(true) if the unordered_map contains no elements.)
+    ithtq(end)(unordered_map::iterator end())
+            (returns an iterator pointing beyond the last element in the
+unordered_map.)
+    ithtq(equal_range)
+            (pair<iterator, iterator> equal_range(key))(this
+member returns a pair of iterators  defining the range of elements having a
+key that is equal to tt(key). With the tt(unordered_map) this range includes
+at most one element.)
+        ithtq(erase)(unordered_map::iterator erase())
+            (erases a specific range of elements in the unordered_map:)
+            itemization(
+            itt(erase(pos)) erases the element pointed to by the iterator
+tt(pos). The iterator tt(++pos) is returned.
+            itt(erase(first, beyond)) erases elements indicated by the iterator
+range rangett(first, beyond), returning tt(beyond).
+            )
+    ithtq(find)(terator find(key))
+            (returns an iterator to the element having the given key. If the
+element isn't available, tt(end) is returned.)
+        ithtq(get_allocator)(allocator_type get_allocator() const)(returns a
+copy of the allocator object used by the tt(unordered_map) object.)
+        ithtq(hash_function)(hasher hash_function() const)(returns a copy of
+the hash function object used by the tt(unordered_map) object.)
+        itht(insert)(... insert()):
+            quote(elements may be inserted starting at a certain position. No
+insertion is performed if the provided key is already in use. The return value
+depends on the version of tt(insert()) that is called. When a
+tt(pair<iterator, bool>) is returned, then the tt(pair's first) member is an
+iterator pointing to the element having a key that is equal to the key of the
+provided tt(value_type), the tt(pair's second) member is tt(true) if tt(value)
+was actually inserted into the container, and tt(false) if not.)
+            itemization(
+            itt(pair<iterator, bool> insert(value_type const &value)) 
+                attempts to insert tt(value).
+            itt(pair<iterator, bool> insert(value_type &&tmp)) 
+                attempts to insert tt(value) using tt(value_type)'s move
+                constructor.
+            itt(pair<iterator, bool> insert(const_iterator hint, value_type
+const &value)) 
+                attempts to insert tt(value), possibly using tt(hint) as a
+starting point when trying to insert tt(value).
+            itt(pair<iterator, bool> insert(const_iterator hint, value_type
+&&tmp)) 
+                attempts to insert a tt(value) using tt(value_type)'s move
+constructor, and possibly using tt(hint) as a starting point when trying to
+insert tt(value).
+            itt(void insert(first, beyond)) tries to inserts the elements in
+the iterator range rangett(first, beyond).
+            itt(void insert(initializer_list <value_type> iniList)) 
+                attempts to insert the elements in tt(iniList) into the
+container. 
+            )
+        ithtq(key_equal)(hasher key_eq() const)(returns a copy of
+the tt(key_equal) function object used by the tt(unordered_map) object.)
+        ithtq(load_factor)(float load_factor() const)(returns the container's
+current load factor, i.e. tt(size / bucket_count).)
+        ithtq(max_bucket_count)(size_t max_bucket_count())(returns the maximum
+number of buckets  this tt(unordered_map) may contain.)
+        ithtq(max_load_factor)(float max_load_factor() const)(identical to
+tt(load_factor).) 
+        ithtq(max_load_factor)(void max_load_factor(float max))(changes the
+current maximum load factor to tt(max). When a load factor of tt(max) is
+reached, the container will enlarge its tt(bucket_count), followed by a rehash
+of its elements. Note that the container's default maximum load factor equals
+1.0)
+        ithtq(max_size)(size_t max_size())(returns the maximum number of
+elements this tt(unordered_map) may contain.)
+        ithtq(rehash)(void rehash(size_t size))
+            (if tt(size) exceeds the current bucket count, then the bucket
+count is increased to tt(size), followed by a rehash of its elements.)
+        ithtq(reserve)(void reserve(size_t request))
+            (if tt(request) is less than or equal to the current bucket count,
+this call has no effect. Otherwise, the bucket count is increased to a value
+of at least tt(request), followed by a rehash of the container's elements.)
+        ithtq(size)(size_t size())
+            (returns the number of elements in the unordered_map.)
+        ithtq(swap)(void swap(unordered_map &other))
+            (swaps the contents of the current and the other
+            tt(unordered_map).)
+        )

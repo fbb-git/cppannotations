@@ -1,0 +1,83 @@
+When defining an ti(unordered_map) type four template arguments must be
+specified :
+    itemization(
+    it() a i(KeyType) (becoming ti(unordered_map::key_type)), 
+    it() a i(ValueType) (becoming ti(unordered_map::mapped_type)), 
+    it() the type of an object computing a hash value from a key value
+        (becoming ti(unordered_map::hasher)), and
+    it() the type of an object that can compare two keys for equality (becoming
+        ti(unordered_map::key_equal)).
+    )
+
+The generic definition of an tt(unordered_map) container looks like this:
+    verb(
+    std::unordered_map <KeyType, ValueType, hash type, predicate type,
+                        allocator type>
+    )
+    When tt(KeyType) is tt(std::string) or a built-in type then default types
+are available for the hash type and the predicate type. In practice the
+allocator type is not specified, as the default allocator suffices.  In these
+cases an tt(unordered_map) object can be defined by merely specifying the key-
+and value types, like this:
+        verb(
+    std::unordered_map<std::string, ValueType> hash(size_t size = implSize);
+        )
+    Here, tt(implSize) is the container's default initial size, which is
+specified by the implementor. The map's size is automatically enlarged by the
+tt(unordered_map) when necessary, in which case the container em(rehashes) all
+its elements. In practice the default tt(size) argument provided by the
+implementor is completely satisfactory.
+
+The tt(KeyType) frequently consists of text. So, a tt(unordered_map) using a
+tt(std::string KeyType) is frequently used. Be careful not to use a plain
+tt(char const * key_type) as two tt(char const *) values pointing to equal
+bf(C)-strings stored at different locations are considered to be different
+keys, as their pointer values rather than their textual contents are
+compared. Here is an example showing how a tt(char const * KeyType) can be
+used. Note that in the example no arguments are specified when constructing
+tt(months), since default values and constructors are available:
+        verbinclude(examples/hash2.cc)
+
+If other tt(KeyTypes) must be used, then the tt(unordered_map)'s constructor
+requires (constant references to) a hash function object, computing a hash
+value from a key value, and a predicate function object, returning tt(true) if
+two tt(unordered_map::key_type) objects are identical.  A em(generic
+algorithm) (see chapter ref(GENERIC)) exists performing tests of equality
+(i.e., tt(equal_to)). These tests can be used if the key's data type supports
+the equality operator. Alternatively, an overloaded ti(operator==) or
+specialized i(function object) could be constructed returning tt(true) if two
+keys are equal and tt(false) otherwise.
+
+bf(Constructors)
+   
+The tt(unordered_map) supports the following constructors:
+    itemization(
+    itt(explicit unordered_map(size_type n = implSize,
+                         hasher const &hf = hasher(),
+                         key_equal const &eql = key_equal(),
+                         allocator_type const &alloc = allocator_type())):
+        this constructor can also be used as default constructor;
+    itt(unordered_map(unordered_map const &other)): copy-constructor;
+    it(unordered_map(unordered_map &&tmp)) move-constructor;
+    it(unordered_map(const_iterator begin, 
+                    const_iterator end, 
+                    size_type n = implSize, hasher const &hf = hasher(),
+                    key_equal const &eql = key_equal(),
+                    allocator_type const &alloc = allocator_type())):
+        this constructor expects two iterators specifying
+a range of tt(unordered_map::value_type const) objects, and 
+    it(unordered_map(initializer_list<value_type> initList,
+                    size_type n = implSize, hasher const &hf = hasher(),
+                    key_equal const &eql = key_equal(),
+                    allocator_type const &alloc = allocator_type())): 
+            a constructor expecting an tt(initializer_list) of
+            tt(unordered_map::value_type) values.
+    )
+
+    The following example shows a program using an unordered_map containing
+the names of the months of the year and the number of days these months
+(usually) have. Then, using the subscript operator the days in several months
+are displayed (the predicate used here is the generic algorithm
+tt(equal_to<string>), which is provided by the compiler as the default fourth
+argument of the tt(unordered_map) constructor:
+        verbinclude(examples/hash.cc)

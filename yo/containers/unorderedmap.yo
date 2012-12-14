@@ -14,21 +14,22 @@ a by far faster way to store and retrieve data is to use emi(hashing).
 
 Hashing uses a function (called the emi(hash function)) to compute an
 (unsigned) number from the key, which number is thereupon used as an index in
-the table storing the keys and their values. Retrieval of a key is as simple
-as computing the i(hash value) of the provided key, and looking in the table
-at the computed index location: if the key is present, it is stored in the
-table, and its value can be returned. If it's not present, the key is not
-stored.
+the table storing the keys and their values. This number is called the
+ emi(bucket number). Retrieval of a key is as simple as computing the i(hash
+value) of the provided key, and looking in the table at the computed index
+location: if the key is present, it is stored in the table, at the computed
+bucket location and its value can be returned. If it's not present, the key is
+not currently stored in the container.
 
 em(Collisions) hi(collision) occur when a computed index position is already
 occupied by another element. For these situations the abstract containers have
 solutions available. A simple solution, adopted by the C++11 standard is to
-use emi(linear chaining) which uses a linked list to store colliding table
+use emi(linear chaining) which uses linked list to store colliding table
 elements in.
 
-In the C++11 standard the term
-em(unordered_map) is used rather than em(hash) to avoid name collisions with
-hash tables developed before the C++11 standard was established.
+In the C++11 standard the term em(unordered_map) is used rather than em(hash)
+to avoid name collisions with hash tables developed before the C++11 standard
+was established.
 
 Four forms of tt(unordered) data structures are supported: ti(unordered_map),
 ti(unordered_multimap), ti(unordered_set), and ti(unordered_multiset), the
@@ -39,209 +40,15 @@ terms of speed should greatly exceed the efficiency of the tt(map). Comparable
 conclusions may be drawn for the tt(unordered_set), the tt(unordered_multimap)
 and the tt(unordered_multiset).  
 
-Four template arguments must be specified when defining an ti(unordered_map)
-type: 
-    a i(key type) (becoming ti(unordered_map::key_type)), 
-    a i(value type) (becoming ti(unordered_map::mapped_type)), 
-    the type of an object computing a hash value from a key value (becoming
-        ti(unordered_map::hasher)), 
-    and the type of an object that can compare two keys for equality (becoming
-        ti(unordered_map::key_equal)).
 
 
-Predefined
- hi(hash function: predefined)hash functions are available for tt(std::string)
-keys, and for all standard
- i(scalar numeric types) (tt(char, short, int) etc.). In these cases an
-tt(unordered_map) object can be defined like this:
-        verb(
-    std::unordered_map<std::string, ValueType> hash(size_t size = implSize);
-        )
-    Here, tt(implSize) is the container's default initial size, which is
-specified by the implementor. 
-
-If another key type must be used, then the tt(unordered_map)'s constructor
-requires (constant references to) a hash function object, computing a hash
-value from a key value, and a predicate function object, returning tt(true)
-if two tt(unordered_map::key_type) objects are identical.
-
-The next example shows how to use and define an tt(unordered_map) using a
-tt(char const *) for its tt(key_type). Note that in the example no arguments
-are specified when constructing tt(months), since default values and
-constructors are available:
-        verbinclude(examples/hash2.cc)
-
-A em(generic algorithm) (see chapter ref(GENERIC)) exists performing tests of
-equality (i.e., tt(equal_to)). These tests can be used if the key's data
-type supports the equality operator. Alternatively, an overloaded
-ti(operator==) or specialized i(function object) could be constructed
-returning tt(true) if two keys are equal and tt(false) otherwise. 
-
-In addition to the above constructor, the tt(unordered_map) supports 
-    itemization(
-    it() copy-construction
-    it() move-construction
-    it() a constructor expecting two iterators specifying
-a range of tt(unordered_map::value_type) objects, and 
-    it() a constructor expecting an tt(initializer_list) of
-tt(unordered_map::value_type) values.
-    )
-
-The hashed key type is almost always text. So, a tt(unordered_map) using a
-tt(std::string key_type) is encountered most often. Be careful not to use a
-plain tt(char const * key_type) as two tt(char const *) values pointing to
-equal bf(C)-strings stored at different locations are considered to be
-different keys, as their pointer values rather than their textual contents are
-compared (see the above example for a solution).
-
-    The next example shows a program using an unordered_map containing the
-names of the months of the year and the number of days these months (usually)
-have. Then, using the subscript operator the days in several months are
-displayed (the predicate used here is the generic algorithm
-tt(equal_to<string>), which is provided by the compiler as the default fourth
-argument of the tt(unordered_map) constructor:
-        verbinclude(examples/hash.cc)
-
-The tt(unordered_map) provides the following
- hi(unordered_map: member functions) member functions (tt(key_type,
-value_type) etc. refer to the types defined by the tt(unordered_map)):
-        itemization(
-        ithtq(at)(mapped_type &at(key_type const &key))
-            (returns a reference to the unordered_map's tt(mapped_type)
-associated with tt(key). If the key is not stored in the tt(unordered_map) an
-tt(std::out_of_range) exception is thrown.)
-        ithtq(begin)(unordered_map::iterator begin())
-            (returns an i(iterator) pointing to the first
-element in the unordered_map, returning tt(end) if the unordered_map is empty.)
-        ithtq(bucket)(size_t bucket(key_type const &key)):
-            (returns the index location where tt(key) is stored. If
-tt(key) wasn't stored yet tt(bucket) adds tt(value_type(key, Value())) before
-returning its index position.)
-        ithtq(bucket_count)(size_t bucket_count())
-            (returns the number of slots used by the containers. Each slot may
-contain one (or more, in case of collisions) tt(value_type) objects.)
-        ithtq(bucket_size)(size_t bucket_size(size_t index))
-            (returns the number of tt(value_type) objects stored at bucket
-position tt(index).)
-        ithtq(cbegin)(unordered_map::const_iterator cbegin())
-            (returns a i(const_iterator) pointing to the first 
-element in the unordered_map, returning tt(cend) if the unordered_map is empty.)
-        ithtq(cend)(unordered_map::const_iterator cend())
-            (returns a i(const_iterator) pointing just beyond the
-unordered_map's last element.)
-        ithtq(clear)(void clear())
-            (erases all the unordered_map's elements.)
-        ithtq(count)(size_t count(key_type const &key))
-            (returns the number of times a tt(value_type) object using
-tt(key_type) tt(key) is stored in the tt(unordered_map) (which is either one
-or zero).)
-        ithtq(emplace)
-                (pair<iterator, bool> emplace(Args &&...args))
-            (a tt(value_type) object is constructed from tt(emplace)'s
-arguments. If the tt(unordered_map) already contained an object using the same
-tt(key_type) value, then a tt(std::pair) is returned containing an iterator
-pointing to the object using the same tt(key_type) value and the value
-tt(false). If no such tt(key_type) value was found, the newly constructed
-object is inserted into the tt(unordered_map), and the returned tt(std::pair)
-contains an iterator pointing to the newly inserted inserted tt(value_type)
-as well as the value tt(true).)
 
 
-        ithtq(emplace_hint)(void emplace_hint(Args &&...args))
-            (a tt(value_type) object is constructed from the member's 
-arguments, and the newly created element is inserted beyond the unordered_map's last
-element.)
-        itht(empty)(bool empty())
-            quote(returns tt(true) if the unordered_map contains no
-elements.)
-        itht(end)(unordered_map::iterator end()):
-            quote(returns an iterator pointing beyond the last
-element in the unordered_map.)
-        itht(erase)(unordered_map::iterator erase()):
-            quote(erases a specific range of elements in the unordered_map:)
-            itemization(
-            itt(erase(pos)) erases the element pointed to by the iterator
-tt(pos). The iterator tt(++pos) is returned.
-            itt(erase(first, beyond)) erases elements indicated by the iterator
-range rangett(first, beyond), returning tt(beyond).
-            )
-        itht(front)(Type &front()):
-            quote(returns a reference to the first element in the
-unordered_map. It is the responsibility of the programmer to use the member only if
-the unordered_map is not empty.)
-        ithtq(get_allocator)(allocator_type get_allocator() const)(returns a
-copy of the allocator object used by the tt(unordered_map) object.)
-        itht(insert)(... insert()):
-            quote(elements may be inserted starting at a certain position. The
-return value depends on the version of tt(insert()) that is called:)
-            itemization(
-            itt(unordered_map::iterator insert(pos)) inserts a default value of type
-tt(Type) at tt(pos), tt(pos) is returned.
-            itt(unordered_map::iterator insert(pos, value)) inserts tt(value) at
-tt(pos), tt(pos) is returned.
-            itt(void insert(pos, first, beyond)) inserts the elements in the
-                i(iterator range) rangeti(first, beyond).
-            itt(void insert(pos, n, value)) inserts tt(n) elements having value
-tt(value) at position tt(pos).
-            )
-        ithtq(max_size)(size_t max_size())(returns the maximum number of
-elements this tt(unordered_map) may contain.
-        itht(pop_back)(void pop_back()):
-            quote(removes the last element from the unordered_map. With
-an i(empty unordered_map) nothing happens.)
-        itht(push_back)(void push_back(value)):
-            quote(adds tt(value) to the end of the unordered_map.)
-        itht(rbegin)(unordered_map::reverse_iterator rbegin()):
-            quote(hi(reverse_iterator) this member returns an iterator
-pointing to the last element in the unordered_map.)
-        itht(rend)(unordered_map::reverse_iterator rend()):
-            quote(returns an iterator pointing before the first
-element in the unordered_map.)
-        itht(reserve)(void reserve(size_t request)):
-            quote(if tt(request) is less than or equal to tt(capacity), this
-call has no effect. Otherwise, it is a request to allocate additional
-memory. If the call is successful, then tt(capacity) returns a value of at
-least tt(request). Otherwise, tt(capacity) is unchanged. In either case,
-tt(size)'s return value won't change, until a function like tt(resize) is
-called, actually changing the number of accessible elements.)
-        itht(resize)(void resize()):
-            quote(can be used to alter the number of elements that
-are currently stored in the unordered_map:)
-            itemization(
-            itt(resize(n, value)) may be used to resize the unordered_map to a size
-of tt(n). tt(Value) is optional. If the unordered_map is expanded and tt(value) is
-not provided, the additional elements are initialized to the i(default value)
-of the used data type, otherwise tt(value) is used to initialize extra
-elements.
-            )
-        ithtq(shrink_to_fit)(void shrink_to_fit())(optionally reduces the
-amount of memory allocated by a unordered_map to its current size. The
-implementor is free to ignore or otherwise optimize this request. In order to
-guarantee a `shrink to fit' operation
-tt(unordered_map<Type>(unordered_mapObject).swap(unordered_mapObject)) idiom can be used.
-        itht(size)(size_t size()):
-            quote(returns the number of elements in the unordered_map.)
-        itht(swap)(void swap()):
-            quote(swaps two unordered_maps using identical data types. Example:)
-        verb(
-    #include <iostream>
-    #include <unordered_map>
-    using namespace std;
 
-    int main()
-    {
-        unordered_map<int> v1(7);
-        unordered_map<int> v2(10);
 
-        v1.swap(v2);
-        cout << v1.size() << " " << v2.size() << '\n';
-    }
-    /*
-        Produced output:
-    10 7
-    */
-        )
-        )
-    )
+
+
+
+
 
 
