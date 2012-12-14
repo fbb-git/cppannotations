@@ -23,7 +23,7 @@
     {
         unordered_map<char const *, int, HashCp, EqualCp> months;
         // or explicitly:
-            unordered_map<char const *, int, HashCp, EqualCp> 
+            unordered_map<char const *, int, HashCp, EqualCp>
                                       monthsTwo(61, HashCp(), EqualCp());
 
         months["april"] = 30;

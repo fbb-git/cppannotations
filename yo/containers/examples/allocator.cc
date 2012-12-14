@@ -6,7 +6,7 @@ using namespace std;
 
 int main()
 {
-    vector<string> vs;    
+    vector<string> vs;
 
     auto allocator = vs.get_allocator();        // get the allocator
 
