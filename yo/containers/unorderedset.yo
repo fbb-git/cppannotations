@@ -1,5 +1,106 @@
 The em(set) container, like the tt(map) container, orders its elements. If
-ordering is not an issue, but fast lookups are, then a hash-based sets and/or
+ordering is not an issue, but fast lookups are, then a hash-based set and/or
 multi-set may be preferred. The C++ standard has added such hash-based sets and
-multi-sets to the language. Before using these hash-based set containers the
-header file tthi(unordered_set) must have been included.
+multi-sets to the language: the ti(unordered_set) and tt(unordered_multiset). 
+
+Before using these hash-based set containers the header file
+tthi(unordered_set) must have been included.
+
+Elements stored in the tt(unordered_set) are immutable, but they can be
+inserted and removed from the container. Different from the tt(unordered_map),
+the tt(unordered_set) does not use a tt(ValueType). The set merely stores
+elements, and the stored element itself is its own key.
+
+The tt(unordered_set) has the same constructors as the tt(unordered_map), but
+the set's tt(value_type) is equal to its tt(key_type). 
+
+When defining an ti(unordered_set) type four template arguments must be
+specified :
+    itemization(
+    it() a i(KeyType) (becoming ti(unordered_set::key_type)), 
+    it() the type of an object computing a hash value from a key value
+        (becoming ti(unordered_set::hasher)), and
+    it() the type of an object that can compare two keys for equality (becoming
+        ti(unordered_set::key_equal)).
+    it() the type of its allocator. This is usually left unspecified, using
+        the allocator provided by default by the implementor.
+    )
+
+The generic definition of an tt(unordered_set) container looks like this:
+    verb(
+    std::unordered_set <KeyType, hash type, predicate type, allocator type>
+    )
+    When tt(KeyType) is tt(std::string) or a built-in type then default types
+are available for the hash type and the predicate type. In practice the
+allocator type is not specified, as the default allocator suffices.  In these
+cases an tt(unordered_set) object can be defined by merely specifying the key-
+and value types, like this:
+        verb(
+    std::unordered_set<std::string> rawSet(size_t size = implSize);
+        )
+    Here, tt(implSize) is the container's default initial size, which is
+specified by the implementor. The set's size is automatically enlarged when
+necessary, in which case the container em(rehashes) all its elements. In
+practice the default tt(size) argument provided by the implementor is
+completely satisfactory.
+
+
+The tt(unordered_set) supports the following constructors:
+    itemization(
+    itt(explicit unordered_set(size_type n = implSize,
+                         hasher const &hf = hasher(),
+                         key_equal const &eql = key_equal(),
+                         allocator_type const &alloc = allocator_type())):
+        this constructor can also be used as default constructor;
+    itt(unordered_set(unordered_set const &other)): copy-constructor;
+    it(unordered_set(unordered_set &&tmp)) move-constructor;
+    it(unordered_set(const_iterator begin, 
+                    const_iterator end, 
+                    size_type n = implSize, hasher const &hf = hasher(),
+                    key_equal const &eql = key_equal(),
+                    allocator_type const &alloc = allocator_type())):
+        this constructor expects two iterators specifying
+a range of tt(unordered_set::value_type const) objects, and 
+    it(unordered_set(initializer_list<value_type> initList,
+                    size_type n = implSize, hasher const &hf = hasher(),
+                    key_equal const &eql = key_equal(),
+                    allocator_type const &alloc = allocator_type())): 
+            a constructor expecting an tt(initializer_list) of
+            tt(unordered_set::value_type) values.
+    )
+
+
+The tt(unordered_set) does not offer an index operator, and it does not offer
+an tt(at) member. Other than those, it offers the same members as the
+tt(unordered_map). Below the members whose behavior differs from the behavior
+of the tt(unordered_map) are discussed. For a description of the remaining
+members, please refer to section ref(UMAPMEMBERS).
+
+
+
+        itemization(
+        ithtq(emplace)
+                (iterator emplace(Args &&...args))
+            (a tt(value_type) object is constructed from tt(emplace)'s
+arguments. It is added to the set if it is unique, and an iterator to the
+tt(value_type) is returned.)
+        ithtq(emplace_hint)(iterator emplace_hint(const_iterator position,
+                            Args &&...args))
+            (a tt(value_type) object is constructed from the member's
+arguments, and if the newly created element is unique it is inserted into the
+tt(unordered_set). The
+implementation may or may not use tt(position) as a em(hint) to start looking
+for an insertion point. The returned tt(iterator) points to the
+tt(value_type).)
+        ithtq(erase)(unordered_set::iterator erase())
+            (erases a specific range of elements in the unordered_set:)
+            itemization(
+            itt(erase(key_type const &key)) erases tt(key) from the set. An
+iterator pointing to the next element is returned.
+            itt(erase(pos)) erases the element pointed to by the iterator
+tt(pos). The iterator tt(++pos) is returned.
+            itt(erase(first, beyond)) erases elements indicated by the iterator
+range rangett(first, beyond), returning tt(beyond).
+            )
+        )
+
