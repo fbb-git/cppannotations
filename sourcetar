@@ -10,16 +10,16 @@ cd -P ..
 
 tgz()
 {
-    ln -s c++annotations ${DISTRIBUTION}    # distribution's dir name
+    ln -s ${PROJECT} ${DISTRIBUTION}    # distribution's dir name
 
-    tar czvf $1 --exclude-from=c++annotations/excluded  ${DISTRIBUTION}/*
+    tar czvf $1 --exclude-from=${PROJECT}/excluded  ${DISTRIBUTION}/*
 
     rm ${DISTRIBUTION}                      # rm the link
 }
 
 case "$1" in 
     (d)
-        tgz ${HOME}/debian/${PROJECT}/tarballs/c++-${PROJECT}_${VERSION}.orig.tar.gz
+        tgz ${HOME}/git/tarballs/c++-${PROJECT}_${VERSION}.orig.tar.gz
     ;;
 
     (l|u)
@@ -30,6 +30,7 @@ case "$1" in
             scp c++-${PROJECT}_${VERSION}.tar.gz \
                                         oosix:ftp/debian/${PROJECT}
             md5sum c++-${PROJECT}_${VERSION}.tar.gz
+            rm c++-${PROJECT}_${VERSION}.tar.gz
         fi
     ;;
 
@@ -37,7 +38,7 @@ case "$1" in
         echo "
 Provide arg:
     d (debian) to create a local .orig.tar.gz archive in 
-               ../debian/${PROJECT}/tarballs
+               ${HOME}/git/tarballs/c++-${PROJECT}_${VERSION}.orig.tar.gz
     l (local)  to create ${PROJECT}_${VERSION}.tar.gz in this directory
     u (upload) same as 't', but upload to oosix and show MD5 hash
 "
