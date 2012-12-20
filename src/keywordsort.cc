@@ -15,6 +15,7 @@ using namespace FBB;
 
 string keywords = 
 
+"alignas "
 "alignof and compl explicit new requires typedef and_eq concept extern not "
 "bool delete if private switch void break do inline protected template "
 "volatile "
@@ -25,6 +26,7 @@ string keywords =
 "short typeid asm const false not_eq signed typename auto const_cast float "
 "try xor_eq constexpr import export "
 "while char else mutable reinterpret_cast true xor class enum namespace "
+"char16_t char32_t noexcept static_assert thread_local "
 "return" ;
 
 struct Support: public TableSupport
