@@ -10,9 +10,9 @@ int main()
 
     auto allocator = vs.get_allocator();        // get the allocator
 
-    string *sp = allocator.allocate(3);         // allocate 4 strings
+    string *sp = allocator.allocate(3);         // alloc. space for 3 strings
 
-    allocator.construct(&sp[0], "hello world"); // allocate 1st string
+    allocator.construct(&sp[0], "hello world"); // initialize 1st string
     allocator.construct(&sp[1], sp[0]);         // use the copy constructor
     allocator.construct(&sp[2], 12, '=');       // string of 12 = chars
 
