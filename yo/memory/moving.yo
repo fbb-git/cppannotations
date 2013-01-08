@@ -56,13 +56,33 @@ tt(fun(Class const &)) is called, and (as expected) tt(gun(Class const &)) is
 now called.
     verbinclude(examples/moving.cc)
 
-It is pointless to define a
- hi(function: returning rvalue reference) function having an rvalue reference
-return type. The compiler decides whether or not to use an overloaded member
-expecting an rvalue reference on the basis of the provided argument. If it is
-an anonymous temporary it calls the function defining the rvalue reference
-parameter, if such a function is available.
+Generally it is pointless to define a
+ hi(function: returning rvalue reference) function having an 
+ i(rvalue reference return type). The compiler decides whether or not to use
+an overloaded member expecting an rvalue reference on the basis of the
+provided argument. If it is an anonymous temporary it calls the function
+defining the rvalue reference parameter, if such a function is available. A
+rvalue reference return type is used, e.g., with the tt(std::move) call, to
+keep the rvalue reference nature of its argument, which is known to be a
+temporary anonymous object. Such a situation can be exploited also in a
+situation where a temporary object is passed to (and returned from) a function
+which must be able to modify the temporary object. The alternative, passing a
+tt(const &), is less attractive as it requires a tt(const_cast) before the
+object can be modified. Here is an example:
+        verb(
+    std::string &&doubleString(std::string &&tmp)
+    {
+        tmp += tmp;
+        return std::move(tmp);
+    }
+        )
+    This allows us to do something like
+        verb(
+    std::cout << doubleString(std::string("hello "));
+        )
+    to insert tt(hello hello ) into tt(cout).
 
 The compiler, when selecting a function to call applies a fairly simple
 algorithm, and also considers copy elision. This is covered shortly (section
 ref(RVO)).
+

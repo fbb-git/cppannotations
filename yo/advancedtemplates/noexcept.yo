@@ -1,0 +1,130 @@
+When throwing exceptions while trying to achieve the strong guarantee a
+function's actions are usually split in two parts
+    itemization(
+    it() First, usually on a temporary object, all operations that may throw
+are performed (which doesn't affect the target object)
+    it() Then, the target object is modified using operations that offer the
+em(nothrow) guarantee.
+    )
+
+    The actions in the first step might be made em(move aware) by using
+tt(std::move) (e.g., to assign the source's values to a (possibly temporary)
+destination. However, using tt(std::move) can easily affect the source (e.g.,
+when extending the source's memory, moving the existing data to its new
+locations), which breaks the first step's assumption, as the target object is
+now modified. 
+
+In this case (and generally) the move operation should not be allowed to throw
+exceptions. This, in turn, implies that it is difficult to write code which
+must offer a non-throwing moving constructor, if it uses (external) 
+data types over which the moving constructor has no control. E.g.,
+        verb(
+    template <typename Type>
+    class MyClass
+    {
+        Type d_f;
+        public:
+            MyClass() = default;
+            MyClass(MyClass &&tmp)
+            :
+                d_f(move(tmp.d_f))
+            {}
+    };
+        )
+    Here, tt(MyClass)'s author has no control over the design of tt(Type). If
+tt(Foreign) merely has a (possibly throwing) copy constructor, then the
+following code breaks the no-throw assumption underlying move constructors:
+        verb(
+    MyClass<Foreign> s2(move(MyClass<Foreign>()));
+        )
+    COMMENT(see examples/moving.cc)
+
+If templates are able to detect whether tt(Type) has non-throwing move
+constructors then their implementations may be optimized by
+calling these move constructors (already modifying their targets in the first
+part of code offering the strong guarantee) in situations where otherwise the
+non-modifying, but more expensive copy constructor has to be used.
+
+The ti(noexcept) keyword was introduced to allow such templates to perform
+such optimizations. As with tt(throw) lists, checking for tt(noexcept) is
+a run-time check, but the consequence of violating a tt(noexept) declaration
+are more serious than violating a tt(throw) list: violating tt(noexcept)
+results in calling tt(std::terminate), terminating the program, possibly
+without unwinding the stack. In the context of the previous example, the
+following code is flawlessly accepted by the compiler, demonstrating that
+there is no compile-time checking of tt(noexcept):
+        verb(
+    class Foreign
+    {
+        public:
+            Foreign() = default;
+            Foreign(Foreign const &other) noexcept
+            {
+                throw 1;
+            }
+    };
+        )
+    However, when this class's copy constructor is called, execution aborts
+with the following message:
+        verb(
+    terminate called after throwing an instance of 'int'
+    Abort
+        )
+
+Keep in mind that the current purpose of tt(noexcept) is to allow templates to
+optimize their code by using move operations where the code must also be able
+to offer the string exception guarantee. Since tt(noexcept) also offers the
+conditional tt(noexcept(condition)) syntax (with tt(noexcept(true)) and
+tt(noexcept) having identical semantics), tt(noexcept) can be made
+conditional to the `noexcepting' nature of template types. Note that this is
+not possible with tt(throw) lists. 
+
+The following hi(rule of thumb) rules of thumb by be used to decide whether or
+not to use tt(noexcept) in your code:
+    itemization(
+    it() General rule: don't use tt(noexcept) (this is identical to the advise
+        given for tt(throw) lists);
+    it() Default implementations of constructors, copy- and move-assignment
+        operators and destructors are provided with tt(noexcept(true)) if the
+        compiler can deduct that composing types also offer
+        tt(noexcept(true)), allowing template optimizations using move
+        operations where possible.
+    it() Functions provided with tt(noexcept) declarations may em(still) throw
+        exceptions (see the example given above). In the end tt(noexcept)
+        merely means that if such a function throws an exception
+        tt(std::terminate) rather than tt(std::unexpected) is called. 
+    it() Functions previously provided with an empty throw list (tt(throw())
+        should now be provided with tt(noexcept(true)).
+    it() tt(noexcept) specifications are required when using the following std
+        traits (declared in the tthi(type_traits) header file):
+        itemization(
+        iti(is_nothrow_constructible)
+        iti(is_nothrow_default_constructible)
+        iti(is_nothrow_move_constructible)
+        iti(is_nothrow_copy_constructible)
+        iti(is_nothrow_assignable)
+        iti(is_nothrow_move_assignable)
+        iti(is_nothrow_copy_assignable)
+        iti(is_nothrow_destructible)
+        )
+        These type traits provide the member constant tt(value) which is
+        tt(true) if the class (and possibly its argument type list) matches
+        the characteristic after which the trait was named. E.g., if
+        tt(MyClass(string const &) noexcept) is a constructor, then
+            verb(
+        std::is_nothrow_constructible<MyClass, string>::value
+            )
+        equals tt(true). For the named members (like
+        tt(is_nothrow_move_constructible) parameter types do not have to be
+        specified, as they are implied. E.g.,
+            verb(
+        std::is_nothrow_move_constructible<MyClass>::value
+            )
+        returns tt(true) if the move constructor has the tt(noexcept)
+        modifier. 
+
+            
+
+    )
+
+
