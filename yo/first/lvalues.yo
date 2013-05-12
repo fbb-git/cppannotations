@@ -34,3 +34,26 @@ values:
     )
 
     
+
+[ Note: An expression is an xvalue if it is:
+   -- the result of calling a function, whether implicitly or explicitly, whose return type is an rvalue reference
+      to object type,
+   -- a cast to an rvalue reference to object type,
+   -- a class member access expression designating a non-static data member of non-reference type in which
+      the object expression is an xvalue, or
+   -- a .* pointer-to-member expression in which the first operand is an xvalue and the second operand is
+      a pointer to data member.
+In general, the effect of this rule is that named rvalue references are treated as lvalues and unnamed rvalue
+references to objects are treated as xvalues; rvalue references to functions are treated as lvalues whether
+named or not. -- end note ]
+
+ Example:
+  struct A {
+    int m;
+  };
+  A&& operator+(A, A);
+  A&& f();
+  A a;
+  A&& ar = static_cast<A&&>(a);
+The expressions f(), f().m, static_cast<A&&>(a), and a + a are xvalues. The expression ar is an lvalue.
+-- end example ]
