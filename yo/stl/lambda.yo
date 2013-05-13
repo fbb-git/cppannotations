@@ -1,133 +1,173 @@
-The C++11 standard has added hi(lambda function) em(lambda functions) to
-bf(C++). As we've seen generic algorithms often accept an argument that can
-either be a function object or it can be a plain function. Examples are the
-tt(sort) and tt(find_if) generic algorithms. When the function called by the
-generic algorithm must remember its state a function object is appropriate,
-otherwise a plain function can be used.
+The C++11 standard has added hi(lambda expression) em(lambda expressions) to
+the language. As we've seen generic algorithms often accept an argument that
+can either be a function object or it can be a plain function. Examples are
+the tt(sort) and tt(find_if) generic algorithms. When the function called by
+the generic algorithm must remember its state a function object is
+appropriate, otherwise a plain function can be used.
 
 The function or function object is usually not readily available. Often it
 must be defined in or near the location where the generic algorithm is used.
-The software engineer usually accomplished this by defining a class or
-function in the anonymous namespace, passing an object of that class or
-passing that function to a generic algorithm called from some other
-function. If the latter function is itself a member function the need may be
-felt to grant the function called by the generic algorithm access to other
-members of its class. Often this results in a significant amount of code
-(defining the class); or it results in complex code (to make available
-software elements that aren't automatically accessible from the called
-function (object)); and it may result -at the level of the source file- in
-code that is irrelevant at the current level of specification. Nested classes
-don't solve these problems and nested classes can't be used in templates.
+Usually this is accomplished by defining a class or function in the anonymous
+namespace, passing an object of that class or passing that function to a
+generic algorithm called from some other function. If the latter function is
+itself a member function the need may be felt to grant the function called by
+the generic algorithm access to other members of its class. Often this results
+in a significant amount of code (defining the class), or it results in complex
+code (to make available software elements that aren't automatically accessible
+from the called function (object)). It may also result in code that is
+irrelevant at the current level of specification. Nested classes don't solve
+these problems and nested classes can't be used in templates.
 
-A i(lambda function) is an
-    i(anonymous function)hi(function: anonymous). Such a function may be
-defined on the spot and exists only during the lifetime of the statement
-of which it is a part.
+A i(lambda expression) defines an
+    i(anonymous function object)hi(function object: anonymous), also called a
+    emi(closure object). When a lambda expression is evaluated it results in a
+temporary object (the closure object). The type of a closure object is called
+its emi(closure type). 
 
-Here is an example of a lambda function:
+Lambda expressions may be used inside blocks, classes or namespaces (i.e.,
+pretty much anywhere you like). Their implied closure type is defined in the
+smallest block, class or namespace scope which contains the lamba
+expression. The closure object's visibility starts at its point of definition
+and ends where its closure type ends.
+
+The closure type defines a (tt(const)) public inline function call
+operator. Here is an example of a lambda expression:
+    hi(lambda-introducer)
+    hi(lambda-declarator)
         verb(
-    [](int x, int y)
-    {
+    []                      // the `lambda-introducer'
+    (int x, int y)          // the `lambda-declarator'
+    {                       // a normal compound-statement
         return x * y;
     }
         )
-    This particular function expects two tt(int) arguments and returns their
-product. It could be used e.g., in combination with the tt(accumulate) generic
-algorithm  to compute the product of a series of tt(int) values stored in a
-vector:
+    The function call operator of the closure object created by this lambda
+expression expects two tt(int) arguments and returns their product. It is an
+inline tt(const) member of the closure type. To drop the tt(const) attribute,
+the lamba expression should specify tt(mutable), as follows:
+        verb(
+    [](int x, int y) mutable
+    ...
+        )
+    The lambda-declarator may be omitted, if it does not contain
+parameters. The parameters in a lamba declarator may not be provided with
+default arguments.
+
+ A closure object as defined by the above lamda expression could be used e.g.,
+in combination with the tt(accumulate) generic algorithm to compute the
+product of a series of tt(int) values stored in a vector:
         verb(
     cout << accumulate(vi.begin(), vi.end(), 1,
                 [](int x, int y) { return x * y; });
         )
     The above lambda function uses the implicit return
         hi(return type: implicit)
-    type tt(decltype(x * y)). An implicit return type can
-only be used if the lambda function has a single statement of the form
-    tt(return expression;).
+    type tt(decltype(x * y)). An implicit return type can be used if the
+lambda expression does not contain a tt(return) stattement (i.e., a void
+lambda expression), if it contains a single tt(return) statement, or if it
+contains multiple tt(return) statements returning values of identical types
+(e.g., all tt(int) values). 
 
-    Alternatively, the return type can be explicitly specified using a
+    If there are multiple tt(return) statements returning values of different
+types then the lambda expression's return type must specified be explicitly
+using a
         hi(return type: late-specified)i(late-specified return type),
 (cf. section ref(AUTO)):
         verb(
     [](int x, int y) -> int
     {
-        int z = x + y;
+        if (y < 0)
+            return x / static_cast<double>(y);
+
         return z + x;
     }
         )
-    There is no need to specify a return type for lambda functions that do
-not return values (i.e., a void lambda function).
 
-    Variables having the same scope as the lambda function can be accessed
-from the lambda function using references, declared in between the lambda
-function's square brackets. This allows passing the
-    i(local context) to lambda functions. Such variables are called a
-emi(closure). Here is an example:
+    Variables that are visible at the location of a lambda expression can be
+accessed by the lambda expression. How these variables are accessed depends on
+the contents of the lambda-introducer (the area between the square brackets,
+called the the emi(lambda-capture)). The lambda-capture allows passing a
+    i(local context) to lambda expressions. 
+
+    Visible global and static variables as well as local variables defined in
+the lambda expression's compound statement itself can directly be accessed
+and, if applicable, modified. Example:
         verb(
-    void showSum(vector<int> &vi)
+    int global;
+    
+    void fun()
+    {
+        []()  // [] may contain any specification
+        { 
+            int localVariable = 0;
+            localVariable = ++global; 
+        };
+    }
+        )
+
+    If the lambda expression is defined within a (non-static) class member
+function then an initial tt(&) or tt(=) character in the lambda-capture
+enables tt(this), allowing the lambda expression access to all class members
+(data and functions).  The class's data members can be modified.
+
+    If the lambda expression is defined inside a function then that function's
+local variables that are visible at the point of the lambda expression's
+definition can be accessed by the lambda expression.
+
+    An initial tt(&) character in the lambda-capture accesses these local
+variables by reference. These variables can be modified from within the lambda
+expression.
+
+    An initial tt(=) character in the lambda-capture creates a local copy of
+the referred-to local variables. Furthermore, in this case the values of these
+local copies can only be changed by the lambda expression if the lambda
+expression is defined using the tt(mutable) keyword. E.g.,
+        verb(
+    struct Class
+    {
+        void fun()
+        {
+            int var = 0;
+            [=]() mutable
+            {
+                ++var;  // modifies the local
+            }           // copy, not fun's var
+        }
+    }
+        )
+
+    Fine-tuning is also possible. With an initial tt(=), comma-separated
+tt(&var) specifications indicate that the mentioned local variables should be
+processed by reference, rather than as copies; with an initial tt(&), comma
+separated tt(var) specifications indicate that local copies should be used of 
+the mentioned local variables. Again, these copies have immutable values
+unless the lambda expression is provided with the tt(mutable) keyword. 
+
+Here is an example:
+        verb(
+    void showSum(vector<int> const &vi)
     {
         int total = 0;
         for_each(
             vi.begin(), vi.end(),
-            [&total](int x)
+            [&](int x)
             {
                 total += x;
             }
         );
-        std::cout << total;
+        std::cout << total << '\n';
     }
         )
-    The variable tt(int total) is passed to the lambda function as a reference
-(tt([&total])) and can directly be accessed by the function. Its parameter
-list merely defines an tt(int x), which is initialized in sequence by each of
-the values stored in tt(vi). Once the generic algorithm has completed
-tt(showSum)'s variable tt(total) has received a value that is equal to the sum
-of all the vector's values. It has outlived the lambda function and its value
-is displayed.
+    The variable tt(int total) is passed to the lambda expression by reference
+and is directly accessed by the function. Its parameter list merely defines an
+tt(int x), which is initialized in sequence by each of the values stored in
+tt(vi). Once the generic algorithm has completed tt(showSum)'s variable
+tt(total) has received a value that is equal to the sum of all the vector's
+values. It has outlived the lambda expression and its value is displayed.
 
-    If a closure variable is defined without the reference symbol (tt(&)) it
-is interpreted as a value parameter of the lambda function that is initialized
-by the local variable when the lambda function is passed to the generic
-algorithm. Usually closure variables are passed by reference. If em(all) local
-variables are to be passed by reference a mere ti([&]) can be used (to
-pass the full closure by value ti([=]) should be used):
-        verb(
-    void show(vector<int> &vi)
-    {
-        int sum = 0;
-        int prod = 1;
-        for_each(
-            vi.begin(), vi.end(),
-            [&](int x)
-            {
-                sum += x;
-                prod *= x;
-            }
-        );
-        std::cout << sum << ' ' << prod;
-    }
-        )
-    COMMENT(
-The specific internal implementation can vary, but the expectation is that the
-lambda function will store the actual stack pointer of the function it is
-created in, rather than individual references to stack variables.
-    END )
-
-    It is also possible to pass some variables to lambda function by value and
-other variables by reference.  In that case the default is specified using
-tt(&) or tt(=). This default specifying symbol is then followed by a list of
-variables passed differently. Example:
-        verb(
-    [&, value](int x)
-    {
-        total +=  x * value;
-    };
-        )
-    Here  tt(total) is passed by reference, tt(value) by value.
-
-    Class members may also define lambda functions. Such lambda functions have
-full access to all the class's members. In other words, they are automatically
-defined as friends of the class. Example:
+Another fine-tuning consists of specifying tt(this) in the lambda-capture: it
+also allows the lambda-expression to access the surrounding class members.
+Example:
         verb(
     class Data
     {
@@ -139,36 +179,65 @@ defined as friends of the class. Example:
                 std::for_each(d_names.begin(), d_names.end(),
                     [this, &count](std::string const &name)
                     {
-                        std::cout << ++count <<
-                            this->capitalized(name) << '\n';
+                        std::cout << ++count << ' ' <<
+                            capitalized(name) << '\n';
                     }
                 );
             }
         private:
-            std::string capitalized(std::string const &name);
+            std::string capitalized(std::string name);
     };
         )
-    Note the use of the tt(this) pointer: inside the lambda function it must
-explicitly be used (so,nl()
-        tt(this->capitalized(name)) is used rather than
-tt(capitalized(name))). In addition, in situations like these tt(this)
-is automatically available when either tt([&]) or tt([=]) is used. So,
-the above lambda function can also be be defined as:
+
+    Lambda expressions may also be assigned to variables. An example of such
+an assignment (using tt(auto) to define the variable's type) is:
         verb(
-                    [&](std::string const &name)
+    auto sqr = [](int x)
+               {
+                   return x * x;
+               };
+        )
+    The lifetime of such lambda expressions is equal to the lifetime of the
+variable receiving the lambda expression as its value. Named lambda functions
+nicely fit in the niche of local functions: when a function needs to perform
+some computations that are at a conceptually lower level than the function's
+task itself, then it's attractive to encapsulate these computations in a
+separate support function, and call the support function where needed.  A
+support function can be defined in an anonymous namespace, but that quickly
+becomes awkward when the requiring function is a class member, and the support
+function needs access to the class's members as well. In that case a named
+lambda expression can be used: it can be defined within the requiring
+function, and may be given full access to the surrounding class. The name to
+which the lambda expression is assigned becomes the name of a function which
+can be called from the surrounding function. Here is an example, converting a
+numeric IP address to a dotted decimal string, which can also be accessed
+directly from an tt(Dotted) object (all implementations in-class to conserve
+space):
+        verb(
+    class Dotted
+    {
+        std::string d_dotted;
+        
+        public:
+            std::string const &dotted() const
+            {
+                return d_dotted;
+            }
+            std::string const &dotted(size_t ip)
+            {
+                auto octet = 
+                    [](size_t idx, size_t numeric)
                     {
-                        std::cout << ++count <<
-                            this->capitalized(name) << '\n';
-                    }
+                        return to_string(numeric >> idx * 8 & 0xff);
+                    };
+
+                d_dotted = 
+                        octet(3, ip) + '.' + octet(2, ip) + '.' +
+                        octet(1, ip) + '.' + octet(0, ip);
+
+                return d_dotted;
+            }
+    };
         )
 
-    Lambda functions may be assigned to variables. An example of such an
-assignment (using tt(auto) to define the variable's type) is:
-        verb(
-    auto lambdaFun = [this]()
-                     {
-                        this->member();
-                     };
-        )
-    The lifetime of such lambda functions is equal to the lifetime of the
-variable receiving the lambda function as its value.
+
