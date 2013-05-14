@@ -47,7 +47,7 @@ void Fistream::setBuffer()
 
     rdbuf(d_streambuf);                         // use istream's buffer to
     buffer[read(buffer, d_width).gcount()] = 0; // read d_width chars,
-                                                // terminated by ascii-Z
+                                                // terminated by a 0-byte
     d_iss.str(buffer);
     delete[] buffer;
 
