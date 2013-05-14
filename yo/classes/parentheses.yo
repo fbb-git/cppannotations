@@ -1,0 +1,63 @@
+Let's play some more. At some point in our program we defined tt(int b). Then,
+in a compound statement we need to construct an anonymous tt(Data) object,
+initialized using tt(b), followed by displaying tt(b):
+            verb(
+    int b = 18;
+    {
+        Data(b);
+        cout << b;
+    }
+            )
+    About that tt(cout) statement the compiler tells us (I modified the
+error message to reveal its meaning):
+
+em(error: cannot bind `std::ostream & << Data const &')
+
+Here we didn't insert tt(int b) but tt(Data b). Had we omitted the compound
+statement, the compiler would have complained about a doubly defined tt(b)
+entity, as tt(Data(b)) simply means tt(Data b), a tt(Data) object constructed
+by default. The compiler may omit superfluous parentheses when parsing a
+definition or declaration. 
+
+    Of course, the question now becomes how a temporary object tt(Data),
+initialized with tt(int b) can be defined. Remember that the compiler may
+remove superfluous parentheses. So, what we need to do is to pass an tt(int)
+to the anonymous tt(Data) object, without using the tt(int)'s name.
+    itemization(
+    it() We can use a cast: tt(Data(static_cast<int>(b)));
+    it() We can use a curly-brace initialization: tt(Data {b}).
+    )
+
+Values and types make big differences. Consider the following definitions:
+        verb(
+    Data (*d4)(int);    // 1
+    Data (*d5)(3);      // 2
+        )
+    Definition 1 should cause no problems: it's a pointer to a function,
+expecting an tt(int), returning a tt(Data) object. Hence, tt(d4) is a pointer
+variable.  
+
+    Definition 2 is slightly more complex. Yes, it's a pointer. But it has
+nothing to do with a function. So what's that argument list containing 3 doing
+there? Well, it's not an argument list. It's an initialization that looks like
+an argument list. Remember that variables can be initialized using the
+assignment statement, by parentheses or by curly parentheses. So instead of
+tt(`(3)') we could have written tt(`= 3') or tt(`{3}'). Let's pick the first
+alternative, resulting in:
+        verb(
+    Data (*d5) = 3;
+        )
+    Now we get to `play compiler' again. Removing some superfluous
+parentheses we get:
+        verb(
+    Data *d5 = 3;
+        )
+    It's a pointer to a tt(Data) object, initialized to 3 (semantically
+incorrect, but that's only clear after the syntactical analysis. If I had
+initially written
+        verb(
+     Data (*d5)(&d1);      // 2
+        )
+    the fun resulting from contrasting tt(int) and tt(3) would most likely
+have been spoiled.
+   

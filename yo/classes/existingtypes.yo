@@ -1,0 +1,45 @@
+Once a type name has been defined it also prevails over identifiers
+representing variables, if the compiler is given a choice. This, too, can
+result in interesting constructions.
+
+Assume a function tt(process) expecting an tt(int) exists in a library. We
+want to use this function to process some tt(int) data values. So in tt(main)
+tt(process) is declared and called:
+        verb(
+    int process(int Data);
+    process(argc);
+        )
+    No problems here. But unfortunately we once decided to `beautify' our
+code, by throwing in some superfluous parentheses, like so:
+        verb(
+    int process(int (Data));
+    process(argc);
+        )
+    Now we're in trouble. The compiler now generates an error, caused by its
+rule to let declarations prevail over definitions. tt(Data) now becomes the
+name of the tt(class Data), and analogous to tt(int (x)) the parameter tt(int
+(Data)) is parsed as tt(int (*)(Data)): a pointer to a function, expecting a
+tt(Data) object, returning an tt(int). 
+
+Here is another example. When, instead of declaring 
+        verb(
+    int process(int Data[10]);
+        )
+we declare, e.g., to emphasize the fact that an array is passed to
+tt(process):
+        verb(
+    int process(int (Data[10]));
+        )
+    the tt(process) function does not expect a pointer to tt(int) values, but
+a pointer to a function expecting a pointer to tt(Data) elements, returning an
+tt(int). 
+
+To summarize the findings in the `Ambiguity Resolution' section:
+    itemization(
+    it() The compiler will try to remove superfluous parentheses;
+    it() But if the parenthesized construction represents a type, it will try
+        to use the type;
+    it() More in general: when possible the compiler will interpret a
+        syntactic construction as a declaration, rather than as a definition
+        (of an object or variable).
+    )

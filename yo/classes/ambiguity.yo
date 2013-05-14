@@ -1,0 +1,94 @@
+Defining objects may result in some unexpected surprises. Assume the following
+class interface is available:
+        verb(
+    class Data
+    {
+        public:
+            Data();
+            Data(int one);
+            Data(int one, int two);
+
+            void display();
+    };
+        )
+
+The intention is to define two objects of the class Data, using, respectively,
+the first and second constructors. Your code looks like this (and compiles
+correctly):
+        verb(
+    
+    #include "data.h"
+    int main(int argc, char **argv)
+    {
+        Data d1();
+        Data d2(argc);
+    }
+        )
+
+Now it's time to make some good use of the tt(Data) objects. You add two
+statements to tt(main):
+            verb(
+        d1.display();
+        d2.display();
+            )
+    But, surprise, the compiler complains about the first of these two:
+
+em(error: request for member 'display' in 'd1', which is of non-class type
+'Data()')
+
+What's going on here? First of all, notice the data type the compiler refers
+to: tt(Data()), rather than tt(Data). What are those tt(()) doing there?
+
+Before answering that question, let's broaden our story somewhat. We know that
+somewhere in a library a emi(factory function) tt(dataFactory) exists. A
+factory function creates and returns an object of a certain type. This
+tt(dataFactory) function returns a tt(Data) object, constructed using
+tt(Data)'s default constructor. Hence, tt(dataFactory) needs no arguments. We
+want to use tt(dataFactory) in our program, but must declare the function. So
+we add the declaration to tt(main), as that's the only location where
+tt(dataFactory) will be used. It's a function, not requiring arguments,
+returning a tt(Data) object:
+            verb(
+        Data dataFactory();
+            )
+    This, however, looks remarkably similar to our tt(d1) object definition:
+            verb(
+        Data d1();
+            )
+    
+    We found the source of our problem: tt(Data d1()) apparently is em(not)
+the definition of a tt(d1) object, but the em(declaration) of a function,
+returning a tt(Data) object. So, what's happening here and how should we 
+define a tt(Data) object using tt(Data)'s default constructor?
+
+    First: what's happening here is that the compiler, when confronted with
+tt(Data d1()), actually had a choice. It could either define a tt(Data)
+object, or declare a function. It declares a function. 
+
+In fact, we're encountering an i(ambiguity) in bf(C++)'s syntax here, which is
+solved, according to the language's standard, by always letting a declaration
+prevail over a definition. We'll encounter more situations where this
+ambiguity occurs later on in this section.
+
+    Second: there are several ways of solving this ambiguity in the way we
+want it to be solved here. To define an object using its default constructor:
+    itemization(
+    it() merely mention it (like tt(int x)): tt(Data d1);
+    it() use the curly-brace initialization: tt(Data d1{});
+    it() use the assignment operator and an anonymous default constructed
+        tt(Data) object: tt(Data d1 = Data()).
+    )
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
