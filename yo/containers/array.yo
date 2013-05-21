@@ -1,0 +1,130 @@
+The ti(array) class implements a 
+    hi(array: fixed-size) i(fixed-size array).  Before using the tt(array)
+container the tthi(array) header file must have been included.
+
+    To define a tt(std::array) both the data type of its elements and its size
+must be specified: the data type is given after an opening angular bracket,
+immediately following the `tt(array)' container name. The array's size is
+provided after the data type specification. Finally, a closing angular bracket
+completes the array's type. Specifications like this are common practice with
+containers.  The combination of tt(array), type and size defines a
+em(type). As a result, tt(array<string, 4>) defines another type than
+tt(array<string, 5>), and a function explicitly defining an tt(array<Type, N>)
+parameter will not accept an tt(array<Type, M>) argument if tt(N) and tt(M)
+are unequal.
+
+The array's size may may be defined as 0 (although such an array probably has
+little use as it cannot store any element). The elements of an array are
+stored contiguously. If tt(array<Type, N> arr) has been defined, then tt(&a[n]
++ m == &a[n + m)), assuming tt(0 <= n < N) and  assuming tt(0 <= n + m < N).
+
+    The following constructors, operators, and member functions are available:
+    itemization(
+    it() hi(array constructors) Constructors:
+        itemization(
+        it() A tt(array) may be constructed with a fixed number tt(N) of
+default elements:
+        verb(
+    array<string, N> object;
+        )
+        it() An initial subset of the elements of an array may be 
+initialized using a brace delimited initializer list:
+        verb(
+    array<double, 4> dArr = {1.2, 2.4};
+        )
+    Here tt(dArr) is defined as an array of 4 element, with tt(dArr[0]) and
+tt(dArr[1]) initialized to, respectively 1.2 and 2.4, and tt(dArr[2]) and
+tt(dArr[3]) initialized to 0.  A attractive characteristic of arrays (and
+other containers) is that containers initialize hi(containers: initialization)
+their data elements to the data type's default value. The data type's
+em(default constructor) is used for this i(initialization). With non-class
+data types the value 0 is used.  So, for an tt(array<double, 4>) array we know
+that all but its explicitly initialized elements are initialized to
+zero. 
+        it() A array may be initialized using a copy constructor:
+        verb(
+    extern array<string, 5> container;
+    array<string, 5> object(container);
+        )
+        )        
+    it() In addition to the standard operators for containers, the tt(array)
+supports the i(index operator), which can be used to retrieve or reassign
+individual elements of the array. Note that the elements which are indexed
+must exist. For example, having defined an empty array a statement like
+tt(iarr[0] = 18) produces an error, as the array is empty. Note that 
+tt(operator[]) does em(not) respect its
+ i(array bounds). If you want run-time array bound checking, use the array's
+tt(at) member.
+    it() The tt(array) class offers the following
+ hi(array: member functions) member functions:
+        itemization(
+        ithtq(at)(Type &at(size_t idx))
+           (returns a reference to the array's element at index position
+            tt(idx). If tt(idx) exceeds the array's size a
+            tt(std::out_of_range) exception is thrown.)
+        ithtq(back)(Type &back())
+           (returns a reference to the last element in the array. It is the
+            i(responsibility of the programmer) to use the member only if the
+            array is not empty.)
+        ithtq(begin)(array::iterator begin())
+           (returns an i(iterator) pointing to the first
+            element in the array, returning tt(end) if the array is empty.)
+        ithtq(cbegin)(array::const_iterator cbegin())
+           (returns a i(const_iterator) pointing to the first element in the
+            array, returning tt(cend) if the array is empty.)
+        ithtq(cend)(array::const_iterator cend())
+           (returns a i(const_iterator) pointing just beyond the array's last
+            element.)
+        ithtq(crbegin)(array::const_reverse_iterator crbegin())
+           (returns a i(const_reverse_iterator) pointing to the last element
+            in the array, returning tt(crend) if the array is empty.)
+        ithtq(crend)(array::const_reverse_iterator crend())
+           (returns a i(const_reverse_iterator) pointing just before the
+            array's first element.)
+        ithtq(data)(value_type *data())
+           (returns a pointer to the array's first data element. With a const
+            array a tt(value_type const *) is returned.)
+        ithtq(empty)(bool empty())
+           (returns tt(true) if the array contains no elements.)
+        ithtq(end)(array::iterator end())
+           (returns an iterator pointing beyond the last element in the
+            array.)
+        ithtq(fill)(void fill(Type const &item))
+           (fills all the array's elements with a copy of tt(item))
+        ithtq(front)(Type &front())
+           (returns a reference to the first element in the array. It is the
+            responsibility of the programmer to use the member only if
+            the array is not empty.)
+        ithtq(rbegin)(array::reverse_iterator rbegin())
+           (hi(reverse_iterator) this member returns an iterator pointing to
+            the last element in the array.)
+        ithtq(rend)(array::reverse_iterator rend())
+           (returns an iterator pointing before the first element in the
+            array.)
+        ithtq(size)(constexpr size_t size())
+           (returns the number of elements the array contains.)
+        ithtq(swap)(void swap(<array<Type, N> &other))
+           (swaps the contents of the current and other array. The array
+            other's data type and size must be equal to the data type and size
+            of the object calling tt(swap).)
+        )
+    )
+    Using an tt(array) rather than a standard bf(C) style array offers several
+advantages:
+    itemization(
+    it() All its elements are immediately initialized;
+    it() Introspection is possible (e.g., tt(size) can be used);
+    it() The tt(array) container can be used in the context of templates,
+        there code is developed that operates on data types that become
+        available only after the code itself has been developed;
+    it() Since tt(array) supports reverse iterators, it can be immediately be
+        used with generic algorithms performing `reversed' operations (e.g.,
+        to perform a descending rather than ascending sort (cf. section
+        ref(SORT)))
+    )
+    In general, when looking for a sequential data structure, the tt(array) or
+tt(vector) (introduced in the next section) should be your `weapon of
+choice'. Only if these containers demonstrably do not fit the problem at hand
+you should use another type of container.
+
+
