@@ -57,7 +57,35 @@ an internal computation results in a value exceeding a permissible range;
 when a problem is encountered that can only be detected while the program is
 being executed.  Example: a non-integral is entered when the program's input
 expects an integral value.
+    itht(system_error)(std::system_error): a system error can be thrown when
+an error occurs that has an associated  error code. Such errors are typically
+encountered when calling low-level (like operating system)
+functions. tt(system_error) constructors accept an error code in addition to a
+textual error message. They also offer a member tt(code) returning a const
+reference to the exception's error code. Here is the class's public interface:
+        verb(
+class system_error: public runtime_error 
+{
+    public:
+        system_error(error_code ec, string const &what_arg);
+        system_error(error_code ec, char const *what_arg);
+        system_error(error_code ec);
+        system_error(int ev, error_category const &ecat,
+                     string const &what_arg);
+        system_error(int ev, error_category const &ecat,
+                     char const *what_arg);
+        system_error(int ev, error_category const &ecat);
+        error_code const &code() const noexcept;
+        char const *what() const noexcept;
+}
+        )
+    The NTBS returned by tt(what) may be formatted like this:
+        verb(
+    what_arg + ": " + code().message()
+        )
+
     itht(underflow_error)(std::underflow_error): an underflow error should be
 thrown when an arithmetic underflow is detected. Example: dividing a very
 small value by a very large value.
     )
+
