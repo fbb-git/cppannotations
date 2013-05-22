@@ -1,14 +1,144 @@
-The hi(thread)tt(std::thread) class implements a (new) thread.  Before using
-tt(Thread) objects the tthi(thread) header file must have been included.
+In bf(C++) multi threading can be realized through the use of objects of the
+class hi(thread)tt(std::thread). Each object of this class handles a separate
+em(thread of execution).
 
-tt(Thread) objects can be constructed empty (in which case no new thread is
-started yet) but they may also be given a function or function object, in
-which case the thread is started immediately.
+Before using tt(Thread) objects the tthi(thread) header file must have been
+included.
 
-Alternatively, a function or function object may be em(assigned) to an
-existing tt(thread) object causing a new thread to be launched using that
-function (object).
+Threads can be hi(thread: join) em(joined), i.e., wait until another thread
+has finished, and the em(states) of threads may be queried and controlled by a
+multi-threaded program.
 
+Each tt(thread) object represents one unique thread of execution, but its
+unique thread may be transferred to another tt(thread) object. In this
+situation there remains but a single tt(thread) object that represents the
+running thread.
+
+If a threads of execution loses its association with a tt(thread) object that
+thread is said to be hi(thread: detached) em(detached). Conversely, tt(thread)
+objects by themselves are not necessarily associated with a running thread of
+execution: following the default construction, a move operation in which a
+tt(thread) object acts as  the source tt(thread) or after detaching or joining
+threads the tt(thread) object may still exist, albeit in a state where it is
+not or no longer associated with a running thread.
+
+The class tt(thread) offers the following constructors:
+    itemization(
+    itt(thread() noexcept):
+       the default constructor creates a tt(thread) object that is not (yet)
+        associated with a running thread of execution;
+    itt(explicit thread(Fun &&fun, Args &&...args)):
+       this constructor is defined as a em(member template) (cf. section
+        ref(MEMTEMP)), using the template header tt(template <class F, class
+        ...Args>). Its first argument is a function that implements the
+        thread's actions. The notation tt(Args &&...args) indicates that any
+        number of additional arguments may follow tt(fun). These arguments are
+        then passed with their proper types and values to tt(fun). The
+        argument passed to tt(fun) may also be a function object, whose
+        function call operator then receives the tt(...args) arguments.
+
+       Function (or function object) and arguments must be 
+       emi(move constructible) (i.e., after assignment or initialization the
+        target object is equivalent to the original source, while following
+        the assignment or construction the source's state is not
+        specified). After (move-)constructing copies of tt(fun) and
+        tt(...args) the tt(thread) object has been constructed. Following the
+        tt(thread) object construction (but not as part of the construction),
+        a separately running thread of execution, associated with the just
+        constructed tt(thread) object, is started.
+
+       If the requested thread cannot be created a tt(system_error) is
+        thrown. 
+    itt(thread(thread &&tmp) noexcept):
+       The move constructor uses tt(tmp) to construct the target tt(thread)
+        object and puts tt(tmp) in the tt(thread)'s default state.
+    )
+    In the following small example a tt(thread) object is created, inserting
+the text tt(hello world) four times into tt(cout):
+        verbinclude(examples/hellothread.cc)
+
+The members of the class tt(thread) are:
+    itemization(
+    itt(void detach()):
+       requires tt(joinable) to return tt(true).  The thread for which
+        tt(detach) is called continues its execution. The (e.g., parent)
+        thread calling tt(detach) continues its execution immediately beyond
+        the tt(detach)-call.  After calling tt(object.detach()), `tt(object)'
+        no longer represents the, possibly still continuing but now detached,
+        thread of execution. It is the detached thread's implementation's
+        responsibility to release its resources when its execution ends;
+    itt(id get_id() const noexcept):
+     Returns: A default constructed id object if *this does not represent a thread, otherwise this_-
+     thread::get_id() for the thread of execution represented by *this.
+
+void join();
+     Requires: joinable() is true.
+     Effects: Blocks until the thread represented by *this has completed.
+     Synchronization: The completion of the thread represented by *this synchronizes with (1.10) the
+     corresponding successful join() return. [ Note: Operations on *this are not synchronized. -- end
+     note ]
+     Postconditions: The thread represented by *this has completed. get_id() == id().
+     Throws: system_error when an exception is required (30.2.2).
+     Error conditions:
+       -- resource_deadlock_would_occur -- if deadlock is detected or this->get_id() == std::this_-
+          thread::get_id().
+       -- no_such_process -- if the thread is not valid.
+       -- invalid_argument -- if the thread is not joinable.
+
+bool joinable() const noexcept;
+     Returns: get_id() != id()
+
+
+thread& operator=(thread&& x) noexcept;
+     Effects: If joinable(), calls terminate(). Otherwise, assigns the state of x to *this and sets x to a
+     default constructed state.
+     Postconditions: x.get_id() == id() and get_id() returns the value of x.get_id() prior to the
+     assignment.
+
+void swap(thread& x) noexcept;
+     Effects: Swaps the state of *this and x.
+
+
+
+
+30.3.2     Namespace this_thread                                                      [thread.thread.this]
+  namespace std {
+    namespace this_thread {
+       thread::id get_id() noexcept;
+       void yield() noexcept;
+       template <class Clock, class Duration>
+         void sleep_until(const chrono::time_point<Clock, Duration>& abs_time) noexcept;
+       template <class Rep, class Period>
+         void sleep_for(const chrono::duration<Rep, Period>& rel_time) noexcept;
+    }
+  }
+thread::id this_thread::get_id() noexcept;
+      Returns: An object of type thread::id that uniquely identifies the current thread of execution. No
+      other thread of execution shall have this id and this thread of execution shall always have this id. The
+      object returned shall not compare equal to a default constructed thread::id.
+void this_thread::yield() noexcept;
+      Effects: Offers the implementation the opportunity to reschedule.
+      Synchronization: None.
+template <class Clock, class Duration>
+  void sleep_until(const chrono::time_point<Clock, Duration>& abs_time) noexcept;
+      Effects: Blocks the calling thread for the absolute timeout (30.2.4) specified by abs_time.
+      Synchronization: None.
+template <class Rep, class Period>
+  void sleep_for(const chrono::duration<Rep, Period>& rel_time) noexcept;
+      Effects: Blocks the calling thread for the relative timeout (30.2.4) specified by rel_time.
+      Synchronization: None.
+
+
+
+    In the above example tt(join) is called to prevent tt(display) from being
+destroyed at the end of tt(main). Without calling tt(join) (which member is
+formally introduced below) tt(display)'s thread would still have been running
+when the main program's execution would have reached its end. At that point
+tt(display)'s destructor would have been called. However, when the destructor
+of a em(joinable thread) is called, tt(terminate) is called, forcing the
+program's abort.
+
+    
 There are several ways to end a launched thread. Currently a thread ends when
 the function called from the thread object ends. Since the tt(thread) object
 not only accepts functions but also function objects as its argument, a

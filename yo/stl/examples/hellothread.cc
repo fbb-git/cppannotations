@@ -1,0 +1,20 @@
+#include <thread>
+#include <iostream>
+
+using namespace std;
+
+// do not forget to use -lpthread with g++
+
+void fun(size_t count, char const *txt)
+{
+    for (; count--; )
+        cout << txt << '\n';
+}
+
+int main()
+{                   // runs the thread following 
+                    // the object construction
+    thread display(fun, 3, "hello world");  
+
+    display.join(); // see the text
+}
