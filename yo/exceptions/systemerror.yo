@@ -1,0 +1,50 @@
+    A ti(std::system_error) can be thrown when
+an error occurs that has an associated error code. Such errors are typically
+encountered when calling low-level (like operating system)
+functions. 
+
+Before using tt(system_error) the tthi(system_error) header file must have
+been included. 
+
+A tt(system_error) can be constructed using the standard textual description
+of the nature of the encountered error, but in addition accepts an
+emi(error_code) or emi(error_category) object (see the next two sections), 
+further specifying
+the nature of the error. The tt(error_code) and tt(error_category) classes are
+also declared in the tt(system_error) header file.
+
+In addition to the standard tt(what) member, the tt(system_error) class also
+offers a member tt(code) returning a const reference to the exception's error
+code. Here is the class's public interface:
+        verb(
+class system_error: public runtime_error 
+{
+    public:
+        system_error(error_code ec, string const &what_arg);
+        system_error(error_code ec, char const *what_arg);
+        system_error(error_code ec);
+        system_error(int ev, error_category const &ecat,
+                     string const &what_arg);
+        system_error(int ev, error_category const &ecat,
+                     char const *what_arg);
+        system_error(int ev, error_category const &ecat);
+        error_code const &code() const noexcept;
+        char const *what() const noexcept;
+}
+        )
+
+The NTBS returned by its tt(what) member may be formatted by a
+tt(system_error) object like this:
+        verb(
+    what_arg + ": " + code().message()
+        )
+
+Note that, although tt(system_error) was derived from tt(runtime_error),
+you'll lose the tt(code) member when catching a tt(std::exception) object. Of
+course, downcasting is always possible, but that's a stopgap. Therefore, if a
+tt(system_error) is thrown, a matching tt(catch(system_error const &)) clause
+should be provided (for a flexible alternative, see the class 
+    hi(Exception (Bobcat)) tt(FBB::Exception) in the author's 
+        url(Bobcat library)(http://bobcat.sourceforge.net).\
+        hi(Bobcat library)hi(http://bobcat.sourceforge.net))
+
