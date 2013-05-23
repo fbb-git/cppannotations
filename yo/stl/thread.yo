@@ -22,6 +22,7 @@ tt(thread) object acts as  the source tt(thread) or after detaching or joining
 threads the tt(thread) object may still exist, albeit in a state where it is
 not or no longer associated with a running thread.
 
+
 The class tt(thread) offers the following constructors:
     itemization(
     itt(thread() noexcept):
@@ -66,10 +67,24 @@ The members of the class tt(thread) are:
         the tt(detach)-call.  After calling tt(object.detach()), `tt(object)'
         no longer represents the, possibly still continuing but now detached,
         thread of execution. It is the detached thread's implementation's
-        responsibility to release its resources when its execution ends;
+        responsibility to release its resources when its execution ends. 
+
+        Since tt(detach) disconnects a thread from the running program, e.g.,
+        tt(main) no longer can wait for the thread's completion.  As a program
+        ends when tt(main) ends, its still running threads also stop, and
+        program may not properly complete all its threads, as demonstrated by
+        the following program: verbinclude(examples/twothreads.cc). When this
+        porgram is run, only part of the potentially generated output is
+        inserted into tt(cout), like:
+            verb(
+    leaving22: hello world
+            )
+
     itt(id get_id() const noexcept):
-     Returns: A default constructed id object if *this does not represent a thread, otherwise this_-
-     thread::get_id() for the thread of execution represented by *this.
+       If the current object does not represent a a running thread a default
+        tt(id) object is returned. Otherwise, tt(this_thread::get_id()) is
+        returned for the running thread that is associated with the object for
+        which tt(get_id) is called is returned.
 
 void join();
      Requires: joinable() is true.
@@ -101,32 +116,9 @@ void swap(thread& x) noexcept;
 
 
 
-30.3.2     Namespace this_thread                                                      [thread.thread.this]
-  namespace std {
-    namespace this_thread {
-       thread::id get_id() noexcept;
-       void yield() noexcept;
-       template <class Clock, class Duration>
-         void sleep_until(const chrono::time_point<Clock, Duration>& abs_time) noexcept;
-       template <class Rep, class Period>
-         void sleep_for(const chrono::duration<Rep, Period>& rel_time) noexcept;
-    }
-  }
-thread::id this_thread::get_id() noexcept;
-      Returns: An object of type thread::id that uniquely identifies the current thread of execution. No
-      other thread of execution shall have this id and this thread of execution shall always have this id. The
-      object returned shall not compare equal to a default constructed thread::id.
-void this_thread::yield() noexcept;
-      Effects: Offers the implementation the opportunity to reschedule.
-      Synchronization: None.
-template <class Clock, class Duration>
-  void sleep_until(const chrono::time_point<Clock, Duration>& abs_time) noexcept;
-      Effects: Blocks the calling thread for the absolute timeout (30.2.4) specified by abs_time.
-      Synchronization: None.
-template <class Rep, class Period>
-  void sleep_for(const chrono::duration<Rep, Period>& rel_time) noexcept;
-      Effects: Blocks the calling thread for the relative timeout (30.2.4) specified by rel_time.
-      Synchronization: None.
+
+
+
 
 
 

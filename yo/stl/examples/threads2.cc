@@ -3,20 +3,24 @@
 #include <unistd.h>
 
 using namespace std;
-    
+
 // do not forget to use -lpthread with g++
 
 void fun(size_t count, char const *txt)
 {
 
     for (; count--; )
-        cout << txt << endl;
+        cout << count << ": " << txt << endl;
 }
 
 int main()
-{                   // runs the thread following 
+{                   // runs the threads following 
                     // the object construction
     thread display(fun, 3, "hello world");  
+    display.detach();
 
-    display.join(); // see the text
+    thread second(fun, 3, "a second thread");  
+    second.detach();
+
+    cout << "leaving" << endl;
 }
