@@ -5,9 +5,9 @@ em(thread of execution).
 Before using tt(Thread) objects the tthi(thread) header file must have been
 included.
 
-Threads can be hi(thread: join) em(joined), i.e., wait until another thread
-has finished, and the em(states) of threads may be queried and controlled by a
-multi-threaded program.
+Threads can be em(joined), i.e., wait until another thread has finished, and
+the em(states) of threads may be queried and controlled by a multi-threaded
+program.
 
 Each tt(thread) object represents one unique thread of execution, but its
 unique thread may be transferred to another tt(thread) object. In this
@@ -21,7 +21,6 @@ execution: following the default construction, a move operation in which a
 tt(thread) object acts as  the source tt(thread) or after detaching or joining
 threads the tt(thread) object may still exist, albeit in a state where it is
 not or no longer associated with a running thread.
-
 
 The class tt(thread) offers the following constructors:
     itemization(
@@ -54,14 +53,21 @@ The class tt(thread) offers the following constructors:
        The move constructor uses tt(tmp) to construct the target tt(thread)
         object and puts tt(tmp) in the tt(thread)'s default state.
     )
-    In the following small example a tt(thread) object is created, inserting
-the text tt(hello world) four times into tt(cout):
+
+    When a tt(thread) object is destroyed while its thread of execution is
+still active, tt(terminate) is called, forcing the program's end. So, before
+calling a tt(thread) object's destructor its thread of execution must have
+been terminated. This is accomplished by ending the function which was passed
+to the tt(thread) object's constructor.
+
+    In the following example a tt(thread) object is created, inserting the
+text tt(hello world) three times into tt(cout):
         verbinclude(examples/hellothread.cc)
 
 The members of the class tt(thread) are:
     itemization(
-    itt(void detach()):
-       requires tt(joinable) to return tt(true).  The thread for which
+    ithtq(detach)(void detach())
+       (requires tt(joinable) to return tt(true).  The thread for which
         tt(detach) is called continues its execution. The (e.g., parent)
         thread calling tt(detach) continues its execution immediately beyond
         the tt(detach)-call.  After calling tt(object.detach()), `tt(object)'
@@ -79,106 +85,51 @@ The members of the class tt(thread) are:
             verb(
     leaving22: hello world
             )
-
-    itt(id get_id() const noexcept):
-       If the current object does not represent a a running thread a default
+        )
+    ithtq(get_id)(id get_id() const noexcept)
+       (If the current object does not represent a a running thread a default
         tt(id) object is returned. Otherwise, tt(this_thread::get_id()) is
         returned for the running thread that is associated with the object for
-        which tt(get_id) is called is returned.
+        which tt(get_id) is called is returned.)
+    ithtq(join)(void join())
+       (requires tt(joinable) to return tt(true).  Blocks the thread calling
+        tt(join) until the thread for which tt(join) is called has
+        completed. Following its completion the object whose tt(join) member
+        was called no longer represents a running thread, and its tt(get_id)
+        member will return the default tt(id).nl()
+       An example of its use is provided by the above example. In that example
+        tt(join) is called to prevent tt(display) from being destroyed at the
+        end of tt(main). Without calling tt(join) tt(display)'s thread would
+        still have been running by the time tt(main)'s execution would have
+        reached its end. At that point tt(display)'s destructor would have
+        been called. However, when the destructor of a em(joinable thread) is
+        called, tt(terminate) is called, forcing the program's abort.)
+    ithtq(joinable)(bool joinable() const noexcept)
+       (returns tt(object.get_id() != id()), where tt(object) is the
+        tt(thread) object for which tt(joinable) was called.)
+    ithtq(swap)(void swap(thread &other) noexcept)
+       (The states of the tt(thread) object for which tt(swap) was called and
+        tt(other) are swapped. Note that threads may be swapped as well, even
+        when their threads of execution are currently active.)
+    )
 
-void join();
-     Requires: joinable() is true.
-     Effects: Blocks until the thread represented by *this has completed.
-     Synchronization: The completion of the thread represented by *this synchronizes with (1.10) the
-     corresponding successful join() return. [ Note: Operations on *this are not synchronized. -- end
-     note ]
-     Postconditions: The thread represented by *this has completed. get_id() == id().
-     Throws: system_error when an exception is required (30.2.2).
-     Error conditions:
-       -- resource_deadlock_would_occur -- if deadlock is detected or this->get_id() == std::this_-
-          thread::get_id().
-       -- no_such_process -- if the thread is not valid.
-       -- invalid_argument -- if the thread is not joinable.
+The class tt(thread) supports the move assignment operator:
+    itemization(
+    itt(thread &operator=(thread &&tmp) noexcept):
+        If the operator's left-hand side operand (lhs) is a joinable thread,
+then tt(terminate) is called. Otherwise, tt(other)'s state is assigned to the
+operator's lhs and sets tt(other) to the thread's default constructed state.
+    )
 
-bool joinable() const noexcept;
-     Returns: get_id() != id()
-
-
-thread& operator=(thread&& x) noexcept;
-     Effects: If joinable(), calls terminate(). Otherwise, assigns the state of x to *this and sets x to a
-     default constructed state.
-     Postconditions: x.get_id() == id() and get_id() returns the value of x.get_id() prior to the
-     assignment.
-
-void swap(thread& x) noexcept;
-     Effects: Swaps the state of *this and x.
+Since the tt(tread(Fun &&fun, Args &&...args)) constructor not only accepts
+functions but also function objects as its argument, a emi(local context) may
+be passed to the function object's constructor. Here is an example of a thread
+to which a function object is passed which is provided with a local context:
+        verbinclude(examples/functorthread.cc)
+    Note the argument tt(&cout) that is passed to tt(funThread) and the
+definition tt(ostream *out) parameter of the tt(funThread)'s function call
+operator. Here tt(cout) cannot be used (in combination with a tt(ostream &out)
+parameter, since the latter parameter is not move-constructible, whereas a
+pointer em(is).
 
 
-
-
-
-
-
-
-
-
-    In the above example tt(join) is called to prevent tt(display) from being
-destroyed at the end of tt(main). Without calling tt(join) (which member is
-formally introduced below) tt(display)'s thread would still have been running
-when the main program's execution would have reached its end. At that point
-tt(display)'s destructor would have been called. However, when the destructor
-of a em(joinable thread) is called, tt(terminate) is called, forcing the
-program's abort.
-
-    
-There are several ways to end a launched thread. Currently a thread ends when
-the function called from the thread object ends. Since the tt(thread) object
-not only accepts functions but also function objects as its argument, a
-emi(local context) may be passed on to the thread. Here are two examples of
-how a thread may be started: in the first example a function is passed on to
-the thread, in the second example is is a function object. The example uses
-the thread member tt(join), discussed below:
-        verbinclude(examples/twothreads.cc)
-
-Thread objects do not implement a copy constructor but a move constructor is
-provided. Threads may be swapped as well, even if they're actually running a
-thread. E.g.,
-        verb(
-    std::thread t1(Thread());
-    std::thread t2(Thread());
-    t1.swap(t2);
-        )
-    According to the current specifications of the tt(thread) class its
-constructor should also be able to accept additional arguments (in addition to
-the function (object) handled by the thread object), but currently that
-facility does not appear to be available. Any object passed to the function
-call operator could of course also be passed using separate members or using
-the object's constructors. This is probably an acceptable makeshift solution
-until multiple arguments can be passed to the thread constructor itself (using
-perfect forwarding, cf. section ref(PERFECT)).
-
-The thread's overloaded assignment operator can also be used to start a
-thread. If the current thread object actually runs a thread it is stopped, and
-the function (object) assigned to the thread object becomes the new running
-thread. E.g.,
-        verb(
-    std::thread thr;    // no thread runs from thr yet
-    thr = Thread();     // a thread is launched
-        )
-    Threads (among which the thread represented by tt(main)) may be forced to
-wait for another threads's completion by calling the other thread's tt(join)
-member. E.g., in the following example tt(main) launches two threads and waits
-for the completion of both:
-        verb(
-    int main()
-    {
-        std::thread t1(Thread());
-        std::thread t2(Thread());
-
-        t1.join();      // wait for t1 to complete
-        t2.join();      // same, t2
-    }
-        )
-    The thread's member tt(detach) can be called to disassociate the current
-thread from its starting thread. When a thread has been disassociated from its
-starting thread it continues to run even after its calling thread has ended.
