@@ -1,12 +1,49 @@
+Often locks are released at the end of some action block. To simplify locking
+additional template classes
+        hi(unique_lock)tt(std::unique_lock<>) 
+    and 
+        hi(lock_guard)tt(std::lock_guard<>) 
+    are provided. At construction time the tt(mutex) type to be used must be
+specified. As their constructors (usually) lock the data and their destructors
+unlock the data they can be defined as local variables, unlocking their data
+once their scopes end.
 
-    In many situations locks will be released at the end of some action
-block. To simplify locking additional template classes
- hi(unique_lock) tt(std::unique_lock<>) and hi(lock_guard)
-tt(std::lock_guard<>) are provided. As their constructors lock the data and
-their destructors unlock the data they can be defined as local variables,
-unlocking their data once their scope terminates.  Here is a simple example
-showing the use of a tt(lock_guard). Once tt(safeProcess) ends tt(guard) is
-destroyed, thereby releasing the lock on tt(data):
+Locks by default try to acquire the ownership of the tt(mutex) type that's
+passed to them at construction time. However, that may not always be
+convenient. Therefore additional constructors are defined offering additional
+modes of operation. These requested modes are specified by passing 
+    a emi(tag type) to those constructors that define what
+should be done with the lockable object during the lock's construction. The
+tag types (and tags) are:
+    itemization(
+    ithtq(defer_lock_t)(struct std::defer_lock_t)
+       (the lock is not trying to acquire ownership of the mutex. The
+        ownership may be requested later during the lock's lifetime. A
+        predefined ti(defer_lock) object which may be passed as tag is also
+        available;)
+    ithtq(try_to_lock_t)(struct std::try_to_lock_t)
+       (the lock is trying to acquire ownership of the mutex, but won't block
+        if this fails. A predefined ti(try_to_lock) object which may be passed
+        as tag is also available;)
+    ithtq(adopt_lock_t)(struct std::adopt_lock_t)
+       (the lock won't try to acquire ownership of the lock, but instead
+        assumes that the calling thread has already obtained ownership. The
+        lock will be released (or the lock-count will be reduced) when the
+        lock is destroyed. A predefined ti(adopt_lock) which may be passed as
+        tag is also available.)
+    ) 
+
+Lock types do not define copy constructors or overloaded assignment
+operators, nor do they define any other member function. Basically, they only
+allow constructions. Their destructors release the ownertship of their mutex
+(or, when recursive mutex was passed to them) reduce the mutex's use count.
+
+A ti(lock_guard) may be constructed by passing it a tt(mutex) type and an
+optional tt(adopt_lock_t) object. 
+
+Here is a simple example showing the use of a tt(lock_guard). Once
+tt(safeProcess) ends tt(guard) is destroyed, thereby releasing the lock on
+tt(data):
         verb(
     std::mutex dataMutex;
     Data data;
@@ -17,9 +54,99 @@ destroyed, thereby releasing the lock on tt(data):
         process(data);
     }
         )
-    tt(Unique_lock) is used similarly, but is used when timeouts must be
-considered as well. So a tt(unique_lock) not only returns when the lock is
-obtained but also after a specified amount of time:
+
+The class template ti(unique_lock) is much more elaborate than the basic
+tt(lock_guard) class template.  It does not offer a copy constructor or
+overloaded assignment operator, but it em(does) offer a move constructor and
+move assignment operator.
+
+Here are its constructors and members (tt(Mutex) refers to the mutex type
+that was specified for the tt(unique_lock) at construction time. E.g.,
+tt(unique_lock<timed_mutex>) defines tt(Mutex) as a tt(timed_mutex) below.
+
+Here are tt(unique_lock's) constructors:
+    itemization(
+    ittq(unique_lock() noexcept)
+       (the default constructor is not associated with a tt(mutex) type. It
+        must be assigned a tt(mutex) (e.g., using move-assignment) before it
+        can do anything useful;nl())
+    ittq(explicit unique_lock(Mutex& mutex))
+       (initializes a tt(unique_lock) with an existing tt(Mutex) object,
+        resulting in the lock object obtaining ownership of the tt(Mutex);)
+    ittq(unique_lock(Mutex& mutex, defer_lock_t) noexcept)
+       (initializes a tt(unique_lock) with an existing tt(Mutex) object,
+        but will not try to obtain ownership of the tt(Mutex);)
+    ittq(unique_lock(Mutex& mutex, try_to_lock_t) noexcept)
+       (initializes a tt(unique_lock) with an existing tt(Mutex) object,
+        and will try to obtain ownership of the tt(Mutex), but won't block if
+        it does not succeed;)
+    ittq(unique_lock(Mutex& mutex, adopt_lock_t) noexcept)
+       (initializes a tt(unique_lock) with an existing tt(Mutex) object,
+        assuming that the current thread has already obtained ownership of the
+        tt(Mutex);)
+    ittq(unique_lock(Mutex& mutex, chrono::time_point<Clock, Duration> const
+        &abs_time) noexcept)
+       (this constructor is defined as a member template, using the template
+        header tt(template <class Clock, class Duration>).  The
+        tt(Clock) and tt(Duration) types are derived from the actual
+        tt(abs_time) argument that is passed to the function, and should not
+        explicitly be specified. The constructor will try to obtain ownership
+        of the tt(Mutex) object by calling
+        tt(mutex.try_lock_until(abs_time)). If tt(Mutex mutex) is available,
+        this constructor could be called like this:
+       verb(
+    unique_lock<Mutex> ulock(mutex, system_clock::now() + seconds(5));
+        ))
+    ittq(unique_lock(Mutex& mutex, chrono::duration<Rep, Period> const
+        &rel_time) noexcept)
+       (this constructor is also defined as a member template, using the
+        template header tt(template <class Rep, class Period>). The template's
+        types are derived from the actual tt(rel_time) argument that is passed
+        to the function, and should not explicitly be specified.  The
+        constructor will try to obtain ownership of the tt(Mutex) object by
+        calling tt(mutex.try_lock_for(rel_time)). If tt(Mutex mutex) is
+        available, this constructor could be called like this:
+       verb(
+    unique_lock<Mutex> ulock(mutex, seconds(5));
+        ))
+    )
+
+Overloaded operators:The move assignment constructor:
+    itemization(
+    ittq(explicit operator bool () const noexcept)
+       ()
+    ittq(unique_lock& operator=(unique_lock &&tmp) noexcept)
+       (with the move-assignment operator, if the left-hand operand owns a
+        lock, it will call its mutex's tt(unlock) member, whereafter tt(tmp)'s
+        state is transferred to the left-hand operand)
+    )
+
+Ordinary members:
+    itemization(
+    ithtq(lock)(void lock())
+       ()
+    ithtq(owns_lock)(bool owns_lock() const noexcept)
+       ()
+    ithtq(release)(Mutex *release() noexcept)
+       ()
+    ithtq(swap)(void swap(unique_lock& u) noexcept)
+       ()
+    ithtq(try_lock)(bool try_lock())
+       ()
+    ithtq(try_lock_for)(bool try_lock_for(chrono::duration<Rep, Period> const
+        &rel_time)) 
+       (template <class Rep, class Period>)
+    ithtq(try_lock_until)(bool try_lock_until(chrono::time_point<Clock,
+        Duration> const &abs_time)
+       (template <class Clock, class Duration>)
+    ithtq(unlock)(void unlock())
+       ()
+    ithtq(mutex)(Mutex* mutex() const noexcept)
+       ()
+    )
+
+
+
         verb(
     std::timed_mutex dataMutex;
     Data data;
