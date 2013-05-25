@@ -1,0 +1,40 @@
+The class ti(time_point) is defined in the tt(std::chrono) namespace. Like
+tt(duration) it is a class template. The class template tt(time_point)
+requires two template type arguments: a em(Clock) and a tt(Duration). 
+
+The tt(Clock) type can be one of the predefined clock types, e.g.,
+tt(chrono::system_clock). By default, the tt(Duration) is the
+tt(Clock::duration) type, but an explicit type may also be provided.
+
+Before using the class tt(std::chrono::duration) the tthi(chrono) header file
+must have been included.
+
+The class tt(time_point) offers three constructors:
+    itemization(
+    itt(time_point()):
+       the default constructor represents the beginning of the clock's
+        emi(epoch) (E.g., Jan, 1, 1970, 00:00h);
+    itt(time_point(time_point<Clock, Duration> const &timeStep)):
+       initializes a tt(time_point) object representing a point in time
+        tt(timeStep Duration) units byond the clock's epoch;
+    itt(time_point(time_point<Clock, Duration2> const &timeStep)):
+       this constructor is defined as a member template, using the template
+        header tt(template <typename Duration2>). The type tt(Duration2) is a
+        tt(chrono::duration) (or comparable) type, using a possibly different
+        time unit than tt(time_point's Duration) type. It initializes a
+        tt(time_point) object representing a point in time tt(timeStep
+        Duration2) units byond the clock's epoch.
+    )
+
+tt(Duration) values may be added to or subtracted from a tt(time_point) object
+using, respectively, the tt(time_point &operator+=(Duration const &step)) and
+tt(time_point &operator-=(Duration const &step)) members. The corresponding
+binary tt(+) and tt(-) operators are also available.
+
+The member tt(constexpr Duration time_since_epoch() const) returns the
+object's tt(Duration) since the epoch. 
+
+Here are some examples showing how tt(time_point) objects can be used:
+        verbinclude(examples/timepoint.cc)
+
+
