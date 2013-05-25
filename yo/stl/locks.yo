@@ -1,0 +1,44 @@
+
+    In many situations locks will be released at the end of some action
+block. To simplify locking additional template classes
+ hi(unique_lock) tt(std::unique_lock<>) and hi(lock_guard)
+tt(std::lock_guard<>) are provided. As their constructors lock the data and
+their destructors unlock the data they can be defined as local variables,
+unlocking their data once their scope terminates.  Here is a simple example
+showing the use of a tt(lock_guard). Once tt(safeProcess) ends tt(guard) is
+destroyed, thereby releasing the lock on tt(data):
+        verb(
+    std::mutex dataMutex;
+    Data data;
+
+    void safeProcess()
+    {
+        std::lock_guard<std::mutex> guard(dataMutex);
+        process(data);
+    }
+        )
+    tt(Unique_lock) is used similarly, but is used when timeouts must be
+considered as well. So a tt(unique_lock) not only returns when the lock is
+obtained but also after a specified amount of time:
+        verb(
+    std::timed_mutex dataMutex;
+    Data data;
+
+    void safeProcess()
+    {
+        std::unique_lock<std::timed_mutex>
+            guard(dataMutex, std::chrono::milliseconds(3));
+        if (guard)
+            process(data);
+    }
+        )
+    In the above example tt(guard) tries to obtain the lock during three
+milliseconds. If tt(guard)'s tt(operator bool) returns tt(true) the lock was
+obtained and tt(data) can be processed safely.
+
+
+
+
+
+
+

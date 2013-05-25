@@ -1,13 +1,14 @@
     The C++11 standard offers a series of i(mutex) classes to protect shared
-data.  Before using mutexes the tthi(mutex) header file must have been
-included.
+data.  
 
-Mutexes should be used when multiple threads needs access to common data to
-prevent data corruption. For (a very simple) example, unless mutexes are used
-the following could happen when two threads access a common int variable (a
+Before using mutexes the tthi(mutex) header file must have been included.
+
+Mutexes should be used to prevent data corruption when multiple threads need
+access to common data. For (a very simple) example: the following could happen
+when two threads access a common int variable, unless mutexes are used (a
 emi(context switch) occurs when the operating system switches between
-threads. With a mult-processor system the threads can really be executed
-in parallel. To keep the example simple, assume multi threading is used on a
+threads. With a mult-processor system the threads can really be executed in
+parallel. To keep the example simple, assume multi threading is used on a
 single-core computer, switching between multi-threads):
         verb(
 Time step:    Thread1:      var        Thread2:        description
@@ -25,71 +26,104 @@ Time step:    Thread1:      var        Thread2:        description
 ----------------------------------------------------------------------------
     )
     The above is just a very simple illustration of what may go wrong when
-multiple threads access the same data without using mutexes. Thread 2 clearly
-thinks (and may proceed on the assumption) that tt(var) equals 10, but after
+multiple threads access the same data without using mutexes. 
+
+Thread 2 proceeds on the assumption that tt(var) equals 10. However, after
 step 9 tt(var) holds the value 12. Mutexes are used to prevent these kinds of
-problems by using data `atomic': as long as a thread holds a mutex for the
-data it is operating on, other threads cannot access the data. All this
-depends on cooperation between the threads, however. If thread 1 uses mutexes,
-but thread 2 doesn't then thread 2 may access the common data any which way it
-wants to. Of course that's bad practice, and mutexes allow us to write program
-not behaving badly in this respect. It is stressed here that although using
-mutexes is the programmer's responsibility, their implementation isn't. A
-user-program is unable to accomplish the locking atomicity mutexes offer. The
-bottom line is that if we try to implement a mutex-like facility in our
-programs then each statement will be compiled into several machine
-instructions and in between each of these instructions the operating system
-may do a context switch, rendering the instructions non-atomic.  Mutexes offer
-the required atomicity and when requesting a mutex-lock the thread is
-suspended (i.e., the mutex statement does not return) until the lock has been
-obtained by the thread.  More information about mutexes can be found in the
-link(mentioned O'Reilly book)(PTHREADS) and in general in the extensive
-literature on this topic. It is not a topic that is discussed further in the
-annotations(). The available facilities for using mutexes, however, em(are)
-covered in this section.
+problems by offering a guarantee that thata are only accessed by the thread
+holding a mutex for the those data.
 
-Apart from the tt(std::mutex) class hi(recursive_mutex)
+Exclusive data access completely depends on cooperation between the
+threads. If thread 1 uses mutexes, but thread 2 doesn't, then thread 2 may
+access the common data any which way it wants to. Of course that's bad
+practice, and mutexes allow us to write program not behaving badly in this
+sense.
+
+It is stressed that although em(using) mutexes is the programmer's
+responsibility, their em(implementation) isn't. A user-program is unable to
+accomplish em(atomic locking) mutexes offer. The bottom line is that if we try
+to implement a mutex-like facility in our programs then each statement is
+compiled into several machine instructions and in between each of these
+instructions the operating system may do a context switch, rendering the
+instructions non-atomic.
+
+Mutexes offer the necessary atomic calls: when requesting a mutex-lock the
+thread is suspended (i.e., the mutex statement does not return) until the lock
+has been obtained by the thread.
+
+More information about mutexes can be found in the link(mentioned O'Reilly
+book)(PTHREADS) and in general in the extensive literature on this topic. It
+is not a topic that is discussed further in the annotations(). The available
+facilities for using mutexes, however, em(are) covered in this section.
+
+Apart from the class tt(std::mutex) the class hi(recursive_mutex)
 tt(std::recursive_mutex) is offered.  When a tt(recursive_mutex) is called
-multiple times by the same thread it increases its lock-count. Before
-other threads may access the protected data the recursive mutex must be
-unlocked again that number of times. In addition the classes hi(timed_mutex)
-tt(std::timed_mutex) and
- hi(recursive_timed_mutex)tt(std::recursive_timed_mutex) are available. Their
-locks also expire after a preset amount of time.
+multiple times by the same thread it increases its lock-count. Before other
+threads may access the protected data the recursive mutex must be unlocked
+again that number of times. Moreover, the classes 
+        hi(timed_mutex)tt(std::timed_mutex) 
+    and 
+        hi(recursive_timed_mutex)tt(std::recursive_timed_mutex) 
+    are available. Their locks expire when released, but also after a certain
+amount of time.
 
-    In many situations locks will be released at the end of some action
-block. To simplify locking additional template classes
- hi(unique_lock) tt(std::unique_lock<>) and hi(lock_guard)
-tt(std::lock_guard<>) are provided. As their constructors lock the data and
-their destructors unlock the data they can be defined as local variables,
-unlocking their data once their scope terminates.  Here is a simple example
-showing the use of a tt(lock_guard). Once tt(safeProcess) ends tt(guard) is
-destroyed, thereby releasing the lock on tt(data):
-        verb(
-    std::mutex dataMutex;
-    Data data;
+All mutex classes offer the following constructors and members:
+    itemization(
+    it() A default tt(constexpr) constructor;
+    it() A destructor
+    ithtq(lock)(void lock())
+       (the calling thread is blocked until it has obtained ownership of the
+        mutex. Unless tt(lock) is called for a recursive mutex a
+        tt(system_error) is thrown if, e.g., the thread already owns the
+        lock. Recursive mutexes increment their interal emi(lock count);)
+    ithtq(try_lock)(bool try_lock() noexcept)
+       (the calling thread tries to obtain ownership of the mutex without
+        blocking. If ownership is obtained, tt(true) is returned, otherwise
+        tt(false). If the lock was already obtained by the calling thread,
+        tt(true) is also returned, and with a recursive mutex its interal
+        emi(lock count) is also incremented;)
+    ithtq(unlock)(void unlock() noexcept)
+       (the calling thread releases ownership of the mutex.  A
+        tt(system_error) is thrown if, e.g., the thread does not own the
+        lock. Recursive mutexes decrement their interal lock count, releasing
+        ownership of the mutex once the lock count has decayed to zero;)
+    )
+Note: mutex classes do not offer copy constructors and overloaded assignment
+operators.
 
-    void safeProcess()
-    {
-        std::lock_guard<std::mutex> guard(dataMutex);
-        process(data);
-    }
+In addition to the above mentioned members, timed mutex classes
+(tt(timed_mutex, rescursive_timed_mutex)) also offer:
+    itemization(
+    ithtq(try_lock_for)(bool try_lock_for(chrono::duration<Rep, Period> const 
+            &rel_time) noexcept)
+       (this function is defined as a function template, defining the
+        template header tt(template <class Rep, class Period>). The template's
+        types are derived from the actual tt(rel_time) argument that is passed
+        to the function, and should not explicitly be specified. This function
+        could be called for a tt(timed_mutex_lock tml) as, e.g.,
+       verb(
+    tml.try_lock_for(seconds(5));
         )
-    tt(Unique_lock) is used similarly, but is used when timeouts must be
-considered as well. So a tt(unique_lock) not only returns when the lock is
-obtained but also after a specified amount of time:
-        verb(
-    std::timed_mutex dataMutex;
-    Data data;
-
-    void safeProcess()
-    {
-        std::unique_lock<std::timed_mutex>
-            guard(dataMutex, std::chrono::milliseconds(3));
-        if (guard)
-            process(data);
-    }
+       If the ownership is obtained within the specified time interval
+        tt(true) is returned, otherwise tt(false). If the lock was already
+        obtained by the calling thread, tt(true) is also returned, and with a
+        recursive timed mutex its interal emi(lock count) is also
+        incremented;)
+        
+    ithtq(try_lock_until)(bool try_lock_until(chrono::time_point<Clock,
+            Duration> const &abs_time) noexcept)
+       (this function is also defined as a function template, defining the
+        template header tt(template <class Clock, class Duration>). The
+        tt(Clock) and tt(Duration) types are derived from the actual
+        tt(abs_time) argument that is passed to the function, and should not
+        explicitly be specified. This function could be called for a
+        tt(timed_mutex_lock tml) as, e.g.,
+       verb(
+    tml.try_lock_until(system_clock::now() + seconds(5));
         )
-    In the above example tt(guard) tries to obtain the lock during three
-milliseconds. If tt(guard)'s tt(operator bool) returns tt(true) the lock was
-obtained and tt(data) can be processed safely.
+       If the ownership is obtained before the specified point in time
+        tt(true) is returned, otherwise tt(false). If the lock was already
+        obtained by the calling thread, tt(true) is also returned, and with a
+        recursive timed mutex its interal emi(lock count) is also
+        incremented;)
+    )

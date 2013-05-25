@@ -14,28 +14,34 @@ It offers the following members:
     ithtq(yield)(void yield() noexcept)(
        the implementation may call tt(yield) to
         reschedule. Cf. tt(thread::yield) in section ref(THREAD).)
+    ithtq(sleep_for)
+       (void sleep_for(chrono::duration<Rep, Period> const &rel_time)
+            noexcept) 
+       (this function is defined as a function template, defining the
+        template header tt(template <class Rep, class Period>). The template's
+        types are derived from the actual tt(rel_time) argument that is passed
+        to the function, and should not explicitly be specified. This function
+        could be called as, e.g., 
+       verb(
+    sleep_for(seconds(5));
+        )
+       Calling this function blocks the thread calling this function during the
+        specified time interval, starting at the point in time the function is
+        called.)
     ithtq(sleep_until)
         (void sleep_until(chrono::time_point<Clock, Duration> const &abs_time)
             noexcept)
-       (this function is defined as a function template (cf. chapter
-        ref(TEMPLATES)), defining the template header tt(template <class
-        Clock, class Duration>). Calling this function blocks the thread
-        calling this function until the specified absolute time.)
-    ithtq(sleep_for)
-       (void sleep_for(chrono::duration<Rep, Period> const &rel_time)
-        noexcept) 
-       template <class Rep, class Period>
-         void sleep_for(const chrono::duration<Rep, Period>& rel_time) noexcept;
-    }
-  }
+       (this function is also defined as a function template, defining the
+        template header tt(template <class Clock, class Duration>). The
+        tt(Clock) and tt(Duration) types are derived from the actual
+        tt(abs_time) argument that is passed to the function, and should not
+        explicitly be specified. This function could be called as, e.g.,
+       verb(
+    sleep_until(system_clock::now() + seconds(5));
+        )
+       Calling this function blocks the thread until the specified absolute
+        point in time.)
+    )
 
 
-chrono::time_point<Clock, Duration>
-
-      Effects: Blocks the calling thread for the absolute timeout (30.2.4) specified by abs_time.
-      Synchronization: None.
-template <class Rep, class Period>
-  void sleep_for(const chrono::duration<Rep, Period>& rel_time) noexcept;
-      Effects: Blocks the calling thread for the relative timeout (30.2.4) specified by rel_time.
-      Synchronization: None.
 
