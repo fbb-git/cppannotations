@@ -14,8 +14,132 @@ might already have been possible. The interval could be reduce, but that too
 isn't an attractive option, as it results in needlessly increasing the
 overhead associated with handling the associated mutexes.
 
+
 Condition variables hi(condition_variable) may be used to solve these kinds of
-problems.. A thread simply sleeps until it is notified by another
+problems. Condition variables allow us to block a thread until notified by
+some other thread or until a preset amount of time has been passed (or a
+preset point in time has been reached).
+
+Before using condition variables the tthi(condition_variable) header file must
+have been included.
+
+Condition variables come in two flavors: objects of the class 
+    hi(condition_variable)tt(std::condition_variable) 
+are used in combination with objects of type tt(unique_lock<mutex>), which may
+result in an increased efficiency compared to the efficiency that can be
+obtained with objects of the class
+    hi(condition_variable_any)tt(stdLLcondition_variable_any) that can be used
+with any (e.g., user-supplied) lock types.
+
+The condition variable classes offer members like tt(wait, wait_for,
+wait_until, notify_one) and tt(notify_all) that may concurrently be called.
+The notify members are always atomically executed. The execution of the
+wait members consists of three atomic parts:
+    itemization(
+    it() the mutex's release, and subsequent entry into the waiting state;
+    it() unblocking the wait state;
+    it() reacquisition of the lock.
+    )
+
+A program using condition variables may not assume any order in the execution
+of the tt(notify_one, notify_all), and in the execution of each part of
+the tt(wait, wait_for), and tt(wait_until) members.
+
+In addition to the condition variable classes the following free function and
+tt(enum) type are provided:
+    itemization(
+    ithtq(notify_all_at_thread_exit)(void std::notify_all_at_thread_exit(
+            condition_variable &cond, unique_lock<mutex> lockObject))
+       (this function transfers ownership of the lock associated with
+        tt(lockObject) into internal storage. Once the current thread has
+        terminated and all objects that were defined during this thread have
+        been destroyed, the condition variable tt(cond) will be notified, as
+        if by calling
+       verb(
+   lockObject.unlock();
+   cond.notify_all();
+        )
+       After calling tt(notify_all_at_thread_exit) the thread should exit as
+        soon as possible, avoiding any blocking or time-consuming tasks.
+
+       Waiting threads must also verify that the thread they were waiting for
+        has indeed been finished. This is usually done by obtaining the lock
+        on tt(lockObject), after which they verify that the condition they
+        were waiting for is true, and that this lock was not released and
+        reacquired prior to calling tt(notify_all_at_thread_exit).  )
+    it() hi(cv_status)
+        verb(
+    namespace std
+    {
+        enum class cv_status 
+        { 
+            no_timeout, 
+            timeout 
+        };
+    }
+        )
+    )
+
+The class tt(condition_variable) offers a default constructor, but no copy
+constructor or overloaded assignment operator. 
+
+The class's destructor requires that no thread is blocked by the condition
+variable object. This implies that all other threads have been notified; those
+threads may subsequently block on the lock specified in the wait. 
+
+The class tt(condition_variable)'s members are:
+    itemization(
+condition_variable();
+~condition_variable();
+condition_variable(const condition_variable&) = delete;
+condition_variable& operator=(const condition_variable&) = delete;
+
+void notify_one() noexcept;
+void notify_all() noexcept;
+void wait(unique_lock<mutex>& lock);
+template <class Predicate>
+  void wait(unique_lock<mutex>& lock, Predicate pred);
+template <class Clock, class Duration>
+  cv_status wait_until(unique_lock<mutex>& lock,
+                        const chrono::time_point<Clock, Duration>& abs_time);
+template <class Clock, class Duration, class Predicate>
+  bool wait_until(unique_lock<mutex>& lock,
+                  const chrono::time_point<Clock, Duration>& abs_time,
+                  Predicate pred);
+template <class Rep, class Period>
+  cv_status wait_for(unique_lock<mutex>& lock,
+                      const chrono::duration<Rep, Period>& rel_time);
+template <class Rep, class Period, class Predicate>
+  bool wait_for(unique_lock<mutex>& lock,
+                const chrono::duration<Rep, Period>& rel_time,
+                Predicate pred);
+    )
+
+
+condition_variable_any();
+~condition_variable_any();
+condition_variable_any(const condition_variable_any&) = delete;
+condition_variable_any& operator=(const condition_variable_any&) = delete;
+void notify_one() noexcept;
+void notify_all() noexcept;
+template <class Lock>
+  void wait(Lock& lock);
+template <class Lock, class Predicate>
+  void wait(Lock& lock, Predicate pred);
+template <class Lock, class Clock, class Duration>
+  cv_status wait_until(Lock& lock, const chrono::time_point<Clock, Duration>& abs_time);
+template <class Lock, class Clock, class Duration, class Predicate>
+  bool wait_until(Lock& lock, const chrono::time_point<Clock, Duration>& abs_time, Predicate pred);
+template <class Lock, class Rep, class Period>
+  cv_status wait_for(Lock& lock, const chrono::duration<Rep, Period>& rel_time);
+template <class Lock, class Rep, class Period, class Predicate>
+  bool wait_for(Lock& lock, const chrono::duration<Rep, Period>& rel_time, Predicate pred);
+
+
+
+
+Condition variables hi(condition_variable) may be used to solve these kinds of
+problems. A thread simply sleeps until it is notified by another
 thread. Generally this may be accomplished as follows:
     verb(
     producer loop:
