@@ -1,10 +1,10 @@
- Although they should be avoided, hi(deadlock) em(Deadlocks) are commonly
+ Although they should be avoided, hi(deadlock) em(Deadlocks) are frequently
 encountered in multi threaded programs. A deadlock occurs when two locks
 are required to process data, but one thread obtains the first lock and
 another thread obtains the second lock. The C++11 standard defines a generic
- hi(lock)tt(std::lock) function that can be used to help preventing problems
-like these. The tt(std::lock) function can be used to lock multiple mutexes in
-one atomic action. Here is an example:
+    hi(lock)tt(std::lock) function that can be used to help preventing
+such situations. The tt(std::lock) function can be used to lock multiple
+mutexes in one atomic action. Here is an example:
         verb(
     struct SafeString
     {
@@ -30,11 +30,13 @@ tt(std::lock) at 3. Having obtained the lock, the two tt(SafeString) text
 members can both be safely processed by tt(calledByThread).
 
 Another problematic issue with threads involves initialization. If multiple
-threads are running and only the first thread encountering the initialization
-code should perform the initialization then this problem should not be solved
-using mutexes. Although proper synchronization is realized, the
-synchronization is performed time and again for every thread. The
-C++11 standard offers several ways to perform a proper initialization:
+threads are running and only the first thread calling the initialization code
+should actually perform the initialization then this problem should not be
+solved using mutexes. 
+
+Although proper synchronization is realized, the synchronization is performed
+time and again for every thread. The C++11 standard offers several ways to
+perform a proper initialization:
     itemization(
     it() First, suppose your constructor is declared with the ti(constexpr)
 keyword (cf. section ref(CONSTEXPR)), satisfying the requirements for constant

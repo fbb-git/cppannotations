@@ -1,28 +1,27 @@
-Consider a classic producer-consumer case: the producer generates items to be
-consumed by a consumer. The producer can only produce so many items before its
-storage capacity has filled up and the client cannot consume more items than
-the producer has produced.
+In this section we consider a classic producer-consumer scenario: the producer
+generates items to be consumed by a consumer. The producer can only produce a
+certain number of items before its storage capacity has filled up and the
+client cannot consume more items than the producer has produced.
 
-At some point the producer will therefore have to wait until the client has
-consumed enough so there's again space available in the producer's
-storage. Similarly, the client will have to wait until the producer has
-produced at least some items.
+At some point the producer will have to wait until the client has consumed
+enough so there's again space available in the producer's storage. Similarly,
+the client has to wait until the producer has produced at least some items.
 
 Locking and polling the amount of available items/storage at fixed time
-intervals usually isn't a good option as it is in essence a wasteful scheme:
-threads continue to wait during the full interval even though the condition to
-continue may already have been met; reducing the interval, on the other hand,
-isn't an attractive option either as it results in a relative increase of the
+intervals usually isn't a very attractive option as it wastes resources.
+Threads continue to wait during the full interval even though continuation
+might already have been possible. The interval could be reduce, but that too
+isn't an attractive option, as it results in needlessly increasing the
 overhead associated with handling the associated mutexes.
 
-Condition variables hi(condition_variable) may be used to solve these
-kinds of problems. A thread simply sleeps until it is notified by another
+Condition variables hi(condition_variable) may be used to solve these kinds of
+problems.. A thread simply sleeps until it is notified by another
 thread. Generally this may be accomplished as follows:
     verb(
     producer loop:
         - produce the next item
         - wait until there's room to store the item,
-            then reduce the available room
+            then reduce the available storage
         - store the item
         - increment the number of items in store
 
@@ -59,7 +58,7 @@ implemented as follows:
     }                                       // the lock is released
         )
     At 1 the condition variable's tt(wait) member internally releases the
-lock, wait for a notification to continue, and re-acquires the lock just
+lock, waits for a notification to continue, and re-acquires the lock just
 before returning. Consequently, tt(down)'s code always has complete and
 unique control over tt(semaphore).
 

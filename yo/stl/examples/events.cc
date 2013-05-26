@@ -1,4 +1,4 @@
-// g++-4.4 --std=c++0x -pthread events.cc
+// g++ --std=c++0x -pthread events.cc
 
 #include <mutex>
 #include <condition_variable>
@@ -8,7 +8,6 @@
 #include <iostream>
 #include <bobcat/selector>
 #include <bobcat/irandstream>
-#include <bobcat/a2x>
 
     class Semaphore
     {
@@ -113,7 +112,7 @@
             return 1;
         }
         cerr << "Go!\n";
-        size_t trials = A2x(argv[1]);
+        size_t trials = stoul(argv[1]);
 
         Producer prod(trials);
         Consumer cons(trials);
@@ -123,6 +122,9 @@
 
         produce.join();
         consume.join();
-
-        return 0;
     }
+
+
+
+
+
