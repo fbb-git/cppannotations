@@ -83,20 +83,23 @@ tt(enum) type are provided:
 The class tt(condition_variable) offers a default constructor, but no copy
 constructor or overloaded assignment operator. 
 
-The class's destructor requires that no thread is blocked by the condition
-variable object. This implies that all other threads have been notified; those
+The class's destructor requires that no thread is blocked by the current
+thread. This implies that all other threads have been notified; those
 threads may subsequently block on the lock specified in the wait. 
 
 The class tt(condition_variable)'s members are:
     itemization(
-condition_variable();
-~condition_variable();
-condition_variable(const condition_variable&) = delete;
-condition_variable& operator=(const condition_variable&) = delete;
+    ithtq(notify_one)(void notify_one() noexcept)
+       (if at least one thread is blocked because it is waiting for the
+        current thread, one of them is unblocked)
+    ithtq(notify_all)(void notify_all() noexcept)
+       (all thread that are blocked, waiting for the current thread are
+        unblocked)
+    ithtq(wait)(void wait(unique_lock<mutex>& lockObject))
+       (When returning from this member tt(lockObject) is locked by the
+        calling thread. However, it may also spuriously unblock, without
+        having locked tt(lockObject).)
 
-void notify_one() noexcept;
-void notify_all() noexcept;
-void wait(unique_lock<mutex>& lock);
 template <class Predicate>
   void wait(unique_lock<mutex>& lock, Predicate pred);
 template <class Clock, class Duration>
