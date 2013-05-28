@@ -1,72 +1,95 @@
-In this section we consider a classic producer-consumer scenario: the producer
-generates items to be consumed by a consumer. The producer can only produce a
-certain number of items before its storage capacity has filled up and the
-client cannot consume more items than the producer has produced.
-
-At some point the producer will have to wait until the client has consumed
-enough so there's again space available in the producer's storage. Similarly,
-the client has to wait until the producer has produced at least some items.
-
-Locking and polling the amount of available items/storage at fixed time
-intervals usually isn't a very attractive option as it wastes resources.
-Threads continue to wait during the full interval even though continuation
-might already have been possible. The interval could be reduce, but that too
-isn't an attractive option, as it results in needlessly increasing the
-overhead associated with handling the associated mutexes.
-
-
-Condition variables hi(condition_variable) may be used to solve these kinds of
-problems. Condition variables allow us to block a thread until notified by
-some other thread or until a preset amount of time has been passed (or a
-preset point in time has been reached).
+In this section em(condition variables) are introduced, allowing programs to
+synchronize threads on the em(states) of data, rather than on the em(access)
+to data, which is realized using  mutexes.
 
 Before using condition variables the tthi(condition_variable) header file must
 have been included.
 
+To start our discussion, we consider a classic producer-consumer scenario: the
+producer generates items to be consumed by a consumer. The producer can only
+produce a certain number of items before its storage capacity has filled up
+and the client cannot consume more items than the producer has produced.
+
+At some point the producer has to wait until the client has consumed enough,
+thus creating space in the producer's storage. Similarly, the consumer cannot
+start consuming until the producer has at least produced some items.
+
+Mutexes (data locking) don't result in elegant solutions of producer-consumer
+types of problems, as using mutexes requires repeated locking and polling the
+amount of available items/storage. This isn't a very attractive option as it
+wastes resources. Polling forces threads to wait until they own the mutex,
+even though continuation might already be possible. The polling interval could
+be reduced, but that too isn't an attractive option, as it results in
+needlessly increasing the overhead associated with handling the associated
+mutexes.
+
+On the other hand, condition variables allow us avoid polling by synchronizing
+threads by the em(states) (e.g., em(values)) of data.
+
+As the the states of the data may be modified by multiple threads, threads
+em(do) use mutexes, but merely to control access to the data. However,
+condition variables allow threads to release ownership of the mutex until a
+certain state has been reached, until a preset amount of time has been passed,
+or until a preset point in time has been reached.
+
+The prototypical setup of these kinds of programs look like this:
+    itemization(
+    it() consumer thread(s) act like this:
+        verb(
+    obtain ownership of the used mutex
+    while the required condition is false:
+        release the ownership and wait until being notified
+    continue processing now that the condition is true
+    release ownership of the mutex
+        )
+    it() producer thread(s) act like this:
+        verb(
+    obtain ownership of the used mutex 
+    while the condition is false:
+        work towards changing the condition to true
+    signal other waiting threads that the condition is now true
+    release ownership of the mutex
+        )
+    )
+
 Condition variables come in two flavors: objects of the class 
-    hi(condition_variable)tt(std::condition_variable) 
-are used in combination with objects of type tt(unique_lock<mutex>), which may
-result in an increased efficiency compared to the efficiency that can be
-obtained with objects of the class
+    hi(condition_variable)tt(std::condition_variable) are used in combination
+with objects of type tt(unique_lock<mutex>). This combination allows
+optimizations resulting in an increased efficiency compared to the efficiency
+that can be obtained with objects of the class
     hi(condition_variable_any)tt(stdLLcondition_variable_any) that can be used
 with any (e.g., user-supplied) lock types.
 
 The condition variable classes offer members like tt(wait, wait_for,
 wait_until, notify_one) and tt(notify_all) that may concurrently be called.
-The notify members are always atomically executed. The execution of the
-wait members consists of three atomic parts:
+The notify members are always atomically executed. Execution of the
+tt(wait) members consists of three atomic parts:
     itemization(
     it() the mutex's release, and subsequent entry into the waiting state;
     it() unblocking the wait state;
     it() reacquisition of the lock.
     )
+    Therefore, returning from tt(wait)-members the thread calling wait owns
+the lock.
 
-A program using condition variables may not assume any order in the execution
-of the tt(notify_one, notify_all), and in the execution of each part of
-the tt(wait, wait_for), and tt(wait_until) members.
+Programs using condition variables cannot make any assumption about the order
+in which any of the tt(notify_one, notify_all, wait, wait_for), and
+tt(wait_until) members are executed.
 
 In addition to the condition variable classes the following free function and
 tt(enum) type are provided:
     itemization(
     ithtq(notify_all_at_thread_exit)(void std::notify_all_at_thread_exit(
             condition_variable &cond, unique_lock<mutex> lockObject))
-       (this function transfers ownership of the lock associated with
-        tt(lockObject) into internal storage. Once the current thread has
-        terminated and all objects that were defined during this thread have
-        been destroyed, the condition variable tt(cond) will be notified, as
-        if by calling
-       verb(
-   lockObject.unlock();
-   cond.notify_all();
-        )
-       After calling tt(notify_all_at_thread_exit) the thread should exit as
-        soon as possible, avoiding any blocking or time-consuming tasks.
+       (once the current thread has ended, all other threads waiting on
+        tt(cond) will be notified. It is good practice to exit the thread as
+        soon as possible after calling tt(notify_all_at_thread_exit).
 
-       Waiting threads must also verify that the thread they were waiting for
-        has indeed been finished. This is usually done by obtaining the lock
-        on tt(lockObject), after which they verify that the condition they
-        were waiting for is true, and that this lock was not released and
-        reacquired prior to calling tt(notify_all_at_thread_exit).  )
+       Waiting threads must verify that the thread they were waiting for has
+        indeed ended. This is usually implemented by obtaining the lock on
+        tt(lockObject), after which these threads verify that the condition
+        they were waiting for is true, and that the lock was not released and
+        reacquired before tt(notify_all_at_thread_exit) was called.)
     it() hi(cv_status)
         verb(
     namespace std
@@ -80,6 +103,8 @@ tt(enum) type are provided:
         )
     )
 
+The class bf(condition_variable)
+
 The class tt(condition_variable) offers a default constructor, but no copy
 constructor or overloaded assignment operator. 
 
@@ -87,35 +112,51 @@ The class's destructor requires that no thread is blocked by the current
 thread. This implies that all other threads have been notified; those
 threads may subsequently block on the lock specified in the wait. 
 
+In the following member-descriptions other members are frequently referred
+to. It is tacitly assumed that all members were called for the same 
+condition variable object. A type tt(Predicate) indicates that the provided 
+tt(Predicate) argument can be called as a function without arguments,
+returning a tt(bool).
+
 The class tt(condition_variable)'s members are:
     itemization(
     ithtq(notify_one)(void notify_one() noexcept)
-       (if at least one thread is blocked because it is waiting for the
-        current thread, one of them is unblocked)
+       (one tt(wait) member called by other threads returns. Which one
+        actually returns cannot be predicted.)
     ithtq(notify_all)(void notify_all() noexcept)
-       (all thread that are blocked, waiting for the current thread are
-        unblocked)
+       (all tt(wait) members called by other threads unblock their wait
+        states. Of course, only one of them will subsequently succeed in
+        reacquiring the condition variable's lock object.)
     ithtq(wait)(void wait(unique_lock<mutex>& lockObject))
-       (When returning from this member tt(lockObject) is locked by the
-        calling thread. However, it may also spuriously unblock, without
-        having locked tt(lockObject).)
-
-template <class Predicate>
-  void wait(unique_lock<mutex>& lock, Predicate pred);
-template <class Clock, class Duration>
-  cv_status wait_until(unique_lock<mutex>& lock,
-                        const chrono::time_point<Clock, Duration>& abs_time);
-template <class Clock, class Duration, class Predicate>
-  bool wait_until(unique_lock<mutex>& lock,
-                  const chrono::time_point<Clock, Duration>& abs_time,
-                  Predicate pred);
-template <class Rep, class Period>
-  cv_status wait_for(unique_lock<mutex>& lock,
-                      const chrono::duration<Rep, Period>& rel_time);
-template <class Rep, class Period, class Predicate>
-  bool wait_for(unique_lock<mutex>& lock,
-                const chrono::duration<Rep, Period>& rel_time,
-                Predicate pred);
+       (the current thread is blocked until it (usually) has obtained the lock
+        of tt(lockObject). However, tt(wait) may also spuriously unblock,
+        without having locked tt(lockObject). Therefore, returning from
+        tt(wait) threads should always verify that they have obtained the
+        lock. If not, again calling tt(wait) may be appropriate.)
+    ittq(void wait(unique_lock<mutex>& lock, Predicate pred)
+       (This is a member template, defining the template header tt(template
+        <class Predicate>). As long as tt(pred()) returns false 
+        tt(wait(lock)) is called.)
+    ithtq(wait_for)(cv_status wait_for(unique_lock<mutex> &lock,
+                      chrono::duration<Rep, Period> const &rel_time)
+       (tt(template <class Rep, class Period, class Predicate>)
+        )
+    ittq(bool wait_for(unique_lock<mutex> &lock,
+                      chrono::duration<Rep, Period> const &rel_time)
+       (tt(template <class Rep, class Period, class Predicate>)
+        )
+    ithtq(wait_until)(cv_status wait_until(unique_lock<mutex>& lock,
+                        chrono::time_point<Clock, Duration> const &abs_time)
+       (
+        tt(template <class Clock, class Duration>)
+        )
+    ittq(bool wait_until(unique_lock<mutex> &lock,
+                  chrono::time_point<Clock, Duration> const &abs_time,
+                  Predicate pred)
+       (
+        tt(template <class Clock, class Duration, class Predicate>)
+        )
+  
     )
 
 
