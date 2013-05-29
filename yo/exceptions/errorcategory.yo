@@ -37,14 +37,12 @@ well. Here is the tt(error_category)'s non-private class interface:
 
             virtual error_condition 
                     default_error_condition(int ev) const noexcept;
-            virtual bool equivalent(
-                            int code, 
-                            error_condition const &condition
+            virtual bool equivalent(int code, 
+                                    error_condition const &condition
                          ) const noexcept;
-            virtual bool equivalent(
-                            error_code const &code, 
-                            int condition
-                        ) const noexcept;
+            virtual bool equivalent(error_code const &code, 
+                                    int condition
+                         ) const noexcept;
 
             bool operator==(error_category const &rhs) const noexcept;
             bool operator!=(error_category const &rhs) const noexcept;
@@ -60,52 +58,47 @@ well. Here is the tt(error_category)'s non-private class interface:
 
     Members:
     itemization(
-    itt(name()) 
-       must be overridden, and should return a textual name of the error
-        category;
-    itt(message(int ev))
-       must be overridden, and should return a string describing the error
-        condition denoted by tt(ev).
-    itt(default_error_condition) 
-       returns tt(error_condition(ev, *this)) (An object of type
-        tt(error_condition) that corresponds to tt(ev));
-    itt(equivalent(int code, error_condition const &condition))
-       returns tt(default_error_condition(code) == condition) (tt(true) if,
+    ithtq(name)(char const *name() const noexcept) 
+       (must be overridden, and should return a textual name of the error
+        category;)
+    ithtq(message)(string message(int ev) const)
+       (must be overridden, and should return a string describing the error
+        condition denoted by tt(ev);)
+    ithtq(default_error_condition)
+        (error_condition default_error_condition(int ev) const noexcept)
+       (returns tt(error_condition(ev, *this)) (An object of type
+        tt(error_condition) that corresponds to tt(ev));)
+    ithtq(equivalent)
+        (bool equivalent(int code, error_condition const &condition) const
+        noexcept)
+       (returns tt(default_error_condition(code) == condition) (tt(true) if,
         for the category of error represented by tt(*this), tt(code) is
-        considered equivalent to tt(condition); otherwise tt(false));
-    itt(equivalent(error_code const &code, int condition))
-       returns tt(*this == code.category() && code.value() == condition)
+        considered equivalent to tt(condition); otherwise tt(false));)
+    ittq(bool equivalent(error_code const &code, int condition) const noexcept)
+       (returns tt(*this == code.category() && code.value() == condition)
         (tt(true) if, for the category of error represented by tt(*this),
         tt(code) is considered equivalent to tt(condition); otherwise
-        tt(false));
-    itt(bool operator<(error_category const &rhs))
-      returns tt(less<const error_category*>()(this, &rhs));
+        tt(false));)
+    ittq(bool operator<(error_category const &rhs) const noexcept)
+      (returns tt(less<const error_category*>()(this, &rhs)).)
     )
 
     Free functions:
     itemization(
-    itt(generic_category):
-       returns a reference to an object of a type derived from the class
+    ithtq(generic_category)(error_category const &generic_category() noexcept)
+       (returns a reference to an object of a type derived from the class
         tt(error_category). Since tt(error_category) and its derived classes
-        should be singleton classes, calls to this function must return references to
-        the same object.  The returned object's tt(name) member shall return a
-        pointer to the string tt("generic").
-    itt(system_category)
-       returns a reference to an object of a type derived from the class
+        should be singleton classes, calls to this function must return
+        references to the same object.  The returned object's tt(name) member
+        shall return a pointer to the string tt("generic");)
+    ithtq(system_category)(error_category const &system_category() noexcept)
+       (returns a reference to an object of a type derived from the class
         tt(error_category). Since tt(error_category) and its derived classes
         should be singleton classes, calls to this function must return
         references to the same object.  The object's tt(name) member shall
         return a pointer to the string tt("system"). If the argument tt(ev)
         corresponds to a POSIX tt(errno) value `tt(posv)', then the object's
         tt(default_error_condition) member should return
-        tt(error-condition(posv, generic_category())). Otherwise, 
-        tt(error_condition(ev, system_category())) shall be returned.
+        tt(error-condition(posv, generic_category())). Otherwise,
+        tt(error_condition(ev, system_category())) shall be returned.)
     )
-
-
-
-
-
-
-
-
