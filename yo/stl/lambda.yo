@@ -240,4 +240,31 @@ space):
     };
         )
 
+Now that lambda expressions have been covered let's see how they can be used
+to avoid spurious returns from tt(condition_variable's wait) calls
+(cf. section ref(CONDEX)). According to the C++11 standard, condition
+variables may spuriously return from tt(wait) calls. Therefore it is necessary
+to check that the data are actually available once tt(wait) continues. 
+
+The class tt(condition_variable) allows us to do that by offering tt(wait)
+members expecting a lock em(and) a predicate. The predicate checks the data's
+state, and returns tt(true) if the data's state allows the data's
+processing. Here is an alternative implementation of the tt(down) member shown
+in section ref(CONDEX), checking for the data's actual availability:
+        verb(
+    void down()
+    {
+        unique_lock<mutex> lock(sem_mutex);
+        condition.wait(lock, 
+            [&]()
+            {
+                return semaphore != 0
+            }
+        );
+        --semaphore;
+    }
+        )
+    The lambda expression ensures that tt(wait) only returns once
+tt(semaphore) has been incremented.
+    
 

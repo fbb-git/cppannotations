@@ -1,0 +1,125 @@
+Condition variables are used to synchronize threads on the states (values) of
+data, rather than on access to data (for which plain mutex-objects can be
+used). Using condition variables, a thread simply sleeps until it is notified
+by another thread. In a producer-consumer type of program this is usually
+accomplished like this:
+        verb(
+    producer loop:
+        - produce the next item
+        - wait until there's room to store the item,
+            then reduce the available storage
+        - store the item
+        - increment the number of items in store
+
+    consumer loop:
+        - wait until there's an item in store,
+            then reduce the number of items in store
+        - remove the item from the store
+        - increment the number of available storage locations
+        - do something with the retrieved item
+    )
+
+It is important that the two storage administrative tasks (registering the
+number of available items and available storage locations) are either
+performed by the client or by the producer. `Waiting' in this case means:
+    itemization(
+    it() Get a lock on the variable containing the actual count
+    it() As long as the count is zero: 
+                wait, releasing the lock until another thread 
+                      has increased the count, then
+                      re-acquire the lock.
+    it() Reduce the count
+    it() Release the lock.
+    )
+    This scheme is implemented using a ti(condition_variable). The variable
+containing the actual count is called ti(semaphore) and it can be protected
+using, e.g. tt(mutex sem_mutex). 
+In addition a tt(condition_variable condition) is defined. The following code
+uses three non-local variables:
+        verb(
+    size_t semaphore;
+    mutex sem_mutex;
+    condition_variable condition;
+        )
+
+The waiting process is defined by the following function tt(down):
+        verb(
+    void down()
+    {
+        unique_lock<mutex> lock(sem_mutex);   // get the lock
+        while (semaphore == 0)
+            condition.wait(lock);           // see 1, below.
+        --semaphore;                        // dec. semaphore count
+    }                                       // the lock is released
+        )
+    At 1 tt(condition.wait) releases the lock, waits until receiving a
+notification, and re-acquires the lock just before returning. Consequently,
+tt(down)'s code always has complete and unique control over tt(semaphore).
+
+    What about notifying the condition variable? This is handled by the
+`increment the number ...' lines in the producer and consumer loops. These
+parts are defined by the following tt(up) function:
+        verb(
+    void up()
+    {
+        lock_guard<std::mutex> lock(sem_mutex); // get the lock
+        if (semaphore++ == 0)
+            condition.notify_one();             // see 2, below
+    }                                           // the lock is released
+        )
+    At 2 tt(semaphore) is always incremented. However, by using a postfix
+increment it is simultaneously tested for being zero. If it was initially zero
+then tt(semaphore) is now one. Consequently, the thread waiting for
+tt(semaphore) being unequal to zero may now continue. A waiting thread is
+notified by calling tt(condition.notify_one). In situations where multiple
+threads are waiting `ti(notify_all)' can also be used.
+
+    Handling tt(semaphore) can nicely be encapsulated in a class
+tt(Semaphore), offering members tt(down) and tt(up). For a more extensive
+discussion of semaphores see i(Tanenbaum, A.S.) and i(Austin, T.) (2013)
+    i(Structured Computer Organization), Pearson Prentice-Hall.
+
+    Using the facilities of the class tt(Semaphore) whose constructor expects
+an initial value of its tt(semaphore) data member, the classic producer and
+consumer paradigm can now easily be implemented in the following
+multi-threaded program+footnote(A more elaborate example of the
+producer-consumer program is found in the tt(yo/stl/examples/events.cc) file
+in the bf(C++) Annotations's source archive):
+        verb(
+    Semaphore available(10);
+    Semaphore filled(0);
+    std::queue itemQueue;
+
+    void producer()
+    {
+        size_t item = 0;
+        while (true)
+        {
+            ++item;
+            available.down();
+            itemQueue.push(item);
+            filled.up();
+        }
+    }
+    void client()
+    {
+        while (true)
+        {
+            filled.down();
+            size_t item = itemQueue.front();
+            itemQueue.pop();
+            available.up();
+            process(item);      // not implemented here
+        }
+    }
+
+    int main()
+    {
+        thread produce(producer);
+        thread consume(consumer);
+
+        produce.join();
+        consume.join();
+    }
+        )
+

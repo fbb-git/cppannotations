@@ -1,0 +1,94 @@
+The class ti(condition_variable) merely offers a default constructor. No copy
+constructor or overloaded assignment operator are provided.
+
+Before using the class tt(condition_variable) the tthi(condition_variable)
+header file must have been included.
+
+The class's destructor requires that no thread is blocked by the current
+thread. This implies that all other (waiting) threads must have been notified;
+those threads may, however, subsequently block on the lock specified in their
+tt(wait) calls.
+
+In the following member-descriptions a type tt(Predicate) indicates that the
+provided tt(Predicate) argument can be called as a function without arguments,
+returning a tt(bool). Also, other member functions are frequently referred
+to. It is tacitly assumed that all members were called using the same
+condition variable object.
+
+The class tt(condition_variable)'s members are:
+    itemization(
+    ithtq(notify_one)(void notify_one() noexcept)
+       (one tt(wait) member called by other threads returns. Which one
+        actually returns cannot be predicted.)
+    ithtq(notify_all)(void notify_all() noexcept)
+       (all tt(wait) members called by other threads unblock their wait
+        states. Of course, only one of them will subsequently succeed in
+        reacquiring the condition variable's lock object.)
+    ithtq(wait)(void wait(unique_lock<mutex>& lockObject))
+       (the current thread is blocked until it (usually) has obtained the lock
+        of tt(lockObject). However, tt(wait) may also spuriously unblock,
+        without having locked tt(lockObject). Therefore, returning from
+        tt(wait) threads should always verify that they have obtained the
+        lock. If not, again calling tt(wait) may be appropriate.)
+    ittq(void wait(unique_lock<mutex>& lock, Predicate pred)
+       (This is a member template, defining the template header tt(template
+        <typename Predicate>). As long as `tt(pred())' returns tt(false)
+        tt(wait(lock)) is called.)
+    ithtq(wait_for)(cv_status wait_for(unique_lock<mutex> &lockObject,
+                      chrono::duration<Rep, Period> const &relTime)
+       (This member is defined as a member template, using the template header
+        tt(template <typename Rep, typename Period>).  The tt(Rep) and
+        tt(Period) types are derived from the actual tt(relTime) argument
+        that is passed to this member, and should not explicitly be specified.
+
+       The tt(lockObject) must be locked by the current thread and either no
+        other thread is waiting on this tt(condition_variable) object, or
+        tt(lock.mutex()) returns the same value for each of the tt(lockObject)
+        arguments supplied by all currently waiting threads.
+
+       This member calls tt(lockObject.unlock) and the current thread is
+        blocked. It unblocks when receiving a signal through a tt(notify)
+        member, when an interval specified by tt(relTime) has passed, or
+        spuriously. Once it unblocks it tries to reacquire the lock
+        on tt(lockObject). Before this member returns the current thread
+        has acquired the lock on tt(lockObject). If returning due to a
+        timeout, tt(cv_status::timeout) is returned, otherwise
+        tt(cv_status::no_timeout) is returned.)
+    ittq(bool wait_for(unique_lock<mutex> &lockObject,
+                      chrono::duration<Rep, Period> const &relTime, Predicate
+                       pred))
+       (this member is also defined as a member template, using the template
+        header tt(template <typename Rep, typename Period, typename
+        Predicate>). The template types are automatically derived from the
+        types of the arguments that passed to this member.
+
+       As long as tt(pred()) returns false, the previous member is called. If
+        the previous member returns tt(cv_status::timeout), then tt(pred()) is
+        returned, otherwise tt(true).)
+    ithtq(wait_until)(cv_status wait_until(unique_lock<mutex>& lockObject,
+                        chrono::time_point<Clock, Duration> const &absTime)
+       (This member is also defined as a member template, using the template
+        header tt(template <typename Clock, typename Duration>). The template
+        types are derived from the types of the arguments that are passed to
+        this member and do not have to be specified explicitly.
+
+       This function acts identically to the tt(wait_for(unique_lock<mutex>
+        &lockObject, chrono::duration<Rep, Period> const &relTime)) member,
+        but uses an absolute point in time, rather than a relative time
+        specification. If returning due to a timeout, tt(cv_status::timeout)
+        is returned, otherwise tt(cv_status::no_timeout) is returned.)
+    ittq(bool wait_until(unique_lock<mutex> &lock,
+                  chrono::time_point<Clock, Duration> const &absTime,
+                  Predicate pred)
+       (this member is also defined as a member template, using the template
+        header tt(template <typename Clock, typename Duration, typename
+        Predicate>). The template types are derived from the types of the
+        arguments that are passed to this member and do not have to be
+        specified explicitly.
+
+       As long as tt(pred()) returns false, the previous member is called. If
+        the previous member returns tt(cv_status::timeout), then tt(pred()) is
+        returned, otherwise tt(true).  )
+  
+    )
+

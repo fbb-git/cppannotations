@@ -23,11 +23,11 @@ be reduced, but that too isn't an attractive option, as it results in
 needlessly increasing the overhead associated with handling the associated
 mutexes.
 
-On the other hand, condition variables allow us avoid polling by synchronizing
-threads by the em(states) (e.g., em(values)) of data.
+On the other hand, condition variables allow you to avoid polling by
+synchronizing threads using the em(states) (e.g., em(values)) of data.
 
 As the the states of the data may be modified by multiple threads, threads
-em(do) use mutexes, but merely to control access to the data. However,
+still have to use mutexes, but merely to control access to the data. However,
 condition variables allow threads to release ownership of the mutex until a
 certain state has been reached, until a preset amount of time has been passed,
 or until a preset point in time has been reached.
@@ -91,6 +91,9 @@ tt(enum) type are provided:
         they were waiting for is true, and that the lock was not released and
         reacquired before tt(notify_all_at_thread_exit) was called.)
     it() hi(cv_status)
+        quote(
+            The tt(cv_status) enum is used by several member functions of the
+condition variable classes covered below:
         verb(
     namespace std
     {
@@ -101,218 +104,5 @@ tt(enum) type are provided:
         };
     }
         )
+            )
     )
-
-The class bf(condition_variable)
-
-The class tt(condition_variable) offers a default constructor, but no copy
-constructor or overloaded assignment operator. 
-
-The class's destructor requires that no thread is blocked by the current
-thread. This implies that all other threads have been notified; those
-threads may subsequently block on the lock specified in the wait. 
-
-In the following member-descriptions other members are frequently referred
-to. It is tacitly assumed that all members were called for the same 
-condition variable object. A type tt(Predicate) indicates that the provided 
-tt(Predicate) argument can be called as a function without arguments,
-returning a tt(bool).
-
-The class tt(condition_variable)'s members are:
-    itemization(
-    ithtq(notify_one)(void notify_one() noexcept)
-       (one tt(wait) member called by other threads returns. Which one
-        actually returns cannot be predicted.)
-    ithtq(notify_all)(void notify_all() noexcept)
-       (all tt(wait) members called by other threads unblock their wait
-        states. Of course, only one of them will subsequently succeed in
-        reacquiring the condition variable's lock object.)
-    ithtq(wait)(void wait(unique_lock<mutex>& lockObject))
-       (the current thread is blocked until it (usually) has obtained the lock
-        of tt(lockObject). However, tt(wait) may also spuriously unblock,
-        without having locked tt(lockObject). Therefore, returning from
-        tt(wait) threads should always verify that they have obtained the
-        lock. If not, again calling tt(wait) may be appropriate.)
-    ittq(void wait(unique_lock<mutex>& lock, Predicate pred)
-       (This is a member template, defining the template header tt(template
-        <class Predicate>). As long as tt(pred()) returns false 
-        tt(wait(lock)) is called.)
-    ithtq(wait_for)(cv_status wait_for(unique_lock<mutex> &lock,
-                      chrono::duration<Rep, Period> const &rel_time)
-       (tt(template <class Rep, class Period, class Predicate>)
-        )
-    ittq(bool wait_for(unique_lock<mutex> &lock,
-                      chrono::duration<Rep, Period> const &rel_time)
-       (tt(template <class Rep, class Period, class Predicate>)
-        )
-    ithtq(wait_until)(cv_status wait_until(unique_lock<mutex>& lock,
-                        chrono::time_point<Clock, Duration> const &abs_time)
-       (
-        tt(template <class Clock, class Duration>)
-        )
-    ittq(bool wait_until(unique_lock<mutex> &lock,
-                  chrono::time_point<Clock, Duration> const &abs_time,
-                  Predicate pred)
-       (
-        tt(template <class Clock, class Duration, class Predicate>)
-        )
-  
-    )
-
-
-condition_variable_any();
-~condition_variable_any();
-condition_variable_any(const condition_variable_any&) = delete;
-condition_variable_any& operator=(const condition_variable_any&) = delete;
-void notify_one() noexcept;
-void notify_all() noexcept;
-template <class Lock>
-  void wait(Lock& lock);
-template <class Lock, class Predicate>
-  void wait(Lock& lock, Predicate pred);
-template <class Lock, class Clock, class Duration>
-  cv_status wait_until(Lock& lock, const chrono::time_point<Clock, Duration>& abs_time);
-template <class Lock, class Clock, class Duration, class Predicate>
-  bool wait_until(Lock& lock, const chrono::time_point<Clock, Duration>& abs_time, Predicate pred);
-template <class Lock, class Rep, class Period>
-  cv_status wait_for(Lock& lock, const chrono::duration<Rep, Period>& rel_time);
-template <class Lock, class Rep, class Period, class Predicate>
-  bool wait_for(Lock& lock, const chrono::duration<Rep, Period>& rel_time, Predicate pred);
-
-
-
-
-Condition variables hi(condition_variable) may be used to solve these kinds of
-problems. A thread simply sleeps until it is notified by another
-thread. Generally this may be accomplished as follows:
-    verb(
-    producer loop:
-        - produce the next item
-        - wait until there's room to store the item,
-            then reduce the available storage
-        - store the item
-        - increment the number of items in store
-
-    consumer loop:
-        - wait until there's an item in store,
-            then reduce the number of items in store
-        - remove the item from the store
-        - increment the number of available storage locations
-        - do something with the retrieved item
-    )
-
-It is important that the two storage administrative tasks (registering the
-number of available items and available storage locations) are either
-performed by the client or by the producer. `Waiting' in this case means:
-    itemization(
-    it() Get a lock on the variable containing the actual count
-    it() As long as the count is zero: wait, release the lock until
-        another thread has increased the count, re-acquire the lock.
-    it() Reduce the count
-    it() Release the lock.
-    )
-    To implement this scheme a ti(condition_variable) is used. The variable
-containing the actual count is called a ti(semaphore) and it can be protected
-using a tt(mutex sem_mutex). In addition a tt(condition_variable condition) is
-defined. The waiting process is defined in the following function tt(down)
-implemented as follows:
-        verb(
-    void down()
-    {
-        unique_lock<mutex> lock(sem_mutex);   // get the lock
-        while (semaphore == 0)
-            condition.wait(lock);           // see 1, below.
-        --semaphore;                        // dec. semaphore count
-    }                                       // the lock is released
-        )
-    At 1 the condition variable's tt(wait) member internally releases the
-lock, waits for a notification to continue, and re-acquires the lock just
-before returning. Consequently, tt(down)'s code always has complete and
-unique control over tt(semaphore).
-
-    What about notifying the condition variable? This is handled by the
-`increment the number ...' parts in the abovementioned produced and consumer
-loops. These parts are defined by the following tt(up) function:
-        verb(
-    void up()
-    {
-        lock_guard<std::mutex> lock(sem_mutex); // get the lock
-        if (semaphore++ == 0)
-            condition.notify_one();             // see 2, below
-    }                                           // the lock is released
-        )
-    At 2 tt(semaphore) is always incremented. However, by using a postfix
-increment it can be tested for being zero at the same time and if it was zero
-initially then tt(semaphore) is now one. Consequently, the thread waiting for
-tt(semaphore) being unequal to zero may now
-continue. tt(Condition.notify_one)hi(notify_one) notifies a waiting thread
-(see tt(down)'s implementation above). In situations where multiple threads
-are waiting `ti(notify_all)' can be used.
-
-    Handling tt(semaphore) can very well be encapsulated  in a class
-tt(Semaphore), offering members tt(down) and tt(up). For a more extensive
-discussion of semaphores see i(Tanenbaum, A.S.) (2006)
-    i(Structured Computer Organization), Pearson Prentice-Hall.
-
-    Using the semaphore facilities of the class tt(Semaphore) whose
-constructor expects an initial value of its tt(semaphore) data member, the
-classic producer and consumer case can now easily be implemented in the
-following multi-threaded program+footnote(A more elaborate example of the
-producer-consumer program is found in the tt(yo/stl/examples/events.cc) file
-in the bf(C++) Annotations's source archive):
-        verb(
-    Semaphore available(10);
-    Semaphore filled(0);
-    std::queue itemQueue;
-
-    void producer()
-    {
-        size_t item = 0;
-        while (true)
-        {
-            ++item;
-            available.down();
-            itemQueue.push(item);
-            filled.up();
-        }
-    }
-    void client()
-    {
-        while (true)
-        {
-            filled.down();
-            size_t item = itemQueue.front();
-            itemQueue.pop();
-            available.up();
-            process(item);      // not implemented here
-        }
-    }
-
-    int main()
-    {
-        thread produce(producer);
-        thread consume(consumer);
-
-        produce.join();
-        return 0;
-    }
-        )
-
-COMMENT(
-
-You still need to check that the data is ready though, since condition
-variables can suffer from what are called spurious wakes: The call to wait()
-may return even though it wasn't notified by another thread. If you're worried
-about getting this wrong, you can pass that responsibility off to the standard
-library too, if you tell it what you're waiting for with a predicate. The new
-C++11 lambda facility makes this really easy:
-    void foo()
-    {
-        std::unique_lock<std::mutex> lk(m);
-        cond.wait(lk,[]{return data_ready;});
-        process_data();
-    }
-END)
-
-To use tt(condition_variable) objects the header file
-    ti(condition_variable)hi(#include <condition_variable>) must be included.

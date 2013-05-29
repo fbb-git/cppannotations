@@ -1,0 +1,60 @@
+Different from the class tt(condition_variable) the class
+ti(condition_variable_any) can be used with any (e.g., user-supplied) lock
+type, and not just with the stl-provided tt(unique_lock<mutex>). 
+
+Before using the class tt(condition_variable_any) the tthi(condition_variable)
+header file must have been included.
+
+The functionality that is offered by tt(condition_variable_any) is identical
+to the functionality offered by the class tt(condition_variable), albeit that
+the lock-type that is used by tt(condition_variable_any) is not
+predefined. The class tt(condition_variable_any) requires specification of the
+lock-type that must be used by its objects. 
+
+In the interface shown below this lock-type is referred to as ti(Lock). Most
+of tt(condition_variable_any's) members are defined as member templates,
+defining a tt(Lock) type as one of its parameters. The requirements of these
+lock-types are identical to those of the stl-provided tt(unique_lock), and
+user-defined lock-type implementations should provide at least the interface
+and semantics that is also provided by tt(unique_lock).
+
+This section merely presents the interface of the class
+tt(condition_variable_any). As its interface offers the same members as
+tt(condition_variable) (allowing, where applicable, passing any lock-type
+instead of just tt(unique_lock) to corresponding members), the reader is
+referred to the previous section for a description of the semantics of the
+class members.
+
+Like tt(condition_variable), the class tt(condition_variable_any) merely
+offers a default constructor. No copy constructor or overloaded assignment
+operator are provided.
+
+Also, like tt(condition_variable), the class's destructor requires that no
+thread is blocked by the current thread. This implies that all other (waiting)
+threads must have been notified; those threads may, however, subsequently
+block on the lock specified in their tt(wait) calls.
+
+Note that, in addition to tt(Lock), the types tt(Clock, Duration, Period,
+Predicate,) and tt(Rep) are template types, defined just like the identically
+named types mentioned in the previous section.
+
+The class tt(condition_variable_any's) members are:
+
+    itemization(
+    itht(notify_one)(void notify_one() noexcept;)
+    itht(notify_all)(void notify_all() noexcept;)
+    itht(wait)(void wait(Lock& lock);)
+    itt(void wait(Lock& lock, Predicate pred);)
+    itht(wait_until)(cv_status wait_until(Lock& lock, const
+        chrono::time_point<Clock, Duration>& absTime);)
+    itt(bool wait_until(Lock& lock, const chrono::time_point<Clock, Duration>&
+        absTime, Predicate pred);) 
+    itht(wait_for)(cv_status wait_for(Lock& lock, const chrono::duration<Rep,
+        Period>& relTime);) 
+    itt(bool wait_for(Lock& lock, const chrono::duration<Rep, Period>&
+        relTime, Predicate pred);) 
+    )
+
+
+
+
