@@ -14,12 +14,12 @@ void fun(size_t count, char const *txt)
 }
 
 int main()
-{                   // runs the threads following 
+{                   // runs the threads following
                     // the object construction
-    thread display(fun, 3, "hello world");  
+    thread display(fun, 3, "hello world");
     display.detach();
 
-    thread second(fun, 3, "a second thread");  
+    thread second(fun, 3, "a second thread");
     second.detach();
 
     cout << "leaving" << endl;

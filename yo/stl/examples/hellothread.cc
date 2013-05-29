@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 using namespace std;
-    
+
 // do not forget to use -lpthread with g++
 
 void fun(size_t count, char const *txt)
@@ -14,9 +14,9 @@ void fun(size_t count, char const *txt)
 }
 
 int main()
-{                   // runs the thread following 
+{                   // runs the thread following
                     // the object construction
-    thread display(fun, 3, "hello world");  
+    thread display(fun, 3, "hello world");
 
     display.join(); // see the text
 }

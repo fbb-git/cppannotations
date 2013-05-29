@@ -17,15 +17,8 @@ int main()
 
         // define a time_point 1 hour after the epoch:
     time_point<system_clock> oneHrLater(hours(1));
-        
+
         // show the epoch and the time in seconds of oneHrLater:
     cout << system_clock::to_time_t(time_point<system_clock>()) << ' ' <<
             system_clock::to_time_t(oneHrLater) << '\n';
 }
-
-
-
-
-
-
-
