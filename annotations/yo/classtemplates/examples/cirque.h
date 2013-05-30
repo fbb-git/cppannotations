@@ -147,6 +147,7 @@ class CirQue
     {
         CirQue<Data> tmp(rhs);
         swap(tmp);
+        return *this;
     }
 //=
 
@@ -155,6 +156,7 @@ class CirQue
     inline CirQue<Data> &CirQue<Data>::operator=(CirQue<Data> &&tmp)
     {
         swap(tmp);
+        return *this;
     }
 //=
 
