@@ -66,8 +66,26 @@ operations. Again, some members may be overridden by derived classes:
        (This member function may be overridden by derived classes to write a
         series of at most tt(n) characters to the output buffer. The actual
         number of inserted characters is returned. If endOfFile() is returned
-        writing to the device stops. The default implementation
-        calls tt(sputc) for each individual character, so redefining this
-        member is only necessary if a more efficient implementation is
-        required.)
+        writing to the device stops. The default implementation calls
+        tt(sputc) for each individual character. Redefine this member if,
+        e.g., the tt(streambuf) should support the tt(ios::openmode ios::app).
+        Assuming the class tt(MyBuf), derived from tt(streambuf), features a
+        data member tt(ios::openmode d_mode) (representing the requested
+        tt(ios::openmode)), and a member tt(write(char const *buf,
+        streamsize len)) (writing tt(len) bytes at tt(pptr())), then the
+        following code acknowledges the tt(ios::app) mode:
+       verb(
+    std::streamsize MyStreambuf::xsputn(char const *buf, std::streamsize len)
+    {
+        if (d_openMode & ios::app)
+            seekoff(0, ios::end);
+
+        return write(buf, len);
+    }
+            )
+       )
     )
+
+
+
+
