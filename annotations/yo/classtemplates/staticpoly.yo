@@ -1,0 +1,67 @@
+Chapter ref(POLYMORPHISM) introduced polymorphism. Polymorphism allows us to
+use a base class's interface to call implementations which are defined in
+derived classes. Traditionally this involves defining em(Vtables) for
+polymorphic classes, containing pointers to functions that can be overridden
+in derived classes.  Objects of polymorphic classes feature hidden pointers,
+pointing to their class's Vtables. This type of polymorphism is called
+emi(dynamic polymorphism), involving emi(late binding) as the function to call
+is determined run-time, rather than compile-time.
+
+In many programs, however, this dynamic character isn't really
+necessary. Usually the derived class objects that are passed to functions
+expecting base class references are invariants: at fixed locations in programs
+fixed class types are used to create objects. The polymorphic nature of these
+objects is exploited inside the functions that receive these objects,
+expecting references to their base classes. 
+
+The disadvantages of this scheme are that, firstly, inside the functions
+expecting references to polymorphic base classes execution is somewhat slowed
+down because precisely because of the late-binding. Member functions aren't
+directly called, but are called indirectly, via the object's em(vpointer) and
+their derived class's em(Vtable). Secontly, programs using dynamic
+polymorphism tend to become somewhat bloated compared to programs using static
+binding. The code bloat is caused by the requirement to satisfy at link-time
+all the references that are mentioned in all the object files comprising the
+final program. This requirement forces the linker to link all the functions
+whose addresses are stored in the em(Vtables) of all polymorphic classes, even
+if these functions are never actually called.
+
+Static polymorphism hi(static polymorphism) allows us to avoid these
+disadvantages. It can be used instead of dynamic polymorphism in cases where
+the abovementioned invariant holds. Static polymorphism, also called the
+    emi(curiously recurring template pattern) is an example of 
+    emi(template meta programming) (see also chapter ref(ADVANCEDTEMPL) for
+additional examples of template meta programming).
+
+Whereas dynamic polymorphism is based on the concepts of em(vpointers,
+Vtables), and function overriding, static polymorphism capitalizes on the fact
+that function templates (c.q., member templates) are only compiled into
+executable code when they are actually called. This allows us to write code
+calling functions which are completely non-existent when we write our
+code. This shouldn't worry us too much. After all, we use a comparable
+approach when calling a purely virtual function of an abstract base class. The
+function is really called, but which function will actually be called is
+determined later in time. With dynamic polymorphism it is determined run-time,
+with static polymrphism it is determined compile-time.
+
+There's no need to consider static and dynamic polymorphism as mutually
+exclusive variants of polymorphism. Rather, both can be used together,
+combining their strengths. 
+
+This section contains several subsections.
+    itemization(
+    it() First, the syntax used with static polymorphism is introduced and
+        illustrated;
+    it() Next, it is shown how  classes using dynamic polymorphism can be
+        converted into classes that use static polymorphism;
+    it() Finally it is illustrated how static polymorphism can be used to
+        reduce implementation effort. Static polymorphism allows us to
+        implement only once what would have to be implemented repeatedly when
+        only dynamic polymorphism is used;
+    )
+
+
+
+Depending on the actual types, the
+compiler em(itself) creates the code, during the compilation phase, that's
+appropriate for those particular types. 
