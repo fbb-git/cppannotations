@@ -42,6 +42,75 @@ polymorphic behavior):
     }
         )
 
+----------------------
+exceed those of the
+static polymorphic base class. E.g., essentially the class tt(Vehicle) merely
+defines the polymorphic user interface, but tt(Auto) and tt(Vehicle) offer
+data members and possibly additional members as well. Second, derived classes
+implement the redefinable interface in a way that fits their purpose. E.g.,
+tt(Auto's vmass) returns a car's mass in kg., tt(Truck's vmass) returns a
+truck's mass as the sum of the tractor and trailer masses.
+
+
+----------------------
+
+    When converting dynamic polymorphic classes to static polymorphic classes
+we must realize that polymorphic classes serve two functions: first, they
+define facilities (data members, member functions) that are inherited by
+derived classes, and second polymorphic classes implement the redefinable
+interface in a way that fits their purpose.
+
+With static polymorphic classes it is important that these two aspects are
+implemented separately.  As we've seen in the previous section, a statically
+polymorphic derived class derives from the base class by using its own class
+type as argument to the base class's type parameter. This works fine if
+there's only one level of inheritance. However, with multiple levels of
+inheritance (e.g., tt(Truck -> Auto -> Vehicle)) tt(Truck)'s inheritance
+specification becomes a problem: if it is inheriting from tt(Auto), then it
+implicitly derives from tt(Vehicle<Auto>), and tt(Auto's vmass) is called by
+tt(Vehicle::interface). But tt(Truck) must inherit from tt(Auto) to be able to
+use tt(Auto's) features. But inheriting tt(Truck) from tt(Vehicle<Truck>)
+isn't an option either, as this results in a class tt(Truck) also inheriting
+from tt(Vehicle<Auto>) (through tt(Truck's Auto) base class).
+
+Generally it cannot be ruled out that classes use multiple levels of
+inheritance. When static polymorphism is used classes must carefully be
+designed. By separating the redefinable interface from the other elements of
+the interface, the normal line of inheritance is used to make the protected
+and public interfaces of (direct or indirect) base classes available to a
+derived class. This derived class is then used as a base class, together with
+the static polymorhic base class of a derived class offering its own
+implementation of the static base class's redefinable interface.
+
+    figure(classtemplates/converting)
+        (Vehicle Static Polymorphic Class Design)(STATPOL)
+
+ the only the part implementing their redefinable
+interfaces must inherit from the base class. This design is accomplished as
+follows (using the classes tt(Auto) and tt(Truck) to illustrate the approach,
+but the design should be applied to all classes (indirectly) inheriting from
+the static polymorphic base class):
+    itemization(
+    it() tt(Auto)'s non-virtual members are collected in a separate class
+        (e.g., tt(AutoBase));
+    it() tt(Auto) publicly derives from tt(AutoBase) and from
+        tt(Vehicle<Auto>), declaring the members of tt(Vehicle)'s user
+        interface calling members from tt(Vehicle)'s user interface calling 
+        members from its template class type its friend;
+    it() tt(AutoBase) declares tt(friend class Auto), which essentially turns
+        tt(AutoBase) into a constituent part of tt(Auto);
+    it() Classes originally derived from tt(Auto) (e.g., tt(Truck) should
+        implement the same separation: tt(TruckBase) collects tt(Truck)'s
+        non-virtual members, tt(Truck) should merely contain the redefinable
+        interface);
+    it() tt(Truck) originally derived from tt(Auto). Under the new design
+        tt(TruckBase) should derive from tt(AutoBase), and tt(Truck) itself
+        should inherit from tt(TruckBase) and from tt(Vehicle<Truck>).
+    )
+
+
+
+
     We start by converting the base class to a static polymorphic class. This
 is accomplished in three steps:
     itemization(
@@ -82,52 +151,6 @@ template:
     }
         )
 
-    Next, derived classes must be converted to static polymorphic
-classes. Here we must realize that derived classes serve two functions: first,
-they define facilities (data members, member functions) that exceed those of
-the static polymorphic base class. E.g., essentially the class tt(Vehicle)
-merely defines the polymorphic user interface, but tt(Auto) and tt(Vehicle)
-offer data members and possibly additional members as well. Second, derived
-classes implement the redefinable interface in a way that fits their
-purpose. E.g., tt(Auto's vmass) returns a car's mass in kg., tt(Truck's vmass)
-returns a truck's mass as the sum of the tractor and trailer masses. 
-
-As we've seen in the previous section, a statically polymorphic derived class
-derives from the base class by using its own class type as argument to the
-base class's type parameter. This works fine if there's only one level of
-inheritance, but with multiple levels of inheritance (e.g., tt(Truck -> Auto
--> Vehicle)) tt(Truck)'s inheritance specification becomes a problem: if it is
-inheriting from tt(Auto), then it implicitly derives from tt(Vehicle<Auto>),
-and tt(Auto's vmass) is called by tt(Vehicle::interface). But tt(Truck) must
-inherit from tt(Auto) to be able to use tt(Auto's) features. On the other
-hand, we cannot also inherit tt(Truck) from tt(Vehicle<Truck>) as this results
-in a class tt(Truck) also inheriting from tt(Vehicle<Auto>) (through
-tt(Truck's Auto) base class.
-
-In the context of polymorphism it cannot be ruled out that classes use
-multiple levels of inheritance. When static polymorphism is used classes must
-carefully be designed: only the part implementing their redefinable interfaces
-must inherit from the base class. This design is accomplished as follows
-(using the classes tt(Auto) and tt(Truck) to illustrate the approach, but the
-design should be applied to all classes (indirectly) inheriting from the
-static polymorphic base class):
-    itemization(
-    it() tt(Auto)'s non-virtual members are collected in a separate class
-        (e.g., tt(AutoBase));
-    it() tt(Auto) publicly derives from tt(AutoBase) and from
-        tt(Vehicle<Auto>), declaring the members of tt(Vehicle)'s user
-        interface calling members from tt(Vehicle)'s user interface calling 
-        members from its template class type its friend;
-    it() tt(AutoBase) declares tt(friend class Auto), which essentially turns
-        tt(AutoBase) into a constituent part of tt(Auto);
-    it() Classes originally derived from tt(Auto) (e.g., tt(Truck) should
-        implement the same separation: tt(TruckBase) collects tt(Truck)'s
-        non-virtual members, tt(Truck) should merely contain the redefinable
-        interface);
-    it() tt(Truck) originally derived from tt(Auto). Under the new design
-        tt(TruckBase) should derive from tt(AutoBase), and tt(Truck) itself
-        should inherit from tt(TruckBase) and from tt(Vehicle<Truck>).
-    )
    
      
 steps are taken:
