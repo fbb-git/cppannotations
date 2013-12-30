@@ -7,28 +7,29 @@ should return the combined mass.
 The definition of a tt(Truck) starts with a class definition. Our initial
 tt(Truck) class is derived from tt(Auto) but it is then expanded to hold one
 more tt(size_t) field representing the additional mass information. Here we
-choose to represent the mass of the front part of the truck in the tt(Auto)
-class and to store the mass of the trailer in an additional field:
+choose to represent the mass of the tractor in the tt(Auto) class and to store
+the mass of of full truck (tractor + trailer) in its own tt(d_mass) data
+member: 
         verb(
     class Truck: public Auto
     {
-        size_t d_trailer_mass;
+        size_t d_mass;
 
         public:
             Truck();
-            Truck(size_t tractor_wt, size_t speed, char const *name,
-                  size_t trailer_wt);
+            Truck(size_t tractor_mass, size_t speed, char const *name,
+                  size_t trailer_mass);
 
-            void setMass(size_t tractor_wt, size_t trailer_wt);
+            void setMass(size_t tractor_mass, size_t trailer_mass);
             size_t mass() const;
     };
 
-    Truck::Truck(size_t tractor_wt, size_t speed, char const *name,
-                 size_t trailer_wt)
+    Truck::Truck(size_t tractor_mass, size_t speed, char const *name,
+                 size_t trailer_mass)
     :
-        Auto(tractor_wt, speed, name)
+        Auto(tractor_mass, speed, name)
     {
-        d_trailer_mass = trailer_wt;
+        d_mass = trailer_mass + trailer_mass;
     }
         )
     Note that the class tt(Truck) now contains two functions already
@@ -48,10 +49,10 @@ tt(Auto::setMass) is hidden from view.  This latter function is hidden,
 even though tt(Auto::setMass) has only one tt(size_t) argument. To implement
 tt(Truck::setMass) we could write:
          verb(
-    void Truck::setMass(size_t tractor_wt, size_t trailer_wt)
+    void Truck::setMass(size_t tractor_mass, size_t trailer_mass)
     {
-        d_trailer_mass = trailer_wt;
-        Auto::setMass(tractor_wt);     // note: Auto:: is required
+        d_mass = tractor_mass + trailer_mass;
+        Auto::setMass(tractor_mass);     // note: Auto:: is required
     }
         )
     it() Outside of the class tt(Auto::setMass) is
@@ -68,12 +69,13 @@ inline to call the base class member. E.g., we add the following member to the
 tt(class Truck):
         verb(
     // in the interface:
-    void setMass(size_t tractor_wt);
+    void setMass(size_t tractor_mass);
 
     // below the interface:
-    inline void Truck::setMass(size_t tractor_wt)
+    inline void Truck::setMass(size_t tractor_mass)
     {
-        Auto::setMass(tractor_wt);
+        d_mass -= Auto::mass() + tractor_mass;
+        Auto::setMass(tractor_mass);
     }
         )
     Now the single argument tt(setMass) member function can be used by
@@ -90,7 +92,7 @@ interface then becomes:
     {
         public:
             using Auto::setMass;
-            void setMass(size_t tractor_wt, size_t trailer_wt);
+            void setMass(size_t tractor_mass, size_t trailer_mass);
     };
         )
     A using declaration imports (all overloaded versions of) the mentioned
@@ -106,17 +108,12 @@ derived class members to do so the tt(using Auto::setMass) declaration
 should be put in the class tt(Truck)'s private section.
 
     it() The function tt(mass) is also already defined in tt(Auto), as
-it was inherited from tt(Vehicle). In this case, the class tt(Truck) should
-em(redefine) this member function to allow for the extra (trailer) mass in
-the tt(Truck):
+it was inherited from tt(Vehicle). In this case, the class tt(Truck) 
+em(redefines) this member function to return the truck's full mass:
          verb(
     size_t Truck::mass() const
     {
-        return
-            (                           // sum of:
-                Auto::mass() +     //   tractor part plus
-                d_trailer_mass        //   the trailer
-            );
+        return d_mass;
     }
         )
     )
@@ -124,12 +121,12 @@ the tt(Truck):
         verb(
     int main()
     {
-        Land veh(1200, 145);
+        Land vehicle(1200, 145);
         Truck lorry(3000, 120, "Juggernaut", 2500);
 
         lorry.Vehicle::setMass(4000);
 
-        cout << '\n' << "Truck weighs " <<
+        cout << '\n' << "Tractor weighs " <<
                         lorry.Vehicle::mass() << '\n' <<
             "Truck + trailer weighs " << lorry.mass() << '\n' <<
             "Speed is " << lorry.speed() << '\n' <<
@@ -140,33 +137,37 @@ the tt(Truck):
 
     The class tt(Truck) was derived from tt(Auto). However, one might question
 this class design. Since a truck is conceived of as a combination of an
-tractor and a trailer it is probably better defined using
-composition. This changes our point of view from a tt(Truck) em(being) an
-tt(Auto) (and some strangely appearing data members) to a tt(Truck)
-em(consisting of) an tt(Auto) (the tractor) and a tt(Vehicle) (the trailer).
+tractor and a trailer it is probably better defined using a mixed design,
+using inheritance for the tractor part (inheriting from tt(Auto)) and
+composition for the trailer part).
+
+This redesign changes our point of view from a tt(Truck) em(being) an tt(Auto)
+(and some strangely added data members) to a tt(Truck) still em(being) an
+tt(Auto) (the tractor) and em(containing) a tt(Vehicle) (the trailer).
+
 tt(Truck)'s interface is now very specific, not requiring users to study
 tt(Auto)'s and tt(Vehicle)'s interfaces and it opens up possibilities for
 defining `road trains': tractors towing multiple trailers. Here is an example
 of such an alternate class setup:
         verb(
-    class Truck
+    class Truck: public Auto    // the tractor
     {
-        Auto d_lorry;
         Vehicle d_trailer;      // use vector<Vehicle> for road trains
 
         public:
             Truck();
-            Truck(size_t tractor_wt, size_t speed, char const *name,
-                  size_t trailer_wt);
+            Truck(size_t tractor_mass, size_t speed, char const *name,
+                  size_t trailer_mass);
 
-            void setMass(size_t tractor_wt, size_t trailer_wt);
-            void setTractorMass(size_t tractor_wt);
-            void setTrailerMass(size_t trailer_wt);
-            size_t mass() const;
+            void setMass(size_t tractor_mass, size_t trailer_mass);
+            void setTractorMass(size_t tractor_mass);
+            void setTrailerMass(size_t trailer_mass);
+
             size_t tractorMass() const;
             size_t trailerMass() const;
         // consider:
-            Auto const &tractor() const;
             Vehicle const &trailer() const;
     };
         )
+
+

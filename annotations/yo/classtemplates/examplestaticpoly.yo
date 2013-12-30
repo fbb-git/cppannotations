@@ -1,0 +1,182 @@
+With static polymorphism a class template takes the role of a base class in
+dynamic polymorphism. This class template declares several members, which are
+comparable to the members of a polymorphic base class: they are either support
+members or they are interfacing to members overridden in derived classes.
+
+With dynamic polymorphism these overriding members are the base class's
+virtual members. With static polymorphism there are no virtual
+members. Instead, the static polymorphic base class (referred to as the `base
+class' below) declares a template type parameter (referred to as the `derived
+class type' below). Next, the base class's interfacing members call members of
+the derived class type.
+
+Here is an example of a simple class template which will be used as a base
+class. Its public interface consists of one member, and, different from
+dynamic polymorphism, there's no reference in the class's interface to any
+members showing polymorphic behavior:
+        verb(
+    template <class Derived>
+    struct Base
+    {
+        void interface();
+    }
+        )
+
+Let's have a closer look at the member `tt(interface)'. This member is called
+by functions receiving a reference or pointer to the base class, and it calls
+members that must be available in the derived class type. Before we can call
+members of the derived class type an object of the derived class type must be
+available. This object is obtained through inheritance. The derived class type
+is going to be derived from the base class. Thus tt(Base's this) pointer is
+also tt(Derived's this) pointer.
+
+When we have a tt(class Derived: public Base) then a tt(static_cast<Derived
+*>) can be used to cast a tt(Base *) that is actually pointing to a
+tt(Derived) object. A tt(dynamic_cast) of course doesn't apply, as we don't
+use dynamic polymorphism. A tt(static_cast) is appropriate since our
+tt(Base *) does in fact point to a tt(Derived) class object.
+
+Consequently, to call a tt(Derived) class member from within tt(interface) we
+can use the following implementation:
+        verb(
+    template<class Derived>
+    void Base<Derived>::interface()
+    {
+        static_cast<Derived *>(this)->polymorphic();
+    }
+        )
+    Interestingly, when the compiler is given this implementation it cannot
+determine whether tt(Derived) is actually derived from tt(Base). Neither can
+it determine whether the class tt(Derived) indeed offers a member
+tt(polymorphic). The compiler simply em(assumes) this to be true, in which
+case the provided implementation is syntactically correct. One of the core
+characteristics of using templates is that the implementation's viability is
+eventually determined at the function's point of instantiation (cf. section
+ref(TEMPFUNINST)).
+
+    Consequently, in order to use the above scheme we must ensure that derived
+class types are actually derived from the base class and that the derived
+class types actually define a member `tt(polymorphic)'. The first requirement
+is satisfied using the emi(curiously recurring template pattern):
+        verb(
+    class First: public Base<First>
+        )
+    In this curious pattern the class tt(First) is derived from tt(Base),
+instantiated for tt(First) itself. This is acceptable, as the compiler already
+has determined that the type tt(First) exists. At this point that is all it
+needs.
+
+    The second requirement is satisfied by providing an implementation of the
+member tt(polymorphic). In chapter ref(POLYMORPHISM) we saw that virtual and
+overriding members belong to the class's private interface. Applying the same
+philosophy here, we put tt(polymorphic) in tt(First's) private interface,
+allowing its access by the base class by declaring 
+        verb(
+    friend void Base<First>::interface();
+        )
+
+    tt(First's) complete class interface can now be designed, followed by
+tt(polymorphic's) implementation:
+        verb(
+    class First: public Base<First>
+    {
+        friend void Base<First>::interface();
+
+        private:
+            void polymorphic();
+    };
+    void First::polymorphic()
+    {
+        std::cout << "polymorphic from First" << std::endl;
+    }
+        )
+    Note that the class tt(First) itself is not a class template: its members
+can be separately compiled and stored in, e.g., a library. Also, as is the
+case with dynamic polymorphism, the member tt(polymorphic) has full access to
+all of tt(First)'s data members and member functions.
+
+    Multiple classes can now be designed like tt(First), each offering their
+own implementation of tt(polymorphic). E.g., the member
+tt(Second::polymorphic) of the class tt(Second), designed like tt(First),
+could be implemented like this:
+        verb(
+    void Second::polymorphic()
+    {
+        std::cout << "polymorphic from Second" << std::endl;
+    }
+        )
+
+    The polymorphic nature of tt(Base) becomes apparent once a function
+template is defined in which tt(Base::interface) is called. Again, the
+compiler simply assumes a member tt(interface) exists when it reads the
+definition of the following function template:
+        verb(
+    template <class Class>
+    void fun(Class &object)
+    {
+        object.interface();
+    }
+        )
+    
+    Only at the point where this function is actually called will the compiler
+verify the viability of the generated code. In the following tt(main) function
+a tt(First) object is passed to tt(fun): tt(First) declares tt(interface)
+through its base class, and tt(First::polymorphic) is called by
+tt(interface). Then a tt(Second) object is passed to tt(fun), and
+analogously tt(Second::polymorphic) is called:
+        verb(
+    int main()
+    {
+        First first;
+        fun(first);
+
+        Second second;
+        fun(second);
+    }
+        )
+
+    There are also downsides to 
+        hi(static polymorphism: downsides) 
+    using static polymorphism. First, the sentence `a tt(Second) object is
+passed to tt(fun)' isn't really correct, since tt(fun) in tt(fun(first)) and
+tt(fun(second)) are different functions, not just calls of one function with
+different arguments. With static polymorphism every instantiation using its
+own template parameters results in completely new code once the template
+(e.g., tt(fun)) is instantiated. This is something to consider when creating
+static polymorphic base classes. If the base class defines data members and
+member functions, and if these additional members are used by derived class
+types, then each member will have its own instantiation for each derived class
+type. This also represents i(code bloat), albeit of a different kind than
+obeserved with dynamic polymorphism. This kind of code bloat can often be
+somewhat reduced by deriving the base class from its own (ordinary) base
+class, encapsulating all elements of the static polymorphic base class that do
+not depend on its template type parameter.
+
+    Second, if different types of statically polymorphic objects are
+dynamically created then the types of the returned pointers are all different,
+as are the types of the pointers to their static polymorphic base
+classes. These latter pointers are different because they are pointers to
+tt(Base<Derived>), representing different types for different tt(Derived)
+types. Consequently, and different from dynamic polymorphism, these pointers
+cannot be collected in, e.g., a vector of shared pointers to base class
+pointers. There simply isn't one base class pointer type. Thus, because of the
+different base class types, there's no direct static polymorphic equivalent to
+virtual destructors. 
+
+    Third, as will be illustrated in the next section, designing static
+polymorphic classes using multiple levels of inheritance is not a trivial
+task.
+
+    Summarizing, static polymorphism is best used in cases where a limited
+number of different derived class types are defined, where a fixed number of
+derived class objects are used, and where the static polymorphic base classes
+themselves are lean (possibly encapsulating some of their code in ordinary
+base classes of their own).
+
+
+
+
+
+
+
+

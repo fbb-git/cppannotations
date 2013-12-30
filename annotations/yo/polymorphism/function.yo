@@ -15,77 +15,194 @@ bf(C++), different from several other object oriented languages, this is
 em(not) the default situation. By default em(static) binding is used.
 
 Once a function is declared tt(virtual) in a base class, it remains virtual in
-all derived classes; even when the keyword tt(virtual) is not repeated in
-derived classes.
+all derived classes. The keyword tt(virtual) should not be mentioned with
+members declared virtual in the base class. In derived classes those members
+should be provided with the ti(override) indicator.
 
-In the vehicle classification system (see section ref(VehicleSystem)) the two
-member functions tt(mass) and tt(setMass) might be declared
-tt(virtual). Concentrating on tt(mass), the relevant sections of the class
-definitions of the class tt(Vehicle) and tt(Truck) are shown below. Also, we
-show the implementations of the member function tt(mass):
+In the vehicle classification system (see section ref(VehicleSystem)), let's
+concentrate on the members tt(mass) and tt(setMass). These members define the
+emi(user interface) of the class tt(Vehicle). What we would like to accomplish
+is that this user interface can be used for tt(Vehicle) and for any class
+inheriting from tt(Vehicle), since objects of those classes are themselves
+also tt(Vehicles). 
+
+If we can define the user interface of our base class (e.g., tt(Vehicle)) such
+that it remains usable irrespective of the classes we derive from tt(Vehicle)
+our software achieves an enormous reusability: we design or software around
+tt(Vehicle's) user interface, and our software will also properly function for
+derived classes. Using plain inheritance doesn't accomplish this. If we define 
+        verb(
+    std::ostream &operator<<(std::ostream &out, Vehicle const &vehicle)
+    {
+        return out << "Vehicle's mass is " << vehicle.mass() << " kg.";
+    }
+        )
+    and tt(Vehicle's) member tt(mass) returns 0, but tt(Auto's) member
+tt(mass) returns 1000, then twice a mass of 0 is reported when the following
+program is executed:
+        verb(
+    int main()
+    {
+        Vehicle vehicle;
+        Auto vw(1000);
+
+        cout << vehicle << '\n' << vw << endl;
+    }
+        )
+
+    We've defined an overloaded insertion operator, but since it only knows
+about tt(Vehicle's) user interface, `tt(cout << vw)' will use tt(vw's
+Vehicle's) user interface as well, thus displaying a mass of 0. 
+
+    Reusablility is enhanced if we add a em(redefinable interface) to the base
+class's interface. A redefinable interface allows derived classes to fill in
+their own implementation, without affecting the user interface. At the same
+time the user interface will behave according to the derived class's wishes,
+and not just to the base class's default implementation.
+
+    Members of the reusable interface should be declared in the class's
+private sections: conceptually they merely belong to their own classes
+(cf. section ref(INHERITWHY)). In the base class these members should be
+declared tt(virtual). These members can be redefined (overridden) by derived
+classes, and should there be provided with tt(override) indicators.
+
+We keep our user interface (tt(mass)), and add the redefinable member 
+tt(vmass) to tt(Vehicle's) interface:
         verb(
     class Vehicle
     {
         public:
-            virtual int mass() const;
+            int mass() const;
+            int si_mass() const;    // see below
+
+        private:
+            virtual vmass() const;
     };
-    class Truck: // inherited from Vehicle through Auto and Land
+            )
+    Separating the user interface from the redefinable interface is a sensible
+thing to do. It allows us to fine-tune the user interface (only one point of
+maintenance), while at the same time allowing us to standardize the expected
+behavior of the members of the redefinable interface. E.g., in many countries
+the International system of units is used, using the kilogram as the unit for
+mass. Some countries use other units (like the em(lbs): 1 kg being
+approx. 2.2046 lbs). By separating the user interface from the redefinable
+interface we can use one standard for the redefinable interface, and keep the
+flexibility of transforming the information em(ad-lib) in the user
+interface. 
+
+    Just to maintain a clean separation of user- and redefinable interface we
+might consider adding another accessor to tt(Vehicle), providing the
+tt(si_mass), simply implemented like this:
+        verb(
+    int Vehicle::si_mass() const
     {
-        // not altered
-    };
-    int Vehicle::mass() const
+        return vmass();
+    }
+        )
+
+If tt(Vehicle) supports a member tt(d_massFactor) then its tt(mass) member can
+be implemented like this:
+        verb(
+    int Vehicle::mass()
+    {
+        return d_massFactor * si_mass();
+    }
+        )
+    tt(Vehicle) itself could define tt(vmass) so that it returns a token
+value. E.g.,
+        verb(
+    int Vehicle::vmass()
+    {
+        return 0;
+    }
+        )
+
+    Now let's have a look at the class tt(Auto). It is derived from
+tt(Vehicle), and it inherits tt(Vehicle's) user interface. It also has a data
+member tt(int d_mass), and it implements its own reusable interface:
+        verb(
+    class Auto: public Vehicle
+    {
+        ...
+        private:
+            int vmass() override;
+    }
+        )
+        If tt(Auto) constructors require us to specify the car's mass (stored
+in tt(d_mass)), then tt(Auto) simply implements its tt(vmass) member like
+this:
+        verb(
+    int Auto::vmass() const
     {
         return d_mass;
     }
+        )
 
-    int Truck::mass() const
+    The class tt(Truck), inheriting from tt(Auto) needs two mass values: the
+tractor's mass and the trailer's mass. The tractor's mass is passed to its
+tt(Auto) base class, the trailor's mass is passed to its tt(Vehicle d_trailor)
+data member. tt(Truck), too, overrides tt(vmass), this time returning the sum
+of its tractor and trailor masses:
+        verb(
+    int Truck::vmass() const
     {
-        return Auto::mass() + d_trailer_wt;
+        return Auto::si_mass() + d_trailer.si_mass();
     }
         )
-    The keyword tt(virtual) em(only) appears in the (tt(Vehicle)) base
-class. There is no need (but there is also no i(penalty)) to repeat it in
-derived classes. Once a class member has been declared tt(virtual) it becomes
-a virtual member in all derived classes. A member function may be
-declared tt(virtual) em(anywhere) in a
-    i(class hierarchy). The compiler is perfectly happy if tt(mass) is
-declared tt(virtual) in tt(Auto), rather than in tt(Vehicle). The specific
-characteristics of virtual member functions would then only be available for
+
+    Once a class member has been declared tt(virtual) it becomes
+a virtual member in all derived classes, whether or not these members are
+provided with the tt(override) indicator. But tt(override) em(should) be used,
+as it allows to compiler to catch typos when writing down the derived class
+interface. 
+
+    A member function may be declared tt(virtual) em(anywhere) in a
+    i(class hierarchy), but this probably defeats the underlying polymorphic
+class design, as the original base class is no longer capable of completely
+covering the redefinable interfaces of derived classes. If, e.g, tt(mass) is
+declared virtual in tt(Auto), but not in tt(Vehicle), then the specific
+characteristics of virtual member functions would only be available for
 tt(Auto) objects and for objects of classes derived from tt(Auto). For a
-tt(Vehicle) pointer static binding would remain to be used.  The effect of
-late binding is illustrated below:
+tt(Vehicle) pointer or reference static binding would remain to be used.  
+
+    The effect of late binding (polymorphism) is illustrated below:
         verb(
-    Vehicle v(1200);            // vehicle with mass 1200
-    Truck t(6000, 115,          // truck with cabin mass 6000, speed 115,
-          "Scania", 15000);     // make Scania, trailer mass 15000
-    Vehicle *vp;                // generic vehicle pointer
+
+    void showInfo(Vehicle &vehicle)
+    {
+        cout << "Info: " << vehicle << '\n';
+    }
 
     int main()
     {
-        vp = &v;                            // see (1) below
-        cout << vp->mass() << '\n';
+        Auto auto(1200);            // auto with mass 1200
+        Truck truck(6000, 115,      // truck with cabin mass 6000, 
+              "Scania", 15000);     // speed 115, make Scania, 
+                                    // trailer mass 15000
 
-        vp = &t;                            // see (2) below
-        cout << vp->mass() << '\n';
+        showInfo(auto);             // see (1) below
+        showInfo(truck);            // see (2) below
 
-        cout << vp->speed() << '\n';     // see (3) below
+        Vehicle *vp = &truck;
+        cout << vp->speed() << '\n';// see (3) below
     }
         )
     Now that tt(mass) is defined tt(virtual), late binding is used:
     itemization(
-    it() at (1), tt(Vehicle::mass) is called.
-    it() at (2) tt(Truck::mass) is called.
+    it() at (1), tt(Auto)'s mass is displayed;
+    it() at (2) tt(Truck)'s mass is displayed;
     it() at (3) a syntax error is generated. The member
-        tt(speed) is no member of tt(Vehicle), and hence not callable via
-a tt(Vehicle*).
+        tt(speed) is not a member of tt(Vehicle), and hence not callable via
+        a tt(Vehicle*).
     )
     The example illustrates that when a pointer to a class is used em(only the
-members of that class can be called).  These functions may or may not be
-tt(virtual). A member's tt(virtual) characteristic only influences the type of
-binding (early vs. late), not the set of member functions that is visible
-to the pointer.
+members of that class can be called).  A member's tt(virtual) characteristic
+only influences the type of binding (early vs. late), not the set of member
+functions that is visible to the pointer.
 
 Through virtual members derived classes may redefine the behavior performed by
 functions called from base class members or from pointers or references to
 base class objects. This redefinition of base class members by derived classes
 is called hi(members: overriding)emi(overriding members).
+
+
