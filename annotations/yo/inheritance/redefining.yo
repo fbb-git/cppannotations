@@ -5,13 +5,13 @@ tractor and the trailer have their own mass, and the tt(mass) function
 should return the combined mass.
 
 The definition of a tt(Truck) starts with a class definition. Our initial
-tt(Truck) class is derived from tt(Auto) but it is then expanded to hold one
+tt(Truck) class is derived from tt(Car) but it is then expanded to hold one
 more tt(size_t) field representing the additional mass information. Here we
-choose to represent the mass of the tractor in the tt(Auto) class and to store
+choose to represent the mass of the tractor in the tt(Car) class and to store
 the mass of of full truck (tractor + trailer) in its own tt(d_mass) data
 member: 
         verb(
-    class Truck: public Auto
+    class Truck: public Car
     {
         size_t d_mass;
 
@@ -27,39 +27,39 @@ member:
     Truck::Truck(size_t tractor_mass, size_t speed, char const *name,
                  size_t trailer_mass)
     :
-        Auto(tractor_mass, speed, name)
+        Car(tractor_mass, speed, name)
     {
         d_mass = trailer_mass + trailer_mass;
     }
         )
     Note that the class tt(Truck) now contains two functions already
-present in the base class tt(Auto): tt(setMass) and tt(mass).
+present in the base class tt(Car): tt(setMass) and tt(mass).
     itemization(
     it() The redefinition of tt(setMass) poses no problems: this
 function is simply redefined to perform actions which are specific to a
 tt(Truck) object.
     it() Redefining tt(setMass), however,
     hi(hiding: base class  members) hi(base class: hiding members) em(hides)
-tt(Auto::setMass). For a tt(Truck) only the tt(setMass) function having
+tt(Car::setMass). For a tt(Truck) only the tt(setMass) function having
 two tt(size_t) arguments can be used.
     it() The tt(Vehicle)'s tt(setMass) function remains available for a
 tt(Truck), but it must now be
  hi(member function: called explicitly) called em(explicitly), as
-tt(Auto::setMass) is hidden from view.  This latter function is hidden,
-even though tt(Auto::setMass) has only one tt(size_t) argument. To implement
+tt(Car::setMass) is hidden from view.  This latter function is hidden,
+even though tt(Car::setMass) has only one tt(size_t) argument. To implement
 tt(Truck::setMass) we could write:
          verb(
     void Truck::setMass(size_t tractor_mass, size_t trailer_mass)
     {
         d_mass = tractor_mass + trailer_mass;
-        Auto::setMass(tractor_mass);     // note: Auto:: is required
+        Car::setMass(tractor_mass);     // note: Car:: is required
     }
         )
-    it() Outside of the class tt(Auto::setMass) is
+    it() Outside of the class tt(Car::setMass) is
 accessed using the i(scope resolution operator). So, if a tt(Truck truck) needs
-to set its tt(Auto) mass, it must use
+to set its tt(Car) mass, it must use
         verb(
-    truck.Auto::setMass(x);
+    truck.Car::setMass(x);
         )
 
     it() An alternative to using the scope resolution operator is to add a
@@ -74,8 +74,8 @@ tt(class Truck):
     // below the interface:
     inline void Truck::setMass(size_t tractor_mass)
     {
-        d_mass -= Auto::mass() + tractor_mass;
-        Auto::setMass(tractor_mass);
+        d_mass -= Car::mass() + tractor_mass;
+        Car::setMass(tractor_mass);
     }
         )
     Now the single argument tt(setMass) member function can be used by
@@ -88,26 +88,26 @@ prevent hiding the base class members a tt(using) declaration may be added to
 the derived class interface. The relevant section of tt(Truck)'s class
 interface then becomes:
         verb(
-    class Truck: public Auto
+    class Truck: public Car
     {
         public:
-            using Auto::setMass;
+            using Car::setMass;
             void setMass(size_t tractor_mass, size_t trailer_mass);
     };
         )
     A using declaration imports (all overloaded versions of) the mentioned
 member function directly into the derived class's interface. If a base class
 member has a signature that is identical to a derived class member then
-compilation fails (a tt(using Auto::mass) declaration cannot be added to
+compilation fails (a tt(using Car::mass) declaration cannot be added to
 tt(Truck)'s interface). Now code may use tt(truck.setMass(5000)) as well as
 tt(truck.setMass(5000, 2000)).
 
     Using declarations obey access rights. To prevent non-class members from
 using tt(setMass(5000)) without a scope resolution operator but allowing
-derived class members to do so the tt(using Auto::setMass) declaration
+derived class members to do so the tt(using Car::setMass) declaration
 should be put in the class tt(Truck)'s private section.
 
-    it() The function tt(mass) is also already defined in tt(Auto), as
+    it() The function tt(mass) is also already defined in tt(Car), as
 it was inherited from tt(Vehicle). In this case, the class tt(Truck) 
 em(redefines) this member function to return the truck's full mass:
          verb(
@@ -135,22 +135,22 @@ em(redefines) this member function to return the truck's full mass:
         )
 
 
-    The class tt(Truck) was derived from tt(Auto). However, one might question
+    The class tt(Truck) was derived from tt(Car). However, one might question
 this class design. Since a truck is conceived of as a combination of an
 tractor and a trailer it is probably better defined using a mixed design,
-using inheritance for the tractor part (inheriting from tt(Auto)) and
+using inheritance for the tractor part (inheriting from tt(Car)) and
 composition for the trailer part).
 
-This redesign changes our point of view from a tt(Truck) em(being) an tt(Auto)
+This redesign changes our point of view from a tt(Truck) em(being) a tt(Car)
 (and some strangely added data members) to a tt(Truck) still em(being) an
-tt(Auto) (the tractor) and em(containing) a tt(Vehicle) (the trailer).
+tt(Car) (the tractor) and em(containing) a tt(Vehicle) (the trailer).
 
 tt(Truck)'s interface is now very specific, not requiring users to study
-tt(Auto)'s and tt(Vehicle)'s interfaces and it opens up possibilities for
+tt(Car)'s and tt(Vehicle)'s interfaces and it opens up possibilities for
 defining `road trains': tractors towing multiple trailers. Here is an example
 of such an alternate class setup:
         verb(
-    class Truck: public Auto    // the tractor
+    class Truck: public Car    // the tractor
     {
         Vehicle d_trailer;      // use vector<Vehicle> for road trains
 

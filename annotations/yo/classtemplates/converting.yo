@@ -2,12 +2,14 @@ So you've decided to convert some of your dynamically polymorphic classes into
 statically polymorphic classes. How to realize the conversion?
 
 In chapter ref(POLYMORPHISM) the base class tt(Vehicle) and some derived
-classes were introduced. tt(Vehicle, Auto) and tt(Truck)'s interfaces
+classes were introduced. tt(Vehicle, Car) and tt(Truck)'s interfaces
 look like this (concentrating on the members that are involved in their
 polymorphic behavior):
         verb(
     class Vehicle
     {
+        size_t d_massFactor;
+
         public:
             int mass() const;
             int si_mass() const;
@@ -16,19 +18,19 @@ polymorphic behavior):
             virtual int vmass() const;
     };
 
-    class Auto: public Vehicle
+    class Car: public Vehicle
     {
         size_t d_mass;
         private:
             int vmass() const override;
-    }
+    };
         
-    class Truck: public Auto
+    class Truck: public Car
     {
         size_t d_mass;
         private:
             int vmass() const override;
-    }
+    };
         )        
     Thee members of the user-interface were implemented like this:
         verb(
@@ -42,135 +44,189 @@ polymorphic behavior):
     }
         )
 
-----------------------
-exceed those of the
-static polymorphic base class. E.g., essentially the class tt(Vehicle) merely
-defines the polymorphic user interface, but tt(Auto) and tt(Vehicle) offer
-data members and possibly additional members as well. Second, derived classes
-implement the redefinable interface in a way that fits their purpose. E.g.,
-tt(Auto's vmass) returns a car's mass in kg., tt(Truck's vmass) returns a
-truck's mass as the sum of the tractor and trailer masses.
-
-
-----------------------
-
-    When converting dynamic polymorphic classes to static polymorphic classes
+    When converting dynamically polymorphic classes to statically polymorphic classes
 we must realize that polymorphic classes serve two functions: first, they
 define facilities (data members, member functions) that are inherited by
 derived classes, and second polymorphic classes implement the redefinable
 interface in a way that fits their purpose.
 
-With static polymorphic classes it is important that these two aspects are
+With statically polymorphic classes it is important that these two aspects are
 implemented separately.  As we've seen in the previous section, a statically
 polymorphic derived class derives from the base class by using its own class
 type as argument to the base class's type parameter. This works fine if
-there's only one level of inheritance. However, with multiple levels of
-inheritance (e.g., tt(Truck -> Auto -> Vehicle)) tt(Truck)'s inheritance
-specification becomes a problem: if it is inheriting from tt(Auto), then it
-implicitly derives from tt(Vehicle<Auto>), and tt(Auto's vmass) is called by
-tt(Vehicle::interface). But tt(Truck) must inherit from tt(Auto) to be able to
-use tt(Auto's) features. But inheriting tt(Truck) from tt(Vehicle<Truck>)
-isn't an option either, as this results in a class tt(Truck) also inheriting
-from tt(Vehicle<Auto>) (through tt(Truck's Auto) base class).
+there's only one level of inheritance. 
+
+With multiple levels of inheritance (e.g., tt(Truck -> Car -> Vehicle))
+tt(Truck)'s inheritance specification becomes a problem. If it is inheriting
+from tt(Car), then it implicitly derives from tt(Vehicle<Car>), and thus
+tt(Car's vmass) is called by tt(Vehicle::interface). But tt(Truck) em(must)
+inherit from tt(Car) to be able to use tt(Car's) features. Additionally
+inheriting tt(Truck) from tt(Vehicle<Truck>) isn't an option either, as this
+creates a class tt(Truck) which em(also) inherits from tt(Vehicle<Car>)
+(through tt(Truck's Car) base class).
+
+    figure(classtemplates/converting)
+        (Vehicle Static Polymorphic Class Design)(STATPOLY)
 
 Generally it cannot be ruled out that classes use multiple levels of
 inheritance. When static polymorphism is used classes must carefully be
 designed. By separating the redefinable interface from the other elements of
 the interface, the normal line of inheritance is used to make the protected
 and public interfaces of (direct or indirect) base classes available to a
-derived class. This derived class is then used as a base class, together with
-the static polymorhic base class of a derived class offering its own
-implementation of the static base class's redefinable interface.
+derived class. The left-hand side of figure ref(STATPOLY) shows this line of
+inheritance. Each of the left-hand side classes is then used as a base class,
+together with the static polymorhic base class, to create a statically
+polymorphic derived class defining its own implementation of the static base
+class's redefinable interface. The right-hand side of of figure ref(STATPOLY)
+shows this part of the design. The tt(XBase) classes in the left-hand side of
+figure ref(STATPOLY) contain the non-redefinable elements of the original
+dynamically polymorphic classes. They should of course still be available to
+the statically polymorphic classes (shown in the right-hand side of figure
+ref(STATPOLY)). This is realized using tt(friend) declarations: the tt(XBase)
+classes declare `tt(friend class X)', after which tt(XBase) essentially has
+become part of the class tt(X).
 
-    figure(classtemplates/converting)
-        (Vehicle Static Polymorphic Class Design)(STATPOL)
+Now that we've analyzed the design of statically polymorphic classes using
+multiple levels of inheritance we're ready for the conversion of the
+tt(Vehicle, Car), and tt(Truck) dynamically polymorphic classes to statically
+polymorphic classes. To concentrate on the actual conversion process the
+design of the classes is kept simple. E.g., usually appearing elements like
+constructors were not included in the examples. Furthermore, to save some
+space all implementations of member functions are provided in-class.
 
- the only the part implementing their redefinable
-interfaces must inherit from the base class. This design is accomplished as
-follows (using the classes tt(Auto) and tt(Truck) to illustrate the approach,
-but the design should be applied to all classes (indirectly) inheriting from
-the static polymorphic base class):
-    itemization(
-    it() tt(Auto)'s non-virtual members are collected in a separate class
-        (e.g., tt(AutoBase));
-    it() tt(Auto) publicly derives from tt(AutoBase) and from
-        tt(Vehicle<Auto>), declaring the members of tt(Vehicle)'s user
-        interface calling members from tt(Vehicle)'s user interface calling 
-        members from its template class type its friend;
-    it() tt(AutoBase) declares tt(friend class Auto), which essentially turns
-        tt(AutoBase) into a constituent part of tt(Auto);
-    it() Classes originally derived from tt(Auto) (e.g., tt(Truck) should
-        implement the same separation: tt(TruckBase) collects tt(Truck)'s
-        non-virtual members, tt(Truck) should merely contain the redefinable
-        interface);
-    it() tt(Truck) originally derived from tt(Auto). Under the new design
-        tt(TruckBase) should derive from tt(AutoBase), and tt(Truck) itself
-        should inherit from tt(TruckBase) and from tt(Vehicle<Truck>).
-    )
-
-
-
-
-    We start by converting the base class to a static polymorphic class. This
-is accomplished in three steps:
-    itemization(
-    it() Conversion of the base class to a class template declaring a template
-        type parameter tt(Derived);
-    it() Removal of all virtual members from the interface;
-    it() Replacing calls of the virtual members calling these members as
-        members of the tt(Derived) template type.
-    )
-
-    Thus, the class tt(Vehicle) becomes:
+First the class tt(Vehicle). tt(Vehicle's) non-redifinable interface is moved
+to a class tt(VehicleBase), and tt(Vehicle) itself is turned into a statically
+polymorphic base class. Right now, only tt(Vehicle::d_massFactor) needs to be
+moved to tt(VehicleBase). But in general all members of the original
+dynamically polymorphic base class that do not use or implement virtual
+members should be moved to the tt(XBase) class. tt(VehicleBase) also declares
+tt(Vehicle) to be its friend, so tt(Vehicle) is not denied access to its
+members, now living in tt(VehicleBase). Here is tt(VehicleBase):
         verb(
-    template <type Derived>
-    class Vehicle
+    class VehicleBase
     {
-        public:
-            int mass() const;
-            int si_mass() const;
+        // original Vehicle members, not implementing the
+        // redefinable interface 
+
+        template <class Derived>
+        friend class Vehicle;
+
+        size_t d_massFactor = 1;
     };
         )
-    Its member tt(si_mass) now calls the derived class member using a
-tt(static_cast):
-        verb(
-    template <class Derived>
-    int Vehicle<Derived>::si_mass() const
-    {
-        return static_cast<Derived *>(this)->vmass();
-    }
-        )
-    Its member tt(mass) doesn't depend on (previously) virtual members, so its
-implementation remains as-is, but the member is converted to a function
-template: 
-        verb(
-    template <class Derived>
-    int Vehicle<Derived>::mass() const
-    {
-        return d_massFactor * si_mass();
-    }
-        )
-
-   
-     
-steps are taken:
-
-
-    The class tt(Auto) is derived from tt(Auto), receiving tt(Auto) as its
-template class type:
-        verb(
-    class Auto: public Vehicle<Auto>
-    {
-        private:
-            int vmass() const override;
-    }
     
+The statically polymorphic tt(Vehicle) base class implements the redefinable
+interface. All other facilities are in tt(VehicleBase), from which it is
+derived. Here is tt(VehicleBase):
+        verb(
+    template <class Derived>
+    class Vehicle: public VehicleBase
+    {
+        public:
+            int mass() const
+            {
+                return d_massFactor *
+                        static_cast<Derived const *>(this)->vmass();
+            }
+    };
+        )
+    In this implementation tt(Vehicle) does not implement its own tt(vmass)
+member. We cannot define tt(Vehicle<Vehicle>), and with static polymorphism the
+base class is essentially comparable to an abstract base class. If this is not
+required, then a default class can be specified for tt(Vehicle's Derived)
+class, implementing the redefinable interface of the original dynamically
+polymorphic base class (allowing definitions like tt(Vehicle<> vehicle). 
 
+Likewise the class tt(Car) is split into tt(CarBase) and
+tt(Car). tt(CarBase) uses standard inheritance to inherit tt(VehicleBase's)
+protected and public interface. Here is its implementation, adding a private
+data member for illustration purposes:
+        verb(
+    class CarBase: public VehicleBase
+    {
+        // original Car members, not implementing the
+        // redefinable interface 
 
+        int x = 1000;
+        friend class Car;
+    };
+        )       
+ 
+The class tt(Car) receives tt(CarBase)'s members through
+inheritance. Furthermore, it inherits from tt(Vehicle<Car>), implementing its
+own version of tt(Vehicle's) redefinable interface. Note the specific
+tt(friend) declaration, allowing tt(Vehicle<Car>) to access tt(Car)'s
+private tt(vmass) member:
+        verb(
+    class Car: public CarBase, public Vehicle<Car>
+    {
+        friend class Vehicle<Car>;
 
+        int vmass() const
+        {
+           return x;
+        }
+    };
+        )
 
+    This design pattern can be used for deeper levels of inheritance as
+well. Once more we need to split a polymorphic class into two separate
+classes: the polymorphic class tt(Truck) is split into tt(TruckBase) and
+a statically polymorphic class tt(Truck), implementing tt(Vehicle's) redefinable
+interface. Here is tt(TruckBase), inheriting from tt(CarBase), and thus also
+from tt(VehicleBase):
+        verb(
+    class TruckBase: public CarBase
+    {
+        // original Truck members, not implementing the
+        // redefinable interface 
 
+        friend class Truck;
+    };
+        )
+    
+Finally, we finish our class conversion for the class tt(Truck), now
+implementing its own version of the statically polymorphic class tt(Vehicle):
+        verb(
+    class Truck: public TruckBase, public Vehicle<Truck>
+    {
+        friend class Vehicle<Truck>;
 
+        private:
+            int vmass() const
+            {
+                return 15000;
+            }
+    };
+        )
 
-
-
+The original function tt(void fun(Vehicle &vehicle)) still needs to be
+converted to a function template. Here is its definition:
+        verb(
+    template <class Vehicle>
+    void fun(Vehicle &vehicle)
+    {
+        cout << vehicle.mass() << '\n';
+    }
+        )
+    Note that tt(Vehicle) is just a formal name. When an object is passed to
+tt(fun) it must offer a member tt(mass), or compilation will fail. If the
+object is in fact a tt(Car) or tt(Truck), then their tt(Vehicle<Type> static
+base class member tt(mass) is called, which in turn uses static polymorphism
+to call the member tt(vmass) as implemented by the actually passed class
+type. The following tt(main) function displays, respectively, 1000 and 15000:
+        verb(
+    int main()
+    {
+        Cat car;
+        fun(car);
+    
+        Truck truck;
+        fun(truck);
+    }
+        )
+    Realize that this program implements tt(fun) twice, rather than once in
+the case of dynamic polymorphism. The same holds true for the tt(Vehicle)
+class template: two implementations, one for the tt(Car) type, and one for the
+tt(Truck) type. The statically polumorphic program will be slightly faster,
+though. 

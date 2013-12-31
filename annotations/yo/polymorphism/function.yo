@@ -37,14 +37,14 @@ derived classes. Using plain inheritance doesn't accomplish this. If we define
         return out << "Vehicle's mass is " << vehicle.mass() << " kg.";
     }
         )
-    and tt(Vehicle's) member tt(mass) returns 0, but tt(Auto's) member
+    and tt(Vehicle's) member tt(mass) returns 0, but tt(Car's) member
 tt(mass) returns 1000, then twice a mass of 0 is reported when the following
 program is executed:
         verb(
     int main()
     {
         Vehicle vehicle;
-        Auto vw(1000);
+        Car vw(1000);
 
         cout << vehicle << '\n' << vw << endl;
     }
@@ -117,36 +117,36 @@ value. E.g.,
     }
         )
 
-    Now let's have a look at the class tt(Auto). It is derived from
+    Now let's have a look at the class tt(Car). It is derived from
 tt(Vehicle), and it inherits tt(Vehicle's) user interface. It also has a data
 member tt(int d_mass), and it implements its own reusable interface:
         verb(
-    class Auto: public Vehicle
+    class Car: public Vehicle
     {
         ...
         private:
             int vmass() override;
     }
         )
-        If tt(Auto) constructors require us to specify the car's mass (stored
-in tt(d_mass)), then tt(Auto) simply implements its tt(vmass) member like
+        If tt(Car) constructors require us to specify the car's mass (stored
+in tt(d_mass)), then tt(Car) simply implements its tt(vmass) member like
 this:
         verb(
-    int Auto::vmass() const
+    int Car::vmass() const
     {
         return d_mass;
     }
         )
 
-    The class tt(Truck), inheriting from tt(Auto) needs two mass values: the
+    The class tt(Truck), inheriting from tt(Car) needs two mass values: the
 tractor's mass and the trailer's mass. The tractor's mass is passed to its
-tt(Auto) base class, the trailor's mass is passed to its tt(Vehicle d_trailor)
+tt(Car) base class, the trailor's mass is passed to its tt(Vehicle d_trailor)
 data member. tt(Truck), too, overrides tt(vmass), this time returning the sum
 of its tractor and trailor masses:
         verb(
     int Truck::vmass() const
     {
-        return Auto::si_mass() + d_trailer.si_mass();
+        return Car::si_mass() + d_trailer.si_mass();
     }
         )
 
@@ -160,9 +160,9 @@ interface.
     i(class hierarchy), but this probably defeats the underlying polymorphic
 class design, as the original base class is no longer capable of completely
 covering the redefinable interfaces of derived classes. If, e.g, tt(mass) is
-declared virtual in tt(Auto), but not in tt(Vehicle), then the specific
+declared virtual in tt(Car), but not in tt(Vehicle), then the specific
 characteristics of virtual member functions would only be available for
-tt(Auto) objects and for objects of classes derived from tt(Auto). For a
+tt(Car) objects and for objects of classes derived from tt(Car). For a
 tt(Vehicle) pointer or reference static binding would remain to be used.  
 
     The effect of late binding (polymorphism) is illustrated below:
@@ -175,12 +175,12 @@ tt(Vehicle) pointer or reference static binding would remain to be used.
 
     int main()
     {
-        Auto auto(1200);            // auto with mass 1200
+        Car car(1200);            // car with mass 1200
         Truck truck(6000, 115,      // truck with cabin mass 6000, 
               "Scania", 15000);     // speed 115, make Scania, 
                                     // trailer mass 15000
 
-        showInfo(auto);             // see (1) below
+        showInfo(car);             // see (1) below
         showInfo(truck);            // see (2) below
 
         Vehicle *vp = &truck;
@@ -189,7 +189,7 @@ tt(Vehicle) pointer or reference static binding would remain to be used.
         )
     Now that tt(mass) is defined tt(virtual), late binding is used:
     itemization(
-    it() at (1), tt(Auto)'s mass is displayed;
+    it() at (1), tt(Car)'s mass is displayed;
     it() at (2) tt(Truck)'s mass is displayed;
     it() at (3) a syntax error is generated. The member
         tt(speed) is not a member of tt(Vehicle), and hence not callable via
