@@ -1,0 +1,81 @@
+Static polymorphism may profitably be used to avoid reimplementing code in an
+otherwise dynamic polymorphic environment.
+
+Consider the situation where we have a class containing a container of
+pointers to some polymorphic base class type (like the class tt(Vehicle) from
+chapter ref(POLYMORPHISM)). How to copy such a container to another container?
+We're not hinting at using shared pointers here, but would like to make a full
+copy. Clearly, we'll need to duplicate the objects the pointers point at, and
+assign these new pointers to the copied object's container.
+
+The prototype design patttern is commonly used to create copies of objects of
+polymorphic classes, given pointers to their base classes. 
+
+To apply the prototype design pattern we have to implement tt(newCopy) in all
+derived classes. Not by itself a big deal, but static polymorphism can nicely
+be used here to avoid having to  reimplement this function for each derived
+class. 
+
+We start off with an abstract base class tt(VehicleBase) declaring a pure
+virtual member tt(newCopy):
+        verb(
+    struct VehicleBase
+    {
+        virtual ~VehicleBase();
+        VehicleBase *clone() const; // calls newCopy
+
+        // declare any additional members defining the 
+        // public user interface here
+
+        private:
+            VehicleBase *newCopy() const = 0;   
+    };
+        )
+
+Next we define a static polymorphic class tt(CloningVehicle) which is derived
+from tt(VehicleBase) (note that we thus combine dynamic and static
+polymorphism). This class provides the generic implementation of
+tt(newCopy). This is possible because all derived classes can use this
+implementation. Also, tt(CloningVehicle) will be re-implemented for each
+concrete type of vehicle that is eventually used: a tt(Car), a tt(Truck), an
+tt(AmphibiousVehicle), etc, etc. tt(CloningVehicle) thus isn't shared (like
+tt(VehicleBase), but instantiated for each new type of vehicle. 
+
+The core characteristic of a statically polymorphic class is that it can use
+its class template type parameter via a tt(static_cast) of its own type. A
+member function like tt(newCopy) is implemented always the same way, viz.,
+by using the derived class's copy constructor. Here is the class
+tt(CloningVehicle):
+        verb(
+    template <class Derived>
+    class CloningVehicle: public VehicleBase
+    {
+        VehicleBase *newCopy() const
+        {
+            return new Derived(*static_cast<Derived const *>(this));
+        }
+    };
+        )
+
+And we're done. All types of vehicles should now be derived from
+tt(CloningVehicle), which automatically provides them with their own
+implementation of tt(newCopy). E.g., a class tt(Car) looks like this:
+        verb(
+    class Car: public CloningVehicle<Car>
+    {
+        // Car's interface, no need to either
+        // declare or implement newCopy,
+        // but a copy constructor is required.
+    };
+        )
+
+Having defined a tt(std::vector<VehicleBase *> original) we could create a
+copy of tt(original) like this:
+            verb(
+    for(auto pointer: original)
+        duplicate.push_back(pointer->clone());
+            )
+    Irrespective of the actual type of vehicle to which the pointers point,
+their tt(clone) members will return pointers to newly allocated copies of
+objects of their own types.
+

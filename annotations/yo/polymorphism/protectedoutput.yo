@@ -18,16 +18,16 @@ operations. Again, some members may be overridden by derived classes:
         override tt(overflow). The prototypical example of an overridden
         tt(overflow) function looks like this:
             verb(
-    int OFdStreambuf::overflow(int c)
+int OFdStreambuf::overflow(int c)
+{
+    sync();                             // flush the buffer
+    if (c != EOF)                       // write a character?
     {
-        sync();                             // flush the buffer
-        if (c != EOF)                       // write a character?
-        {
-            *pptr() = static_cast<char>(c); // put it into the buffer
-            pbump(1);                       // advance the buffer's pointer
-        }
-        return c;
+        *pptr() = static_cast<char>(c); // put it into the buffer
+        pbump(1);                       // advance the buffer's pointer
     }
+    return c;
+}
             )
         )
     ithtq(pbase)
@@ -75,13 +75,13 @@ operations. Again, some members may be overridden by derived classes:
         streamsize len)) (writing tt(len) bytes at tt(pptr())), then the
         following code acknowledges the tt(ios::app) mode:
        verb(
-    std::streamsize MyStreambuf::xsputn(char const *buf, std::streamsize len)
-    {
-        if (d_openMode & ios::app)
-            seekoff(0, ios::end);
+std::streamsize MyStreambuf::xsputn(char const *buf, std::streamsize len)
+{
+    if (d_openMode & ios::app)
+        seekoff(0, ios::end);
 
-        return write(buf, len);
-    }
+    return write(buf, len);
+}
             )
        )
     )

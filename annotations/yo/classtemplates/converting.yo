@@ -44,9 +44,9 @@ polymorphic behavior):
     }
         )
 
-    When converting dynamically polymorphic classes to statically polymorphic classes
-we must realize that polymorphic classes serve two functions: first, they
-define facilities (data members, member functions) that are inherited by
+    When converting dynamically polymorphic classes to statically polymorphic
+classes we must realize that polymorphic classes serve two functions: first,
+they define facilities (data members, member functions) that are inherited by
 derived classes, and second polymorphic classes implement the redefinable
 interface in a way that fits their purpose.
 
@@ -96,12 +96,12 @@ space all implementations of member functions are provided in-class.
 
 First the class tt(Vehicle). tt(Vehicle's) non-redifinable interface is moved
 to a class tt(VehicleBase), and tt(Vehicle) itself is turned into a statically
-polymorphic base class. Right now, only tt(Vehicle::d_massFactor) needs to be
-moved to tt(VehicleBase). But in general all members of the original
-dynamically polymorphic base class that do not use or implement virtual
-members should be moved to the tt(XBase) class. tt(VehicleBase) also declares
-tt(Vehicle) to be its friend, so tt(Vehicle) is not denied access to its
-members, now living in tt(VehicleBase). Here is tt(VehicleBase):
+polymorphic base class. Here only tt(Vehicle::d_massFactor) needs to be moved
+to tt(VehicleBase). But in general all members of the original dynamically
+polymorphic base class that do not use or implement virtual members should be
+moved to the tt(XBase) class. tt(VehicleBase) also declares tt(Vehicle) to be
+its friend, so tt(Vehicle) is not denied access to its members, now living in
+tt(VehicleBase). Here is tt(VehicleBase):
         verb(
     class VehicleBase
     {
@@ -131,11 +131,11 @@ derived. Here is tt(VehicleBase):
     };
         )
     In this implementation tt(Vehicle) does not implement its own tt(vmass)
-member. We cannot define tt(Vehicle<Vehicle>), and with static polymorphism the
-base class is essentially comparable to an abstract base class. If this is not
-required, then a default class can be specified for tt(Vehicle's Derived)
+member. We cannot define tt(Vehicle<Vehicle>), and with static polymorphism
+the base class is essentially comparable to an abstract base class. If this is
+not required, then a default class can be specified for tt(Vehicle's Derived)
 class, implementing the redefinable interface of the original dynamically
-polymorphic base class (allowing definitions like tt(Vehicle<> vehicle). 
+polymorphic base class (allowing definitions like tt(Vehicle<> vehicle).
 
 Likewise the class tt(Car) is split into tt(CarBase) and
 tt(Car). tt(CarBase) uses standard inheritance to inherit tt(VehicleBase's)
@@ -155,8 +155,8 @@ data member for illustration purposes:
 The class tt(Car) receives tt(CarBase)'s members through
 inheritance. Furthermore, it inherits from tt(Vehicle<Car>), implementing its
 own version of tt(Vehicle's) redefinable interface. Note the specific
-tt(friend) declaration, allowing tt(Vehicle<Car>) to access tt(Car)'s
-private tt(vmass) member:
+tt(friend) declaration, allowing tt(Vehicle<Car>) to access tt(Car)'s private
+tt(vmass) member:
         verb(
     class Car: public CarBase, public Vehicle<Car>
     {
@@ -171,8 +171,8 @@ private tt(vmass) member:
 
     This design pattern can be used for deeper levels of inheritance as
 well. Once more we need to split a polymorphic class into two separate
-classes: the polymorphic class tt(Truck) is split into tt(TruckBase) and
-a statically polymorphic class tt(Truck), implementing tt(Vehicle's) redefinable
+classes: the polymorphic class tt(Truck) is split into tt(TruckBase) and a
+statically polymorphic class tt(Truck), implementing tt(Vehicle's) redefinable
 interface. Here is tt(TruckBase), inheriting from tt(CarBase), and thus also
 from tt(VehicleBase):
         verb(
@@ -211,7 +211,7 @@ converted to a function template. Here is its definition:
         )
     Note that tt(Vehicle) is just a formal name. When an object is passed to
 tt(fun) it must offer a member tt(mass), or compilation will fail. If the
-object is in fact a tt(Car) or tt(Truck), then their tt(Vehicle<Type> static
+object is in fact a tt(Car) or tt(Truck), then their tt(Vehicle<Type>) static
 base class member tt(mass) is called, which in turn uses static polymorphism
 to call the member tt(vmass) as implemented by the actually passed class
 type. The following tt(main) function displays, respectively, 1000 and 15000:

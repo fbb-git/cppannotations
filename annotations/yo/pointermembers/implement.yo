@@ -6,22 +6,22 @@ itemization(
         tt(Person), omitting all the standard stuff like overloaded assignment
         operator, (copy) constructors, etc.:
         verb(
-    #include <cstdlib>     // for qsort()
+#include <cstdlib>     // for qsort()
 
-    class Date;
+class Date;
 
-    class Person
-    {
-        public:
-            size_t length() const;
-            size_t mass() const;
-            char const *name() const;
-            char const *city() const;
-            Date const &birthdate() const;
+class Person
+{
+    public:
+        size_t length() const;
+        size_t mass() const;
+        char const *name() const;
+        char const *city() const;
+        Date const &birthdate() const;
 
-        private:
-            // all necessary data members
-    };
+    private:
+        // all necessary data members
+};
         )
     it() Next, the class tt(Person_dbase).
         Within this class a tt(struct CmpPerson) is defined, containing
@@ -63,65 +63,65 @@ itemization(
         tt(Person) access function to be used.
         Here, then, is the interface of the class tt(Person_dbase):
             verb(
-    class Person_dbase
-    {
-        public:
-            enum Listtype
+class Person_dbase
+{
+    public:
+        enum Listtype
+        {
+            list_by_length,
+            list_by_mass,
+            list_by_name,
+            list_by_city,
+            list_by_birthday,
+        };
+
+        // ... constructors etc.
+
+        void list(Listtype type);
+                    // list the information
+    private:
+        struct CmpPerson
+        {
+            union Compare_function
             {
-                list_by_length,
-                list_by_mass,
-                list_by_name,
-                list_by_city,
-                list_by_birthday,
-            };
+                int (*persons)// comparing two Persons
+                    (Person const *p1, Person const *p2);
+                int (*voids)// for qsort()
+                    (void const *p1, void const *p2);
+            }
+                cmp;
 
-            // ... constructors etc.
-
-            void list(Listtype type);
-                        // list the information
-        private:
-            struct CmpPerson
+            union Person_accessor
             {
-                union Compare_function
-                {
-                    int (*persons)// comparing two Persons
-                        (Person const *p1, Person const *p2);
-                    int (*voids)// for qsort()
-                        (void const *p1, void const *p2);
-                }
-                    cmp;
+                char const
+                    *(Person::*cp)() const;
+                int
+                    (Person::*i)() const;
+                Date const
+                    &(Person::*d)() const;
+            }
+                pf;     // to Person's access functions
+        };
 
-                union Person_accessor
-                {
-                    char const
-                        *(Person::*cp)() const;
-                    int
-                        (Person::*i)() const;
-                    Date const
-                        &(Person::*d)() const;
-                }
-                    pf;     // to Person's access functions
-            };
+        static CmpPerson
+            cmpPerson[];
+        static Listtype
+            selector;
 
-            static CmpPerson
-                cmpPerson[];
-            static Listtype
-                selector;
+        static int cmpstr(Person const *p1,
+                          Person const *p2);
 
-            static int cmpstr(Person const *p1,
-                              Person const *p2);
+        static int cmpint(Person const *p1,
+                          Person const *p2);
 
-            static int cmpint(Person const *p1,
-                              Person const *p2);
+        static int cmpdate(Person const *p1,
+                          Person const *p2);
 
-            static int cmpdate(Person const *p1,
-                              Person const *p2);
-
-            Person
-                *pp;    // pointer to the info
-            size_t
-                n;      // number of persons stored.
-    };
+        Person
+            *pp;    // pointer to the info
+        size_t
+            n;      // number of persons stored.
+};
         )
     Next, we define each of the members of the tt(Person_dbase) class
     (as far as necessary).
@@ -155,35 +155,35 @@ itemization(
         tt(CmpPerson)s, also defined in the scope of the tt(Person_dbase)
         class. Hence the double mentioning of tt(Person_dbase).
             verb(
-    Person_dbase::CmpPerson
-        Person_dbase::cmpPerson[] =
-        {
-            {       // compare- and access
-                    // function to compare length
-                cmpint,
-                Person::length,
-            },
+Person_dbase::CmpPerson
+    Person_dbase::cmpPerson[] =
+    {
+        {       // compare- and access
+                // function to compare length
+            cmpint,
+            Person::length,
+        },
 
-            {       // same for mass
-                cmpint,
-                Person::mass,
-            },
+        {       // same for mass
+            cmpint,
+            Person::mass,
+        },
 
-            {       // same for name
-                cmpstr,
-                Person::name,
-            },
+        {       // same for name
+            cmpstr,
+            Person::name,
+        },
 
-            {       // same for city
-                cmpstr,
-                Person::city,
-            },
+        {       // same for city
+            cmpstr,
+            Person::city,
+        },
 
-            {       // same for Date
-                cmpdate,
-                Person::birthdate,
-            },
-        };
+        {       // same for Date
+            cmpdate,
+            Person::birthdate,
+        },
+    };
             )
     it() Now only the compare functions remain to be implemented. Although
         five accessors can be used, only three compare functions are needed.
@@ -220,41 +220,41 @@ itemization(
 
         Finally, here are the three compare functions:
             verb(
-    int Person_dbase::cmpstr(Person const *p1, Person const *p2)
-    {
-        return
+int Person_dbase::cmpstr(Person const *p1, Person const *p2)
+{
+    return
+    (
+        strcmp
         (
-            strcmp
-            (
-                (p1->*cmpPerson[selector].pf.cp)(),
-                (p2->*cmpPerson[selector].pf.cp)()
-            )
-        );
-    }
+            (p1->*cmpPerson[selector].pf.cp)(),
+            (p2->*cmpPerson[selector].pf.cp)()
+        )
+    );
+}
 
-    int Person_dbase::cmpint(Person const *p1, Person const *p2)
-    {
-        return
-        (
-            (p1->*cmpPerson[selector].pf.i)()
-            -
-            (p2->*cmpPerson[selector].pf.i)()
-        );
-    }
+int Person_dbase::cmpint(Person const *p1, Person const *p2)
+{
+    return
+    (
+        (p1->*cmpPerson[selector].pf.i)()
+        -
+        (p2->*cmpPerson[selector].pf.i)()
+    );
+}
 
-    int Person_dbase::cmpdate(Person const *p1, Person const *p2)
-    {
-        return
-        (
+int Person_dbase::cmpdate(Person const *p1, Person const *p2)
+{
+    return
+    (
+        (p1->*cmpPerson[selector].pf.d)()
+        <
+        (p2->*cmpPerson[selector].pf.d)() ?
+            -1
+        :
             (p1->*cmpPerson[selector].pf.d)()
-            <
-            (p2->*cmpPerson[selector].pf.d)() ?
-                -1
-            :
-                (p1->*cmpPerson[selector].pf.d)()
-                >
-                (p2->*cmpPerson[selector].pf.d)()
-        );
-    }
+            >
+            (p2->*cmpPerson[selector].pf.d)()
+    );
+}
             )
 )
