@@ -26,25 +26,25 @@ used. If move semantics is not available compilation fails. On the other
 hand, if compilation succeeds then the used containers or generic algorithms
 support the use of tt(unique_ptr)s. Here is an example:
         verb(
-    std::unique_ptr<int> up1(new int);
-    std::unique_ptr<int> up2(up1);      // compilation error
+std::unique_ptr<int> up1(new int);
+std::unique_ptr<int> up2(up1);      // compilation error
         )
     The second definition fails to compile as tt(unique_ptr)'s copy
 constructor is private (the same holds true for the assignment operator). But
 the tt(unique_ptr) class em(does) offer facilities to initialize and assign
 from em(rvalue references):
         verb(
-    class unique_ptr                        // interface partially shown
-    {
-        public:
-            unique_ptr(unique_ptr &&other); // rvalues bind here
-        private:
-            unique_ptr(const unique_ptr &other);
-    };
+class unique_ptr                        // interface partially shown
+{
+    public:
+        unique_ptr(unique_ptr &&other); // rvalues bind here
+    private:
+        unique_ptr(const unique_ptr &other);
+};
         )
     In the next example move semantics is used and so it compiles correctly:
         verb(
-    unique_ptr<int> cp(unique_ptr<int>(new int));
+unique_ptr<int> cp(unique_ptr<int>(new int));
         )
     it() a tt(unique_ptr) object should only point to memory that was made
 available dynamically, as only dynamically allocated memory can be deleted.

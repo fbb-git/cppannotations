@@ -47,29 +47,29 @@ chosen for tt(std::mutex), because it eliminates the possibility of race
 conditions with initialization of mutexes at a global scope. Here is an
 example, using in-class implementations for brevity:
     verb(
-    class MyClass
-    {
-        int d_i;
+class MyClass
+{
+    int d_i;
 
-        public:
-            constexpr MyClass(int i = 0)
-            :
-                d_i(0)
-            {}
+    public:
+        constexpr MyClass(int i = 0)
+        :
+            d_i(0)
+        {}
 
-        void action();
-    };
+    void action();
+};
 
-    MyClass myObject;   // static initialization with constexpr constructor
+MyClass myObject;   // static initialization with constexpr constructor
 
-    int foo();
-    myClass other(42 + foo());  // dynamic initialization
+int foo();
+myClass other(42 + foo());  // dynamic initialization
 
-    void f()
-    {
-        other.action();         // is other initialized in some thread?
-    }
-        )
+void f()
+{
+    other.action();         // is other initialized in some thread?
+}
+    )
     it() Second, a static variable defined within a compound statement may be
 used (e.g., a static local variable within a function body).  In C++ static
 variables hi(static variable: initialization) defined within a compound
@@ -86,17 +86,17 @@ restricted to their own threads).
 in one-time execution of a specified function as illustrated by the next
 example:
         verb(
-    std::string *global;
-    std::once_flag globalFlag;
+std::string *global;
+std::once_flag globalFlag;
 
-    void initializeGlobal()
-    {
-        global = new std::string("Hello world (why not?)");
-    }
-    void safeUse()
-    {
-        std::call_once(globalFlag, initializeGlobal);
-        process(*global);
-    }
+void initializeGlobal()
+{
+    global = new std::string("Hello world (why not?)");
+}
+void safeUse()
+{
+    std::call_once(globalFlag, initializeGlobal);
+    process(*global);
+}
         )
     )
