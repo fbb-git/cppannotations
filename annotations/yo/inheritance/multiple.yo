@@ -97,12 +97,12 @@ functionality of its own, but merely combines two existing classes into a new
 aggregate class. Thus, bf(C++) offers the possibility to simply sweep
 multiple simple classes into one more complex class.
     it() Here is the implementation of The tt(NavComSet) i(constructor):
-        verb(
-    NavComSet::NavComSet(Intercom &intercom, VHF_Dial &dial)
-    :
-        ComSet(intercom),
-        NavSet(intercom, dial)
-    {}
+    verb(
+NavComSet::NavComSet(Intercom &intercom, VHF_Dial &dial)
+:
+    ComSet(intercom),
+    NavSet(intercom, dial)
+{}
         )
     The constructor requires no extra code: Its purpose is to activate
 the constructors of its base classes. The order in which the base class
@@ -131,52 +131,52 @@ special provisions need to be made to prevent ambiguity:
     itemization(
     it() The intended base class can explicitly be specified using the base
 class name and i(scope resolution operator):
-        verb(
-    NavComSet navcom(intercom, dial);
+    verb(
+NavComSet navcom(intercom, dial);
 
-    navcom.NavSet::setVolume(5);    // sets the NavSet volume level
-    navcom.ComSet::setVolume(5);    // sets the ComSet volume level
+navcom.NavSet::setVolume(5);    // sets the NavSet volume level
+navcom.ComSet::setVolume(5);    // sets the ComSet volume level
         )
     it() The class interface is provided with member functions that can be
 called unambiguously. These additional members are usually defined tt(inline):
-        verb(
-    class NavComSet: public ComSet, public NavSet
-    {
-        public:
-            NavComSet(Intercom &intercom, VHF_Dial &dial);
-            void comVolume(size_t volume);
-            void navVolume(size_t volume);
-    };
-    inline void NavComSet::comVolume(size_t volume)
-    {
-        ComSet::setVolume(volume);
-    }
-    inline void NavComSet::navVolume(size_t volume)
-    {
-        NavSet::setVolume(volume);
-    }
+    verb(
+class NavComSet: public ComSet, public NavSet
+{
+    public:
+        NavComSet(Intercom &intercom, VHF_Dial &dial);
+        void comVolume(size_t volume);
+        void navVolume(size_t volume);
+};
+inline void NavComSet::comVolume(size_t volume)
+{
+    ComSet::setVolume(volume);
+}
+inline void NavComSet::navVolume(size_t volume)
+{
+    NavSet::setVolume(volume);
+}
         )
     it() If the tt(NavComSet) class is obtained from a third party, and cannot
 be modified, a disambiguating i(wrapper class) may be used:
-        verb(
-    class MyNavComSet: public NavComSet
-    {
-        public:
-            MyNavComSet(Intercom &intercom, VHF_Dial &dial);
-            void comVolume(size_t volume);
-            void navVolume(size_t volume);
-    };
-    inline MyNavComSet::MyNavComSet(Intercom &intercom, VHF_Dial &dial)
-    :
-        NavComSet(intercom, dial);
-    {}
-    inline void MyNavComSet::comVolume(size_t volume)
-    {
-        ComSet::setVolume(volume);
-    }
-    inline void MyNavComSet::navVolume(size_t volume)
-    {
-        NavSet::setVolume(volume);
-    }
+    verb(
+class MyNavComSet: public NavComSet
+{
+    public:
+        MyNavComSet(Intercom &intercom, VHF_Dial &dial);
+        void comVolume(size_t volume);
+        void navVolume(size_t volume);
+};
+inline MyNavComSet::MyNavComSet(Intercom &intercom, VHF_Dial &dial)
+:
+    NavComSet(intercom, dial);
+{}
+inline void MyNavComSet::comVolume(size_t volume)
+{
+    ComSet::setVolume(volume);
+}
+inline void MyNavComSet::navVolume(size_t volume)
+{
+    NavSet::setVolume(volume);
+}
         )
     )

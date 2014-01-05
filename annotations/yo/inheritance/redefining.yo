@@ -48,18 +48,18 @@ tt(Truck), but it must now be
 tt(Car::setMass) is hidden from view.  This latter function is hidden,
 even though tt(Car::setMass) has only one tt(size_t) argument. To implement
 tt(Truck::setMass) we could write:
-         verb(
-    void Truck::setMass(size_t tractor_mass, size_t trailer_mass)
-    {
-        d_mass = tractor_mass + trailer_mass;
-        Car::setMass(tractor_mass);     // note: Car:: is required
-    }
+     verb(
+void Truck::setMass(size_t tractor_mass, size_t trailer_mass)
+{
+    d_mass = tractor_mass + trailer_mass;
+    Car::setMass(tractor_mass);     // note: Car:: is required
+}
         )
     it() Outside of the class tt(Car::setMass) is
 accessed using the i(scope resolution operator). So, if a tt(Truck truck) needs
 to set its tt(Car) mass, it must use
-        verb(
-    truck.Car::setMass(x);
+    verb(
+truck.Car::setMass(x);
         )
 
     it() An alternative to using the scope resolution operator is to add a
@@ -67,16 +67,16 @@ member having the same function prototype as the base class member to the
 derived class's interface. This derived class member could be implemented
 inline to call the base class member. E.g., we add the following member to the
 tt(class Truck):
-        verb(
-    // in the interface:
-    void setMass(size_t tractor_mass);
+    verb(
+// in the interface:
+void setMass(size_t tractor_mass);
 
-    // below the interface:
-    inline void Truck::setMass(size_t tractor_mass)
-    {
-        d_mass -= Car::mass() + tractor_mass;
-        Car::setMass(tractor_mass);
-    }
+// below the interface:
+inline void Truck::setMass(size_t tractor_mass)
+{
+    d_mass -= Car::mass() + tractor_mass;
+    Car::setMass(tractor_mass);
+}
         )
     Now the single argument tt(setMass) member function can be used by
 tt(Truck) objects without using the scope resolution operator. As the
@@ -87,13 +87,13 @@ involved.
 prevent hiding the base class members a tt(using) declaration may be added to
 the derived class interface. The relevant section of tt(Truck)'s class
 interface then becomes:
-        verb(
-    class Truck: public Car
-    {
-        public:
-            using Car::setMass;
-            void setMass(size_t tractor_mass, size_t trailer_mass);
-    };
+    verb(
+class Truck: public Car
+{
+    public:
+        using Car::setMass;
+        void setMass(size_t tractor_mass, size_t trailer_mass);
+};
         )
     A using declaration imports (all overloaded versions of) the mentioned
 member function directly into the derived class's interface. If a base class
@@ -110,11 +110,11 @@ should be put in the class tt(Truck)'s private section.
     it() The function tt(mass) is also already defined in tt(Car), as
 it was inherited from tt(Vehicle). In this case, the class tt(Truck) 
 em(redefines) this member function to return the truck's full mass:
-         verb(
-    size_t Truck::mass() const
-    {
-        return d_mass;
-    }
+     verb(
+size_t Truck::mass() const
+{
+    return d_mass;
+}
         )
     )
     Example:
@@ -123,9 +123,9 @@ em(redefines) this member function to return the truck's full mass:
     {
         Land vehicle(1200, 145);
         Truck lorry(3000, 120, "Juggernaut", 2500);
-
+    
         lorry.Vehicle::setMass(4000);
-
+    
         cout << '\n' << "Tractor weighs " <<
                         lorry.Vehicle::mass() << '\n' <<
             "Truck + trailer weighs " << lorry.mass() << '\n' <<
@@ -133,7 +133,6 @@ em(redefines) this member function to return the truck's full mass:
             "Name is " << lorry.name() << '\n';
     }
         )
-
 
     The class tt(Truck) was derived from tt(Car). However, one might question
 this class design. Since a truck is conceived of as a combination of an
@@ -169,5 +168,8 @@ of such an alternate class setup:
             Vehicle const &trailer() const;
     };
         )
+
+
+
 
 
