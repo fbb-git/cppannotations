@@ -39,21 +39,21 @@ the exception leaving the constructor and the object is not considered to have
 been properly constructed. A tt(try) block may include the member
 initializers, and the tt(try) block's compound statement becomes the
 constructor's body as in the following example:
-        verb(
-    class Incomplete2
-    {
-        Composed d_composed;
-        public:
-            Incomplete2()
-            try
-            :
-                d_composed(/* arguments */)
-            {
-                // body
-            }
-            catch (...)
-            {}
-    };
+    verb(
+class Incomplete2
+{
+    Composed d_composed;
+    public:
+        Incomplete2()
+        try
+        :
+            d_composed(/* arguments */)
+        {
+            // body
+        }
+        catch (...)
+        {}
+};
         )
     An exception thrown by either the member initializers or the body
 results in the execution never reaching the body's closing curly brace. Instead
@@ -93,32 +93,32 @@ pointer data members. Then, in its body it can dynamically allocate memory,
 reassigning the plain pointer data members. The constructor must be provided
 with a function try block whose generic catch clause deletes the memory
 pointed at by the class's plain pointer data members. Example:
-        verb(
-    class Incomplete2
-    {
-        Composed d_composed;
-        char *d_cp;         // plain pointers
-        int *d_ip;
+    verb(
+class Incomplete2
+{
+    Composed d_composed;
+    char *d_cp;         // plain pointers
+    int *d_ip;
 
-        public:
-            Incomplete2(size_t nChars, size_t nInts)
-            try
-            :
-                d_composed(/* arguments */),    // might throw
-                d_cp(0),
-                d_ip(0)
-            {
-                preamble();                     // might throw
-                d_cp = new char[nChars];        // might throw
-                d_ip = new int[nChars];         // might throw
-                postamble();                    // might throw
-            }
-            catch (...)
-            {
-                delete[] d_cp;                  // clean up
-                delete[] d_ip;
-            }
-    };
+    public:
+        Incomplete2(size_t nChars, size_t nInts)
+        try
+        :
+            d_composed(/* arguments */),    // might throw
+            d_cp(0),
+            d_ip(0)
+        {
+            preamble();                     // might throw
+            d_cp = new char[nChars];        // might throw
+            d_ip = new int[nChars];         // might throw
+            postamble();                    // might throw
+        }
+        catch (...)
+        {
+            delete[] d_cp;                  // clean up
+            delete[] d_ip;
+        }
+};
         )
     )
 

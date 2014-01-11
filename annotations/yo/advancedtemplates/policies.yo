@@ -22,95 +22,95 @@ Using in-class implementations for brevity the following allocation classes
 could be defined:
     itemization(
     it() No special allocation takes place, tt(Data) is used `as is':
-        verb(
-    template <typename Data>
-    class PlainAlloc: public std::allocator<Data>
-    {
-        template<typename IData>
-        friend std::ostream &operator<<(std::ostream &out,
-                                        PlainAlloc<IData> const &alloc);
-        Data d_data;
+    verb(
+template <typename Data>
+class PlainAlloc: public std::allocator<Data>
+{
+    template<typename IData>
+    friend std::ostream &operator<<(std::ostream &out,
+                                    PlainAlloc<IData> const &alloc);
+    Data d_data;
 
-        public:
-            PlainAlloc()
-            {}
-            PlainAlloc(Data const &data)
-            :
-                d_data(data)
-            {}
-            PlainAlloc(PlainAlloc<Data> const &other)
-            :
-                d_data(other.d_data)
-            {}
-    };
+    public:
+        PlainAlloc()
+        {}
+        PlainAlloc(Data const &data)
+        :
+            d_data(data)
+        {}
+        PlainAlloc(PlainAlloc<Data> const &other)
+        :
+            d_data(other.d_data)
+        {}
+};
         )
     it() The second allocation scheme uses the standard tt(new) operator to
 allocate a new copy of the data:
-        verb(
-    template <typename Data>
-    class NewAlloc: public std::allocator<Data>
-    {
-        template<typename IData>
-        friend std::ostream &operator<<(std::ostream &out,
-                                        NewAlloc<IData> const &alloc);
-        Data *d_data;
+    verb(
+template <typename Data>
+class NewAlloc: public std::allocator<Data>
+{
+    template<typename IData>
+    friend std::ostream &operator<<(std::ostream &out,
+                                    NewAlloc<IData> const &alloc);
+    Data *d_data;
 
-        public:
-            NewAlloc()
-            :
-                d_data(0)
-            {}
-            NewAlloc(Data const &data)
-            :
-                d_data(new Data(data))
-            {}
-            NewAlloc(NewAlloc<Data> const &other)
-            :
-                d_data(new Data(*other.d_data))
-            {}
-            ~NewAlloc()
-            {
-                delete d_data;
-            }
-    };
+    public:
+        NewAlloc()
+        :
+            d_data(0)
+        {}
+        NewAlloc(Data const &data)
+        :
+            d_data(new Data(data))
+        {}
+        NewAlloc(NewAlloc<Data> const &other)
+        :
+            d_data(new Data(*other.d_data))
+        {}
+        ~NewAlloc()
+        {
+            delete d_data;
+        }
+};
         )
     it() The third allocation scheme uses the i(placement new) operator (see
         section ref(PLACEMENT)), requesting memory from a
         common pool (the implementation of the member tt(request),
         obtaining the required amount of memory, is left as an exercise to the
         reader):
-        verb(
-    template<typename Data>
-    class PlacementAlloc: public std::allocator<Data>
-    {
-        template<typename IData>
-        friend std::ostream &operator<<(std::ostream &out,
-                                        PlacementAlloc<IData> const &alloc);
-        Data *d_data;
+    verb(
+template<typename Data>
+class PlacementAlloc: public std::allocator<Data>
+{
+    template<typename IData>
+    friend std::ostream &operator<<(std::ostream &out,
+                                    PlacementAlloc<IData> const &alloc);
+    Data *d_data;
 
-        static char s_commonPool[];
-        static char *s_free;
+    static char s_commonPool[];
+    static char *s_free;
 
-        public:
-            PlacementAlloc()
-            :
-                d_data(0)
-            {}
-            PlacementAlloc(Data const &data)
-            :
-                d_data(new(request()) Data(data))
-            {}
-            PlacementAlloc(PlacementAlloc<Data> const &other)
-            :
-                d_data(new(request()) Data(*other.d_data))
-            {}
-            ~PlacementAlloc()
-            {
-                d_data->~Data();
-            }
-        private:
-            static char *request();
-    };
+    public:
+        PlacementAlloc()
+        :
+            d_data(0)
+        {}
+        PlacementAlloc(Data const &data)
+        :
+            d_data(new(request()) Data(data))
+        {}
+        PlacementAlloc(PlacementAlloc<Data> const &other)
+        :
+            d_data(new(request()) Data(*other.d_data))
+        {}
+        ~PlacementAlloc()
+        {
+            d_data->~Data();
+        }
+    private:
+        static char *request();
+};
         )
     )
     The above three classes define em(policies) that may be selected by the
