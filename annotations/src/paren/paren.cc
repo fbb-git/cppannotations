@@ -110,7 +110,7 @@ try
     }
     return ok ? 0 : 1;
 }
-catch(Errno const &e)
+catch(exception const &e)
 {
     cout << e.what() << endl;
     return 1;
