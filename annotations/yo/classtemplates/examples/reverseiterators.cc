@@ -9,12 +9,12 @@ class Data
     public:
         class iterator;
         class const_iterator;
-    
+
         typedef std::reverse_iterator<iterator> reverse_iterator;
         typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 };
 
-class Data::iterator: public std::iterator<std::input_iterator_tag, 
+class Data::iterator: public std::iterator<std::input_iterator_tag,
                                            std::string>
 {
     public:
@@ -35,7 +35,7 @@ bool operator==(Data::iterator const &lhs, Data::iterator const &rhs);
 
 
 
-class Data::const_iterator: public std::iterator<std::input_iterator_tag, 
+class Data::const_iterator: public std::iterator<std::input_iterator_tag,
                                                  std::string const>
 {
     public:
@@ -52,7 +52,7 @@ class Data::const_iterator: public std::iterator<std::input_iterator_tag,
         const_iterator &operator--();
 };
 
-bool operator==(Data::const_iterator const &lhs, 
+bool operator==(Data::const_iterator const &lhs,
                 Data::const_iterator const &rhs);
 
 
@@ -69,8 +69,3 @@ int main()
     *criter;
 
 };
-
-
-
-
-
