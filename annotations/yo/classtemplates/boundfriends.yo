@@ -24,6 +24,7 @@ a subset of the entries of a dictionary. For real life examples, a dedicated
 function object returning tt(!key1.find(key2)) is probably more useful.  For
 the current example, tt(operator==) is acceptable:
         verbinsert(FUNCTION)(examples/boundfriends.cc)
+
     it() By declaring a full class template as a class template's friend, all
 members of the friend class may access all private members of the class
 declaring the friend. As the friend class only needs to be declared, the
@@ -52,6 +53,7 @@ cannot be used as-is, but it must be prefixed by
 tt(typename) (see the function tt(begin)'s return type in the next example):
             verbinsert(CLASS4)(examples/boundfriends.cc)
         )
+
     it() In the previous example we might decide that only a tt(Dictionary)
 should be able to construct an tt(Iterator) (maybe because we conceptually
 consider tt(Iterator) to be a sub-type of tt(Dictionary)). This is easily
@@ -75,7 +77,35 @@ is:
         verb(
 friend std::vector<Value> Dictionary<Key, Value>::sortValues();
         )
+
+    it() A class template may define free members, which should have access to
+the data of instantiations of the class template, but only for matching
+types. An example is a class template for which the free member tt(operator==)
+must be available. If this is required for a template tt(ClassTemplate),
+requiring a tt(typename Type) template type argument, then
+a free member 
+        verb(
+    template<typename Type>
+    bool operator==(ClassTemplate<Type> const &lhs, 
+                    ClassTemplate<Type> const &rhs);
+        )
+    must have been declared prior to tt(ClassTemplate)'s interface
+itself. Within the class interface tt(operator==) may then be declared as a
+friend, specifying tt(operator==) as a specialized function template (note the
+tt(<>) following the function name) like this:
+        verb(
+    template <typename Type>
+    class ClassTemplate
+    {
+        friend  bool operator==<>(ClassTemplate<Type> const &lhs, 
+                                ClassTemplate<Type> const &rhs);
+        ...
+    };
+        )
+    Now that the class has been declared, tt(operator==)'s implementation may
+follow. 
     )
+
     Finally, the following example can be used as a prototype for
 situations where bound friends are useful:
         verb(
@@ -84,11 +114,17 @@ situations where bound friends are useful:
     {
         t->not_public();
     };
+    template<typename X>    // a free member function template
+    bool operator==(A<X> const &lhs, A<X> const &rhs);
     template <typename X>   // a class template
     class A
     {                       // fun() is used as friend bound to A,
                             // instantiated for X, whatever X may be
         friend void fun<A<X>>(A<X> *);
+                            // operator== is a friend for A<X> only
+        friend  bool operator==<>(A<X> const &lhs, A<X> const &rhs);
+
+        int d_data = 10;
 
         public:
             A();
@@ -104,6 +140,11 @@ situations where bound friends are useful:
     template <typename X>
     void A<X>::not_public()
     {}
+    template<typename X>    // may access lhs/rhs's private data
+    bool operator==(A<X> const &lhs, A<X> const &rhs)
+    {
+        return lhs.d_data == rhs.d_data;
+    }
 
     int main()
     {
@@ -112,3 +153,11 @@ situations where bound friends are useful:
         fun(&a);            // fun instantiated for A<int>.
     }
         )
+
+
+
+
+
+
+
+
