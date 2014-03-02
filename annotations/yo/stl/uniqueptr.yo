@@ -2,10 +2,10 @@ Before using the tt(unique_ptr) class presented in this section the
 tthi(memory) header file must have been included.
 
 When pointers are used to access dynamically allocated memory strict
-bookkeeping is required to prevent memory leaks from happening. When a pointer
-variable referring to dynamically allocated memory goes out of scope, the
-dynamically allocated memory becomes inaccessible and the program suffers from
-a i(memory leak).
+bookkeeping is required to prevent memory leaks. When a pointer variable
+referring to dynamically allocated memory goes out of scope, the dynamically
+allocated memory becomes inaccessible and the program suffers from a 
+    i(memory leak).
 
 To prevent such memory leaks strict bookkeeping is required: the programmer
 has to make sure that the dynamically allocated memory is returned to the
@@ -46,14 +46,36 @@ class unique_ptr                        // interface partially shown
         verb(
 unique_ptr<int> cp(unique_ptr<int>(new int));
         )
+
     it() a tt(unique_ptr) object should only point to memory that was made
 available dynamically, as only dynamically allocated memory can be deleted.
+
     it() multiple tt(unique_ptr) objects should not be allowed to point to the
 same block of dynamically allocated memory. The tt(unique_ptr)'s interface was
 designed to prevent this from happening. Once a tt(unique_ptr) object goes out
 of scope, it deletes the memory it points to, immediately changing any other
 object also pointing to the allocated memory into a hi(pointer: wild) wild
 pointer.
+
+    it() When a class tt(Derived) is derived from tt(Base), then a newly
+allocated tt(Derived) class object can be assigned to a tt(unique_ptr<Base>),
+without having to define a virtual destructor for tt(Base). The tt(Base *)
+pointer that is returned by the tt(unique_ptr) object can simply be cast
+statically to tt(Derived), as shown in the following example:
+        verb(
+    class Base
+    { ... };
+    class Derived: public Base
+    {
+        // assume Derived has a member void process()
+    };
+    int main()
+    {
+        shared_ptr<Base> bp(new Derived);
+        static_cast<Derived *>(bp)->process(); // OK!
+
+    } // here ~Derived is called: no polymorphism required.
+        )
     )
     The class tt(unique_ptr) offers several member functions to access the
 pointer itself or to have a tt(unique_ptr) point to another block of
@@ -65,3 +87,6 @@ be used as a safe alternative to the now hi(auto_ptr: deprecated) deprecated
 tt(auto_ptr). tt(Unique_ptr) also augments tt(auto_ptr) as it can be used with
 containers and (generic) algorithms as it adds customizable deleters. Arrays
 can also be handled by tt(unique_ptrs).
+
+
+

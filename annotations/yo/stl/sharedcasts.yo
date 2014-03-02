@@ -1,21 +1,31 @@
-Shared pointers cannot simply be cast using the standard bf(C++) style
-casts. Consider the following two classes:
+Be cautious when using standard bf(C++) style casts in combination with
+tt(shared_ptr) objects. Consider the following two classes:
         verb(
     struct Base
     {};
     struct Derived: public Base
     {};
         )
-    A tt(shared_ptr<Derived>) can easily be defined. Since a tt(Derived) is
-also a tt(Base) a pointer to a tt(Derived) can be cast to a pointer to a
-tt(Base) using a static cast:
+
+    As with tt(unique_ptr), when defining a tt(shared_ptr<Base>) to store a
+newly allocated tt(Derived) class object, the returned tt(Base *) may be cast
+to a tt(Derived *) using a tt(static_cast): polymorphism isn't required, and
+when resetting the tt(shared_ptr) or when the tt(shared_ptr) goes out of
+scope, no slicing occurs, and tt(Derived)'s destructor is called (cf. section
+ref(UNIQUEPTR)).
+
+    Of course, a tt(shared_ptr<Derived>) can easily be defined. Since a
+tt(Derived) object is also a tt(Base) object, a pointer to tt(Derived) can
+be considered a pointer to tt(Base) without using casts, but a tt(static_cast)
+could be used for force the interpretation of a tt(Derived *) to a tt(Base *):
         verb(
     Derived d;
     static_cast<Base *>(&d);
         )
+
     However, a plain tt(static_cast) cannot be used when initializing a shared
-pointer to a tt(Base) using the object pointer of a shared pointer to a
-tt(Derived) object. I.e., the following statement will eventually result in an
+pointer to a tt(Base) using the tt(get) member of a shared pointer to a
+tt(Derived) object. The following code snipped eventually results in an
 attempt to delete the dynamically allocated tt(Base) object twice:
         verb(
     shared_ptr<Derived> sd(new Derived);
