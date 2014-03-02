@@ -66,3 +66,73 @@ tt(&*rit) to initialize the iterator. Here, the dereference operator is
 applied to reach the element the reverse iterator refers to. Then the address
 operator is applied to obtain its address with which we can initialize the
 iterator.
+
+    When defining a tt(const_reverse_iterator) (e.g., matching a
+tt(const_iterator) class), then the tt(const_iterator's operator*) member
+should be a member returning a non-modifiable value or object. Since a
+tt(const_reverse_iterator) uses the iterator's tt(operator--) member, we're
+running against a small conceptual conflict. On the one hand, a
+tt(std::input_iterator_tag) is inappropriate, since we must allow decrementing
+the iterator. On the other hand, a tt(std::bidirectional_iterator) is
+inappropriate, since we don't allow modification of the data.
+
+    Since the iterator tags are primarily conceptual, and since
+tt(const_iterators) and tt(const_reverse_iterators) allow increment
+operations, the tt(input_iterator_tag) most closely matches the iterator's
+intended use. Hence this tag is used below. 
+
+    Furthermore, in line with the nature of a tt(input_iterator_tag) our
+tt(const_iterator) should not offer an tt(operator--). This, of course, causes
+problems: a reverse iterator must be able to use the iterator's tt(operator--)
+member. This can easily be solved by stashing the iterator's tt(operator--) in
+the iterator's private section, and declaring
+tt(std::reverse_iterator<(const_)iterator>) its friend (note that declaring a
+tt((const_)reverse_iterator) that is derived from tt(std::reverse_iterator)
+doesn't solve the issue: it is tt(std::reverse_iterator) that calls the
+iterator's tt(operator--), not a class that is derived from it).
+
+    There is, however, another issue. After deriving a
+tt(const_reverse_iterator) from tt(const_iterator), and subsequently
+dereferencing a tt(const_reverse_iterator), the compiler generates an error
+message like the following (using tt(Type = int)):
+    verb(
+error: invalid initialization of non-const reference of type
+'std::reverse_iterator<const_iterator>::reference {aka int&}' from an rvalue
+of type 'int' 
+  return *--__tmp;
+    )
+
+    This message is caused by tt(std::reverse_iterator) by default expecting
+that the iterator's tt(operator*) returns a reference to a modifiable
+tt(Type). To control these default expectancies, iterators can use
+tt(typedefs) to fine-tune these expectancies. The following tt(typedefs) are
+interpreted by tt(std::reverse_iterator):
+        hi(ptrdiff_t)
+        verb(
+    pointer         -   the type of the pointer to the data 
+                        (e.g., Type *)
+    const_pointer   -   the type of a pointer to immutable data
+                        (e.g., Type const *)
+    reference       -   the type of a reference to the data
+                        (e.g., Type &)
+    const_reference -   the type of a reference to immmutable data
+                        (e.g., Type const &)
+    difference_type -   the type representing differences between
+                        pointers (by default `ptrdiff_t')
+        )
+
+    The mentioned error can simply be prevented by declaring `tt(typedef int
+const &reference)' in the tt(iterator) class. Alternatively, tt(int const) may
+be specified as the data type for the tt(std::iterator)'s base class.
+
+    To define a tt(iterator, const_iterator, reverse_iterator) and
+tt(const_reverse_iterator) for a class tt(Data) the following framework can be
+used:
+
+verbinclude(examples/reverseiterators.cc)
+
+
+
+        
+ 
+
