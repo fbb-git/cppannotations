@@ -9,18 +9,60 @@ All facilities offered by tt(type_traits) are defined in the tt(std)
 namespace (omitted from the examples given below), allowing programmers to
 determine various characteristics of types and values.
 
-At the description of several of these facilities the concept of a
-        emi(trivial member function)
-    is used. Trivial member functions are never declared (other than
-tt(default)) in their class interfaces and (for default constructors or
-assignment operators) only perform byte-by-byte actions. Here are two
-examples: tt(struct Pod) only has trivial members as it doesn't explicitly
-declare any member function and its data member is em(plain old
-data). tt(struct Nonpod) is em(not) plain old data. Although it doesn't
-explictly declare any member function either, its data member is a
-tt(std::string), which itself isn't plain old data as tt(std::string) has
-non-trivial constructors:
-        verb(
+In the description of available type traits the following concepts are
+encountered: 
+    itemization(
+    it() emi(arithmetic type):
+       any integral or floating point type;
+
+    it() emi(class type):
+       not a union type), without non-static data members, without virtual
+        members, without virtual or non-empty base classes;
+
+    it() emi(fundamental type):
+       a built-in type;
+
+    it() emi(integral type):
+       all types whose values represent integral numbers, as well as tt(bool)
+        and all built-in types representing (possibly unicode) characters;
+
+    it() emi(literal type):
+       a literal type is a scalar type; a trivial class type; or an array of
+        literal type elements;
+
+    it() emi(is_nothrow_... type trait):
+       a type trait to determine whether its template argument supports the
+        specified non-throwing member. Such type traits return tt(false)
+        unless tt(noexcept(true)) is used at the function's declaration. E.g.,
+       verb(
+    struct NoThrow
+    {
+        NoThrow &operator=(SomeType const &rhs) noexept(true);
+    };
+       )
+
+    it() emi(trivial type):
+       trivial types are scalar types, trivial class types, arrays of such
+        types and cv-qualified versions of these types;
+
+    it() emi(trivial class type): 
+       a class type having a trivial copy constructor, no non-trivial move
+        constructor, a trivial destructor, a trivial default constructor or at
+        least one tt(constexpr) constructor other than the copy or move
+        constructor, and only has non-static data members and base classes of
+        literal types; 
+
+    it() emi(trivial member function): 
+       trivial member functions are never declared (other than tt(default)) in
+        their class interfaces and (for default constructors or assignment
+        operators) only perform byte-by-byte actions. Here are two examples:
+        tt(struct Pod) only has trivial members as it doesn't explicitly
+        declare any member function and its data member is em(plain old
+        data). tt(struct Nonpod) is em(not) plain old data. Although it
+        doesn't explictly declare any member function either, its data member
+        is a tt(std::string), which itself isn't plain old data as
+        tt(std::string) has non-trivial constructors:
+       verb(
     struct Pod
     {
         int x;
@@ -31,230 +73,287 @@ non-trivial constructors:
         std::string s;
     };
         )
-    Additionally, a emi(trivial class type) is a class type having a trivial
-        copy constructor, no non-trivial move constructor, a trivial
-        destructor, a trivial default constructor or at least one
-        tt(constexpr) constructor other than the copy or move constructor, and
-        all non-static data members and base classes of literal types; a
-        emi(literal type) consists of a scalar type; a trivial class type; or
-        an array of literal type.
+    )
 
-    Furthermore, when em(type-condion) applies to a type, it must be a 
-        complete type, tt(void) or an array of unknown bound; 
+When em(type-condion) applies to a type, it must be a complete type, tt(void),
+or an array of unknown size;
 
-    The following facilities are provided:
+    The following type traits are provided:
     itemization(
-    itt(add_const<typename Type>::type)hi(add_const) to add tt(const) to
-        tt(Type);
-    itt(add_cv<typename Type>::type)hi(add_cv) to add tt(const volatile) to
-        tt(Type);
-    itt(add_lvalue_reference<typename Type>::type)hi(add_lvalue_reference) to
-        add an lvalue reference to tt(Type);
-    itt(add_lvalue_reference<typename Type>::type)hi(add_lvalue_reference) to
-        add an lvalue reference to tt(Type);
-    itt(add_pointer<typename Type>::type)hi(add_pointer) to add a pointer to
-        tt(Type);
-    itt(add_rvalue_reference<typename Type>::type)hi(add_rvalue_reference) to
-        add an rvalue reference to tt(Type);
-    itt(add_volatile<typename Type>::type)hi(add_volatile) to add tt(volatile)
-        to tt(Type);
-    itt(conditional<bool cond, typename TrueType, typename
-        FalseType>::type)hi(conditional) to conditionally use tt(TrueType) if
-        tt(cond) is true, tt(FalseType) if not;
-    itt(enable_if<bool cond, typename Type>::type)hi(enable_if) to
-        conditionally define tt(Type) if tt(cond) is true;
-    itt(has_nothrow_assign<typename Type>::value)hi(has_nothrow_assign) to
-        determine whether tt(Type) has an assignment operator not throwing
-        exceptions;
-    itt(has_nothrow_copy_constructor<typename
-        Type>::value)hi(has_nothrow_copy_constructor) to determine whether
-        tt(Type) has a copy constructor not throwing exceptions;
-    itt(has_nothrow_default_constructor<typename
-        Type>::value)hi(has_nothrow_default_constructor) to determine whether
-        tt(Type) has a constructor not throwing exceptions;
-    itt(has_nothrow_destructor<typename
-        Type>::value)hi(has_nothrow_destructor) to determine whether tt(Type)
-        has a destructor not throwing exceptions;
-    itt(has_trivial_assign<typename Type>::value)hi(has_trivial_assign) to
-        determine whether tt(Type) has a trivial assignment operator;
-    itt(has_trivial_copy_constructor<typename
-        Type>::value)hi(has_trivial_copy_constructor) to determine whether
-        tt(Type) has a trivial copy constructor;
-    itt(has_trivial_default_constructor<typename
-        Type>::value)hi(has_trivial_copy_constructor) to determine whether
-        tt(Type) has a i(trivial default constructor);
-    itt(has_trivial_destructor<typename
-        Type>::value)hi(has_trivial_destructor) to determine whether tt(Type)
-        has a trivial destructor;
-    itt(has_virtual_destructor<typename
-        Type>::value)hi(has_virtual_destructor) to determine whether tt(Type)
-        has a virtual destructor;
-    itt(is_abstract<typename Type>::value)hi(is_abstract) to determine whether
-        tt(Type) is an abstract type (e.g., an abstract base class)
-        (em(type-condition) applies);
-    itt(is_arithmetic<typename Type>::value)hi(is_arithmetic) to determine
-        whether tt(Type) is an arithmetic type (any integral or floating point
-        type);
-    itt(is_array<typename Type>::value)hi(is_array) to determine whether
-        tt(Type) is an array type;
-    itt(is_assignable<typename To, typename From>::value)hi(is_assignable) to
-        determine whether an objecto of type tt(From) can be assigned to an
-        object of type tt(To) supports assignment (em(type-condition)
+    itt(add_const<typename Type>::type)
+       hi(add_const) to add tt(const) to tt(Type);
+
+    itt(add_cv<typename Type>::type)
+       hi(add_cv) to add tt(const volatile) to tt(Type);
+
+    itt(add_lvalue_reference<typename Type>::type)
+       hi(add_lvalue_reference) to add an lvalue reference to tt(Type);
+
+    itt(add_lvalue_reference<typename Type>::type)
+       hi(add_lvalue_reference) to add an lvalue reference to tt(Type);
+
+    itt(add_pointer<typename Type>::type)
+       hi(add_pointer) to add a pointer to tt(Type);
+
+    itt(add_rvalue_reference<typename Type>::type)
+       hi(add_rvalue_reference) to add an rvalue reference to tt(Type);
+
+    itt(add_volatile<typename Type>::type)
+       hi(add_volatile) to add tt(volatile) to tt(Type);
+    itt(conditional<bool cond, typename TrueType, typename FalseType>::type)
+       hi(conditional) to conditionally use tt(TrueType) if tt(cond) is true,
+        tt(FalseType) if not;
+
+    itt(enable_if<bool cond, typename Type>::type)
+       hi(enable_if) to conditionally define tt(Type) if tt(cond) is true;
+
+    itt(has_nothrow_assign<typename Type>::value)
+       hi(has_nothrow_assign) to determine whether tt(Type) has an assignment
+        operator not throwing exceptions;
+
+    itt(has_nothrow_copy_constructor<typename Type>::value)
+       hi(has_nothrow_copy_constructor) to determine whether tt(Type) has a
+        copy constructor not throwing exceptions;
+
+    itt(has_nothrow_default_constructor<typename Type>::value)
+       hi(has_nothrow_default_constructor) to determine whether tt(Type) has a
+        constructor not throwing exceptions;
+
+    itt(has_nothrow_destructor<typename Type>::value)
+       hi(has_nothrow_destructor) to determine whether tt(Type) has a
+        destructor not throwing exceptions;
+
+    itt(has_trivial_assign<typename Type>::value)
+       hi(has_trivial_assign) to determine whether tt(Type) has a trivial
+        assignment operator;
+
+    itt(has_trivial_copy_constructor<typename Type>::value)
+       hi(has_trivial_copy_constructor) to determine whether tt(Type) has a
+        trivial copy constructor;
+
+    itt(has_trivial_default_constructor<typename Type>::value)
+       hi(has_trivial_copy_constructor) to determine whether tt(Type) has a
+        trivial default constructor;
+
+    itt(has_trivial_destructor<typename Type>::value)
+       hi(has_trivial_destructor) to determine whether tt(Type) has a trivial
+        destructor;
+
+    itt(has_virtual_destructor<typename Type>::value)
+       hi(has_virtual_destructor) to determine whether tt(Type) has a virtual
+        destructor;
+
+    itt(is_abstract<typename Type>::value)
+       hi(is_abstract) to determine whether tt(Type) is an abstract type
+        (e.g., an abstract base class) (em(type-condition) applies);
+
+    itt(is_arithmetic<typename Type>::value)
+       hi(is_arithmetic) to determine whether tt(Type) is an arithmetic type;
+
+    itt(is_array<typename Type>::value)
+       hi(is_array) to determine whether tt(Type) is an array type;
+
+    itt(is_assignable<typename To, typename From>::value)
+       hi(is_assignable) to determine whether an object of type tt(From) can
+        be assigned to an object of type tt(To) (em(type-condition) applies);
+
+    itt(is_base_of<typename Base, typename Derived>::value)
+       hi(is_base_of) to determine whether tt(Base) is a base class
+        of type tt(Derived);
+
+    itt(is_class<typename Type>::value)
+       hi(is_class) to determine whether tt(Type) is a class type;
+
+    itt(is_compound<typename Type>::value)
+XX       hi(is_compound) to determine whether tt(Type) is a compount type;
+
+    itt(is_const<typename Type>::value)
+       hi(is_const) to determine whether tt(Type) is a const type;
+
+    itt(is_constructible<typename Type, typename ...Args>::value)
+       hi(is_constructible) to determine whether tt(Type) is constructible
+        from arguments in the tt(Args) parameter pack (em(type-condition)
+        applies to all types in tt(Args));
+
+    itt(is_convertible<typename From, typename To>::value)
+XX       hi(is_convertible) to determine whether a type tt(From) may be
+        converted to a type tt(To) using a tt(static_cast);
+
+    itt(is_copy_assignable<typename Type>::value)
+       hi(is_copy_assignable) to determine whether tt(Type) supports copy
+        assignment (em(type-condition) applies);
+
+    itt(is_copy_constructible<typename Type>::value)
+       hi(is_copy_constructible) to determine whether tt(Type) supports copy
+        construction (em(type-condition) applies);
+
+    itt(is_default_constructible<typename Type>::value)
+       hi(is_default_constructible) to determine whether tt(Type) supports a
+        default constructor (em(type-condition) applies);
+
+    itt(is_destructible<typename Type>::value)
+       hi(is_destructible) to determine whether tt(Type) has a non-deleted
+        destructor (em(type-condition) applies);
+
+    itt(is_empty<typename Type>::value)
+       hi(is_empty) to determine whether tt(Type) is a class type (not a union
+        type), without non-static data members, virtual members, virtual or
+        non-empty base classes (em(type-condition) applies);
+
+    itt(is_enum<typename Type>::value)
+       hi(is_enum) to determine whether tt(Type) is an enum type;
+
+    itt(is_floating_point<typename Type>::value)
+       hi(is_floating_point) to determine whether tt(Type) is a floating point
+        type;
+
+    itt(is_function<typename Type>::value)
+       hi(is_function) to determine whether tt(Type) is a function type;
+
+    itt(is_fundamental<typename Type>::value)
+       hi(is_fundamental) to determine whether tt(Type) is a fundamental type;
+
+    itt(is_integral<typename Type>::value)
+       hi(is_integral) to determine whether tt(Type) is an integral type;
+
+    itt(is_literal_type<typename Type>::value)
+       hi(is_literal_type) to determine whether tt(Type) is a literal type
+        (em(type-condition) applies));
+
+    itt(is_lvalue_reference<typename Type>::value)
+       hi(is_lvalue_reference) to determine whether tt(Type) is an lvalue
+        reference;
+
+    itt(is_member_function_pointer<typename Type>::value)
+       hi(is_member_function_pointer) to determine whether tt(Type) is a
+        pointer to a non-static member function;
+
+    itt(is_member_object_pointer<typename Type>::value)
+       hi(is_member_object_pointer) to determine whether tt(Type) is a pointer
+        to a non-static data member;
+
+    itt(is_member_pointer<typename Type>::value)
+       hi(is_member_pointer) to determine whether tt(Type) is a pointer to a
+        member function;
+
+    itt(is_move_assignable<typename Type>::value)
+       hi(is_move_assignable) to determine whether tt(Type) supports move
+        assignment (em(type-condition) applies);
+
+    itt(is_move_constructible<typename Type>::value)
+       hi(is_move_constructible) to determine whether tt(Type) supports move
+        construction (em(type-condition) applies);
+
+    itt(is_nothrow_assignable<typename To, typename From>::value)
+       hi(is_nothrow_assignable) to determine whether tt(Type) supports an
+        assignment operator not throwing exceptions (em(type-condition)
+        applies).
+
+    itt(is_nothrow_constructible<typename Type, typename ...Args>::value)
+       hi(is_nothrow_constructible) to determine whether a tt(Type) object can
+        be constructed from arguments of types mentioned in the parameter pack
+        not throwing exceptions (em(type-condition) applies);
+
+    itt(is_nothrow_copy_assignable<typename Type>::value)
+       hi(is_nothrow_constructible) to determine whether tt(Type) supports a
+        copy-assignment operator not throwing exceptions (em(type-condition)
         applies);
-    itt(is_base_of<typename Base, typename Derived>::value)hi(is_base_of) to
-        determine whether tt(Type) tt(Base) is a base class of another type
-        tt(Derived);
-    itt(is_class<typename Type>::value)hi(is_class) to determine whether
-        tt(Type) is a class type;
-    itt(is_compound<typename Type>::value)hi(is_compound) to determine whether
-        tt(Type) is a class type;
-    itt(is_const<typename Type>::value)hi(is_const) to determine whether
-        tt(Type) is a class type;
-    itt(is_constructible<typename Type, typename
-        ...Args>::value)hi(is_constructible) to determine whether tt(Type) is
-        constructible from arguments in the tt(Args) parameter pack
-        (em(type-condition) applies to all types in tt(Args));
-    itt(is_convertible<typename From, typename To>::value)hi(is_convertible)
-        to determine whether a type tt(From) may be converted to a type tt(To)
-        using a tt(static_cast);
-    itt(is_copy_assignable<typename Type>::value)hi(is_copy_assignable) to
-        determine whether tt(Type) supports copy assignment
+
+    itt(is_nothrow_copy_constructible<typename Type>::value)
+       hi(is_nothrow_copy_constructible) to determine whether tt(Type)
+        supports copy construction not throwing exceptions (em(type-condition)
+        applies);
+
+    itt(is_nothrow_default_constructible<typename Type>::value)
+       hi(is_nothrow_default_constructible) to determine whether tt(Type)
+        supports a default constructor not throwing exceptions
         (em(type-condition) applies);
-    itt(is_copy_constructible<typename Type>::value)hi(is_copy_constructible)
-        to determine whether tt(Type) supports copy construction
+
+    itt(is_nothrow_destructible<typename Type>::value)
+       hi(is_nothrow_destructible) to determine whether tt(Type) supports a
+        destructor not throwing exceptions (em(type-condition) applies).
+
+    itt(is_nothrow_move_assignable<typename Type>::value)
+       hi(is_nothrow_move_assignable) to determine whether tt(Type) supports
+        move assignment not throwing exceptions (em(type-condition) applies);
+
+    itt(is_nothrow_move_constructible<typename Type>::value)
+       hi(is_nothrow_move_constructible) to determine whether tt(Type)
+        supports a move constructor not throwing exceptions
         (em(type-condition) applies);
-    itt(is_default_constructible;
-    itt(is_destructible<typename Type>::value)hi(is_destructible) to
-        determine whether tt(Type) has a non-deleted destructor
+
+    itt(is_object<typename Type>::value)
+       hi(is_object) to determine whether tt(Type) is an object (in contrast
+        to scalar) type;
+
+    itt(is_pod<typename Type>::value)
+       hi(is_pod) to determine whether tt(Type) is emi(plain old data)
         (em(type-condition) applies);
-    itt(is_empty<typename Type>::value)hi(is_empty) to
-        determine whether tt(Type) is a class type (not a union type), without
-        non-static data members, virtual members, virtual or non-empty base
-        classes (em(type-condition) applies);
-    itt(is_enum<typename Type>::value)hi(is_enum) to
-        determine whether tt(Type) is an enum type;
-    itt(is_floating_point<typename Type>::value)hi(is_floating_point) to
-        determine whether tt(Type) is a floating point type;
-    itt(is_function<typename Type>::value)hi(is_function) to determine whether
-        tt(Type) is a function type;
-    itt(is_fundamental<typename Type>::value)hi(is_fundamental) to determine
-        whether tt(Type) is a fundamental (i.e., built-in) type;
-    itt(is_integral<typename Type>::value)hi(is_integral) to determine whether
-        tt(Type) is an integral type;
-    itt(is_literal_type<typename Type>::value)hi(is_literal_type) to determine
-        whether tt(Type) is a literal type (em(type-condition) applies));
-    itt(is_lvalue_reference<typename Type>::value)hi(is_lvalue_reference) to
-        determine whether tt(Type) is an lvalue reference;
-    itt(is_member_function_pointer<typename
-        Type>::value)hi(is_member_function_pointer) to determine whether
-        tt(Type) is a pointer to a non-static member function;
-    itt(is_member_object_pointer<typename
-        Type>::value)hi(is_member_object_pointer) to determine whether
-        tt(Type) is a pointer to a non-static data member;
-    itt(is_member_pointer
-    itt(is_move_assignable<typename Type>::value)hi(is_move_assignable) to
-        determine whether tt(Type) supports move assignment
+
+    itt(is_pointer<typename Type>::value)
+       hi(is_pointer) to determine whether tt(Type) is a pointer type;
+
+    itt(is_polymorphic<typename Type>::value)
+       hi(is_polymorphic) to determine whether tt(Type) is a polymorphic type
         (em(type-condition) applies);
-    itt(is_move_constructible<typename Type>::value)hi(is_move_constructible)
-        to determine whether tt(Type) supports move construction
+
+    itt(is_reference<typename Type>::value)
+       hi(is_reference) to determine whether tt(Type) is an (lvalue or rvalue)
+        reference;
+
+    itt(is_rvalue_reference<typename Type>::value)
+       hi(is_rvalue_reference) to determine whether tt(Type) is an rvalue
+        reference;
+
+XX    itt(is_same;
+
+    itt(is_scalar<typename Type>::value)
+       hi(is_scalar) to determine whether tt(Type) is a scalar type (in
+        contrast to an object type);
+
+    itt(is_signed<typename Type>::value)
+       hi(is_signed) to determine whether tt(Type) is a signed type;
+
+    itt(is_standard_layout<typename Type>::value)
+       hi(is_standard_layout) to determine whether tt(Type) offers the
+        standard layout (em(type-condition) applies);
+
+    itt(is_trivial<typename Type>::value)
+       hi(is_trivial) to determine whether tt(Type) is a trivial type
         (em(type-condition) applies);
-    itt(is_default_constructible<typename
-        Type>::value)hi(is_default_constructible) to determine whether
-        tt(Type) supports a default constructor (em(type-condition) applies);
-    itt(is_nothrow_assignable<typename To, typename
-        From>::value)hi(is_nothrow_assignable) to determine whether tt(Type)
-        supports an assignment operator not throwing exceptions
-        (em(type-condition) applies). This type trait returns tt(false) unless
-        tt(noexcept(true)) is used:
-       verb(
-    struct NoThrow
-    {
-        NoThrow &operator=(SomeType const &rhs) noexept(true);
-    };
-       )
-    itt(is_nothrow_constructible<typename Type, typename
-        ...Args>::value)hi(is_nothrow_constructible) to determine whether a
-        tt(Type) object can be constructed from arguments of types mentioned
-        in the parameter pack without throwing exceptions (em(type-condition)
-        applies, tt(noexcept(true)) is required to get tt(value == true));
-    itt(is_nothrow_copy_assignable<typename
-        Type>::value)hi(is_nothrow_constructible) to determine whether
-        tt(Type) supports a copy-assignment operator not throwing exceptions
-        (em(type-condition) applies, tt(noexcept(true)) is required to get
-        tt(value == true));
-    itt(is_nothrow_copy_constructible<typename
-        Type>::value)hi(is_nothrow_copy_constructible) to determine whether
-        tt(Type) supports copy construction not throwing exceptions
-        (em(type-condition) applies, tt(noexcept(true)) is required to get
-        tt(value == true));
-    itt(is_nothrow_default_constructible<typename
-        Type>::value)hi(is_nothrow_default_constructible) to determine whether
-        tt(Type) supports a default constructor not throwing exceptions
-        (em(type-condition) applies, tt(noexcept(true)) is required to get
-        tt(value == true));
-    itt(is_nothrow_destructible<typename
-        Type>::value)hi(is_nothrow_destructible) to determine whether tt(Type)
-        supports a destructor not throwing exceptions (em(type-condition)
-        applies, tt(noexcept(true)) is required to get tt(value == true)).
-    itt(is_nothrow_move_assignable<typename
-        Type>::value)hi(is_nothrow_move_assignable) to determine whether
-        tt(Type) supports move assignment not throwing exceptions
-        (em(type-condition) applies, tt(noexcept(true)) is required to get
-        tt(value == true));
-    itt(is_nothrow_move_constructible<typename
-        Type>::value)hi(is_nothrow_move_constructible) to determine whether
-        tt(Type) supports a move constructor not throwing exceptions
-        (em(type-condition) applies, tt(noexcept(true)) is required to get
-        tt(value == true));
-    itt(is_object<typename Type>::value)hi(is_object) to determine whether
-        tt(Type) is an object (in contrast to scalar) type;
-    itt(is_pod<typename Type>::value)hi(is_pod) to determine whether tt(Type)
-        is emi(plain old data) (em(type-condition) applies);
-    itt(is_pointer<typename Type>::value)hi(is_pointer) to determine whether
-        tt(Type) is a pointer type;
-    itt(is_polymorphic<typename Type>::value)hi(is_polymorphic) to determine
-        whether tt(Type) is a polymorphic type (em(type-condition) applies);
-    itt(is_reference<typename Type>::value)hi(is_reference) to determine
-        whether tt(Type) is an (lvalue or rvalue) reference;
-    itt(is_rvalue_reference<typename Type>::value)hi(is_rvalue_reference) to
-        determine whether tt(Type) is an rvalue reference;
-    itt(is_same;
-    itt(is_scalar<typename Type>::value)hi(is_scalar) to determine whether
-        tt(Type) is a scalar (in contrast to an object) type;
-    itt(is_signed<typename Type>::value)hi(is_signed) to determine whether
-        tt(Type) is a signed type;
-    itt(is_standard_layout<typename Type>::value)hi(is_standard_layout) to
-        determine whether tt(Type) offers the standard layout
-        (em(type-condition) applies);
-    itt(is_trivial<typename Type>::value)hi(is_trivial) to determine whether
-        tt(Type) is a trivial type (trivial types are scalar types, trivial
-        class types, arrays of such types and cv-qualified versions of these
-        types (em(type-condition) applies);
 
     itt(is_trivially_assignable;
     itt(is_trivially_constructible;
     itt(is_trivially_copy_assignable;
     itt(is_trivially_copy_constructible;
-    itt(is_trivially_copyable<typename Type>::value)hi(is_trivially_copyable)
-        to determine whether tt(Type) is trivially copyable
-        (em(type-condition) applies);
+
+    itt(is_trivially_copyable<typename Type>::value)
+       hi(is_trivially_copyable) to determine whether tt(Type) is trivially
+        copyable (em(type-condition) applies);
+
     itt(is_trivially_default_constructible;
     itt(is_trivially_destructible;
     itt(is_trivially_move_assignable;
     itt(is_trivially_move_constructible;
 
-    itt(is_union<typename Type>::value)hi(is_union) to determine whether
-        tt(Type) is a union type;
-    itt(is_unsigned<typename Type>::value)hi(is_unsigned) to determine whether
-        tt(Type) is an unsigned type;
-    itt(is_void<typename Type>::value)hi(is_void) to determine whether
-        tt(Type) is tt(void);
-    itt(is_volatile<typename Type>::value)hi(is_volatile) to determine whether
-        tt(Type) is a tt(volatile) qualified type;
-    itt(make_signed<typename Type>::type)hi(make_signed) to construct a signed
-        type;
-    itt(make_unsigned<typename Type>::type)hi(make_unsigned) to construct an
-        unsigned type;
+    itt(is_union<typename Type>::value)
+       hi(is_union) to determine whether tt(Type) is a union type;
+
+    itt(is_unsigned<typename Type>::value)
+       hi(is_unsigned) to determine whether tt(Type) is an unsigned type;
+
+    itt(is_void<typename Type>::value)
+       hi(is_void) to determine whether tt(Type) is tt(void);
+
+    itt(is_volatile<typename Type>::value)
+       hi(is_volatile) to determine whether tt(Type) is a tt(volatile)
+        qualified type;
+
+    itt(make_signed<typename Type>::type)
+       hi(make_signed) to construct a signed type;
+
+    itt(make_unsigned<typename Type>::type)
+       hi(make_unsigned) to construct an unsigned type;
 
     itt(remove_all_extents;
     itt(remove_const;
@@ -263,8 +362,8 @@ non-trivial constructors:
     itt(remove_pointer;
     itt(remove_reference;
 
-    itt(remove_reference<typename Type>::type)hi(remove_reference) to remove a
-        reference from tt(Type);
+    itt(remove_reference<typename Type>::type)
+       hi(remove_reference) to remove a reference from tt(Type);
 
     itt(remove_volatile;
     )
