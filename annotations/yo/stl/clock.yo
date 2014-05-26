@@ -1,39 +1,77 @@
-The C++11 standard offers several predefined emi(clock) types that can be used
-in combination with multi-threaded programs. It is also possible to define
-your own clock-type, which must then satisfy the requirements defined in
-clause 20.11.3 of the C++11 standard. 
+The C++11 standard offers several predefined emi(clock) types, measuring time.
+All predefined clocks are defined in the tt(std::chrono) namespace.  
 
-The predefined clocks are defined in the tt(std::chrono) namespace.  Before
-using the predefined clocks the tthi(chrono) header file must have been
+Before using the predefined clocks the tthi(chrono) header file must have been
+included. When including tt(chrono) the header file tthi(ratio) is also
 included.
 
-Clocks define several types (like tt(period, duration), and tt(time_point)),
-and a member
+A clock type must be specified when defining points in time using
+tt(time_point) (covered by the next section). It is also possible to define
+your own clock type, which must then satisfy the requirements defined in
+clause 20.11.3 of the C++11 standard. Defining your own clock type is not
+covered by the annotations().
+
+All predefined clocks provide type definitions and a member tt(now). If
+tt(ClockType) is a predefined clock type, then
     itemization(
-    ithtq(now)(static time_point now()) 
-       (returning the time_point representing the current time)
+    ithtq(duration)(std::chrono::ClockType::duration)
+        (the tt(duration) type (e.g., tt(std::chrono::nanoseconds) 
+         used by tt(ClockType)))
+    ithtq(period)(std::chrono::ClockType::period)
+        (the time period used by tt(ClockType) (e.g.,
+         tt(std::ratio::nano))) 
+    ithtq(rep)(std::chrono::ClockType::rep)
+        (defining the value type used by tt(ClockType) to store duration values
+         (e.g., tt(int64_t)))
+    ithtq(time_point)(std::chrono::ClockType::time_point)
+        (time points used by tt(ClockType) 
+         (e.g., tt(std::chrono::time_point<system_clock, duration>)))
     )
-    which may be used by multi-threaded programs. 
 
-The class ti(system_clock) represents the `wall clock' time, using the
-system's real time clock. In addition to tt(now) the class tt(system_clock)
-offers two more static members:
+    In addition to these types predefined clocks offer a member
     itemization(
-    ithtq(to_time_t)(static time_t to_time_t(time_point const &timePoint))
-       (returns a tt(time_t) value representing the same point in time as
-        tt(timePoint) (see the next section for a description of
-        tt(time_point));) 
-    ithtq(from_time_t)(static time_point from_time_t(time_t seconds))
-       (returns a tt(time_point) value representing the same point in time as
-        tt(time_t).)
+    ithtq(clock: now)(static std::chrono::time_point 
+                      std::chrono::ClockType::now()) 
+       (returns the tt(time_point) representing the current time)
     )
 
-The class ti(steady_clock) implements a clock whose time increases in parallel
-with with increase of real time.
+The following predefined clock types are available:
+    itemization(
+    ithtq(system_clock)(std::chrono::system_clock)
+       (the `wall clock' time, using the system's real time clock. 
+        In addition to tt(now) the class tt(system_clock)
+        offers these two static members:
+        itemization(
+        ithtq(system_clock: to_time_t)
+            (static time_t std::chrono::system_clock::to_time_t(
+                            std::chrono::time_point const &timePoint))
+            (a tt(time_t) value representing the same point in time as
+                tt(timePoint);)
+        ithtq(system_clock: from_time_t)
+            (static std::chrono::time_point 
+                std::chrono::system_clock::from_time_t(time_t seconds))
+            (a tt(time_point) value representing the same point in time as
+                tt(time_t).)
+        )
+        )
+    ithtq(steady_clock)(std::chrono::steady_clock) 
+       (a clock whose time increases in parallel with the increase of real
+        time.) 
+    ithtq(high_resolution_clock)(std::chrono::high_resolution_clock) 
+       (the computer's fastest clock (i.e., the clock having the shortest
+        timer-tick period). In practice this is the clock used to implement
+        the tt(system_clock).)  
+    )
 
-The class ti(high_resolution_clock) implements the computer's fastest clock 
-(i.e., the clock having the shortest timer-tick period). 
- 
-An example of their use is given in the next section.
+As an example: to access the current time you could use:
+        verb(
+    auto point = std::chrono::system_clock::now();
+        )
+
+
+
+
+
+
 
 

@@ -6,7 +6,7 @@
 
     int main()
     {
-            // the current time
+            // the current time (or use `auto')
         time_point<system_clock> now(system_clock::now());
 
             // its value in seconds:
