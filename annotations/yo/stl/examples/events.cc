@@ -47,6 +47,7 @@
     Semaphore     g_filled(0);
     Selector      g_selector;
     IRandStream   g_rand(0, 100000, time(0));
+    std::mutex    g_randMutex;
     queue<size_t> g_queue;
 
     struct Producer
@@ -65,7 +66,11 @@
             for (size_t run = 0; run < d_trials; ++run)
             {
                 size_t msec;
+
+                g_randMutex.lock();
                 g_rand >> msec;
+                g_randMutex.unlock();
+
                 g_selector.setAlarm(0, msec);
                 g_selector.wait();
 
@@ -96,10 +101,15 @@
                 g_available.up();
 
                 size_t msec;
+
+                g_randMutex.lock();
                 g_rand >> msec;
+                g_randMutex.unlock();
+
                 g_selector.setAlarm(0, msec);
                 g_selector.wait();
-                cout << "C Retrieved item " << d_item << ' ' << msec << '\n';
+                cout << "\t\tC Retrieved item " << d_item << ' ' << 
+                                                            msec << '\n';
             }
         }
     };
