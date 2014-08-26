@@ -108,7 +108,7 @@
 
                 g_selector.setAlarm(0, msec);
                 g_selector.wait();
-                cout << "\t\tC Retrieved item " << d_item << ' ' << 
+                cout << "\t\tC Retrieved item " << d_item << ' ' <<
                                                             msec << '\n';
             }
         }
