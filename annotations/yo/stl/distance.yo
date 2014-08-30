@@ -1,0 +1,37 @@
+Earlier, in section ref(ITERATORS) it was stated that iterators support
+pointer arithmetic for containers storing their elements consecutively in
+memory. This is not completely true: to determine the number of elements
+between the elements to which two iterators refer the iterator must 
+support the subtraction operator.  
+
+Using pointer arithmetic to compute the number of elements between two
+iterators in, e.g., a tt(std::list) or tt(std::unordered_map) is not possible,
+as these containers do not store their elements consecutively in memory.
+
+The function tt(std::distance)hi(distance) fills in that little gap:
+tt(std::distance) expects two InputIterators and returns the number of
+elements between them.
+
+Before using tt(distance) the tthi(iterator) header file must be included.
+
+If the iterator specified as first argument exceeds the iterator specified as
+its second argument then the number of elements is non-positive, otherwise it
+is non-negative. If the number of elements cannot be determined (e.g., the
+iterators do not refer to elements in the same container), then tt(distance's)
+return value is undefined.
+
+Example:
+        verb(
+    #include <iostream>
+    #include <unordered_map>
+        
+    using namespace std;
+    
+    int main()
+    {
+        unordered_map<int, int> myMap = {{1, 2}, {3, 5}, {-8, 12}};
+    
+        cout << distance(++myMap.begin(), myMap.end()) << '\n'; // shows: 2
+    }
+        )
+
