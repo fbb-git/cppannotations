@@ -1,0 +1,71 @@
+The C++11 standard adds i(multi threading) to bf(C++) through the bf(C++)
+standard library.
+
+label(PTHREADS) Except for the basics, the annotations() do not cover the
+concepts behind multi threading.  Multi threading is a topic by itself and
+many good reference sources exist (cf.  i(Nichols, B), em(et al.)'s
+        url(Pthreads Programming)(http://oreilly.com/catalog/), O'Reilly
+        hi(Pthreads Programming)hi(http://oreilly.com/catalog/)
+    for some good introductions to multi-threading).
+
+In addition to  the `raw' form of multi-threading which is offered by
+bf(C), bf(C++) offers several encapsulating mult-threading layers. 
+These encapsulating layers should be used whenever possible, as they guarantee
+exception-safety and prevent inadvertent memory leaks.
+
+A emi(thread of execution) (commonly abbreviated to a emi(thread) is a single
+flow of control within a program. It differs from a separately executed
+program, as created by the bi(fork)(1) system call, in that threads of
+execution all run inside one program, while bf(fork)(1) creates independent
+copies of a running program. Multi-threading means that multiple
+threads are being executed inside one program. In an ideal world all of these
+threads are executed in parallel, and no assumptions can be made as to which
+thread is running first or last. 
+
+Since all threads that run inside a multi-threaded program are running within
+the same program, in theory each thread may access every object, variable of
+function which is also available to any of the other program's threads. 
+
+Before diving  into details, let's look at a simple illustration of a
+multi-threaded program: 
+        verbnrs(examples/simple.cc)
+    itemization(
+    it() Lines 9-16 define a small function tt(dots), writing every second a
+        dot to the standard output stream. It ends once the variable tt(stop),
+        defined in line 5, is tt(true).
+    it() Line 21 calls tt(dots) as a separate thread. Once this statement
+        returns dots are starting to appear at the standard output stream.
+    it() At the same time, line 22 waits for an Enter-key to be pressed
+        (nothing fancy here, hence the simple tt(ignore) call)
+    it() Once the user presses the Enter-key, tt(ignore) returns, and tt(stop)
+        is set tt(true) (line 23). This is noticed by tt(dots), which
+        therefore also ends.
+    it() At line 24 the program ends normally.
+    ) 
+ The simple example illustrates that it isn't too difficult to create
+multi-tasking programs in bf(C++): the high-level tt(std::async) class
+(cf. section ref(ASYNC)) basically only requires you to provide the name of a
+function or function object, and maybe some arguments and you're done.
+
+Of course there are complications and refinements: a potential flaw in the
+simple example is that two threads (the main prgram's thread and the tt(dots)
+thread) simultaneously may access tt(stop). In the simple example this is not
+so much a problem, but in general this is a em(no-no): two threads should not
+unprotectedly access the same data. Whether this happens or not is the
+responsibility of the programmer. Fortunately bf(C++) offers some tools to
+help preventing plain access of the same data by multiple threads. Also note
+that the standard bf(C) function bf(sleep)(3) was used to create the pause
+between writing subsequent dots. Although it's doing its job, tt(sleep) often
+is a somewhat coarse tool for what's actually required. E.g., we want to wait
+for some time, but not if some event happens in between. 
+
+In this chapter we'll have a look at tt(async) and other classes allowing us
+to implement multi-threading; we'll have a look at em(mutexes) and em(locks)
+to prevent unrestricted access to shared data by multiple threads, and we'll
+have a look at various tools for handling events that are related to time.
+
+
+
+
+
+

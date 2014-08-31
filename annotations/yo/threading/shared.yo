@@ -1,0 +1,44 @@
+Just before a thread ends it may have produced some results. These results may
+have to to be communicated to other threads. Many classes handling multi
+threading use  hi(shared state)em(shared states) to communicate information
+and results to other threads. Results may be values, objects or exceptions.
+
+Objects that obtain results from shared states are called 
+    hi(asynchronous return object)em(asynchronous return objects). However,
+due to the nature of multi threading, a thread may query an asynchronous
+return object for its result, which in fact may not yet be available. In those
+cases the requesting thread will have to wait. For this asynchronous return
+objects offer tt(wait) functions, which may block until the shared state has
+been made ready.
+
+Shared states are made ready by 
+    hi(asynchronous provider)em(asynchronous providers). Asynchronous
+providers are simply objects
+providing results to shared states. Making a shared state ready 
+means that an asynchronous provider 
+    itemization(
+    it() marks its shared state as being ready, and
+    it() unblocks any waiting threads (e.g., by returning from its blocking
+        members, like tt(wait).
+    )
+
+Shared states use reference counting to keep track of the number of
+asynchronous return objects or asynchronous providers that hold references to
+them. These return objects and providers may release their references to these
+shared states hi(shared state: releasing) (which is called `releasing the
+shared state). If this happens when a  return object or provider holds the
+last reference to the shared state, 
+    hi(shared state: destruction) the shared state is destroyed.
+
+On the other hand, an asynchronous provider may also 
+    hi(shared state: abandon)em(abandon) its shared state. In that case the
+provider, in sequence,
+    itemization(
+    it() stores an exception object of type 
+            hi(future_error)tt(std::future_error), holding the error condition
+            tt(std::broken_promise) in its shared state;
+    it() makes its shared data ready; and
+    it() releases its shared data.
+    )
+
+

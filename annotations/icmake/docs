@@ -43,7 +43,7 @@ void txtdoc()
     if (!exists("tmp/docs/txt/cplusplus.txt"))
     {
         chdir("yo");
-        system("yodl2txt --no-warnings "
+        system("yodl2txt --no-warnings -DAPATH=" + g_cwd + "tmp/bin/ "
                 "-o ../tmp/docs/txt/cplusplus.txt -l3 cplusplus");
         chdir("..");
     }
@@ -62,7 +62,8 @@ void htmldoc()
     if (!exists("tmp/docs/html/cplusplus.html"))
     {
         chdir("yo");
-        system("yodl2html --no-warnings -l3 cplusplus");
+        system("yodl2html --no-warnings -l3 cplusplus "
+                                        "-DAPATH=" + g_cwd + "tmp/bin/");
         system("mv *.html ../tmp/docs/html");
         chdir("..");
     }
@@ -140,8 +141,9 @@ void latexdoc(string us)
         if (us != "")
             yodldefine = "--define " + us;
 
-        system("yodl2latex --no-warnings -l3 " + yodldefine +
-                " -o ../tmp/docs/latex/" + ulatexname + " cplusplus");
+        system("yodl2latex --no-warnings -l3 -DAPATH=" + g_cwd + "tmp/bin/ " +
+                yodldefine + " -o ../tmp/docs/latex/" + 
+                ulatexname + " cplusplus");
         chdir("..");
         system("touch " + ulatexstamp);
     }
@@ -197,9 +199,9 @@ void docs()
     md("tmp/docs/txt tmp/docs/html tmp/docs/latex");
 
     txtdoc();
-    htmldoc();
-    latexdoc("");
-    latexdoc("us");
+//    htmldoc();
+//    latexdoc("");
+//    latexdoc("us");
 
     exit(0);
 }

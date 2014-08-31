@@ -1,0 +1,1193 @@
+30.6.4
+
+//Shared state
+//
+//Many of the classes introduced in this sub-clause use some state to
+//communicate results. This shared state consists of some state information and
+//some (possibly not yet evaluated) result, which can be a (possibly void) value
+//or an exception.
+//
+//    [ Note: Futures, promises, and tasks defined in this clause reference such
+//    shared state. — end note ]
+//
+//
+//Asynchronous return object 
+//
+//An asynchronous return object is an object that reads (obtains) results from a
+//shared state.
+//
+//A waiting function of an asynchronous return object 
+//potentially blocks to wait for the shared state to be made ready (see below at
+//Making a shared state ready)
+
+//Asynchronous provider
+//=====================
+//
+//An asynchronous provider is an object that provides a result to a shared
+//state. 
+//
+//The result of a shared state is set by certain members [respective functions]
+//of the asynchronous provider. [ Note: Such as promises or tasks. — end note ]
+//
+//The means of setting [The way] the result of an shared state [is set] is
+//specified in the description of those classes and functions that create such a
+//state object.
+
+//Releasing the shared state
+//==========================
+//
+//When an asynchronous return object or an asynchronous provider is said to
+//release its shared state, it means:
+//
+//    — if the return object or provider holds the last reference to its shared
+//        state, the shared state is destroyed; 
+//and
+//    — the return object or provider gives up its reference to its shared
+//        state.
+//
+//
+//Making a shared state ready
+//===========================
+//
+//When an asynchronous provider is said to make its shared state ready, it
+//means:
+//
+//    — first, the provider marks its shared state as ready; and
+//    — second, the provider unblocks any execution agents waiting for its
+//      shared state to become ready. 
+//
+//Abandon a shared state
+//======================
+//
+//When an asynchronous provider is said to abandon its shared state, it means:
+//
+//    — first, if that state is not ready, the provider
+//        — stores an exception object of type future_error with an error
+//           condition of broken_promise within its shared state; and then
+//        — makes its shared state ready;
+//    — second, the provider releases its shared state.
+
+Shared State being ready
+========================
+
+A shared state is ready only if it holds a value or an exception ready for
+retrieval. 
+
+Waiting for a shared state to become ready may invoke code to compute the
+result on the waiting thread (if so specified in the description of the class
+or function that creates the state object).
+
+Calls to functions that successfully set the stored result of a shared state
+synchronize with (1.10) calls to functions successfully detecting the ready
+state resulting from that setting.
+
+The storage of the result (whether normal or exceptional) into the shared
+state synchronizes with (1.10) the successful return from a call to a waiting
+function on the shared state.  
+
+Accesses to the same shared state conflict (1.10).
+
+
+==============================
+
+1.10 Multi-threaded executions and data races [intro.multithread]
+
+//A thread of execution (also known as a thread ) is a single flow of control
+//within a program, including the initial invocation of a specific top-level
+//function, and recursively including every function invocation subsequently
+//executed by the thread. 
+//
+//Note:
+//When one thread creates another, the initial call to the top-level function of
+//the new thread is executed by the new thread, not by the creating thread.
+//
+//Every thread in a
+//program can potentially access every object and function in a program.
+//
+//Under a hosted implementation, a C++ program can have more than one thread
+//running concurrently. The execution of each thread proceeds as defined by the
+//remainder of this standard. The execution of the entire program consists of an
+//execution of all of its threads. 
+//
+//Note: Usually the execution can be viewed as an interleaving of all its
+//threads. However, some kinds of atomic operations, for example, allow
+//executions inconsistent with a simple interleaving, as described below.
+//
+//Under a freestanding implementation, it is implementation-defined whether
+//a program can have more than one thread of execution.
+
+-------
+
+Implementations should ensure that all unblocked threads eventually make
+progress. 
+
+Note: Standard library functions may silently block on I/O or locks. Factors
+in the execution environment, including externally-imposed thread priorities,
+may prevent an implementation from making certain guarantees of forward
+progress.
+
+-------
+
+The value of an object visible to a thread T at a particular point is the
+initial value of the object, a value assigned to the object by T , or a value
+assigned to the object by another thread, according to the rules below.
+
+Note: In some cases, there may instead be undefined behavior. Much of this
+section is motivated by the desire to support atomic operations with explicit
+and detailed visibility constraints. However, it also implicitly supports a
+simpler view for more restricted programs.
+
+----------
+
+Two expression evaluations conflict if one of them modifies a memory location
+and the other one accesses or modifies the same memory location.
+
+----------
+
+The library defines a number of atomic operations (Clause 29 ) and operations
+on mutexes (Clause 30 ) that are specially identified as synchronization
+operations. 
+
+These operations play a special role in making assignments in one thread
+visible to another. A synchronization operation on one or more memory
+locations is either a consume operation, an acquire operation, a release
+operation, or both an acquire and release operation. A synchronization
+operation without an associated memory location is a fence and can be either
+an acquire fence, a release fence, or both an acquire and release fence. In
+addition, there are relaxed atomic operations, which are not synchronization
+operations, and atomic read-modify-write operations, which have special
+characteristics.
+
+Note: For example, a call that acquires a mutex will perform an acquire
+operation on the locations comprising the mutex. Correspondingly, a call that
+releases the same mutex will perform a release operation on those same
+locations. Informally, performing a release operation on A forces prior side
+effects on other memory locations to become visible to other threads that
+later perform a consume or an acquire operation on A . `Relaxed' atomic
+operations are not synchronization operations even though, like
+synchronization operations, they cannot contribute to data races.
+
+--------------
+
+In other words, function executions do not interleave with each other.
+
+------------
+
+An object with automatic or thread storage duration ( 3.7 ) is associated with
+one specific thread, and can be accessed by a different thread only indirectly
+through a pointer or reference ( 3.9.2 ).
+
+--------
+
+All modifications to a particular atomic object M occur in some particular
+total order, called the modification order of M . If A and B are modifications
+of an atomic object M and A happens before (as defined below) B , then A shall
+precede B in the modification order of M , which is defined below.
+
+Note: This states that the modification orders must respect the `happens
+before' relationship.
+
+Note: There is a separate order for each atomic object. There is no
+requirement that these can be combined into a single total order for all
+objects. In general this will be impossible since different threads may
+observe modifications to different objects in inconsistent orders.
+
+--------
+
+A release sequence headed by a release operation A on an atomic object M is a
+maximal contiguous sub- sequence of side effects in the modification order of
+M , where the first operation is A , and every subsequent operation — is
+performed by the same thread that performed A , or — is an atomic
+read-modify-write operation.
+
+--------
+
+Certain library calls synchronize with other library calls performed by
+another thread. For example, an atomic store-release synchronizes with a
+load-acquire that takes its value from the store ( 29.3 ).
+
+Note: Except in the specified cases, reading a later value does not
+necessarily ensure visibility as described below.  Such a requirement would
+sometimes interfere with efficient implementation.
+
+Note: The specifications of the synchronization operations define when one
+reads the value written by another. For atomic objects, the definition is
+clear. All operations on a given mutex occur in a single total order. Each
+mutex acquisition “reads the value written” by the last mutex release.
+
+--------
+
+An evaluation A carries a dependency to an evaluation B if — the value of A is
+used as an operand of B , unless: 
+    — B is an invocation of any specialization of std::kill_dependency ( 29.3
+        ), or
+    — A is the left operand of a built-in logical AND ( && , see 5.14 ) or
+        logical OR ( || , see 5.15 ) operator, or
+    — A is the left operand of a conditional ( ?: , see 5.16 ) operator, or 
+    — A is the
+        left operand of the built-in comma ( , ) operator ( 5.18 ); or 
+    — A writes a scalar object or bit-field M , B reads the value written by A
+        from M , and A is sequenced before B , or
+    — for some evaluation X , A carries a dependency to X , and X carries a
+        dependency to B .
+
+Note: `Carries a dependency to' is a subset of `is sequenced before', and is
+similarly strictly intra-thread.
+
+--------
+
+An evaluation A is dependency-ordered before an evaluation B if — A performs a
+release operation on an atomic object M , and, in another thread, B performs a
+consume operation on M and reads a value written by any side effect in the
+release sequence headed by A , or — for some evaluation X , A is
+dependency-ordered before X and X carries a dependency to B .
+
+Note: The relation `is dependency-ordered before' is analogous to
+`synchronizes with', but uses release/- consume in place of release/acquire.
+
+--------
+
+An evaluation A inter-thread happens before an evaluation B if 
+    — A synchronizes with B , or — A is dependency-ordered before B , or 
+    — for some evaluation X — A synchronizes with X and X is sequenced before
+        B , or
+    — A is sequenced before X and X inter-thread happens before B , or
+    — A inter-thread happens before X and X inter-thread happens before B .
+
+Note: The `inter-thread happens before' relation describes arbitrary
+concatenations of `sequenced be- fore', `synchronizes with' and
+`dependency-ordered before' relationships, with two exceptions. The first
+exception is that a concatenation is not permitted to end with
+`dependency-ordered before' followed by `se- quenced before'. The reason for
+this limitation is that a consume operation participating in a `dependency-
+ordered before' relationship provides ordering only with respect to operations
+to which this consume op- eration actually carries a dependency. The reason
+that this limitation applies only to the end of such a concatenation is that
+any subsequent release operation will provide the required ordering for a
+prior consume operation. The second exception is that a concatenation is not
+permitted to consist entirely of `sequenced before'. The reasons for this
+limitation are (1) to permit `inter-thread happens before' to be transitively
+closed and (2) the `happens before' relation, defined below, provides for
+relationships consisting entirely of `sequenced before'.
+
+------
+
+An evaluation A happens before an evaluation B if: 
+    — A is sequenced before B , or 
+    — A inter-thread happens before B .  
+
+The implementation shall ensure that no program execution demonstrates a cycle
+in the `happens before' relation.
+
+Note: This cycle would otherwise be possible only through the use of consume
+operations.
+
+--------
+
+A visible side effect A on a scalar object or bit-field M with respect to a
+value computation B of M satisfies the conditions: 
+    — A happens before B and 
+    — there is no other side effect X to M such that A happens before X and X
+        happens before B .  
+The value of a non-atomic scalar object or bit-field M , as determined by
+evaluation B , shall be the value stored by the visible side effect A .
+
+Note: If there is ambiguity about which side effect to a non-atomic object or
+bit-field is visible, then the behavior is either unspecified or undefined.
+
+Note: This states that operations on ordinary objects are not visibly
+reordered. This is not actually detectable without data races, but it is
+necessary to ensure that data races, as defined below, and with suitable
+restrictions on the use of atomics, correspond to data races in a simple
+interleaved (sequentially consistent) execution.
+
+--------
+
+The visible sequence of side effects on an atomic object M , with respect to a
+value computation B of M , is a maximal contiguous sub-sequence of side
+effects in the modification order of M , where the first side effect is
+visible with respect to B , and for every side effect, it is not the case that
+B happens before it. The value of an atomic object M , as determined by
+evaluation B , shall be the value stored by some operation in the visible
+sequence of M with respect to B .
+
+Note: It can be shown that the visible sequence of side effects of a value
+computation is unique given the coherence requirements below.
+
+-----
+
+If an operation A that modifies an atomic object M happens before an operation
+B that modifies M , then A shall be earlier than B in the modification order
+of M .
+
+Note: This requirement is known as write-write coherence.
+
+-------
+
+If a value computation A of an atomic object M happens before a value
+computation B of M , and A takes its value from a side effect X on M , then
+the value computed by B shall either be the value stored by X or the value
+stored by a side effect Y on M , where Y follows X in the modification order
+of M .
+
+Note: This requirement is known as read-read coherence.
+
+-------
+
+If a value computation A of an atomic object M happens before an operation B
+that modifies M , then A shall take its value from a side effect X on M ,
+where X precedes B in the modification order of M .
+
+Note: This requirement is known as read-write coherence.
+
+------
+
+If a side effect X on an atomic object M happens before a value computation B
+of M , then the evaluation B shall take its value from X or from a side effect
+Y that follows X in the modification order of M.
+
+Note:
+This requirement is known as write-read coherence.
+
+------------
+
+Note: The four preceding coherence requirements effectively disallow compiler
+reordering of atomic opera- tions to a single object, even if both operations
+are relaxed loads. This effectively makes the cache coherence guarantee
+provided by most hardware available to C++ atomic operations.
+
+Note: The visible sequence of side effects depends on the `happens before'
+relation, which depends on the values observed by loads of atomics, which we
+are restricting here. The intended reading is that there must exist an
+association of atomic loads with modifications they observe that, together
+with suitably chosen modification orders and the `happens before' relation
+derived as described above, satisfy the resulting constraints as imposed here.
+
+-----
+
+The execution of a program contains a data race if it contains two conflicting
+actions in different threads, at least one of which is not atomic, and neither
+happens before the other. Any such data race results in undefined behavior.
+
+Note: It can be shown that programs that correctly use mutexes and
+memory_order_- seq_cst operations to prevent all data races and use no other
+synchronization operations behave as if the operations executed by their
+constituent threads were simply interleaved, with each value computation of an
+object being taken from the last side effect on that object in that
+interleaving. This is normally referred to as `sequential
+consistency'. However, this applies only to data-race-free programs, and
+data-race-free programs cannot observe most program transformations that do
+not change single-threaded program semantics. In fact, most single-threaded
+program transformations continue to be allowed, since any program that behaves
+differently as a result must perform an undefined operation.
+
+Note: Compiler transformations that introduce assignments to a potentially
+shared memory location that would not be modified by the abstract machine are
+generally precluded by this standard, since such an assignment might overwrite
+another assignment by a different thread in cases in which an abstract machine
+execution would not have encountered a data race. This includes
+implementations of data member assign- ment that overwrite adjacent members in
+separate memory locations. Reordering of atomic loads in cases in which the
+atomics in question may alias is also generally precluded, since this may
+violate the `visible sequence' rules.
+
+Note: Transformations that introduce a speculative read of a potentially
+shared memory location may not preserve the semantics of the C++ program as
+defined in this standard, since they potentially introduce a data
+race. However, they are typically valid in the context of an optimizing
+compiler that targets a specific machine with well-defined semantics for data
+races. They would be invalid for a hypothetical machine that is not tolerant
+of races or provides hardware race detection.
+
+-------
+
+The implementation may assume that any thread will eventually do one of the
+following: 
+    — terminate, 
+    — make a call to a library I/O function, 
+    — access or modify a volatile object, or 
+    — perform a synchronization operation or an atomic operation.
+
+Note: This is intended to allow compiler transformations such as removal of
+empty loops, even when termination cannot be proven.
+
+---------
+
+An implementation should ensure that the last value (in modification order)
+assigned by an atomic or synchronization operation will become visible to all
+other threads in a finite period of time.
+
+
+==============================
+
+30.6.5
+Class template std::promise
+
+template <class R>
+class promise 
+{
+    public:
+        promise();
+        template <class Allocator>
+        promise(allocator_arg_t, const Allocator& a);
+        promise(promise&& rhs) noexcept;
+        promise(const promise& rhs) = delete;
+        ~promise();
+
+        // assignment
+        promise& operator=(promise&& rhs) noexcept;
+        promise& operator=(const promise& rhs) = delete;
+        void swap(promise& other) noexcept;
+
+        // retrieving the result
+        future<R> get_future();
+
+        // setting the result
+        void set_value(see below);
+        void set_exception(exception_ptr p);
+
+        // setting the result with deferred notification
+        void set_value_at_thread_exit(const R& r);
+        void set_value_at_thread_exit(see below);
+        void set_exception_at_thread_exit(exception_ptr p);
+};
+
+template <class R>
+void swap(promise<R>& x, promise<R>& y);
+
+template <class R, class Alloc>
+struct uses_allocator<promise<R>, Alloc>;
+
+The implementation shall provide the template promise and two specializations,
+promise<R&> and promise<void>.  These differ only in the argument type of the
+member function set_value, as set out in its description, below.
+
+template <class R, class Alloc>
+struct uses_allocator<promise<R>, Alloc>
+: true_type { };
+
+Requires: Alloc shall be an Allocator (17.6.3.5).
+
+promise();
+
+template <class Allocator>
+promise(allocator_arg_t, const Allocator& a);
+
+Effects: constructs a promise object and an shared state. The second
+constructor uses the allocator a to allocate memory for the shared state.
+
+promise(promise&& rhs) noexcept;
+
+    Effects: constructs a new promise object and transfers ownership of the
+shared state of rhs (if any) to the newly-constructed object.
+
+    Postcondition: rhs has no shared state.
+
+~promise();
+
+    Effects: Abandons any shared state (30.6.4).
+
+promise& operator=(promise&& rhs) noexcept;
+
+    Effects: Abandons any shared state (30.6.4) and then as if
+        promise(std::move(rhs)).swap(*this).
+
+    Returns: *this.
+
+void swap(promise& other) noexcept;
+
+    Effects: Exchanges the shared state of *this and other.
+
+    Postcondition: *this has the shared state (if any) that other had prior to
+        the call to swap. other has the shared state (if any) that *this had
+        prior to the call to swap.
+
+future<R> get_future();
+
+    Returns: A future<R> object with the same shared state as *this.
+    Throws: future_error if *this has no shared state or if get_future has
+        already been called on a promise with the same shared state as *this. 
+    Error conditions:
+        — future_already_retrieved if get_future has already been called on a
+            promise with the same shared state as *this.
+        — no_state if *this has no shared state.
+
+void promise::set_value(const R& r);
+void promise::set_value(R&& r);
+void promise<R&>::set_value(R& r);
+void promise<void>::set_value();
+
+    Effects: atomically stores the value r in the shared state and makes that
+        state ready (30.6.4). 
+    Throws:
+        — future_error if its shared state already has a stored value or
+            exception, or 
+        — for the first version, any exception thrown by the copy constructor
+            of R, or 
+        — for the second version, any exception thrown by the move constructor
+            of R. 
+    Error conditions:
+        — promise_already_satisfied if its shared state already has a stored
+            value or exception. 
+        — no_state if *this has no shared state.
+    Synchronization: calls to set_value and set_exception on a single promise
+            object are serialized. 
+
+Note: And they synchronize and serialize with other functions through the
+      referred shared state. 
+
+void set_exception(exception_ptr p);
+
+    Effects: atomically stores the exception pointer p in the shared state and
+            makes that state ready (30.6.4). 
+    Throws: future_error if its shared state already has a stored value or
+            exception. 
+    Error conditions:
+        — promise_already_satisfied if its shared state already has a stored
+            value or exception. 
+        — no_state if *this has no shared state.
+    Synchronization: calls to set_value and set_exception on a single promise
+            object are serialized. 
+
+Note: And they synchronize and serialize with other functions through the
+referred shared state. 
+
+void promise::set_value_at_thread_exit(const R& r);
+void promise::set_value_at_thread_exit(R&& r);
+void promise<R&>::set_value_at_thread_exit(R& r);
+void promise<void>::set_value_at_thread_exit();
+
+    Effects: Stores the value r in the shared state without making that state
+            ready immediately. Schedules that state to be made ready when the
+            current thread exits, after all objects of thread storage duration
+            associated with the current thread have been destroyed.
+    Throws: future_error if an error condition occurs.
+    Error conditions:
+        — promise_already_satisfied if its shared state already has a stored
+            value or exception. 
+        — no_state if *this has no shared state.
+
+void promise::set_exception_at_thread_exit(exception_ptr p);
+
+    Effects: Stores the exception pointer p in the shared state without making
+            that state ready immediately. Schedules that state to be made
+            ready when the current thread exits, after all objects of thread
+            storage duration associated with the current thread have been
+            destroyed.
+    Throws: future_error if an error condition occurs.
+    Error conditions:
+        — promise_already_satisfied if its shared state already has a stored
+            value or exception. 
+        — no_state if *this has no shared state.
+
+template <class R>
+void swap(promise<R>& x, promise<R>& y);
+
+    Effects: x.swap(y).
+
+=======================================
+
+Class template std::future
+
+The class template future defines a type for asynchronous return objects which
+do not share their shared state with other asynchronous return objects. A
+default-constructed future object has no shared state. A future object with
+shared state can be created by functions on asynchronous providers (30.6.4) or
+by the move constructor and shares its shared state with the original
+asynchronous provider. The result (value or exception) of a future object can
+be set by calling a respective function on an object that shares the same
+shared state.
+
+Note: Member functions of future do not synchronize with themselves or with
+member functions of shared_future.
+
+The effect of calling any member function other than the destructor, the
+move-assignment operator, or valid on a future object for which valid() ==
+false is undefined.
+
+Note: Implementations are encouraged to detect this case and throw an object
+of type future_error with an error condition of future_errc::no_state.
+
+template <class R>
+class future 
+{
+    public:
+        future();
+        future(future &&);
+        future(const future& rhs) = delete;
+        ~future();
+        future& operator=(const future& rhs) = delete;
+        future& operator=(future&&) noexcept;
+        shared_future<R> share() &&;
+
+        // retrieving the value
+        see below: get();
+
+        // functions to check state
+        bool valid() const;
+        void wait() const;
+
+        template <class Rep, class Period>
+        future_status wait_for(const chrono::duration<Rep, Period>& rel_time) const;
+
+        template <class Clock, class Duration>
+        future_status wait_until(const chrono::time_point<Clock, Duration>&
+                                 abs_time) const; 
+};
+
+The implementation shall provide the template future and two specializations,
+future<R&> and future<void>.  These differ only in the return type and return
+value of the member function get, as set out in its description, below.
+
+future();
+
+    Effects: constructs an empty future object that does not refer to an shared state.
+    Postcondition: valid() == false.
+
+future(future&& rhs) noexcept;
+
+    Effects: move constructs a future object that refers to the shared state
+        that was originally referred to by rhs (if any).
+    Postconditions:
+        — valid() returns the same value as rhs.valid() prior to the
+            constructor invocation. 
+        — rhs.valid() == false.
+
+~future();
+
+    Effects:
+        — releases any shared state (30.6.4);
+        — destroys *this.
+
+future& operator=(future&& rhs);
+
+    Effects:
+        — releases any shared state (30.6.4).
+        — move assigns the contents of rhs to *this.
+    Postcondition:
+        — valid() returns the same value as rhs.valid() prior to the assignment.
+        — rhs.valid() == false.
+
+shared_future<R> share() &&;
+
+    Returns: shared_future<R>(std::move(*this)).
+    Postcondition: valid() == false.
+
+R future::get();
+R& future<R&>::get();
+void future<void>::get();
+
+    Note: as described above, the template and its two required
+            specializations differ only in the return type and return value of
+            the member function get. 
+    Effects: wait()s until the shared state is ready, then retrieves the value
+            stored in the shared state. 
+    Returns:
+        — future::get() returns the value stored in the object’s shared
+            state. If the type of the value is MoveAssignable the returned
+            value is moved, otherwise it is copied. 
+        — future<R&>::get() returns the reference stored as value in the
+            object’s shared state. 
+        — future<void>::get() returns nothing.
+    Throws: the stored exception, if an exception was stored in the shared
+            state.
+    Postcondition: valid() == false.
+
+bool valid() const;
+
+    Returns: true only if *this refers to an shared state.
+
+void wait() const;
+
+    Effects: blocks until the shared state is ready.
+
+template <class Rep, class Period>
+future_status wait_for(const chrono::duration<Rep, Period>& rel_time) const;
+
+    Effects: none if the shared state contains a deferred function (30.6.8),
+            otherwise blocks until the shared state is ready or until the
+            relative timeout (30.2.4) specified by rel_time has expired. 
+    Returns:
+        — future_status::deferred if the shared state contains a deferred
+            function. 
+        — future_status::ready if the shared state is ready.
+        — future_status::timeout if the function is returning because the
+            relative timeout (30.2.4) specified by rel_time has expired. 
+
+template <class Clock, class Duration>
+future_status wait_until(const chrono::time_point<Clock, Duration>& abs_time)
+            const;
+
+    Effects: none if the shared state contains a deferred function (30.6.8),
+            otherwise blocks until the shared state is ready or until the
+            absolute timeout (30.2.4) specified by abs_time has expired. 
+    Returns:
+        — future_status::deferred if the shared state contains a deferred
+            function.
+        — future_status::ready if the shared state is ready.
+        — future_status::timeout if the function is returning because the
+            absolute timeout (30.2.4) specified by abs_time has expired. 
+
+=================================
+
+Class template std::shared_future
+
+The class template shared_future defines a type for asynchronous return
+objects which may share their shared state with other asynchronous return
+objects. A default-constructed shared_future object has no shared state. A
+shared_future object with shared state can be created by conversion from a
+future object and shares its shared state with the original asynchronous
+provider (30.6.4) of the shared state. The result (value or exception) of a
+shared_future object can be set by calling a respective function on an object
+that shares the same shared state.
+
+Note: Member functions of shared_future do not synchronize with themselves,
+but they synchronize with the shared shared state.
+
+The effect of calling any member function other than the destructor, the
+move-assignment operator, or valid() on a shared_future object for which
+valid() == false is undefined.
+
+Note: Implementations are encouraged to detect this case and throw an object
+of type future_error with an error condition of future_errc::no_state.
+
+template <class R>
+class shared_future 
+{
+    public:
+        shared_future() noexcept;
+        shared_future(const shared_future& rhs);
+        shared_future(future<R>&&) noexcept;
+        shared_future(shared_future&& rhs) noexcept;
+        ~shared_future();
+        shared_future& operator=(const shared_future& rhs);
+        shared_future& operator=(shared_future&& rhs);
+
+        // retrieving the value
+        see below get() const;
+
+        // functions to check state
+        bool valid() const;
+        void wait() const;
+        template <class Rep, class Period>
+        future_status wait_for(const chrono::duration<Rep, Period>& rel_time)
+                                                                        const; 
+        template <class Clock, class Duration>
+        future_status wait_until(const chrono::time_point<Clock, Duration>&
+                                abs_time) const; 
+};
+
+The implementation shall provide the template shared_future and two
+specializations, shared_future<R&> and shared_future<void>. These differ only
+in the return type and return value of the member function get, as set out in
+its description, below.
+
+shared_future() noexcept;
+    Effects: constructs an empty shared_future object that does not refer to
+            an shared state. 
+    Postcondition: valid() == false.
+
+shared_future(const shared_future& rhs);
+
+    Effects: constructs a shared_future object that refers to the same shared
+            state as rhs (if any). 
+    Postcondition: valid() returns the same value as rhs.valid().
+
+shared_future(future<R>&& rhs) noexcept;
+shared_future(shared_future&& rhs) noexcept;
+
+    Effects: move constructs a shared_future object that refers to the shared
+            state that was originally referred to by rhs (if any). 
+    Postconditions:
+        — valid() returns the same value as rhs.valid() returned prior to the
+            constructor invocation. 
+        — rhs.valid() == false.
+
+~shared_future();
+
+    Effects:
+        — releases any shared state (30.6.4);
+        — destroys *this.
+
+shared_future& operator=(shared_future&& rhs);
+
+    Effects:
+        — releases any shared state (30.6.4);
+        — move assigns the contents of rhs to *this.
+    Postconditions:
+        — valid() returns the same value as rhs.valid() returned prior to the
+            assignment. 
+        — rhs.valid() == false.
+
+shared_future& operator=(const shared_future& rhs);
+
+    Effects:
+        — releases any shared state (30.6.4);
+        — assigns the contents of rhs to *this. 
+            Note: As a result, *this refers to the same shared state as rhs
+                    (if any). 
+    Postconditions: valid() == rhs.valid().
+
+const R& shared_future::get() const;
+R& shared_future<R&>::get() const;
+void shared_future<void>::get() const;
+
+    Note: as described above, the template and its two required
+            specializations differ only in the return type and return value of
+            the member function get. 
+
+    Note: access to a value object stored in the shared state is
+            unsynchronized, so programmers should apply only those operations
+            on R that do not introduce a data race (1.10). 
+
+    Effects: wait()s until the shared state is ready, then retrieves the value
+            stored in the shared state. 
+    Returns:
+        — shared_future::get() returns a const reference to the value stored
+            in the object’s shared state. 
+            Note: Access through that reference after the shared state has been
+                destroyed produces undefined behavior; this can be avoided by not
+                storing the reference in any storage with a greater lifetime than
+                the shared_future object that returned the reference.
+        — shared_future<R&>::get() returns the reference stored as value in
+            the object’s shared state. 
+        — shared_future<void>::get() returns nothing.
+    Throws: the stored exception, if an exception was stored in the shared
+            state.
+
+bool valid() const;
+
+    Returns: true only if *this refers to an shared state.
+
+void wait() const;
+
+    Effects: blocks until the shared state is ready.
+
+template <class Rep, class Period>
+future_status wait_for(const chrono::duration<Rep, Period>& rel_time) const;
+
+    Effects: none if the shared state contains a deferred function (30.6.8),
+            otherwise blocks until the shared state is ready or until the
+            relative timeout (30.2.4) specified by rel_time has expired. 
+    Returns:
+        — future_status::deferred if the shared state contains a deferred
+            function.  
+        — future_status::ready if the shared state is ready.
+        — future_status::timeout if the function is returning because the
+            relative timeout (30.2.4) specified by rel_time has expired.
+
+template <class Clock, class Duration>
+future_status wait_until(const chrono::time_point<Clock, Duration>& abs_time)
+                                                                        const; 
+
+    Effects: none if the shared state contains a deferred function (30.6.8),
+            otherwise blocks until the shared state is ready or until the
+            absolute timeout (30.2.4) specified by abs_time has expired. 
+    Returns:
+    — future_status::deferred if the shared state contains a deferred function.
+    — future_status::ready if the shared state is ready.
+    — future_status::timeout if the function is returning because the absolute
+            timeout (30.2.4) specified by abs_time has expired. 
+
+============================
+
+Function template std::async
+
+The template function async provides a mechanism to launch a function
+potentially in a new thread and provides the result of the function in a
+future object with which it shares a shared state.
+
+template <class F, class... Args>
+future<typename result_of<F(Args...)>::type>
+async(F&& f, Args&&... args);
+
+template <class F, class... Args>
+future<typename result_of<F(Args...)>::type>
+async(launch policy, F&& f, Args&&... args);
+
+    Requires: F and each Ti in Args shall satisfy the MoveConstructible
+            requirements. INVOKE (decay_copy(std::forward<F>(f)),
+            decay_copy(std::forward<Args>(args))...) (20.8.2, 30.3.1.2) shall
+            be a valid expression.
+    Effects: The first function behaves the same as a call to the second
+            function with a policy argument of launch::async |
+            launch::deferred and the same arguments for F and Args. The second
+            function creates an shared state that is associated with the
+            returned future object. The further behavior of the second
+            function depends on the policy argument as follows (if more than
+            one of these conditions applies, the implementation may choose any
+            of the corresponding policies): 
+                — if policy & launch::async is non-zero — executes INVOKE
+            (decay_copy(std::forward<F>(f)),
+            decay_copy(std::forward<Args>(args))...) (20.8.2, 30.3.1.2) as if
+            in a new thread of execution represented by a thread object with
+            the calls to decay_copy() being evaluated in the thread that
+            called async. Any return value is stored as the result in the
+            shared state. Any exception propagated from the execution of
+            INVOKE (decay_copy(std::forward<F>(f)),
+            decay_copy(std::forward<Args>(args))...) is stored as the
+            exceptional result in the shared state. The thread object is
+            stored in the shared state and affects the behavior of any
+            asynchronous return objects that reference that state.
+
+                — if policy & launch::deferred is non-zero — Stores
+            decay_copy(std::forward<F>(f)) and
+            decay_copy(std::forward<Args>(args))... in the shared state. These
+            copies of f and args constitute a deferred function. Invocation of
+            the deferred function evaluates INVOKE (g, xyz) where g is the
+            stored value of decay_copy(std::forward<F>(f)) and xyz is the
+            stored copy of decay_copy(std::forward<Args>(args)).... The shared
+            state is not made ready until the function has completed. The
+            first call to a function requiring a non-timed wait on an
+            asynchronous return object referring to the shared state created
+            by this async call to become ready shall invoke the deferred
+            function in the thread that called the waiting function; once
+            evaluation of INVOKE (g, xyz) begins, the function is no longer
+            considered deferred.
+                Note: If this policy is specified together with other
+            policies, such as when using a policy value of launch::async |
+            launch::deferred, implementations should defer invocation or the
+            selection of the policy when no more concurrency can be
+            effectively exploited.
+
+    Returns: An object of type future<typename result_of<F(Args...)>:type>
+            that refers to the shared state created by this call to async. 
+    Synchronization: Regardless of the provided policy argument,
+            — the invocation of async synchronizes with (1.10) the invocation
+                of f.  
+                Note: This statement applies even when the corresponding future
+                object is moved to another thread. 
+        and
+            — the completion of the function f is sequenced before (1.10) the
+            shared state is made ready. 
+                Note: f might not be called at all, so its completion might
+                never happen.
+        If policy & launch::async is non-zero,
+            — a call to a waiting function on an asynchronous return object
+            that shares the shared state created by this async call shall
+            block until the associated thread has completed, as if joined
+            (30.3.1.5); 
+            — the join() on the created thread object synchronizes with (1.10)
+            the return from the first function that successfully detects the
+            ready status of the shared state or with the return from the last
+            function that releases the shared state returns, whichever happens
+            first. [Editor’s note: N3196 changes the following sentence as
+            indicated. N3188 removes the sentence. Please pick one.] If the
+            invocation is deferred, the completion of the invocation of the
+            deferred function synchronizes with the successful return from a
+            call to a waiting function on the shared state. 
+    Throws: system_error if policy is launch::async and the implementation is
+            unable to start a new thread. 
+    Error conditions:
+        — resource_unavailable_try_again — if policy is launch::async and the
+            system is unable to start a new thread. 
+    Remarks: The first signature shall not participate in overload resolution
+            if decay<F>::type is std::launch. 
+    Example:
+        int work1(int value);
+        int work2(int value);
+        int work(int value) {
+        auto handle = std::async([=]{ return work2(value); });
+        int tmp = work1(value);
+        return tmp + handle.get();
+        // #1
+
+    Note: Line #1 might not result in concurrency because the async call uses
+            the default policy, which may use launch::deferred, in which case
+            the lambda might not be invoked until the get() call; in that
+            case, work1 and work2 are called on the same thread and there is
+            no concurrency.  
+
+
+==============================
+
+Class template std::packaged_task
+
+The class template packaged_task defines a type for wrapping a function or
+callable object so that the return value of the function or callable object is
+stored in a future when it is invoked.
+
+When the packaged_task object is invoked, its stored task is invoked and the
+result (whether normal or exceptional) stored in the shared state. Any futures
+that share the shared state will then be able to access the stored result.
+
+template<class> class packaged_task; // undefined
+
+template<class R, class... ArgTypes>
+class packaged_task<R(ArgTypes...)> 
+{
+    public:
+    typedef R result_type;
+    // construction and destruction
+    packaged_task() noexcept;
+    template <class F>
+    explicit packaged_task(F f);
+    template <class F, class Allocator>
+    explicit packaged_task(allocator_arg_t, const Allocator& a, F f);
+    explicit packaged_task(R(*f)(ArgTypes...));
+    template <class F>
+    explicit packaged_task(F&& f);
+    template <class F, class Allocator>
+    explicit packaged_task(allocator_arg_t, const Allocator& a, F&& f);
+    ~packaged_task();
+
+    // no copy
+    packaged_task(packaged_task&) = delete;
+    packaged_task& operator=(packaged_task&) = delete;
+
+    // move support
+    packaged_task(packaged_task&& other) noexcept;
+    packaged_task& operator=(packaged_task&& other);
+
+    void swap(packaged_task& other) noexcept;
+    bool valid() const noexcept;
+
+    // result retrieval
+    future<R> get_future();
+
+    // execution
+    void operator()(ArgTypes... );
+    void make_ready_at_thread_exit(ArgTypes...);
+    void reset();
+};
+
+template <class R, class... ArgTypes>
+void swap(packaged_task<R(ArgTypes...)>& x, packaged_task<R(ArgTypes...)>& y)
+noexcept; 
+
+template <class R, class Alloc>
+struct uses_allocator<packaged_task<R>, Alloc>;
+
+packaged_task() noexcept;
+
+    Effects: constructs a packaged_task object with no shared state and no
+                stored task. 
+
+template <class F>
+packaged_task(F f);
+
+template <class F, class Allocator>
+explicit packaged_task(allocator_arg_t, const Allocator& a, F f);
+
+packaged_task(R(*f)(ArgTypes...));
+
+template <class F>
+packaged_task(F&& f);
+
+template <class F, class Allocator>
+explicit packaged_task(allocator_arg_t, const Allocator& a, F&& f);
+
+    Requires: INVOKE (f, t1, t2, ..., tN, R), where t1, t2, ..., tN are values
+                of the corresponding types in ArgTypes..., shall be a valid
+                expression. Invoking a copy of f shall behave the same as
+                invoking f.
+    Effects: constructs a new packaged_task object with an shared state and
+                stores a copy of f as the object’s stored task. The
+                constructors that take an Allocator argument use it to
+                allocate memory needed to store the internal data structures. 
+    Throws: any exceptions thrown by the copy or move constructor of f, or
+                std::bad_alloc if memory for the internal data structures
+                could not be allocated. packaged_task(packaged_task&& other)
+                noexcept;
+    Effects: constructs a new packaged_task object and transfers ownership of
+                other’s shared state to *this, leaving other with no shared
+                state.
+    Postcondition: other has no shared state.
+
+packaged_task& operator=(packaged_task&& other);
+
+    Effects:
+        — releases any shared state (30.6.4).
+        — packaged_task(other).swap(*this).
+
+~packaged_task();
+
+    Effects: Abandons any shared state. (30.6.4).
+
+void swap(packaged_task& other) noexcept;
+
+    Effects: exchanges the shared states and stored tasks of *this and other.
+    Postcondition: *this has the same shared state and stored task (if any) as
+                other prior to the call to swap. other has the same shared
+                state and stored task (if any) as *this prior to the call to
+                swap. 
+
+bool valid() const noexcept;
+
+    Returns: true only if *this has an shared state.
+
+future<R> get_future();
+
+    Returns: A future object that shares the same shared state as *this.
+    Throws: a future_error object if an error occurs.
+    Error conditions:
+        — future_already_retrieved if get_future has already been called on a
+                packaged_task object with the same shared state as *this. 
+        — no_state if *this has no shared state.
+
+void operator()(ArgTypes... args);
+    Effects: INVOKE (f, t1, t2, ..., tN, R), where f is the stored task of
+                *this and t1, t2, ..., tN are the values in args.... If the
+                task returns normally, the return value is stored as the
+                asynchronous result in the shared state of *this, otherwise
+                the exception thrown by the task is stored. The shared state
+                of *this is made ready, and any threads blocked in a function
+                waiting for the shared state of *this to become ready are
+                unblocked.
+    Throws: a future_error exception object if there is no shared state or the
+                stored task has already been invoked. 
+    Error conditions:
+        — promise_already_satisfied if the shared state is already ready.
+        — no_state if *this has no shared state.
+    Synchronization: a successful call to operator() synchronizes with (1.10)
+                a call to any member function of a future or shared_future
+                object that shares the shared state of *this. The completion
+                of the invocation of the stored task and the storage of the
+                result (whether normal or exceptional) into the shared state
+                synchronizes with (1.10) the successful return from any member
+                function that detects that the state is set to ready. 
+                    Note: operator() synchronizes and serializes with other
+                functions through the shared state. 
+
+void make_ready_at_thread_exit(ArgTypes... args);
+    Effects: INVOKE (f, t1, t2, ..., tN, R), where f is the stored task and
+                t1, t2, ..., tN are the values in args.... If the task returns
+                normally, the return value is stored as the asynchronous
+                result in the shared state of *this, otherwise the exception
+                thrown by the task is stored. In either case, this shall be
+                done without making that state ready (30.6.4)
+                immediately. Schedules the shared state to be made ready when
+                the current thread exits, after all objects of thread storage
+                duration associated with the current thread have been
+                destroyed.
+    Throws: future_error if an error condition occurs.
+    Error conditions:
+        — promise_already_satisfied if the shared state already has a stored
+                value or exception. 
+        — no_state if *this has no shared state.
+
+void reset();
+
+    Effects: as if *this = packaged_task(std::move(f)), where f is the task
+                stored in *this.  
+               Note: This constructs a new shared state for *this. The old
+                state is abandoned (30.6.4).  
+    Throws:
+        — bad_alloc if memory for the new shared state could not be allocated.
+        — any exception thrown by the move constructor of the task stored in
+                the shared state. 
+        — future_error with an error condition of no_state if *this has no
+                shared state. 30.6.9.2
+
+packaged_task globals:
+
+template <class R, class... ArgTypes>
+void swap(packaged_task<R(ArgTypes...)>& x, packaged_task<R(ArgTypes...)>& y)
+          noexcept; 
+
+    Effects: x.swap(y)
+
+template <class R, class Alloc>
+struct uses_allocator<packaged_task<R>, Alloc>;
+
+    Requires: Alloc shall be an Allocator (17.6.3.5).
