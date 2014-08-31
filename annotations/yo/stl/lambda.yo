@@ -1,24 +1,26 @@
-The C++11 standard has added hi(lambda expression) em(lambda expressions) to
-the language. As we've seen generic algorithms often accept an argument that
-can either be a function object or it can be a plain function. Examples are
-the tt(sort) and tt(find_if) generic algorithms. When the function called by
-the generic algorithm must remember its state a function object is
-appropriate, otherwise a plain function can be used.
+The C++11 standard adds hi(lambda expression) em(lambda expressions) to the
+language. As we'll see in chapter ref(19) em(generic algorithms) often accept
+arguments that can either be function objects or plain functions . Examples
+are the tt(sort) (cf. section ref(SORT)) and tt(find_if) (cf. section
+ref(FINDIF)) generic algorithms. As a i(rule of thumb): when a called function
+must remember its state a function object is appropriate, otherwise a plain
+function can be used.
 
-The function or function object is usually not readily available. Often it
-must be defined in or near the location where the generic algorithm is used.
-Usually this is accomplished by defining a class or function in the anonymous
-namespace, passing an object of that class or passing that function to a
-generic algorithm called from some other function. If the latter function is
-itself a member function the need may be felt to grant the function called by
-the generic algorithm access to other members of its class. Often this results
-in a significant amount of code (defining the class), or it results in complex
-code (to make available software elements that aren't automatically accessible
-from the called function (object)). It may also result in code that is
-irrelevant at the current level of specification. Nested classes don't solve
-these problems and nested classes can't be used in templates.
+Frequently the function or function object is not readily available, and it
+must be defined in or near the location where it is used.  This is commonly
+realized by defining a class or function in the anonymous namespace (say:
+class or function A), passing an A to the code needing A. If that code is
+itself a member function of the class B, then A's implementation might benefit
+from having access to the members of class B.
 
-A i(lambda expression) defines an
+Often this scheme results in a significant amount of code (defining the
+class), or it results in complex code (to make available software elements
+that aren't automatically accessible to A's code). It may also result in code
+that is irrelevant at the current level of specification. Nested classes don't
+solve these problems either. Moreover, nested classes can't be used in
+templates.
+
+Lamba expressions solve these problems.  A i(lambda expression) defines an
     i(anonymous function object)hi(function object: anonymous), also called a
     emi(closure object). When a lambda expression is evaluated it results in a
 temporary object (the closure object). The type of a closure object is called
@@ -53,9 +55,11 @@ the lamba expression should specify tt(mutable), as follows:
 parameters. The parameters in a lamba declarator may not be provided with
 default arguments.
 
- A closure object as defined by the above lamda expression could be used e.g.,
-in combination with the tt(accumulate) generic algorithm to compute the
-product of a series of tt(int) values stored in a vector:
+
+A closure object as defined by the above lamda expression could be used e.g.,
+in combination with the tt(accumulate) (cf. section ref(ACCUMULATE)) generic
+algorithm to compute the product of a series of tt(int) values stored in a
+vector:
         verb(
     cout << accumulate(vi.begin(), vi.end(), 1,
                 [](int x, int y) { return x * y; });
@@ -63,7 +67,7 @@ product of a series of tt(int) values stored in a vector:
     The above lambda function uses the implicit return
         hi(return type: implicit)
     type tt(decltype(x * y)). An implicit return type can be used if the
-lambda expression does not contain a tt(return) stattement (i.e., a void
+lambda expression does not contain a tt(return) statement (i.e., a void
 lambda expression), if it contains a single tt(return) statement, or if it
 contains multiple tt(return) statements returning values of identical types
 (e.g., all tt(int) values). 
@@ -143,7 +147,8 @@ separated tt(var) specifications indicate that local copies should be used of
 the mentioned local variables. Again, these copies have immutable values
 unless the lambda expression is provided with the tt(mutable) keyword. 
 
-Here is an example:
+Here is an example, using the tt(for_each) (cf. section ref(FOREACH)) generic
+algorithm: 
         verb(
     void showSum(vector<int> const &vi)
     {
@@ -165,9 +170,77 @@ tt(vi). Once the generic algorithm has completed tt(showSum)'s variable
 tt(total) has received a value that is equal to the sum of all the vector's
 values. It has outlived the lambda expression and its value is displayed.
 
-Another fine-tuning consists of specifying tt(this) in the lambda-capture: it
-also allows the lambda-expression to access the surrounding class members.
-Example:
+Although generic algorithms are extremely useful, they may not always be
+available for the task at hand. Moreover, an algorithm like tt(for_each) looks
+a bit unwieldy, now that the language offers range-based for-loops. So let's
+try this, instead of the above implementation:
+        verb(
+    void showSum(vector<int> const &vi)
+    {
+        int total = 0;
+        for (auto el: vi)
+            [&](int x)
+            {
+                total += x;
+            };
+
+        std::cout << total << '\n';
+    }
+        )
+    But when tt(showSum) is now called, its tt(cout) statement consistently
+reports 0. What's happening here?
+
+    When a generic algorithm is given a lambda function, its implementation
+instantiates a reference to a function, and that function is thereupon called
+from within the generic algorithm. However, in the above example the
+range-based for-loop's nested statement merely represents the declaration of a
+lamba function: nothing is actually called, and hence tt(total) remains equal
+to 0. So, to make the above example work we not only must em(define) the
+lambda expression, but we must also em(call) the lambda function. One way of
+doing that is by giving the lambda function a em(name), and then call the
+lamba function by its given name:
+        verb(
+    void showSum(vector<int> const &vi)
+    {
+        int total = 0;
+        for (auto el: vi)
+        {
+            auto lambda = [&](int x)
+                            {
+                                total += x;
+                            };
+
+            lambda(el);
+        }
+        std::cout << total << '\n';
+    }
+        )
+    
+In fact, there is no need to give the lambda function a name: the tt(auto
+lambda) declaration merely represents the lambda function, which could also
+directly be called, as an extension of its definition. The syntax may look a
+bit weird, but there's nothing wrong with it, and it allows us to drop the
+compound statment, required in the last example, completely. Here goes:
+        verb(
+    void showSum(vector<int> const &vi)
+    {
+        int total = 0;
+        for (auto el: vi)
+            [&](int x)
+            {
+                total += x;
+            }(el);          // immediately append the 
+                            // argument list to the lambda
+                            // function's definition
+        std::cout << total << '\n';
+    }
+        )
+
+
+
+
+Another fine-tuning uses tt(this) in the lambda-capture: it also allows the
+lambda-expression to access the surrounding class members.  Example:
         verb(
     class Data
     {
