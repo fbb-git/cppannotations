@@ -1,0 +1,140 @@
+Class template std::future
+
+The class template future defines a type for asynchronous return objects which
+do not share their shared state with other asynchronous return objects. A
+default-constructed future object has no shared state. A future object with
+shared state can be created by functions on asynchronous providers (30.6.4) or
+by the move constructor and shares its shared state with the original
+asynchronous provider. The result (value or exception) of a future object can
+be set by calling a respective function on an object that shares the same
+shared state.
+
+Note: Member functions of future do not synchronize with themselves or with
+member functions of shared_future.
+
+The effect of calling any member function other than the destructor, the
+move-assignment operator, or valid on a future object for which valid() ==
+false is undefined.
+
+Note: Implementations are encouraged to detect this case and throw an object
+of type future_error with an error condition of future_errc::no_state.
+
+template <class R>
+class future 
+{
+    public:
+        future();
+        future(future &&);
+        future(const future& rhs) = delete;
+        ~future();
+        future& operator=(const future& rhs) = delete;
+        future& operator=(future&&) noexcept;
+        shared_future<R> share() &&;
+
+        // retrieving the value
+        see below: get();
+
+        // functions to check state
+        bool valid() const;
+        void wait() const;
+
+        template <class Rep, class Period>
+        future_status wait_for(const chrono::duration<Rep, Period>& rel_time) const;
+
+        template <class Clock, class Duration>
+        future_status wait_until(const chrono::time_point<Clock, Duration>&
+                                 abs_time) const; 
+};
+
+The implementation shall provide the template future and two specializations,
+future<R&> and future<void>.  These differ only in the return type and return
+value of the member function get, as set out in its description, below.
+
+future();
+
+    Effects: constructs an empty future object that does not refer to an shared state.
+    Postcondition: valid() == false.
+
+future(future&& rhs) noexcept;
+
+    Effects: move constructs a future object that refers to the shared state
+        that was originally referred to by rhs (if any).
+    Postconditions:
+        — valid() returns the same value as rhs.valid() prior to the
+            constructor invocation. 
+        — rhs.valid() == false.
+
+~future();
+
+    Effects:
+        — releases any shared state (30.6.4);
+        — destroys *this.
+
+future& operator=(future&& rhs);
+
+    Effects:
+        — releases any shared state (30.6.4).
+        — move assigns the contents of rhs to *this.
+    Postcondition:
+        — valid() returns the same value as rhs.valid() prior to the assignment.
+        — rhs.valid() == false.
+
+shared_future<R> share() &&;
+
+    Returns: shared_future<R>(std::move(*this)).
+    Postcondition: valid() == false.
+
+R future::get();
+R& future<R&>::get();
+void future<void>::get();
+
+    Note: as described above, the template and its two required
+            specializations differ only in the return type and return value of
+            the member function get. 
+    Effects: wait()s until the shared state is ready, then retrieves the value
+            stored in the shared state. 
+    Returns:
+        — future::get() returns the value stored in the object’s shared
+            state. If the type of the value is MoveAssignable the returned
+            value is moved, otherwise it is copied. 
+        — future<R&>::get() returns the reference stored as value in the
+            object’s shared state. 
+        — future<void>::get() returns nothing.
+    Throws: the stored exception, if an exception was stored in the shared
+            state.
+    Postcondition: valid() == false.
+
+bool valid() const;
+
+    Returns: true only if *this refers to an shared state.
+
+void wait() const;
+
+    Effects: blocks until the shared state is ready.
+
+template <class Rep, class Period>
+future_status wait_for(const chrono::duration<Rep, Period>& rel_time) const;
+
+    Effects: none if the shared state contains a deferred function (30.6.8),
+            otherwise blocks until the shared state is ready or until the
+            relative timeout (30.2.4) specified by rel_time has expired. 
+    Returns:
+        — future_status::deferred if the shared state contains a deferred
+            function. 
+        — future_status::ready if the shared state is ready.
+        — future_status::timeout if the function is returning because the
+            relative timeout (30.2.4) specified by rel_time has expired. 
+
+template <class Clock, class Duration>
+future_status wait_until(const chrono::time_point<Clock, Duration>& abs_time)
+            const;
+
+    Effects: none if the shared state contains a deferred function (30.6.8),
+            otherwise blocks until the shared state is ready or until the
+            absolute timeout (30.2.4) specified by abs_time has expired. 
+    Returns:
+        — future_status::deferred if the shared state contains a deferred
+            function.
+        — future_status::ready if the shared state is ready.
+        — future_status::timeout if the function is returning because the
+            absolute timeout (30.2.4) specified by abs_time has expired. 

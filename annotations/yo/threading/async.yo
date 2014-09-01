@@ -1,0 +1,107 @@
+Function template std::async
+
+The template function async provides a mechanism to launch a function
+potentially in a new thread and provides the result of the function in a
+future object with which it shares a shared state.
+
+template <class F, class... Args>
+future<typename result_of<F(Args...)>::type>
+async(F&& f, Args&&... args);
+
+template <class F, class... Args>
+future<typename result_of<F(Args...)>::type>
+async(launch policy, F&& f, Args&&... args);
+
+    Requires: F and each Ti in Args shall satisfy the MoveConstructible
+            requirements. INVOKE (decay_copy(std::forward<F>(f)),
+            decay_copy(std::forward<Args>(args))...) (20.8.2, 30.3.1.2) shall
+            be a valid expression.
+    Effects: The first function behaves the same as a call to the second
+            function with a policy argument of launch::async |
+            launch::deferred and the same arguments for F and Args. The second
+            function creates an shared state that is associated with the
+            returned future object. The further behavior of the second
+            function depends on the policy argument as follows (if more than
+            one of these conditions applies, the implementation may choose any
+            of the corresponding policies): 
+                — if policy & launch::async is non-zero — executes INVOKE
+            (decay_copy(std::forward<F>(f)),
+            decay_copy(std::forward<Args>(args))...) (20.8.2, 30.3.1.2) as if
+            in a new thread of execution represented by a thread object with
+            the calls to decay_copy() being evaluated in the thread that
+            called async. Any return value is stored as the result in the
+            shared state. Any exception propagated from the execution of
+            INVOKE (decay_copy(std::forward<F>(f)),
+            decay_copy(std::forward<Args>(args))...) is stored as the
+            exceptional result in the shared state. The thread object is
+            stored in the shared state and affects the behavior of any
+            asynchronous return objects that reference that state.
+
+                — if policy & launch::deferred is non-zero — Stores
+            decay_copy(std::forward<F>(f)) and
+            decay_copy(std::forward<Args>(args))... in the shared state. These
+            copies of f and args constitute a deferred function. Invocation of
+            the deferred function evaluates INVOKE (g, xyz) where g is the
+            stored value of decay_copy(std::forward<F>(f)) and xyz is the
+            stored copy of decay_copy(std::forward<Args>(args)).... The shared
+            state is not made ready until the function has completed. The
+            first call to a function requiring a non-timed wait on an
+            asynchronous return object referring to the shared state created
+            by this async call to become ready shall invoke the deferred
+            function in the thread that called the waiting function; once
+            evaluation of INVOKE (g, xyz) begins, the function is no longer
+            considered deferred.
+                Note: If this policy is specified together with other
+            policies, such as when using a policy value of launch::async |
+            launch::deferred, implementations should defer invocation or the
+            selection of the policy when no more concurrency can be
+            effectively exploited.
+
+    Returns: An object of type future<typename result_of<F(Args...)>:type>
+            that refers to the shared state created by this call to async. 
+    Synchronization: Regardless of the provided policy argument,
+            — the invocation of async synchronizes with (1.10) the invocation
+                of f.  
+                Note: This statement applies even when the corresponding future
+                object is moved to another thread. 
+        and
+            — the completion of the function f is sequenced before (1.10) the
+            shared state is made ready. 
+                Note: f might not be called at all, so its completion might
+                never happen.
+        If policy & launch::async is non-zero,
+            — a call to a waiting function on an asynchronous return object
+            that shares the shared state created by this async call shall
+            block until the associated thread has completed, as if joined
+            (30.3.1.5); 
+            — the join() on the created thread object synchronizes with (1.10)
+            the return from the first function that successfully detects the
+            ready status of the shared state or with the return from the last
+            function that releases the shared state returns, whichever happens
+            first. [Editor’s note: N3196 changes the following sentence as
+            indicated. N3188 removes the sentence. Please pick one.] If the
+            invocation is deferred, the completion of the invocation of the
+            deferred function synchronizes with the successful return from a
+            call to a waiting function on the shared state. 
+    Throws: system_error if policy is launch::async and the implementation is
+            unable to start a new thread. 
+    Error conditions:
+        — resource_unavailable_try_again — if policy is launch::async and the
+            system is unable to start a new thread. 
+    Remarks: The first signature shall not participate in overload resolution
+            if decay<F>::type is std::launch. 
+    Example:
+        int work1(int value);
+        int work2(int value);
+        int work(int value) {
+        auto handle = std::async([=]{ return work2(value); });
+        int tmp = work1(value);
+        return tmp + handle.get();
+        // #1
+
+    Note: Line #1 might not result in concurrency because the async call uses
+            the default policy, which may use launch::deferred, in which case
+            the lambda might not be invoked until the get() call; in that
+            case, work1 and work2 are called on the same thread and there is
+            no concurrency.  
+
