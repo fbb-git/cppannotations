@@ -3,6 +3,40 @@ data.
 
 Before using mutexes the tthi(mutex) header file must be included.
 
+COMMENT(
+The library defines a number of atomic operations (Clause 29 ) and operations
+on mutexes (Clause 30 ) that are specially identified as synchronization
+operations. 
+
+These operations play a special role in making assignments in one thread
+visible to another. A synchronization operation on one or more memory
+locations is either a consume operation, an acquire operation, a release
+operation, or both an acquire and release operation. A synchronization
+operation without an associated memory location is a fence and can be either
+an acquire fence, a release fence, or both an acquire and release fence. In
+addition, there are relaxed atomic operations, which are not synchronization
+operations, and atomic read-modify-write operations, which have special
+characteristics.
+
+Note: For example, a call that acquires a mutex will perform an acquire
+operation on the locations comprising the mutex. Correspondingly, a call that
+releases the same mutex will perform a release operation on those same
+locations. Informally, performing a release operation on A forces prior side
+effects on other memory locations to become visible to other threads that
+later perform a consume or an acquire operation on A . `Relaxed' atomic
+operations are not synchronization operations even though, like
+synchronization operations, they cannot contribute to data races.
+
+--------------
+
+In other words, function executions do not interleave with each other.
+
+The execution of a program contains a data race if it contains two conflicting
+actions in different threads, at least one of which is not atomic, and neither
+happens before the other. Any such data race results in undefined behavior.
+
+END)
+
 Mutexes should be used to prevent data corruption when multiple threads need
 access to common data. For (a very simple) example: the following could happen
 when two threads access a common int variable, unless mutexes are used (a

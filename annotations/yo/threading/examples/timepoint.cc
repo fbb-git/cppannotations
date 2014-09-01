@@ -7,7 +7,8 @@
     int main()
     {
             // the current time (or use `auto')
-        time_point<system_clock> now(system_clock::now());
+            // 'now' is a time_point<system_clock>
+        auto now(system_clock::now());
 
             // its value in seconds:
         cout << system_clock::to_time_t(now) << '\n';

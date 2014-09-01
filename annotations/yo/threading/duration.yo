@@ -1,24 +1,25 @@
-The class template ti(duration) is defined in the tt(std::chrono) namespace.
-Objects of the class tt(duration) define a certain amount of time.
+The class template hi(duration template)tt(std::chrono::duration) is defined
+in the
+        hi(chrono namespace)tt(std::chrono) namespace.
+Objects of the class tt(duration) define amounts of time.
 
-Before using the class tt(std::chrono::duration) the tthi(chrono) header file
-must be included. When including tt(chrono) the header file tthi(ratio)
-is also included.
+Before using the class tt(duration) the tthi(chrono) header file
+must be included. The tt(chrono) header in turn includes the tthi(ratio)
+header file.
 
 The class template tt(duration) requires two template type arguments: a
-numeric type (commonly ti(int64_t)) to contain the duration's value, and a
-time-unit, called its em(Period), usually specified using the class template
+numeric type (commonly tt(int64_t)) defining the duration's value, and a
+time-unit, called its em(Period), usually defined by the class template
 tt(ratio).
 
 Using predefined tt(ratio) types amounts of time of various granularities can
-be defined. E.g., to define a time interval of 30 minutes you could use
+be defined. E.g., to define 30 minutes you could use
         verb(
-    std::chrono::duration<int64_t, std::deca> halfHour(30)
+    std::chrono::duration<int64_t, std::deca> halfHr(180)
         )
-    but even if you're tt(using namespace std) and tt(using namespace chrono)
-this is a rather complex and non-intuitive definition. Fortunately, various
-duration types have been predefined:
-
+    but even if you specify tt(using namespace std) and tt(using namespace
+chrono) this is a rather complex and non-intuitive definition. Fortunately,
+various predefined duration types exist:
     center(
     table(2)(ll)(
     rowline()
@@ -31,24 +32,23 @@ duration types have been predefined:
     rowline()
     )
     )
+    Using these types, a time amount of 30 minutes can now simply be defined
+as tt(std::chrono::minutes halfHour(30)).
 
-Using these types, a duration of 30 minutes can now simply
-be defined as tt(std::chrono::minutes halfHour(30)).
-
-Duration types themselves define the following types:
+The class template tt(duration) itself defines two types:
     itemization(
     ithtq(rep)(std::chrono::duration<Value, Period>::rep)
         (the tt(Value) type used by the tt(duration) type (e.g., tt(int64_t)))
     ithtq(period)(std::chrono::duration<Value, Period>::period)
-        (the tt(Period) type used by the tt(duration) type (e.g., 
-            tt(std::ratio::nano)))
+        (the tt(ratio) type used by the tt(duration) (e.g., 
+            tt(std::ratio::nano)) (so tt(period) itself has static values
+            tt(num) and (den), as mentioned in the previous section).)
     )
 
-In addition to the copy constructor (and overloaded assignment operator) the
-class template tt(duration) offers the following constructors:
+The class template tt(duration) offers the following constructors:
     itemization(
     itt(constexpr duration()):
-        the default duration defines a duration of zero time units.
+        the default constructor defines a duration of zero time units.
     itt(constexpr explicit duration(Value const &value)):
         a specific duration of tt(value) time units. Here tt(Value) refers to
         the duration's numeric type (e.g., tt(int64_t)). So, when defining
@@ -56,6 +56,7 @@ class template tt(duration) offers the following constructors:
     std::chrono::minutes halfHour(30);
         )
         the argument 30 is stored inside a tt(int64_t).
+    itt(duration) also offers copy and move constructors.
     )
 
 The class template tt(duration) offers the following members:
@@ -63,12 +64,13 @@ The class template tt(duration) offers the following members:
     it() Arithmetic operators.
        quote(Duration objects may be added, subtracted, multiplied, divided
         and they support the modulo operator (the binary arithmetic and the
-        binary arithmetic assignment operators are available).)
+        binary arithmetic assignment operators are also available).)
 
     ithtq(count)(constexpr Value count() const)
        (returns the em(value) that is stored inside a tt(duration) object. For
         tt(halfHour) this would return 30, not 1800, as the time unit itself
-        is obtained as the hi(period)tt(duration<Value, Unit>::period) type.)
+        is obtained from its hi(period)tt(duration<Value, Unit>::period)
+        type.) 
 
     ithtq(zero)(static constexpr duration zero())
        (this is a static member, returning a duration object representing a
@@ -83,15 +85,15 @@ The class template tt(duration) offers the following members:
         representing+linebreak() tt(numeric_limits<Rep>::max()).)
     )
     
-Different tt(duration) types may be combined, unless time precision would be
+Different tt(duration) types may be combined, unless precision would be
 lost. When the binary arithmetic operators are used the resulting tt(duration)
 uses the finer of the two granularities. When the binary arithmetic assignment
 operator is used the granulatity of the left-hand side operand must at least
 be equal to the granularity of the right-hand side operand, or a compilation
 error is issued. E.g.,
         verb(
-    std::chrono::minutes halfHour(30);
-    std::chrono::seconds half_a_minute(30);
+    minutes halfHour(30);
+    seconds half_a_minute(30);
 
     cout << (halfHour + half_a_minute).count(); // displays 1830
 
@@ -101,12 +103,10 @@ error is issued. E.g.,
     cout << half_a_minute.count();              // displays 1830
         )
 
-
-
-
-
-
-
-
+COMMENT(
+The c14() standard defines suffixes tt(h, min, s, ms, us, ns) for integral
+values, creating the corresponding tt(duration) time intervals. E.g., 
+tt(minutes oneMinute = 1m).
+END)
 
 
