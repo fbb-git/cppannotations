@@ -1,7 +1,8 @@
-Class template std::future
-
 Asynchronous providers produce asynchronous return objects which may or may
 not share their shared state with other asynchronous return objects. 
+
+Before using the class tt(std::future) the tthi(future) header file must be
+included.
 
 Objects of the class template hi(future)tt(std::future) represent asynchronous
 return objects which may not share their shared state with other asynchronous
@@ -20,39 +21,26 @@ constructor. In these cases it shares its shared state with the original
 asynchronous provider. The class tt(future) does not offer a copy constructor
 or overloaded assignment operator.
 
+Some of tt(future)'s members may return a value of the strongly typed
+enumeration hi(future_status)tt(std::future_status). This enumeration defines
+three symbolic constants: tt(future_status::ready, future_status::timeout,)
+and tt(future_status::deferred). 
+
+Error conditions may be returned by tt(future_error) exceptions. These error
+conditions are represented by the values of the strongly typed enumeration 
+    hi(future_errc)tt(std::future_errc) defining the symbolic constants 
+tt(future_errc::broken_promise, future_errc::future_already_retrieved, 
+future_errc::promise_already_satisfied,) and tt(future_errc::no_state).
+
+In this section the members of the class template tt(future) are
+described. Examples of its use are given in subsequent sections.
 
 COMMENT(
 Note: Member functions of future do not synchronize with themselves or with
 member functions of shared_future.
 END)
 
-The class tt(future) has a member tt(bool valid()). If this member returns
-tt(false) the tt(future's) destructor and move constructor can safely be
-called. When calling other members while tt(valid) returns tt(false) a
-hi(future_error)tt(std::future_error) exception is thrown (having the error
-condition hi(no_state)tt(future_errc::no_state).
 
-
-
-template <class R>
-class future 
-{
-    public:
-        shared_future<R> share() &&;
-
-        // retrieving the value
-        see below: get();
-
-        // functions to check state
-        void wait() const;
-
-        template <class Rep, class Period>
-        future_status wait_for(const chrono::duration<Rep, Period>& rel_time) const;
-
-        template <class Clock, class Duration>
-        future_status wait_until(const chrono::time_point<Clock, Duration>&
-                                 abs_time) const; 
-};
 
 The class tt(future) offers the following constructors:
     itemization(
@@ -75,62 +63,65 @@ It offers the following members:
             tt(tmp) object; following this, tt(tmp.valid()) returns
             tt(false).) 
 
-    itt(shared_future<R> share() &&;
+    itt(std::shared_future<ResultType> share() &&)
+        quote(This member turns an r-value reference to a
+            tt(future<ResultType>) into a tt(std::shared_future<ResultType>)
+            (see section ref(SHAREDFUTURE)). After calling this function, the
+            tt(future's valid) member returns tt(false).)
 
-    Returns: shared_future<R>(std::move(*this)).
-    Postcondition: valid() == false.
+    itt(ResultType get())
+        quote(This member first calls the member tt(wait) (see below), after
+            which the value which is stored in the shared state is
+            returned. With tt(future<Type>) specifications the returned value
+            is the moved shared value if tt(Type) supports move assignment,
+            otherwise a copy is returned.  With tt(future<Type &>)
+            specifications a tt(Type &) is returned, with tt(future<void>)
+            specifications nothing is returned. If the shared value is an
+            exception, it is thrown instead of returned. After calling this
+            member the tt(future) object's tt(valid) member returns tt(false).)
 
-R future::get();
-R& future<R&>::get();
-void future<void>::get();
+    itt(bool valid() const)
+        quote(Returns tt(true) only if tt(*this) refers to a shared state.  If
+            tt(valid) returns tt(false) only the tt(future's) destructor and move
+            constructor can safely be called. When other members are called
+            while tt(valid) returns tt(false) a
+            hi(future_error)tt(std::future_error) exception is thrown (having
+            the value hi(no_state)tt(future_errc::no_state)).)
 
-    Note: as described above, the template and its two required
-            specializations differ only in the return type and return value of
-            the member function get. 
-    Effects: wait()s until the shared state is ready, then retrieves the value
-            stored in the shared state. 
-    Returns:
-        — future::get() returns the value stored in the object’s shared
-            state. If the type of the value is MoveAssignable the returned
-            value is moved, otherwise it is copied. 
-        — future<R&>::get() returns the reference stored as value in the
-            object’s shared state. 
-        — future<void>::get() returns nothing.
-    Throws: the stored exception, if an exception was stored in the shared
-            state.
-    Postcondition: valid() == false.
+    itt(void wait() const)
+        quote(This member blocks until the shared state is ready.)
 
-bool valid() const;
+COMMENT(future_status?)
+    itt(future_status wait_for(chrono::duration<Rep, Period> const &rel_time) 
+        const)
+        quote(This member template derives the template types tt(Rep) and
+            tt(Period) from the actually specified duration (cf. section
+            ref(DURATION)). If the shared state contains a deferred function
+            nothing happens. Otherwise tt(wait_for) blocks
+COMMENT((30.6.8)) 
+            until the shared state is ready or until the amount of time
+            specified by tt(rel_time) has expired. Possible return values are:
+            itemization(
+            itt(future_status::deferred) if the shared state contains a deferred
+                function;
+            itt(future_status::ready) if the shared state is ready;
+            itt(future_status::timeout) if the function is returning because the
+                amount of time specified by tt(rel_time) has expired. 
+            ))
 
-    Returns: true only if *this refers to an shared state.
-
-void wait() const;
-
-    Effects: blocks until the shared state is ready.
-
-template <class Rep, class Period>
-future_status wait_for(const chrono::duration<Rep, Period>& rel_time) const;
-
-    Effects: none if the shared state contains a deferred function (30.6.8),
-            otherwise blocks until the shared state is ready or until the
-            relative timeout (30.2.4) specified by rel_time has expired. 
-    Returns:
-        — future_status::deferred if the shared state contains a deferred
-            function. 
-        — future_status::ready if the shared state is ready.
-        — future_status::timeout if the function is returning because the
-            relative timeout (30.2.4) specified by rel_time has expired. 
-
-template <class Clock, class Duration>
-future_status wait_until(const chrono::time_point<Clock, Duration>& abs_time)
-            const;
-
-    Effects: none if the shared state contains a deferred function (30.6.8),
-            otherwise blocks until the shared state is ready or until the
-            absolute timeout (30.2.4) specified by abs_time has expired. 
-    Returns:
-        — future_status::deferred if the shared state contains a deferred
-            function.
-        — future_status::ready if the shared state is ready.
-        — future_status::timeout if the function is returning because the
-            absolute timeout (30.2.4) specified by abs_time has expired. 
+    itt(future_status wait_until(chrono::time_point<Clock, Duration>& const &abs_time)
+                                                                            const)
+        quote(This member template derives the template types tt(Clock) and
+            tt(Duration) from the actually specified tt(abs_time) (cf. section
+            ref(TIMEPOINT)). If the shared state contains a deferred function
+            nothing happens. Otherwise tt(wait_until) blocks until the shared
+            state is ready or until the point in time specified by
+            tt(abs_time) has expired. Possible return values are:
+           itemization(
+            itt(future_status::deferred) if the shared state contains a deferred
+                function;
+            itt(future_status::ready) if the shared state is ready;
+            itt(future_status::timeout) if the function is returning because the
+                point in time specified by tt(abs_time) has expired. 
+            ))
+)    
