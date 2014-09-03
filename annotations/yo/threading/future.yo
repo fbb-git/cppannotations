@@ -1,41 +1,49 @@
 Class template std::future
 
-The class template future defines a type for asynchronous return objects which
-do not share their shared state with other asynchronous return objects. A
-default-constructed future object has no shared state. A future object with
-shared state can be created by functions on asynchronous providers (30.6.4) or
-by the move constructor and shares its shared state with the original
-asynchronous provider. The result (value or exception) of a future object can
-be set by calling a respective function on an object that shares the same
-shared state.
+Asynchronous providers produce asynchronous return objects which may or may
+not share their shared state with other asynchronous return objects. 
 
+Objects of the class template hi(future)tt(std::future) represent asynchronous
+return objects which may not share their shared state with other asynchronous
+return objects. The class's template type parameter defines the type of the
+tt(future) object's result, which may be tt(void) or a reference to a return
+type. 
+
+A tt(future's) object result is a value or an exception. The tt(future) object
+receives its result through member functions of objects that share the
+tt(future) object's shared state.
+
+By default a tt(future) object has no shared state. A tt(future) object
+containing a shared state can be created by members of asynchronous providers
+(such as a tt(std::promise) (cf. section ref(PROMISE)), or by the move
+constructor. In these cases it shares its shared state with the original
+asynchronous provider. The class tt(future) does not offer a copy constructor
+or overloaded assignment operator.
+
+
+COMMENT(
 Note: Member functions of future do not synchronize with themselves or with
 member functions of shared_future.
+END)
 
-The effect of calling any member function other than the destructor, the
-move-assignment operator, or valid on a future object for which valid() ==
-false is undefined.
+The class tt(future) has a member tt(bool valid()). If this member returns
+tt(false) the tt(future's) destructor and move constructor can safely be
+called. When calling other members while tt(valid) returns tt(false) a
+hi(future_error)tt(std::future_error) exception is thrown (having the error
+condition hi(no_state)tt(future_errc::no_state).
 
-Note: Implementations are encouraged to detect this case and throw an object
-of type future_error with an error condition of future_errc::no_state.
+
 
 template <class R>
 class future 
 {
     public:
-        future();
-        future(future &&);
-        future(const future& rhs) = delete;
-        ~future();
-        future& operator=(const future& rhs) = delete;
-        future& operator=(future&&) noexcept;
         shared_future<R> share() &&;
 
         // retrieving the value
         see below: get();
 
         // functions to check state
-        bool valid() const;
         void wait() const;
 
         template <class Rep, class Period>
@@ -46,40 +54,28 @@ class future
                                  abs_time) const; 
 };
 
-The implementation shall provide the template future and two specializations,
-future<R&> and future<void>.  These differ only in the return type and return
-value of the member function get, as set out in its description, below.
+The class tt(future) offers the following constructors:
+    itemization(
+    itt(future())
+        quote(The default constructor constructs an tt(future) object that
+            does not refer to a shared state. Its tt(valid) member returns
+            tt(false).)
 
-future();
+    itt(future(future &&tmp) noexcept)
+        quote (The move constructor is available. Its tt(valid) member 
+            returns what tt(tmp.valid()) would haved returned prior to the
+            constructor invocation. After calling the move constructor
+            tt(tmp.valid()) returns tt(false).)
+    )
 
-    Effects: constructs an empty future object that does not refer to an shared state.
-    Postcondition: valid() == false.
+It offers the following members:
+    itemization(
+    itt(future &operator=(future &&tmp))
+        quote(The move assignment operator grabs the information from the
+            tt(tmp) object; following this, tt(tmp.valid()) returns
+            tt(false).) 
 
-future(future&& rhs) noexcept;
-
-    Effects: move constructs a future object that refers to the shared state
-        that was originally referred to by rhs (if any).
-    Postconditions:
-        — valid() returns the same value as rhs.valid() prior to the
-            constructor invocation. 
-        — rhs.valid() == false.
-
-~future();
-
-    Effects:
-        — releases any shared state (30.6.4);
-        — destroys *this.
-
-future& operator=(future&& rhs);
-
-    Effects:
-        — releases any shared state (30.6.4).
-        — move assigns the contents of rhs to *this.
-    Postcondition:
-        — valid() returns the same value as rhs.valid() prior to the assignment.
-        — rhs.valid() == false.
-
-shared_future<R> share() &&;
+    itt(shared_future<R> share() &&;
 
     Returns: shared_future<R>(std::move(*this)).
     Postcondition: valid() == false.
