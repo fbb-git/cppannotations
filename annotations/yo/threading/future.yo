@@ -1,8 +1,8 @@
 Asynchronous providers produce asynchronous return objects which may or may
 not share their shared state with other asynchronous return objects. 
 
-Before using the class tt(std::future) the tthi(future) header file must be
-included.
+Before using the class hi(future) tt(std::future) the tthi(future) header file
+must be included.
 
 Objects of the class template hi(future)tt(std::future) represent asynchronous
 return objects which may not share their shared state with other asynchronous
@@ -35,14 +35,8 @@ future_errc::promise_already_satisfied,) and tt(future_errc::no_state).
 In this section the members of the class template tt(future) are
 described. Examples of its use are given in subsequent sections.
 
-COMMENT(
-Note: Member functions of future do not synchronize with themselves or with
-member functions of shared_future.
-END)
 
-
-
-The class tt(future) offers the following constructors:
+The class tt(future) has the following constructors:
     itemization(
     itt(future())
         quote(The default constructor constructs an tt(future) object that
@@ -56,7 +50,10 @@ The class tt(future) offers the following constructors:
             tt(tmp.valid()) returns tt(false).)
     )
 
-It offers the following members:
+It has the following members (member functions of the class tt(future) do not
+synchronize with themselves or with member functions of the class
+tt(shared_future)).
+
     itemization(
     itt(future &operator=(future &&tmp))
         quote(The move assignment operator grabs the information from the
@@ -82,9 +79,9 @@ It offers the following members:
 
     itt(bool valid() const)
         quote(Returns tt(true) only if tt(*this) refers to a shared state.  If
-            tt(valid) returns tt(false) only the tt(future's) destructor and move
-            constructor can safely be called. When other members are called
-            while tt(valid) returns tt(false) a
+            tt(valid) returns tt(false) only the tt(future's) destructor and
+            move constructor can safely be called. When other members are
+            called while tt(valid) returns tt(false) a
             hi(future_error)tt(std::future_error) exception is thrown (having
             the value hi(no_state)tt(future_errc::no_state)).)
 
@@ -109,8 +106,8 @@ COMMENT((30.6.8))
                 amount of time specified by tt(rel_time) has expired. 
             ))
 
-    itt(future_status wait_until(chrono::time_point<Clock, Duration>& const &abs_time)
-                                                                            const)
+    itt(future_status wait_until(chrono::time_point<Clock, Duration> const
+                                                        &abs_time) const)
         quote(This member template derives the template types tt(Clock) and
             tt(Duration) from the actually specified tt(abs_time) (cf. section
             ref(TIMEPOINT)). If the shared state contains a deferred function
@@ -118,10 +115,23 @@ COMMENT((30.6.8))
             state is ready or until the point in time specified by
             tt(abs_time) has expired. Possible return values are:
            itemization(
-            itt(future_status::deferred) if the shared state contains a deferred
-                function;
+            itt(future_status::deferred) if the shared state contains a
+                deferred function;
             itt(future_status::ready) if the shared state is ready;
-            itt(future_status::timeout) if the function is returning because the
-                point in time specified by tt(abs_time) has expired. 
+            itt(future_status::timeout) if the function is returning because
+                the point in time specified by tt(abs_time) has expired. 
             ))
-)    
+)
+
+And the class tt(future<ResultType>) declares the following friends:
+        verb(
+    std::promise<ResultType>
+        )
+and
+        verb(
+    template<typename Function, typename... Args>
+        future<typename result_of<Function(Args...)>::type> 
+        async(std::launch, Function &&fun, Args &&...args);
+        )
+
+
