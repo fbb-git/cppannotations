@@ -1,26 +1,108 @@
-Function template std::async
+The template function hi(async)tt(std::async) potentially starts a new
+thread. Once the function which is called by tt(async) terminates, the 
+function's return value is made available in a tt(std::future) object
+(cf. section ref(FUTURE)), with which it shares a shared state.
 
-The template function async provides a mechanism to launch a function
-potentially in a new thread and provides the result of the function in a
-future object with which it shares a shared state.
+Before using the function tt(async) the tthi(future) header file must be
+included. 
 
-template <class F, class... Args>
-future<typename result_of<F(Args...)>::type>
-async(F&& f, Args&&... args);
+Two overloaded definitions of the function template tt(async) are available:
+        verb(
+    template <class Function, class ...Args>
+    std::future<
+        typename std::result_of<
+                            Function(Args ...)
+                 >::type
+    > 
+    std::async(Function &&fun, Args &&...args);
+        )
+and
+        verb(
+    template <class Function, class ...Args>
+    std::future<typename std::result_of<Function(Args ...)>::type> 
+        std::async(std::launch policy, Function &&fun, Args &&...args);
+        )
+    When calling these functions, the function tt(fun) and each of tt(fun)'s
+arguments must be move-constructible. The first argument of the second
+function is a value of the strongly typed enum 
+    hi(deferred)hi(async)hi(launch)tt(std::launch):
+        verb(
+    enum class launch
+    {
+        async,
+        deferred
+    };
+        )
 
-template <class F, class... Args>
-future<typename result_of<F(Args...)>::type>
-async(launch policy, F&& f, Args&&... args);
+The first tt(async) function is an abbreviated call for the second tt(async)
+function, when passing it tt(launch::deferred) as its first argument.
 
-    Requires: F and each Ti in Args shall satisfy the MoveConstructible
-            requirements. INVOKE (decay_copy(std::forward<F>(f)),
-            decay_copy(std::forward<Args>(args))...) (20.8.2, 30.3.1.2) shall
-            be a valid expression.
-    Effects: The first function behaves the same as a call to the second
-            function with a policy argument of launch::async |
-            launch::deferred and the same arguments for F and Args. The second
-            function creates an shared state that is associated with the
-            returned future object. The further behavior of the second
+Both functions create a shared state which can be obtained from the returned
+tt(future) object.
+
+The first tt(async) function and the second function, when
+specifying tt(launch::deferred) call the function tt(fun). The returned
+shared state is only available after the function tt(fun) has
+returned.
+
+However, when just calling tt(assign) it is likely that tt(fun) doesn't
+return. The tt(launch::deferred) policy allows tt(async) to defer evaluation
+until the implementation is ready for it, or the program explicitly asks for
+it. Consider the following program:
+        verbnrs(examples/async1.cc)
+    Although tt(async) is called in line 14, when the program is run 
+the output doesn't show tt(fun's) output line:
+        verb(
+    First async call starts
+    First async call ends
+    Second async call starts
+    Second async call ends
+        )
+    This happens because of tt(lauch::deferred): the system simply defers
+tt(fun's) execution until required, which never occurs. But the tt(future)
+object that's returned by tt(async) has a member tt(wait). Once tt(wait)
+returns the shred state must be available. In other words: tt(fun) must have
+finished. Here is what happens when line 14 is changed into
+tt(async(fun).wait()): 
+        verb(
+    First async call starts
+        hello from fun
+    First async call ends
+    Second async call starts
+        hello from fun
+    Second async call ends
+        )
+    Evaluation of tt(fun) can thus be controlled to the point where we want
+it, maybe even after calling tt(asyncCall), as shown in the next
+example. Knowing that the function tt(fun) returns tt(void) 
+
+    
+    
+
+    
+                — if policy & launch::deferred is non-zero — Stores
+            decay_copy(std::forward<F>(f)) and
+            decay_copy(std::forward<Args>(args))... in the shared state. These
+            copies of f and args constitute a deferred function. Invocation of
+            the deferred function evaluates INVOKE (g, xyz) where g is the
+            stored value of decay_copy(std::forward<F>(f)) and xyz is the
+            stored copy of decay_copy(std::forward<Args>(args)).... The shared
+            state is not made ready until the function has completed. 
+
+The
+            first call to a function requiring a non-timed wait on an
+            asynchronous return object referring to the shared state created
+            by this async call to become ready shall invoke the deferred
+            function in the thread that called the waiting function; once
+            evaluation of INVOKE (g, xyz) begins, the function is no longer
+            considered deferred.
+                Note: If this policy is specified together with other
+            policies, such as when using a policy value of launch::async |
+            launch::deferred, implementations should defer invocation or the
+            selection of the policy when no more concurrency can be
+            effectively exploited.
+
+    The further behavior of the second
             function depends on the policy argument as follows (if more than
             one of these conditions applies, the implementation may choose any
             of the corresponding policies): 
@@ -37,25 +119,8 @@ async(launch policy, F&& f, Args&&... args);
             stored in the shared state and affects the behavior of any
             asynchronous return objects that reference that state.
 
-                — if policy & launch::deferred is non-zero — Stores
-            decay_copy(std::forward<F>(f)) and
-            decay_copy(std::forward<Args>(args))... in the shared state. These
-            copies of f and args constitute a deferred function. Invocation of
-            the deferred function evaluates INVOKE (g, xyz) where g is the
-            stored value of decay_copy(std::forward<F>(f)) and xyz is the
-            stored copy of decay_copy(std::forward<Args>(args)).... The shared
-            state is not made ready until the function has completed. The
-            first call to a function requiring a non-timed wait on an
-            asynchronous return object referring to the shared state created
-            by this async call to become ready shall invoke the deferred
-            function in the thread that called the waiting function; once
-            evaluation of INVOKE (g, xyz) begins, the function is no longer
-            considered deferred.
-                Note: If this policy is specified together with other
-            policies, such as when using a policy value of launch::async |
-            launch::deferred, implementations should defer invocation or the
-            selection of the policy when no more concurrency can be
-            effectively exploited.
+
+
 
     Returns: An object of type future<typename result_of<F(Args...)>:type>
             that refers to the shared state created by this call to async. 
