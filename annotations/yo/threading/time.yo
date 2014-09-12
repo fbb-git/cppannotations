@@ -1,23 +1,22 @@
 The bf(C) programming language offered tools like bf(sleep)(3) and
 bf(select)(2) to suspend program execution for a certain amount of time.
 
-When developing multi threaded programs situations are frequently encountered
-where a thread's actions must temporarily be. E.g., a program configuring a
-network interface may want to show that it is busy by displaying a sequence of
-dots at the terminal, one dot per second, until the network interface has been
-configured. The simple example of a multi-threaded program, shown earlier,
-shows how this can be realized.
+In multi threaded programs threads are frequently suspended, albeit usually
+for a very short time interval. E.g., when a thread must access a variable,
+but the variable is currently updated by another thread, then the first thread
+should wait until the second thread has completed the update. Updating a
+variable usually doesn't take much time, but if it may take an unexpectedly
+long time, then the waiting thread may want to be informed about it, so it can
+do something else as long as the second thread hasn't finished updating the
+variable.
 
-The thread displaying de dots waits for a second before displaying
-the next dot. Once the main thread has finished its task it somhow notifies
-the thread displaying the dots that it should stop. In the simple example a
-tt(bool) variable is shared among the two threads, but this may involve a
-superfluous waiting period of one second, as the thread showing the dots might
-just have started its tt(sleep(1)) call, when the main thread finishes its
-work. 
+tt(Sleep) and tt(select) can be used for wating, but as they were designed in
+an era when multi threading was commonly available, their capabilities are
+limited when used in multi threaded programs. 
 
-The STL offers dedicated classes operating on time which work well in
-combination with threads, the topic of the next section (ref(THREADS)), but
-which can also be used in many other situations. 
+The gap is bridged by the STL offering dedicated classes for specifying time,
+which mix well with time-dependent thread members. Threads are the topic of
+the next section (ref(THREADS)). Before that, we'll have a look at facilities
+for specifying time first.
 
 

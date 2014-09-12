@@ -3,23 +3,23 @@ in the
         hi(chrono namespace)tt(std::chrono) namespace.
 Objects of the class tt(duration) define amounts of time.
 
-Before using the class tt(duration) the tthi(chrono) header file
-must be included. The tt(chrono) header in turn includes the tthi(ratio)
-header file.
+Before using the class tt(duration) the tthi(chrono) header file must be
+included (which in turn includes the tthi(ratio) header file).
 
 The class template tt(duration) requires two template type arguments: a
 numeric type (commonly tt(int64_t)) defining the duration's value, and a
-time-unit, called its em(Period), usually defined by the class template
+time-unit, called its em(Period), usually defined using the class template
 tt(ratio).
 
-Using predefined tt(ratio) types amounts of time of various granularities can
-be defined. E.g., to define 30 minutes you could use
+Here predefined tt(ratio) types simplify the job of using the right
+granularity. E.g., to define 30 minutes you could use
         verb(
     std::chrono::duration<int64_t, std::deca> halfHr(180)
         )
-    but even if you specify tt(using namespace std) and tt(using namespace
-chrono) this is a rather complex and non-intuitive definition. Fortunately,
-various predefined duration types exist:
+    (resulting in 180 deca-seconds, so 1800 seconds) but even if you specify
+`tt(using namespace std)' and `tt(using namespace chrono)' this is rather
+complex and non-intuitive. Fortunately, various predefined duration types
+exist:
     center(
     table(2)(ll)(
     rowline()
@@ -39,16 +39,26 @@ The class template tt(duration) itself defines two types:
     itemization(
     ithtq(rep)(std::chrono::duration<Value, Period>::rep)
         (the tt(Value) type used by the tt(duration) type (e.g., tt(int64_t)))
+
     ithtq(period)(std::chrono::duration<Value, Period>::period)
         (the tt(ratio) type used by the tt(duration) (e.g., 
             tt(std::ratio::nano)) (so tt(period) itself has static values
             tt(num) and (den), as mentioned in the previous section).)
     )
 
-The class template tt(duration) offers the following constructors:
+These types can be retrieved from a tt(duration) object using
+tt(decltype). E.g.,
+        verb(
+    auto time(minutes(3) * 3);
+    cout << decltype(time)::period::num;    // displays 60
+        )
+
+In addition to these types the class template tt(duration) offers the
+following constructors:
     itemization(
     itt(constexpr duration()):
         the default constructor defines a duration of zero time units.
+
     itt(constexpr explicit duration(Value const &value)):
         a specific duration of tt(value) time units. Here tt(Value) refers to
         the duration's numeric type (e.g., tt(int64_t)). So, when defining
@@ -56,33 +66,35 @@ The class template tt(duration) offers the following constructors:
     std::chrono::minutes halfHour(30);
         )
         the argument 30 is stored inside a tt(int64_t).
+
     itt(duration) also offers copy and move constructors.
     )
 
-The class template tt(duration) offers the following members:
+In addition, tt(duration) has these members:
     itemization(
     it() Arithmetic operators.
-       quote(Duration objects may be added, subtracted, multiplied, divided
-        and they support the modulo operator (the binary arithmetic and the
-        binary arithmetic assignment operators are also available).)
+       quote(Duration objects may be added, or subtracted, and they may be
+multiplied and divided by a numeric value. They also support the modulo
+operator, using an integral constant for its right-hand side operand. The
+binary arithmetic and the binary arithmetic assignment operators are also
+available).)
 
     ithtq(count)(constexpr Value count() const)
        (returns the em(value) that is stored inside a tt(duration) object. For
-        tt(halfHour) this would return 30, not 1800, as the time unit itself
-        is obtained from its hi(period)tt(duration<Value, Unit>::period)
-        type.) 
+tt(halfHour) this would return 30, not 1800, as the time unit itself is
+obtained from its hi(period)tt(duration<Value, Unit>::period) type.)
 
     ithtq(zero)(static constexpr duration zero())
        (this is a static member, returning a duration object representing a
-        duration of zero time units.)
+duration of zero time units.)
     
     ithtq(min)(static constexpr duration min())
        (this is a static member, returning a duration object 
-        representing+linebreak() tt(numeric_limits<Rep>::lowest()).)
+representing+linebreak() tt(numeric_limits<Rep>::lowest()).)
     
     ithtq(max)(static constexpr duration max())
        (this is a static member, returning a duration object 
-        representing+linebreak() tt(numeric_limits<Rep>::max()).)
+representing+linebreak() tt(numeric_limits<Rep>::max()).)
     )
     
 Different tt(duration) types may be combined, unless precision would be
