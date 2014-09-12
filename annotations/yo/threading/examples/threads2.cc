@@ -1,26 +1,24 @@
     #include <thread>
     #include <iostream>
-    #include <unistd.h>
-
-    using namespace std;
-
-    // do not forget to use -lpthread with g++
+    #include <chrono>
 
     void fun(size_t count, char const *txt)
     {
-
         for (; count--; )
-            cout << count << ": " << txt << endl;
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::cout << count << ": " << txt << std::endl;
+        }
     }
 
     int main()
-    {                   // runs the threads following
-                        // the object construction
-        thread display(fun, 3, "hello world");
-        display.detach();
+    {
+        std::thread first(fun, 5, "hello world");
+        first.detach();
 
-        thread second(fun, 3, "a second thread");
+        std::thread second(fun, 5, "a second thread");
         second.detach();
 
-        cout << "leaving" << endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(400));
+        std::cout << "leaving" << std::endl;
     }
