@@ -1,6 +1,6 @@
-Multi threading in bf(C++) starts off with objects of the 
-class hi(thread)tt(std::thread). Each object of this class can 
-handles a separate thread.
+Multi threading in bf(C++) starts off with objects of the class
+hi(thread)tt(std::thread). Each object of this class handles a separate
+thread.
 
 Before using tt(Thread) objects the tthi(thread) header file must be included.
 
@@ -101,13 +101,19 @@ ends when tt(main) ends, its still running detached threads also stop, and
 program may not properly complete all its threads, as demonstrated by
 the following example: 
             verbinclude(examples/threads2.cc)
+
+    A detached threads may very well continue to run after the function that
+started it has returned. Here, too, you should be very careful not to pass
+local variables to the detached thread, as their references or pointers will
+be undefined once the function defining the local variables terminates:
+            verbinclude(examples/detached.cc)
         )
 
     ithtq(get_id)(id get_id() const noexcept)
-       (If the current object does not represent a running thread
-hi(id)tt(thread::id) is returned. Otherwise, tt(this_thread::get_id()) is
-returned for the running thread that is associated with the object for which
-tt(get_id) is called is returned.)
+       (If the current object does not represent a running thread the static
+value hi(id)tt(thread::id) is returned. Otherwise, the thread's unique ID
+(also obtainable from with the thread from tt(this_thread::get_id())) is
+returned.)
 
     ithtq(join)(void join())
        (Requires tt(joinable) to return tt(true).  Blocks the thread calling
@@ -122,12 +128,18 @@ called, aborting the program.)
 
     ithtq(joinable)(bool joinable() const noexcept)
        (returns tt(object.get_id() != id()), where tt(object) is the
-        tt(thread) object for which tt(joinable) was called.)
+tt(thread) object for which tt(joinable) was called.)
 
     ithtq(swap)(void swap(thread &other) noexcept)
        (The states of the tt(thread) object for which tt(swap) was called and
-        tt(other) are swapped. Note that threads may always be swapped, even
-        when their thread functions are currently being executed.)
+tt(other) are swapped. Note that threads may always be swapped, even when
+their thread functions are currently being executed.)
+
+    ithtq(hardware_concurrency)
+        (unsigned thread::hardware_concurrency() noexecpt)
+        (This static member returns the number of threads that can run at the
+same time on the current computer. On a stand-alone multi-core computer it
+(probably) returns the number of cores.)
     )
 
 
