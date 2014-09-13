@@ -1,0 +1,51 @@
+Once a thread starts and it isn't going to be detached it must eventually join
+its starting thread again, or the program aborts. At the bottom line, an
+anonymous tt(thread) object, immediately calling tt(join) suffices to
+accomplish that:
+        verb(
+    void threadedActions();
+    
+    int threadStarter()
+    {
+        std::thread(threadedActions).join();
+    }
+        )
+    However, maybe tt(threadedActions) can't really do its work, and throws an
+exception. This ends the thread, but misses the tt(join). So all exceptions
+must be caught, tt(join) must be called, and the exception must be rethrown
+(or processed by the catch clause). To do so, a tt(thread) object is necessary
+(but, assuming the thread object is local to tt(threadStarter), it cannot use
+a function try-block, as the thread object is already out of scope once
+execution reaches the tt(catch)-clause. So we get:
+        verb(
+    void threadedActions();
+    
+    int threadStarter()
+    {
+        std::thread local;
+        try
+        {
+            local = std::thread(threadedActions);
+            local.join();
+        }
+        catch (...)
+        {
+            local.join();
+        }
+    }
+        )
+    This is ugly: suddenly the function's code is clobbered with a
+tt(try-catch) block, there is code-duplication, and we explicitly need a local
+tt(thread) object.
+
+    Fortunately, object-based program comes to the rescue. Like, e.g., unique
+pointers, using their destructors to encapsulate the destruction of
+dynamically allocated memory, we can use a comparable technique to encapsulate
+thread joining in an object's destructor. By defining the tt(thread) object
+inside a class we're sure that by the time the our object goes out of scope,
+even if the tt(threadedActions) function throws an exception, the thread's
+tt(join) member is called. Here are the bare essentials of our tt(JoinGuard)
+class, providing the join-guarantee (using in-line member implementations for
+brevity):
+        verbnrs(examples/joinguard.cc)
+

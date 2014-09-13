@@ -1,51 +1,11 @@
-    The C++11 standard offers a series of i(mutex) classes to protect shared
-data.  
-
-Before using mutexes the tthi(mutex) header file must be included.
-
-COMMENT(
-The library defines a number of atomic operations (Clause 29 ) and operations
-on mutexes (Clause 30 ) that are specially identified as synchronization
-operations. 
-
-These operations play a special role in making assignments in one thread
-visible to another. A synchronization operation on one or more memory
-locations is either a consume operation, an acquire operation, a release
-operation, or both an acquire and release operation. A synchronization
-operation without an associated memory location is a fence and can be either
-an acquire fence, a release fence, or both an acquire and release fence. In
-addition, there are relaxed atomic operations, which are not synchronization
-operations, and atomic read-modify-write operations, which have special
-characteristics.
-
-Note: For example, a call that acquires a mutex will perform an acquire
-operation on the locations comprising the mutex. Correspondingly, a call that
-releases the same mutex will perform a release operation on those same
-locations. Informally, performing a release operation on A forces prior side
-effects on other memory locations to become visible to other threads that
-later perform a consume or an acquire operation on A . `Relaxed' atomic
-operations are not synchronization operations even though, like
-synchronization operations, they cannot contribute to data races.
-
---------------
-
-In other words, function executions do not interleave with each other.
-
-The execution of a program contains a data race if it contains two conflicting
-actions in different threads, at least one of which is not atomic, and neither
-happens before the other. Any such data race results in undefined behavior.
-
-END)
-
-Mutexes should be used to prevent data corruption when multiple threads need
-access to common data. For (a very simple) example: the following could happen
-when two threads access a common int variable, unless mutexes are used (a
-emi(context switch) occurs when the operating system switches between
-threads. With a mult-processor system the threads can really be executed in
-parallel. To keep the example simple, assume multi threading is used on a
-single-core computer, switching between multi-threads):
+One of the key characteristics of multi-threaded programs is that threads may
+share data. Different thread functions have access to all global data, and may
+also share the same local data. However, unless proper measures are taken,
+this may easily result in data corruption, as illustrated by the following
+simulation of some steps that could be encountered in a multi-threaded
+program:
         verb(
-Time step:    Thread1:      var        Thread2:        description
+Time step:    Thread 1:     var        Thread 2:       description
 ---------------------------------------------------------------------------
     0                        5
     1           starts                                  T1 active
@@ -59,11 +19,31 @@ Time step:    Thread1:      var        Thread2:        description
     9                       12
 ----------------------------------------------------------------------------
     )
-    The above is just a very simple illustration of what may go wrong when
-multiple threads access the same data without using mutexes. 
+    In this example, threads 1 and 2 share variable tt(var), initially having
+the value 5. At step 1 thread 1 starts, and starts to write a value into
+tt(var). However, it is interrupted by a context switch, and thread 2 is
+started (step 4). Thread 2 em(also) wants to write a value into tt(var), and
+succeeds until time step 7, when another context switch takes place. By now
+tt(var) is 10. However, thread 1 was also in the process of writing a value
+into tt(var), and it is given a chance to complete its work: it assigns 12
+to tt(var) in time step 8. Once time step 9 is reached, thread 2 proceeds on
+the (erroneous) assumption that tt(var) must be equal to 10. Clearly, thread
+2's data have been corrupted.
 
-Thread 2 proceeds on the assumption that tt(var) equals 10. However, after
-step 9 tt(var) holds the value 12. Mutexes are used to prevent these kinds of
+In this case data corruption was caused by multiple threads accessing the same
+data in an uncontrolled way. Instead, access to shared data should be
+protected in such a way that only once thread at a time may access the shared
+data. 
+
+The C++11 standard offers i(mutex) classes to realize just that: the
+protection of shared data.
+
+Before using mutexes the tthi(mutex) header file must be included.
+
+----------------------
+
+
+Mutexes are used to prevent these kinds of
 problems by offering a guarantee that thata are only accessed by the thread
 holding a mutex for the those data.
 
