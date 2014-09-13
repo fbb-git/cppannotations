@@ -1,19 +1,26 @@
-The ti(namespace this_thread)hi(this_thread) is defined within the tt(std)
-namespace, and contains functions that uniquely identify the current thread of
-execution. 
+The hi(namespace this_thread)hi(this_thread) tt(namespace std::this_thread)
+contains functions that are uniquely associated with the currently running
+thread.
 
-It offers the following members:
+Inside the tt(std::this_thread) namespace several free functions are defined,
+providing information about the current thread or that can be used to control
+its behavior:
     itemization(
-    ithtq(get_id)(thread::id get_id() noexcept)
-       (returns an object of type tt(thread::id) that uniquely identifies the
-        currently active thread of execution. For an active thread the
-        returned tt(id) is unique in the sense that it maps 1:1 to the
-        currently active thread, and is not returned by any other thread. A
-        default tt(id) is returned when tt(get_id) is called for a thread that
-        is currently not running.)
-    ithtq(yield)(void yield() noexcept)(
-       the implementation may call tt(yield) to
-        reschedule. Cf. tt(thread::yield) in section ref(THREAD).)
+    ithtq(get_id)(thread::id this_thread::get_id() noexcept)
+       (returns an object of type tt(thread::id) that identifies the currently
+active thread of execution. For an active thread the returned tt(id) is unique
+in the sense that it maps 1:1 to the currently active thread, and is not
+returned by any other thread. If a thread is currently not running
+hi(id)tt(thread::id) is returned by the tt(std::thread) object's tt(get_id)
+member.)
+
+    ithtq(yield)(void yield() noexcept)
+        (when a thread calls tt(this_thread::yield()) the current thread is
+briefly suspended, allowing other (waiting) threads to start. It can be used
+in, e.g., em(thread pools) to inform the operating system that the thread must
+remain available in memory, so it can continue later on. To continue a thus
+suspended thread the controlling thread (which has access to the yielding
+tt(thread) object) can use .)
     ithtq(sleep_for)
        (void sleep_for(chrono::duration<Rep, Period> const &relTime)
             noexcept) 

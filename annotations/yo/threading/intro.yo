@@ -68,47 +68,17 @@ trivial: it simply inserts the text `tt(hello world)' into tt(cout), and
 terminates, thus ending the second thread.
     )
 
-COMMENT(
-| Before diving  into details, let's look at a simple illustration of a
-| multi-threaded program: 
-|         verbnrs(examples/simple.cc)
-|     itemization(
-|     it() Lines 9-16 define a small function tt(dots), writing every second a
-|         dot to the standard output stream. It ends once the variable tt(stop),
-|         defined in line 5, is tt(true).
-|     it() Line 21 calls tt(dots) as a separate thread. Once this statement
-|         returns dots are starting to appear at the standard output stream.
-|     it() At the same time, line 22 waits for an Enter-key to be pressed
-|         (nothing fancy here, hence the simple tt(ignore) call)
-|     it() Once the user presses the Enter-key, tt(ignore) returns, and tt(stop)
-|         is set tt(true) (line 23). This is noticed by tt(dots), which
-|         therefore also ends.
-|     it() At line 24 the program ends normally.
-|     ) 
-|  The simple example illustrates that it isn't too difficult to create
-| multi-tasking programs in bf(C++): the high-level tt(std::async) class
-| (cf. section ref(ASYNC)) basically only requires you to provide the name of a
-| function or function object, and maybe some arguments and you're done.
-| 
-| Of course there are complications and refinements: a potential flaw in the
-| simple example is that two threads (the main prgram's thread and the tt(dots)
-| thread) simultaneously may access tt(stop). In the simple example this is not
-| so much a problem, but in general this is a em(no-no): two threads should not
-| unprotectedly access the same data. Whether this happens or not is the
-| responsibility of the programmer. Fortunately bf(C++) offers some tools to
-| help preventing plain access of the same data by multiple threads. Also note
-| that the standard bf(C) function bf(sleep)(3) was used to create the pause
-| between writing subsequent dots. Although it's doing its job, tt(sleep) often
-| is a somewhat coarse tool for what's actually required. E.g., we want to wait
-| for some time, but not if some event happens in between. 
-| 
-| In this chapter we'll have a look at tt(async) and other classes allowing us
-| to implement multi-threading; we'll have a look at em(mutexes) and em(locks)
-| to prevent unrestricted access to shared data by multiple threads, and we'll
-| have a look at various tools for handling events that are related to time.
-END COMMENT)
+When compiling multi-threaded programs using the Gnu tt(g++) compiler the 
+    ti(-pthread)
+        hi(compiler option: -pthread)hi(multi threading: -pthread)
+ option must be specified. At link-time the ti(libpthread) library must be
+available as well. 
 
-
-
-
-
+    To create a multi-threaded program defined in a source file tt(multi.cc)
+the tt(g++) compiler can be called like this:
+        verb(
+    g++ --std=c++11 -pthread -Wall multi.cc
+        )
+    When several pre-compiled objects must be linked, the ti(-lpthread)
+        hi(linker option: -lpthread)hi(multi threading: -lpthread)
+ linker option should also be specified.
