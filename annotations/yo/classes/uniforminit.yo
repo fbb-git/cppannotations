@@ -40,7 +40,67 @@ in the return statement of functions. Examples:
             }
     };
         )
- Although the uniform intialization syntax is slightly different from the
+
+Object definitions may be encountered in unexpected places, easily resulting in
+(human) confusion. Consider a function `tt(func)' and a very simple
+class tt(Fun) (tt(struct) is used, as data hiding is not an issue here;
+in-class implementatinos are used for brevity):
+        verb(
+    void func();
+
+    struct Fun
+    {
+        Fun(void (*f)())
+        {
+            std::cout << "Constructor\n";
+        };
+
+        void process()
+        {
+            std::cout << "process\n";
+        }
+    };
+        )
+    In tt(main) a tt(Fun) object is defined: tt(Fun fun(func)). Running this
+program displays tt(Constructor): tt(fun) is constructed. Next we intend to
+call tt(process) for an anonymous tt(Fun) object:
+        verb(
+    Fun fun(func);
+    Fun(func).process();
+        )
+    tt(Constructor) appears twice, and then tt(process) is
+displayed.
+
+    What about just defining an anonymous tt(Fun) object? We do:
+        verb(
+    Fun(func);
+        )
+    Now we're in for a surprise. The compiler complains that tt(Fun)'s default
+constructor is missing. Why's that? Insert some blanks immediately after
+tt(Fun) and you get tt(Fun (func)). Parentheses around an identifier are OK,
+and are stripped off once the parenthesized expression has been parsed. In
+this case: tt((func)) equals tt(func), and so we have tt(Fun func): the
+definition of a tt(Fun func) object, using tt(Fun)'s default constructor (which
+isn't provided).
+
+So why does tt(Fun(func).process()) compile? In this case we have a member
+selector operator, whose left-hand operand must be an class-type object. The
+object must exist, and tt(Fun(func)) represents that object. It's not the name
+of an existing object, but a constructor expecting a function like tt(func)
+exists. The compiler now creates an anonymous tt(Fun), passing it tt(func) as
+its argument.
+
+Clearly, in this example, parentheses cannot be used to create an anonymous
+tt(Fun) object. However, the uniform initialization em(can) be used. To define
+the anonymous tt(Fun) object use this syntax:
+        verb(
+    Fun {func};
+        )
+    (which can also be used to immediately call one of its members. E.g.,
+tt(Fun{func}.process())
+
+
+Although the uniform intialization syntax is slightly different from the
 syntax  of an initializer list (the latter using the assignment operator) the
 compiler nevertheless uses the initializer list if a constructor
 supporting an initializer list is available. As an example consider:

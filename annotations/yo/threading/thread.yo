@@ -147,18 +147,24 @@ same time on the current computer. On a stand-alone multi-core computer it
 
     Things to note:
     itemization(
-    it() A purely anonymous thread doesn't start:
+    it() When intending to define an anonymous thread it may appear not to
+start, unless you immediately also call tt(join). E.g.,
             verb(
 void doSomething();
 int main()
 {
-    thread(doSomething);        // nothing happens
+    thread(doSomething);        // nothing happens??
+    thread(doSomething).join()  // doSomething is executed??
 }
             )
-    But once a named destination is available (object, reference, r-value
-reference, passing the anonymous object as argument to a function) its
-tt(join) (or tt(detach)) member must be called, or the program aborts through
-tt(terminate).
+    This similar to the situation we encountered in section ref(UNIFORMINIT):
+the first statement doesn't define an anonymous tt(thread) object at all. It
+simply defines the tt(thread) object tt(doSomething). Consequently,
+compilation of the second statement fails, as there is no tt(thread(thread &))
+constructor. When the first statement is omitted, the tt(doSomething) function
+is executed by the second statement. If the second statement is omitted, a
+default constructed tt(thread) object by the name of tt(doSomething) is
+defined.
 
     it() A thread only starts after its construction has completed. This
 includes move constructions or move assignments. E.g., in a statement like
@@ -176,9 +182,6 @@ or they can be passed to the starting thread using a tt(packaged_task) and a
 tt(future) (cf., respectively, sections ref(PACKAGE) and ref(FUTURE)).
     )
 
-
-
-
     A thread ends when the function executing a thread finishes. When a
 tt(thread) object is destroyed while its thread function is still running,
 tt(terminate) is called, aborting the program's end. Bad news: the destructors
@@ -186,6 +189,8 @@ of existing objects aren't called and exceptions that are thrown are left
 uncaught. This happens in the following program as the thread is still active
 when tt(main) ends:
         verbinclude(examples/terminate.cc)
+    There are several ways to solve this problem. One of them is discussed in
+the next section.
         
     
 

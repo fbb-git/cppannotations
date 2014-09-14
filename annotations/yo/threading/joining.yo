@@ -1,51 +1,93 @@
-Once a thread starts and it isn't going to be detached it must eventually join
-its starting thread again, or the program aborts. At the bottom line, an
-anonymous tt(thread) object, immediately calling tt(join) suffices to
-accomplish that:
+Once a thread starts and it isn't detached it must eventually join
+its starting (parent) thread, or the program aborts. Usually, once a thread
+has started the parent thread continues to do some work by itself:
         verb(
-    void threadedActions();
-    
-    int threadStarter()
+    void childActions();
+    void doSomeWork();
+
+    void parent()
     {
-        std::thread(threadedActions).join();
+        thread child(childActions);
+        doSomeWork();
+        child.join();
     }
         )
-    However, maybe tt(threadedActions) can't really do its work, and throws an
-exception. This ends the thread, but misses the tt(join). So all exceptions
-must be caught, tt(join) must be called, and the exception must be rethrown
-(or processed by the catch clause). To do so, a tt(thread) object is necessary
-(but, assuming the thread object is local to tt(threadStarter), it cannot use
-a function try-block, as the thread object is already out of scope once
-execution reaches the tt(catch)-clause. So we get:
+    However, maybe tt(doSomeWork) can't complete its work, and throws an
+exception, to be caught outside of tt(parent). This, unfortunately, ends
+tt(parent), and tt(child.join()) is missed. Consequently, the program aborts
+because of a thread that hasn't been joined.
+
+Clearly, all exceptions must be caught, tt(join) must be called, and the
+exception must be rethrown. But tt(parent) cannot use a function try-block, as
+the thread object is already out of scope once execution reaches the matching
+tt(catch)-clause. So we get:
         verb(
-    void threadedActions();
-    
-    int threadStarter()
+    void childActions();
+    void doSomeWork();
+
+    void parent()
     {
-        std::thread local;
+        thread child(childActions);
         try
         {
-            local = std::thread(threadedActions);
-            local.join();
+            doSomeWork();
+            child.join();
         }
         catch (...)
         {
-            local.join();
+            child.join();
+            throw;
         }
     }
         )
     This is ugly: suddenly the function's code is clobbered with a
-tt(try-catch) block, there is code-duplication, and we explicitly need a local
-tt(thread) object.
+tt(try-catch) clause, as well as some unwelcome code-duplication.
 
-    Fortunately, object-based program comes to the rescue. Like, e.g., unique
-pointers, using their destructors to encapsulate the destruction of
+    This situation can be avoided using object based programming. Like, e.g.,
+unique pointers, which use their destructors to encapsulate the destruction of
 dynamically allocated memory, we can use a comparable technique to encapsulate
-thread joining in an object's destructor. By defining the tt(thread) object
-inside a class we're sure that by the time the our object goes out of scope,
-even if the tt(threadedActions) function throws an exception, the thread's
-tt(join) member is called. Here are the bare essentials of our tt(JoinGuard)
-class, providing the join-guarantee (using in-line member implementations for
-brevity):
+thread joining in an object's destructor.
+
+By defining the tt(thread) object inside a class we're sure that by the time
+the our object goes out of scope, even if the tt(threadedActions) function
+throws an exception, the thread's tt(join) member is called. Here are the bare
+essentials of our tt(JoinGuard) class, providing the join-guarantee (using
+in-line member implementations for brevity):
+        verbnrs(examples/joinguard.h)(4)
+    itemization(
+    it() At line 8 its only constructor starts: it receives a temporary
+tt(thread) object, which is moved, in line 10, to tt(JoinGuard's d_thread)
+data member. 
+
+    it() When the tt(JoinGuard) object ceases to exist, its destructor (line
+12) makes sure the thread is joined if it's still joinable (lines 14 and 15).
+    )
+    Here is an example how tt(JoinGuard) could be used:
         verbnrs(examples/joinguard.cc)(4)
+    itemization(
+    it() The tt(main) function (lines 17 through 25) provides the function 
+try-block to catch the exception thrown by tt(parent);
+
+    it() The tt(parent) function defines (line 13) an anonymous tt(JoinGuard),
+receiving  an anonymous tt(thread) object. Anonymous objects are used, as the
+parent function doesn't need to access them anymore.
+    
+    it() In line 14 tt(doSomeWork) is called, which throws an exception. This
+ends tt(parent), but just before that tt(JoinGuard's) destructor makes sure
+that the child-thread has been joined.
+    )
+
+
+In line 3 tt(childActions) is declared. Its implementation defines
+the child thread's actions.
+
+    it() 
+
+
+
+
+
+
+
+
 
