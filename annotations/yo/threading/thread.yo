@@ -33,7 +33,7 @@ the tt(thread) constructor and that are expected by the called function must
 match: values must be values, references must be reference, r-value references
 must be r-value references (or move construction must be supported). The
 following example illustrates this requirement:
-    verbnrs(examples/threadargs.cc)
+    verbnrs(examples/threadargs.cc)(4)
     itemization(
     it() At lines 43 through 45 we see a value, reference, and and r-value
 reference being passed to a tt(std::thread): with 
@@ -65,27 +65,30 @@ tt(thread) constructor, or
         it() call tt(join) on the thread object to make sure the thread has
 finished within the local variable's lifetime.
         )
-    verbnrs(examples/locals.cc)
+    verbnrs(examples/locals.cc)(4)
     In line 18 be sure not to call tt(std::ref(text)) instead of
 tt(std::string(text)).
 
     If the thread cannot be created a tt(std::system_error) exception is
 thrown.
+
+Since this constructor not only accepts functions but also function objects as
+its first argument, a emi(local context) may be passed to the function
+object's constructor. Here is an example of a thread receiving a function
+object using a local context:
+        verbinclude(examples/functorthread.cc)
         )
     )
     The class tt(std::thread) does not provide a copy constructor.
 
-    A thread ends when the function executing a thread finishes. When a
-tt(thread) object is destroyed while its thread function is still running,
-tt(terminate) is called, aborting the program's end. Bad news: the destructors
-of existing objects aren't called and exceptions that are thrown are left
-uncaught. This happens in the following program as the thread is still active
-when tt(main) ends:
-        verbinclude(examples/terminate.cc)
-        
-    
-The members of the class tt(thread) are:
+The following members are available:
     itemization(
+    itt(thread &operator=(thread &&tmp) noexcept):
+       quote(If the operator's left-hand side operand (lhs) is a joinable
+thread, then tt(terminate) is called. Otherwise, tt(tmp) is assigned to the
+operator's lhs and tt(tmp's) state is changed to the thread's default state
+(i.e., tt(thread())).)
+
     ithtq(detach)(void detach())
        (Requires tt(joinable) (see below) to return tt(true).  The thread for
 which tt(detach) is called continues its execution. The (e.g., parent) thread
@@ -142,42 +145,47 @@ same time on the current computer. On a stand-alone multi-core computer it
 (probably) returns the number of cores.)
     )
 
-
-
-
-
-The class tt(thread) supports the move assignment operator:
+    Things to note:
     itemization(
-    itt(thread &operator=(thread &&tmp) noexcept):
-        If the operator's left-hand side operand (lhs) is a joinable thread,
-then tt(terminate) is called. Otherwise, tt(other)'s state is assigned to the
-operator's lhs and sets tt(other) to the thread's default constructed state.
+    it() A purely anonymous thread doesn't start:
+            verb(
+void doSomething();
+int main()
+{
+    thread(doSomething);        // nothing happens
+}
+            )
+    But once a named destination is available (object, reference, r-value
+reference, passing the anonymous object as argument to a function) its
+tt(join) (or tt(detach)) member must be called, or the program aborts through
+tt(terminate).
+
+    it() A thread only starts after its construction has completed. This
+includes move constructions or move assignments. E.g., in a statement like
+        verb(
+    thread object(thread(doSomething));
+        )
+    the move constructor is used to transfer control from an anonymous thread
+executing tt(doSomething) to the thread tt(object). Only after tt(object)'s
+construction has completed tt(doSomething) is started in the separate thread.
+    
+    it() Exceptions thrown from the thread (e.g., by the function defining the
+thread's actions) are local to the executed thread. Either they must be caught
+by the executing thread (as each running thread has its own execution stack),
+or they can be passed to the starting thread using a tt(packaged_task) and a
+tt(future) (cf., respectively, sections ref(PACKAGE) and ref(FUTURE)).
     )
 
-Since the tt(tread(Fun &&fun, Args &&...args)) constructor not only accepts
-functions but also function objects as its argument, a emi(local context) may
-be passed to the function object's constructor. Here is an example of a thread
-to which a function object is passed which is provided with a local context:
-        verbinclude(examples/functorthread.cc)
-    Note the argument tt(&cout) that is passed to tt(funThread) and the
-definition tt(ostream *out) parameter of the tt(funThread)'s function call
-operator. Here tt(cout) cannot be used (in combination with an tt(ostream &out)
-parameter), since the latter parameter is not move-constructible, whereas a
-pointer em(is).
 
 
 
-
-| Each tt(thread) object represents one unique thread of execution, but its
-| unique thread may be transferred to another tt(thread) object. In this
-| situation there remains but a single tt(thread) object that represents the
-| running thread.
-| 
-| If a threads of execution loses its association with a tt(thread) object that
-| thread is said to be hi(thread: detached) em(detached). Conversely, tt(thread)
-| objects by themselves are not necessarily associated with a running thread of
-| execution: following the default construction, a move operation in which a
-| tt(thread) object acts as  the source tt(thread) or after detaching or joining
-| threads the tt(thread) object may still exist, albeit in a state where it is
-| not or no longer associated with a running thread.
+    A thread ends when the function executing a thread finishes. When a
+tt(thread) object is destroyed while its thread function is still running,
+tt(terminate) is called, aborting the program's end. Bad news: the destructors
+of existing objects aren't called and exceptions that are thrown are left
+uncaught. This happens in the following program as the thread is still active
+when tt(main) ends:
+        verbinclude(examples/terminate.cc)
+        
+    
 

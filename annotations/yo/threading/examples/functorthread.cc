@@ -15,14 +15,14 @@
                 d_data(data),
                 d_value(value)
             {}
-            void operator()(ostream *out)
+            void operator()(ostream &out)
             {
                 for (auto &value: d_data)
                 {
                     value = d_value++;
-                    *out << value << ' ';
+                    out << value << ' ';
                 }
-                *out << '\n';
+                out << '\n';
             }
     };
 
@@ -30,6 +30,6 @@
     {
         array<int, 30> data;
         Functor functor(data, 5);
-        thread funThread(functor, &cout);
+        thread funThread(functor, ref(cout));
         funThread.join();
     };

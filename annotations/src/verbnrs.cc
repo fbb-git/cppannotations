@@ -5,6 +5,9 @@
 
 using namespace std;
 
+// first argument: file to process, 2nd argument (optional): indentation (by
+// default 1, which is also the minimum indentation that is used.)
+
 int main(int argc, char **argv)
 {
     string line;
