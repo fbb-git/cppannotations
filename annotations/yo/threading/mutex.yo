@@ -1,3 +1,7 @@
+The C++11 standard offers i(mutex) classes to protect shared data.
+
+Before using mutexes the tthi(mutex) header file must be included.
+
 One of the key characteristics of multi-threaded programs is that threads may
 share data. Different thread functions have access to all global data, and may
 also share the same local data. However, unless proper measures are taken,
@@ -5,6 +9,7 @@ this may easily result in data corruption, as illustrated by the following
 simulation of some steps that could be encountered in a multi-threaded
 program:
         verb(
+---------------------------------------------------------------------------
 Time step:    Thread 1:     var        Thread 2:       description
 ---------------------------------------------------------------------------
     0                        5
@@ -27,51 +32,31 @@ succeeds until time step 7, when another context switch takes place. By now
 tt(var) is 10. However, thread 1 was also in the process of writing a value
 into tt(var), and it is given a chance to complete its work: it assigns 12
 to tt(var) in time step 8. Once time step 9 is reached, thread 2 proceeds on
-the (erroneous) assumption that tt(var) must be equal to 10. Clearly, thread
-2's data have been corrupted.
+the (erroneous) assumption that tt(var) must be equal to 10. Clearly, from the
+point of view of thread 2 its data have been corrupted.
 
 In this case data corruption was caused by multiple threads accessing the same
 data in an uncontrolled way. Instead, access to shared data should be
-protected in such a way that only once thread at a time may access the shared
+protected in such a way that only one thread at a time may access the shared
 data. 
 
-The C++11 standard offers i(mutex) classes to realize just that: the
-protection of shared data.
-
-Before using mutexes the tthi(mutex) header file must be included.
-
-----------------------
-
-
-Mutexes are used to prevent these kinds of
-problems by offering a guarantee that thata are only accessed by the thread
-holding a mutex for the those data.
+em(Mutexes) are used to prevent these kinds of problems by offering a
+guarantee that thata are only accessed by the thread holding a mutex for the
+those data.
 
 Exclusive data access completely depends on cooperation between the
 threads. If thread 1 uses mutexes, but thread 2 doesn't, then thread 2 may
-access the common data any which way it wants to. Of course that's bad
-practice, and mutexes allow us to write program not behaving badly in this
-sense.
+freely access the common data. Of course that's bad practice, and mutexes
+allow us to design program which are not behaving badly in this sense.
 
 It is stressed that although em(using) mutexes is the programmer's
-responsibility, their em(implementation) isn't. A user-program is unable to
-accomplish em(atomic locking) mutexes offer. The bottom line is that if we try
-to implement a mutex-like facility in our programs then each statement is
-compiled into several machine instructions and in between each of these
-instructions the operating system may do a context switch, rendering the
-instructions non-atomic.
-
-Mutexes offer the necessary atomic calls: when requesting a mutex-lock the
-thread is suspended (i.e., the mutex statement does not return) until the lock
-has been obtained by the thread.
-
-More information about mutexes can be found in the link(mentioned O'Reilly
-book)(PTHREADS) and in general in the extensive literature on this topic. It
-is not a topic that is discussed further in the annotations(). The available
-facilities for using mutexes, however, em(are) covered in this section.
+responsibility, their em(implementation) isn't: mutexes offer the necessary
+atomic calls. When requesting a mutex-lock the thread is blocked (i.e., the
+mutex statement does not return) until the lock has been obtained by the
+requesting thread.
 
 Apart from the class tt(std::mutex) the class hi(recursive_mutex)
-tt(std::recursive_mutex) is offered.  When a tt(recursive_mutex) is called
+tt(std::recursive_mutex) is available.  When a tt(recursive_mutex) is called
 multiple times by the same thread it increases its lock-count. Before other
 threads may access the protected data the recursive mutex must be unlocked
 again that number of times. Moreover, the classes 
@@ -81,63 +66,96 @@ again that number of times. Moreover, the classes
     are available. Their locks expire when released, but also after a certain
 amount of time.
 
+The members of the mutex classes perform emi(atomic actions): no context
+switch occurs while they are active. So when two threads are trying to
+em(lock) a mutex only one can succeed. In the above example: if both threads
+would use a mutex to control access to tt(var) thread 2 would not have been
+able to assing 12 to tt(var), with thread 1 assuming that its value was 10. We
+could even have two threads running purely parallel (e.g., on two separate
+cores). E.g.:
+        verb(
+-------------------------------------------------------------------------
+Time step:    Thread 1:        Thread 2:        escription
+-------------------------------------------------------------------------
+    1         starts           starts           T1 and T2 active
+    2         locks            locks            Both threads try to 
+                                                lock the mutex
+    3         blocks...        obtains lock     T2 obtains the lock,
+                                                and T1 must wait
+    4         (blocked)        processes var    T2 processes var,
+                                                T1 still blocked
+    5         obtains lock     releases lock    T2 releases the lock,
+                                                and T1 immediately 
+                                                obtains the lock
+    6         processes var                     now T1 processes var
+    7         releases lock                     T1 also releases the lock
+-------------------------------------------------------------------------
+    )
+Although mutexes can directly be used in programs, this rarely happens. It is
+more common to embed mutex handling in locking classes that make sure that the
+mutex is automatically unlocked again when the mutex lock is no longer
+needed. Therefore, this section merely offers an overview of the interfaces of
+the mutex classes. Examples of their use will be given in the upcoming
+sections (e.g., section ref(LOCKS)).
+
 All mutex classes offer the following constructors and members:
     itemization(
-    it() A default tt(constexpr) constructor;
-    it() A destructor
+    ittq(mutex() constexpr)
+        (The default tt(constexpr) constructor is the only available
+constructor;) 
+
+    ittq(~mutex())
+        (The destructor does em(not) unlock a locked mutex. If locked it must
+explicitly be unlocked using the mutex's tt(unlock) member;)
+
     ithtq(lock)(void lock())
-       (the calling thread is blocked until it has obtained ownership of the
-        mutex. Unless tt(lock) is called for a recursive mutex a
-        tt(system_error) is thrown if, e.g., the thread already owns the
-        lock. Recursive mutexes increment their interal emi(lock count);)
+       (the calling thread blocks until it owns the mutex. Unless tt(lock) is
+called for a recursive mutex a tt(system_error) is thrown if the thread
+already owns the lock. Recursive mutexes increment their internal emi(lock
+count);)
+
     ithtq(try_lock)(bool try_lock() noexcept)
-       (the calling thread tries to obtain ownership of the mutex without
-        blocking. If ownership is obtained, tt(true) is returned, otherwise
-        tt(false). If the lock was already obtained by the calling thread,
-        tt(true) is also returned, and with a recursive mutex its interal
-        emi(lock count) is also incremented;)
+       (the calling thread tries to obtain ownership of the mutex. If
+ownership is obtained, tt(true) is returned, otherwise tt(false). If the
+calling thread already owns the lock tt(true) is also returned, and in this
+case a recursive mutexe also increments its internal emi(lock count);)
+
     ithtq(unlock)(void unlock() noexcept)
        (the calling thread releases ownership of the mutex.  A
-        tt(system_error) is thrown if, e.g., the thread does not own the
-        lock. Recursive mutexes decrement their interal lock count, releasing
-        ownership of the mutex once the lock count has decayed to zero;)
+tt(system_error) is thrown if the thread does not own the
+lock. A recursive mutex decrements its interal lock count, releasing
+ownership of the mutex once the lock count has decayed to zero;)
     )
-Note: mutex classes do not offer copy constructors and overloaded assignment
-operators.
 
-In addition to the abovementioned members, timed mutex classes
-(tt(timed_mutex,)linebreak()tt(recursive_timed_mutex)) also offer:
+
+The timed-mutex classes (tt(timed_mutex, recursive_timed_mutex)) also offer
+these members:
     itemization(
     ithtq(try_lock_for)(bool try_lock_for(chrono::duration<Rep, Period> const 
             &relTime) noexcept)
-       (this function is defined as a function template, defining the template
-        header tt(template <typename Rep, typename Period>). The template's
-        types are derived from the actual tt(relTime) argument that is passed
-        to the function, and should not explicitly be specified. This function
-        could be called for a tt(timed_mutex_lock tml) as, e.g.,
+       (the calling thread tries to obtain ownership of the mutex within the
+specified time interval. If ownership is obtained, tt(true) is returned,
+otherwise tt(false). If the calling thread already owns the lock tt(true) is
+also returned, and in this case a recursive timed mutex also increments its
+internal emi(lock count). The tt(Rep) and tt(Duration) types are inferred from
+the actual tt(relTime) argument. E.g.,
        verb(
-tml.try_lock_for(seconds(5));
+std::timed_mutex timedMutex;
+timedMutex.try_lock_for(chrono::seconds(5));
         )
-       If the ownership is obtained within the specified time interval
-        tt(true) is returned, otherwise tt(false). If the lock was already
-        obtained by the calling thread, tt(true) is also returned, and with a
-        recursive timed mutex its interal emi(lock count) is also
-        incremented;)
+       )
         
     ithtq(try_lock_until)(bool try_lock_until(chrono::time_point<Clock,
             Duration> const &absTime) noexcept)
-       (this function is also defined as a function template, defining the
-        template header tt(template <typename Clock, typename Duration>). The
-        tt(Clock) and tt(Duration) types are derived from the actual
-        tt(absTime) argument that is passed to the function, and should not
-        explicitly be specified. This function could be called for a
-        tt(timed_mutex_lock tml) as, e.g.,
-   verb(
-tml.try_lock_until(system_clock::now() + seconds(5));
-        )
-       If the ownership is obtained before the specified point in time
-        tt(true) is returned, otherwise tt(false). If the lock was already
-        obtained by the calling thread, tt(true) is also returned, and with a
-        recursive timed mutex its interal emi(lock count) is also
-        incremented;)
+       (the calling thread tries to obtain ownership of the mutex until
+tt(absTime) has passed. If ownership is obtained, tt(true) is returned,
+otherwise tt(false). If the calling thread already owns the lock tt(true) is
+also returned, and in this case a recursive timed mutex also increments its
+internal emi(lock count). The tt(Clock) and tt(Duration) types are inferred
+from the actual tt(absTime) argument. E.g.,
+       verb(
+std::timed_mutex timedMutex;
+timedMutex.try_lock_until(chrono::system_clock::now() + chrono::seconds(5));
+           )
+       )
     )
