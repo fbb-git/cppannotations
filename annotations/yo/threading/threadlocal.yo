@@ -1,0 +1,37 @@
+With multi-threaded programs the well-known distinction between global and
+local data is somewhat too coarse. For single- and multi-threaded programs
+alike, global data is available to all of the
+program's code, and local data is available to the function (or compound
+statement) in which the local data is defined. But multi-threaded programs may
+feel the need for an intermediate type of data, uniquely available to the
+different threads. 
+
+The ti(thread_local) keyword provides this intermediate data level. Global
+variables declared as tt(thread_local) are global within each individual
+thread. Each thread owns a copy of the tt(thread_local) variables, and may
+modify them at will. A tt(thread_local) variable in one thread is completely
+separated from that variable in another thread. Here is an example:
+        verbnrs(examples/threadlocal.cc)(4)
+    itemization(
+    it() At line 6 the tt(thread_local) variable tt(t_value) is defined. It is
+initialized to 100, and that becomes the initial value for each separately
+running thread;
+
+    it() In lines 8 through 13 the function tt(modify) is defined. It assigns
+a new value to tt(t_value);
+
+    it() At lines 17 and 18 two threads are started, which are immediately
+joining the main thread again. 
+
+    it() The main thread itself is also a thread, and it directly calls
+tt(modify). 
+    )
+    Running this program shows that each separate thread starts with
+tt(t_value) being 100, and then modifies it without affecting the values of
+tt(t_value) used by other threads. 
+
+    Note that, although the tt(t_value) variables are unique to each thread,
+identical addresses may be shown for them. Since each thread uses its own
+stack, these variables may occupy the same relative locations within their
+respective stacks, giving the illusion that their physical addresses are
+identical.
