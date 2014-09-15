@@ -1,0 +1,68 @@
+Before using the hi(once_flag)tt(std::once_flag) and
+hi(call_once)tt(std::call_once function, introduced in this section, the
+tthi(mutex) header file must be included.
+
+In single threaded programs the initialization of global data not necessarily
+happens at the same point in code. An example is the initialization of the
+object of a singleton class (cf. em(Gamma et al.) (1995) Design Patterns,
+Addison-Wesley). Singleton classes may define a single static pointer data
+member tt(Singleton *s_object), pointing to the singleton's object, and may 
+offer a static member tt(instance), implemented something like this:
+        verb(
+    Singleton &Singleton::instance()
+    {
+        return s_object ? 
+                    s_object 
+                : 
+                    (s_object = new Singleton);
+    }
+        )
+
+With multi-threaded programs this approach immediately gets complex. For
+example, if two threads call tt(instance) at the same time, while tt(s_object)
+still equals 0, then both may call tt(new_Singleton), resulting in one
+dynamically allocated tt(Singleton) object being unreachable. Other threads,
+called after tt(s_object) was initialized for the first time, may either
+return a reference to that object, or may return a reference to the object
+initialized by the second thread. Not exactly the expected behavior of a
+singleton. 
+
+Mutexes (cf. section ref(MUTEX)) can be used to solve these kinds of problems,
+but they result in some overhead and inefficiency, as the mutex must be
+inspected at each call of tt(Singleton::instance). 
+
+When variables must dynamically be initialized, and the initialization should
+take place only once the C++11 standards offers a better alternative in the
+form of the tt(std::once_flag) type and the tt(std::call_once) function.
+
+The tt(call_once) function expects two or three arguments:
+    itemization(
+    it()  The first argument is a tt(once_flag) variable, keeping track of the
+actual initialization status. The tt(call_once) function simply returns if
+the tt(once_flag) indicates that initialization already took place;
+
+    it() The second argument is the address of a function which must be called
+only once. This function may be a free function or it may be the address of a
+class member function;
+
+    it() If the second argument is the address of a class member function,
+then the object for which the member function should be called is provided as
+tt(call_once's) third argument
+    )
+    A thread-safe implementation of the singleton's tt(instance) function can
+now easily be designed (using in-class implementations for brevity):
+        verb(
+    class Singleton
+    { 
+        static std::once_flag s_once;
+        static Singleton *s_singleton;
+        ...
+        public:
+            static Singleton *instance()
+            {
+                std::call_once(s_once, []{s_singleton = new Singleton;} );
+                return s_singleton;
+            }
+        ...
+    };
+        )
