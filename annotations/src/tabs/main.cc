@@ -14,7 +14,7 @@ try
     if (argv[0][0] == '-')
         tabber.run();
 
-    if (not process(argv, scanner))
+    if (not process(argv, tabber))
         return 1;
 }
 catch (...)

@@ -4,7 +4,7 @@ void Tabber::space()
 {
     ++d_nSpaces;
 
-    if (d_column % g_tabPos != 0)       // not at a tab-position
+    if (d_column % g_tabWidth != 0)       // not at a tab-position
         return;
 
     if (d_nSpaces < g_minSpaces)        // to few spaces to write a tab

@@ -2,6 +2,6 @@
 
 Tabber::Tabber()
 :
-    istream(cin.rdbuf()),
-    istream(cout.rdbuf()
+    d_in(cin.rdbuf()),
+    d_out(cout.rdbuf())
 {}

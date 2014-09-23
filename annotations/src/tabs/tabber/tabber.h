@@ -16,12 +16,21 @@ class Tabber
         Tabber();
 
         void run();
-        
+        void run(char const *inName, char const *outName);
+
     private:
+        void detab();
         void entab();
+        bool tabColumn();
+        void outSpaces();
+
+
         void space();
         void tab();
 };
         
 #endif
+
+
+
 

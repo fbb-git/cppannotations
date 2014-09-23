@@ -5,24 +5,33 @@ void Tabber::entab()
     char ch;
     while (d_in.get(ch))
     {
-        ++d_column;
-
         switch (ch)
         {
             case ' ':
-                space();
-            break;
-
-            case '\t':
-                tab();
+                ++d_nSpaces;            // got a space
+                if (tabColumn())        // we're at a tab column
+                {
+                    if (d_nSpaces < g_minSpaces)
+                        outSpaces();
+                    else
+                    {
+                        d_nSpaces = 0;
+                        d_out.put('\t');
+                    }
+                }
             break;
 
             case '\n':
-                newline();
+            case '\t':
+                outSpaces();
+                d_out.put(ch);
+                d_column = 0;
             break;
 
             default:
-                otherChar();
+                outSpaces();
+                d_out.put(ch);
+                ++d_column;
             break;
         }
     }

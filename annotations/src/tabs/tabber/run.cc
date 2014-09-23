@@ -4,8 +4,8 @@ void Tabber::run()
 {
     d_column = 0;
 
-    if (d_entab)
-        entab(();
+    if (g_entab)
+        entab();
     else
         detab();
 }

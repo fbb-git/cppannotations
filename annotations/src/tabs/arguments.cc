@@ -26,7 +26,7 @@ bool arguments(int argc, char **argv)
             break;
 
             case 'c':
-                g_tabPos = stoul(optarg);
+                g_tabWidth = stoul(optarg);
             break;
 
             case 'q':

@@ -1,6 +1,6 @@
 #include "main.ih"
 
-bool process(char **argv, Scanner &scanner)
+bool process(char **argv, Tabber &tabber)
 {
     char tempfile[] = "tab.tmp";
     
@@ -20,8 +20,7 @@ bool process(char **argv, Scanner &scanner)
             return false;
         }
 
-        scanner.switchStreams(tempfile, *argv);
-        scanner.lex();
+        tabber.run(tempfile, *argv);
     }
 
     unlink(tempfile);
