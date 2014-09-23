@@ -9,10 +9,10 @@ try
     argv += optind;
     argc -= optind;
 
-    Scanner scanner;
+    Tabber tabber;
 
     if (argv[0][0] == '-')
-        scanner.lex();
+        tabber.run();
 
     if (not process(argv, scanner))
         return 1;
