@@ -3,16 +3,12 @@
 #include <thread>
 #include <mutex>
 #include <string>
-#include <chrono>
 
 using namespace std;
 
-ifstream in;
-mutex ioMutex;
-
-bool nLine(int nr)
+bool oneLine(istream &in, mutex &mut, int nr)
 {
-   lock_guard<mutex> lg(ioMutex);
+   lock_guard<mutex> lg(mut);
 
     string line;
     if (not getline(in, line))
@@ -23,29 +19,22 @@ bool nLine(int nr)
     return true;
 }
 
-void nio(int nr)
+void io(istream &in, mutex &mut, int nr)
 {
-    while (nLine(nr))
-        this_thread::sleep_for(chrono::nanoseconds(1));
+    while (oneLine(in, mut, nr))
+        this_thread::yield();
 }
-
 
 int main(int argc, char **argv)
 {
-    in.open(argv[1]);
+    ifstream in(argv[1]);
+    mutex ioMutex;
 
-    thread t1(nio, 1);
-    thread t2(nio, 2);
-    thread t3(nio, 3);
-    thread t4(nio, 4);
-
-//    thread t1(io, ref(in), ref(ioMutex));
-//    thread t2(io, ref(in), ref(ioMutex));
-//    thread t3(io, ref(in), ref(ioMutex));
+    thread t1(io, ref(in), ref(ioMutex), 1);
+    thread t2(io, ref(in), ref(ioMutex), 2);
+    thread t3(io, ref(in), ref(ioMutex), 3);
 
     t1.join();
     t2.join();
     t3.join();
-    t4.join();
 }
-
