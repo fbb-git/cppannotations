@@ -6,8 +6,8 @@ bool normalFile(char const *fileName)
 
     if (lstat(fileName, &fileInfo))
     {
-	cout << "Can't stat `" << fileName << "': skipping\n";
-	return false;
+        cout << "Can't stat `" << fileName << "': skipping\n";
+        return false;
     }
 
     return S_ISREG(fileInfo.st_mode);
