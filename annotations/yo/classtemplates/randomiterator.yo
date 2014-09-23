@@ -6,7 +6,7 @@ ti(shared_ptr) type objects may be used, though).  Although discouraged, we
 might be able to use pointer data types in specific contexts. In the following
 class tt(StringPtr), an ordinary class is derived from the tt(std::vector)
 container that uses tt(std::string *) as its data type:
-        verbinclude(examples/stringptr1.h)
+        verbinclude(-a examples/stringptr1.h)
     This class needs a destructor: as the object stores string pointers, a
 destructor is required to destroy the strings once the tt(StringPtr) object
 itself is destroyed.  Similarly, a copy constructor and overloaded assignment
@@ -68,7 +68,7 @@ not used.
     Now we're ready to redesign tt(StringPtr)'s class interface. It offers
 members returning (reverse) iterators, and a nested tt(iterator) class. Here
 is its interface:
-        verbinsert(STRINGPTR)(examples/stringptr.h)
+        verbinclude(//STRINGPTR examples/stringptr.h)
     As usual, the interface offers hooks for a more detailed study of the
 class.
 
@@ -83,7 +83,7 @@ tt(StringPtr)'s base class, we can use that iterator to access the information
 stored in the tt(StringPtr) object.
     it() tt(StringPtr::begin) and tt(StringPtr::end) may simply return
 tt(iterator) objects. They are implementated like this:
-        verbinsert(BEGEND)(examples/stringptr.h)
+        verbinclude(//BEGEND examples/stringptr.h)
     it() All of tt(iterator)'s remaining members are public. It's very easy to
 implement them, mainly manipulating and dereferencing the available iterator
 tt(d_current). A tt(RandomAccessIterator) (which is the most
@@ -92,31 +92,31 @@ have very simple implementations, making them good candidates for
 inline-members:
         itemization(
         itt(iterator &operator++()); the pre-increment operator:
-            verbinsert(PREINC)(examples/stringptr.h)
+            verbinclude(//PREINC examples/stringptr.h)
         it() tt(iterator operator++(int)); the post-increment operator:
-            verbinsert(POSTINC)(examples/stringptr.h)
+            verbinclude(//POSTINC examples/stringptr.h)
         it() tt(iterator &)opdecrement()tt(()); the pre-decrement operator:
-            verbinsert(PREDEC)(examples/stringptr.h)
+            verbinclude(//PREDEC examples/stringptr.h)
         it() tt(iterator) opdecrement()tt((int)); the post-decrement operator:
-            verbinsert(POSTDEC)(examples/stringptr.h)
+            verbinclude(//POSTDEC examples/stringptr.h)
         itt(iterator &operator=(iterator const &other)); the overloaded
             assignment operator. Since tt(iterator) objects do not allocate
             any memory themselves, the default assignment operator can be
             used.
         itt(bool operator==(iterator const &rhv) const); testing the equality
             of two tt(iterator) objects:
-                verbinsert(OPEQ)(examples/stringptr.h)
+                verbinclude(//OPEQ examples/stringptr.h)
         itt(bool operator<(iterator const &rhv) const); testing whether the
             left-hand side iterator points to an element of the series located
             em(before) the element pointed to by the right-hand side
             iterator:
-                verbinsert(CMP)(examples/stringptr.h)
+                verbinclude(//CMP examples/stringptr.h)
         itt(int operator-(iterator const &rhv) const); returning the number of
             elements between the element pointed to by the left-hand side
             iterator and the right-hand side iterator (i.e., the value to add
             to the left-hand side iterator to make it equal to the value of
             the right-hand side iterator):
-                verbinsert(OPSUB)(examples/stringptr.h)
+                verbinclude(//OPSUB examples/stringptr.h)
         itt(Type &operator*() const); returning a reference to the object to
             which the current iterator points. With an tt(InputIterator) and
             with all tt(const_iterators), the return type of this overloaded
@@ -125,13 +125,13 @@ inline-members:
             the dereferenced tt(d_current) value. As tt(d_current) is an
             iterator to tt(string *) elements, two dereference operations are
             required to reach the string itself:
-                verbinsert(OP*)(examples/stringptr.h)
+                verbinclude(//OP (examples/stringptr.h)
         itt(iterator operator+(int stepsize) const); this operator
             advances the current iterator by tt(stepsize):
-                verbinsert(OPADD)(examples/stringptr.h)
+                verbinclude(//OPADD examples/stringptr.h)
         itt(iterator operator-(int stepsize) const); this operator
             decreases the current iterator by tt(stepsize):
-                verbinsert(OP-)(examples/stringptr.h)
+                verbinclude(//OP (examples/stringptr.h)
         itt(iterator(iterator const &other)); iterators may be constructed
             from existing iterators. This constructor doesn't have to be
             implemented, as the default copy constructor can be used.
@@ -139,11 +139,11 @@ inline-members:
             operator. Here only one dereference operation is required,
             returning a pointer to the string, allowing us to access the
             members of a string via its pointer.
-                verbinsert(OPARROW)(examples/stringptr.h)
+                verbinclude(//OPARROW examples/stringptr.h)
         it() Two more additionally added operators are tt(operator+=) and
             tt(operator-=). They are not formally required by
             tt(RandomAccessIterators), but they come in handy anyway:
-                verbinsert(OPARITH)(examples/stringptr.h)
+                verbinclude(//OPARITH examples/stringptr.h)
         )
     )
     The interfaces required for other iterator types are simpler, requiring
