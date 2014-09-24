@@ -66,3 +66,32 @@ now easily be designed (using in-class implementations for brevity):
         ...
     };
         )
+
+However, there are additional ways to initialize data, even for multi-threaded programs:
+    itemization(
+    it() First, suppose a constructor is declared with the ti(constexpr)
+keyword (cf. section ref(CONSTEXPR)), satisfying the requirements for constant
+initialization. In this case, an static object, initialized using that
+constructor, is guaranteed to be initialized before any code is run as part of
+the static initialization phase. This is the option chosen for tt(std::mutex),
+because it eliminates the possibility of race conditions with initialization
+of mutexes at a global scope.
+    it() Second, a static variable defined within a compound statement may be
+used (e.g., a static local variable within a function body).  Static
+variables hi(static variable: initialization) defined within a compound
+statement are initialized the first time the function is called at the point
+in the code where the static variable is defined:
+        verbinclude(-a examples/staticlocal.cc)
+    This feature causes a thread to wait automatically if another thread is
+still initializing the static data (note that em(non-static) data never cause
+problems, as each non-static local variables have lifes that are completely
+restricted to their own threads).
+    )
+
+
+
+
+
+
+
+

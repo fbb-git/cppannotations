@@ -35,108 +35,17 @@ which it can't, as tt(fun2) has already locked tt(value): the threads are
 waiting for each other, and neither thread gives in.
         verbinclude(-ns4 //code examples/deadlock.cc)
 
-A good recipe for avoiding deadlocks is to prevent nested (or multiple
-mutex lock calls. But if multiple mutexes must be used, always obtain the
-locks in the same order. Rather than doing this yourself, tt(std::lock) and
+A good recipe for avoiding deadlocks is to prevent nested (or multiple) mutex
+lock calls. But if multiple mutexes must be used, always obtain the locks in
+the same order. Rather than doing this yourself, tt(std::lock) and
 tt(std::try_lock) should be used whenever possible to obtain multiple mutex
 locks. These functions accept multiple arguments, which must be lockable types
-like tt(lock_guard, unique_lock,) or even a plain tt(mutex). 
-
-The recipe to aWhen using multiple locks
-These functions can be
-used to lock multiple mutexes in one atomic action. Here is an example:
-        verb(
-    struct SafeString
-    {
-        std::mutex  d_mutex;
-        std::string d_text;
-    };
-
-    void calledByThread(SafeString &first, SafeString &second)
-    {
-        std::unique_lock<std::mutex>                        // 1
-                lock_first(first.d_mutex, std::defer_lock);
-
-        std::unique_lock<std::mutex>                        // 2
-                lock_second(second.d_mutex, std::defer_lock);
-
-        std::lock(lock_first, lock_second);                 // 3
-
-        safeProcess(first.d_text, second.d_text);
-    }
-        )
-    At 1 and 2 tt(unique_locks) are created. Locking is deferred until calling
-tt(std::lock) at 3. Having obtained the lock, the two tt(SafeString) text
-members can both be safely processed by tt(calledByThread).
-
-Another problematic issue with threads involves initialization. If multiple
-threads are running and only the first thread calling the initialization code
-should actually perform the initialization then this problem should not be
-solved using mutexes. 
-
-Although proper synchronization is realized, the synchronization is performed
-time and again for every thread. The C++11 standard offers several ways to
-perform a proper initialization:
-    itemization(
-    it() First, suppose your constructor is declared with the ti(constexpr)
-keyword (cf. section ref(CONSTEXPR)), satisfying the requirements for constant
-initialization. In this case, an object of static storage lifetime,
-initialized using that constructor, is guaranteed to be initialized before any
-code is run as part of the static initialization phase. This is the option
-chosen for tt(std::mutex), because it eliminates the possibility of race
-conditions with initialization of mutexes at a global scope. Here is an
-example, using in-class implementations for brevity:
-        verb(
-class MyClass
-{
-    int d_i;
-
-    public:
-        constexpr MyClass(int i = 0)
-        :
-            d_i(0)
-        {}
-
-    void action();
-};
-
-MyClass myObject;   // static initialization with constexpr constructor
-
-int foo();
-myClass other(42 + foo());  // dynamic initialization
-
-void f()
-{
-    other.action();         // is other initialized in some thread?
-}
-    )
-    it() Second, a static variable defined within a compound statement may be
-used (e.g., a static local variable within a function body).  In C++ static
-variables hi(static variable: initialization) defined within a compound
-statement are initialized the first time the function is called at the point
-in the code where the static variable is defined as illustrated by the
-following example:
-        verbinclude(-a examples/staticlocal.cc)
-    This feature causes a thread to wait automatically if another thread is
-still initializing the static data (note that em(non-static) data never cause
-problems, as each non-static local variables have lifes that are completely
-restricted to their own threads).
-    it() If the above two approaches can't be used. The combined use of
- hi(call_once)tt(std::call_once) and hi(once_flag) tt(std::once_flag) result
-in one-time execution of a specified function as illustrated by the next
-example:
-        verb(
-std::string *global;
-std::once_flag globalFlag;
-
-void initializeGlobal()
-{
-    global = new std::string("Hello world (why not?)");
-}
-void safeUse()
-{
-    std::call_once(globalFlag, initializeGlobal);
-    process(*global);
-}
-        )
-    )
+like tt(lock_guard, unique_lock,) or even a plain tt(mutex). The previous
+deadlocking program, can be modified to call tt(std::lock) to lock both
+mutexes. In this example using one single mutex would also work, but the
+modified program now looks as similar as possible to the previous
+program. Note how in lines 10 and 21 a different
+ordering of the tt(unique_locks) arguments was used: it is not necessary to
+use an identical argument order when calling tt(std::lock) or
+tt(std::try_lock). 
+        verbinclude(-ns4 //code examples/lock.cc)
