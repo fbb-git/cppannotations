@@ -1,5 +1,5 @@
-Condition variables are used to synchronize threads on the states (values) of
-data, rather than on access to data (for which plain mutex-objects can be
+Condition variables are used to synchronize threads on the values of data,
+rather than on the mere access to data (for which plain mutex-objects can be
 used). Using condition variables, a thread simply sleeps until it is notified
 by another thread. In a producer-consumer type of program this is usually
 accomplished like this:
@@ -21,70 +21,47 @@ accomplished like this:
 
 It is important that the two storage administrative tasks (registering the
 number of available items and available storage locations) are either
-performed by the client or by the producer. `Waiting' in this case means:
+performed by the client or by the producer. For the consumer `waiting' means:
     itemization(
     it() Get a lock on the variable containing the actual count
-    it() As long as the count is zero: 
-                wait, releasing the lock until another thread 
-                      has increased the count, then
-                      re-acquire the lock.
+    it() As long as the count is zero: wait, releasing the lock until another
+        thread has increased the count, then re-acquire the lock.
     it() Reduce the count
     it() Release the lock.
     )
-    This scheme is implemented using a ti(condition_variable). The variable
-containing the actual count is called ti(semaphore) and it can be protected
-using, e.g. tt(mutex sem_mutex). 
-In addition a tt(condition_variable condition) is defined. The following code
-uses three non-local variables:
-        verb(
-    size_t semaphore;
-    mutex sem_mutex;
-    condition_variable condition;
-        )
-
-The waiting process is defined by the following function tt(down):
-        verb(
-    void down()
-    {
-        unique_lock<mutex> lock(sem_mutex);   // get the lock
-        while (semaphore == 0)
-            condition.wait(lock);           // see 1, below.
-        --semaphore;                        // dec. semaphore count
-    }                                       // the lock is released
-        )
-    At 1 tt(condition.wait) releases the lock, waits until receiving a
-notification, and re-acquires the lock just before returning. Consequently,
-tt(down)'s code always has complete and unique control over tt(semaphore).
-
-    What about notifying the condition variable? This is handled by the
-`increment the number ...' lines in the producer and consumer loops. These
-parts are defined by the following tt(up) function:
-        verb(
-    void up()
-    {
-        lock_guard<std::mutex> lock(sem_mutex); // get the lock
-        if (semaphore++ == 0)
-            condition.notify_one();             // see 2, below
-    }                                           // the lock is released
-        )
-    At 2 tt(semaphore) is always incremented. However, by using a postfix
-increment it is simultaneously tested for being zero. If it was initially zero
-then tt(semaphore) is now one. Consequently, the thread waiting for
-tt(semaphore) being unequal to zero may now continue. A waiting thread is
-notified by calling tt(condition.notify_one). In situations where multiple
-threads are waiting `ti(notify_all)' can also be used.
-
-    Handling tt(semaphore) can nicely be encapsulated in a class
-tt(Semaphore), offering members tt(down) and tt(up). For a more extensive
-discussion of semaphores see i(Tanenbaum, A.S.) and i(Austin, T.) (2013)
+    This scheme is implemented in a class tt(Semaphore), offering members
+tt(reduce) and tt(increase). For a more extensive discussion of semaphores see
+i(Tanenbaum, A.S.) and i(Austin, T.) (2013)
     i(Structured Computer Organization), Pearson Prentice-Hall.
+
+The data member containing the actual count is called ti(d_semaphore). It is
+protected by tt(mutex d_mutex).  In addition a tt(condition_variable
+d_condition) is defined:
+        verbinclude(-s4 //data examples/events.cc)
+
+The waiting process is implemented through the member function tt(reduce):
+        verbinclude(-nNs4 //reduce examples/events.cc)
+    In line 5 tt(d_condition.wait) releases the lock; waits until receiving a
+notification; and re-acquires the lock just before returning. Consequently,
+tt(reduce's) code always has complete and unique control over tt(d_semaphore).
+
+    What about notifying the a waiting thread? This is handled by the
+`increment the number ...' lines in the producer loop, implemented through the
+member function tt(increase)
+        verbinclude(-nNs4 //increase examples/events.cc)
+    At line 4 tt(d_semaphore) is always incremented; by using a postfix
+increment it can simultaneously be tested for being zero. If it was initially
+zero then tt(d_semaphore) is now one. A thread waiting until tt(d_semaphore)
+exceeds zero may now continue. A waiting thread is notified by calling
+tt(d_condition.notify_one). In situations where multiple threads are waiting
+`ti(notify_all)' can also be used.
 
     Using the facilities of the class tt(Semaphore) whose constructor expects
 an initial value of its tt(semaphore) data member, the classic producer and
-consumer paradigm can now easily be implemented in the following
-multi-threaded program+footnote(A more elaborate example of the
-producer-consumer program is found in the tt(yo/stl/examples/events.cc) file
-in the bf(C++) Annotations's source archive):
+consumer paradigm can now be implemented using multi-threading+footnote(A more
+elaborate example of the producer-consumer program is found in the
+tt(yo/threading/examples/events.cc) file in the bf(C++) Annotations's source
+archive):
         verb(
     Semaphore available(10);
     Semaphore filled(0);
@@ -122,4 +99,3 @@ in the bf(C++) Annotations's source archive):
         consume.join();
     }
         )
-

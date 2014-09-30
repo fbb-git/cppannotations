@@ -11,34 +11,43 @@
 
     class Semaphore
     {
-        std::mutex d_mutex;
-        std::condition_variable d_condition;
-        size_t d_semaphore;
-
+//data
+std::mutex d_mutex;
+std::condition_variable d_condition;
+size_t d_semaphore;
+//=
         public:
             Semaphore(size_t semaphore)
             :
                 d_semaphore(semaphore)
             {}
 
-            void down()
-            {
-                std::unique_lock<std::mutex> lk(d_mutex);   // get the lock
-                while (d_semaphore == 0)
-                    d_condition.wait(lk);   // internally releases the lock
-                                            // and waits, on exit
-                                            // acquires the lock again
-                --d_semaphore;              // dec. semaphore
-            }   // releases the lock
-
-            void up()
-            {
-                std::lock_guard<std::mutex> lk(d_mutex);    // get the lock
-                if (d_semaphore++ == 0)
-                    d_condition.notify_one();   // notifies one other
-                                                // (notify_all is also available)
-            }   // releases the lock
+            void reduce();
+            void increase();
     };
+
+//increase
+void Semaphore::increase()
+{
+    std::lock_guard<std::mutex> lk(d_mutex);    // get the lock
+    if (d_semaphore++ == 0)
+        d_condition.notify_one();   // notifies one other thread
+                                    // (or use notify_all)
+}   // the lock is released
+//=
+
+//reduce
+void Semaphore::reduce()
+{
+    std::unique_lock<std::mutex> lk(d_mutex);   // get the lock
+    while (d_semaphore == 0)
+        d_condition.wait(lk);   // internally releases the lock
+                                // and waits, on exit
+                                // acquires the lock again
+    --d_semaphore;              // dec. semaphore
+}   // the lock is released
+//=
+
 
     using namespace std;
     using namespace FBB;
@@ -76,9 +85,9 @@
 
                 ++d_item;
                 cerr << "P " << d_item << ' ' << msec << '\n';
-                g_available.down();
+                g_available.reduce();
                 g_queue.push(d_item);
-                g_filled.up();
+                g_filled.increase();
             }
         }
     };
@@ -95,10 +104,10 @@
         {
             for (size_t run = 0; run < d_trials; ++run)
             {
-                g_filled.down();
+                g_filled.reduce();
                 size_t d_item = g_queue.front();
                 g_queue.pop();
-                g_available.up();
+                g_available.increase();
 
                 size_t msec;
 
@@ -113,6 +122,7 @@
             }
         }
     };
+
 
     int main(int argc, char **argv)
     {

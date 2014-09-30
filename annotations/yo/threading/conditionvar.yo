@@ -6,24 +6,24 @@ Before using the class tt(condition_variable) the tthi(condition_variable)
 header file must be included.
 
 The class's destructor requires that no thread is blocked by the current
-thread. This implies that all threads waiting on a tt(condition_variable) must
-have been notified before a tt(condition_variable) object's lifetime
-ends. Calling tt(notify_all) (see below) before a tt(condition_variable)
-ceases to exists takes care of that.
+thread. So all threads waiting on a tt(condition_variable) must
+be notified before a tt(condition_variable) object's lifetime
+ends. Calling tt(notify_all) (see below) before a tt(condition_variable's)
+lifetime ends takes care of that.
 
-In the following member-descriptions a type tt(Predicate) indicates that the
+In the following member-descriptions a type tt(Predicate) indicates that a
 provided tt(Predicate) argument can be called as a function without arguments,
 returning a tt(bool). Also, other member functions are frequently referred
 to. It is tacitly assumed that all member referred to below were called using
 the same condition variable object.
 
-The class tt(condition_variable) supports several tt(wait) members, which will
-block the thread until notified by another thread (or after a configurabel
-waiting time). However, these tt(wait) members may also spuriously unblock,
-without having reacquired the lock. Therefore, returning from these tt(wait)
-members threads should verify that the required data condition has actually
-been met. If not, again calling tt(wait) may be appropriate, as illustrated by
-the next piece of pseudo code:
+The class tt(condition_variable) supports several tt(wait) members, which
+block the thread until notified by another thread (or after a configurable
+waiting time). However, tt(wait) members may also spuriously unblock, without
+having reacquired the lock. Therefore, returning from tt(wait) members threads
+should verify that the required condition has actually been attained. If not,
+again calling tt(wait) may be appropriate.  The next piece of pseudo code
+illustrates this scheme:
        verb(
     while (conditionNotYetMet())
         condVariable.wait(&uniqueLock);
@@ -47,9 +47,6 @@ The class tt(condition_variable)'s members are:
         thread is blocked until it has received a notification from another
         thread, and has reacquired the lock.
 
-        Threads should verify that the required data condition has been met
-        after tt(wait) has returned.)
-
     ittq(void wait(unique_lock<mutex>& uniqueLock, Predicate pred))
        (this is a member template, using the template header tt(template
         <typename Predicate>). 
@@ -59,9 +56,6 @@ The class tt(condition_variable)'s members are:
         Before calling tt(wait) the current thread must have acquired the lock
         of tt(uniqueLock). As long as `tt(pred)' returns tt(false)
         tt(wait(lock)) is called.
-
-        Threads should verify that the required data condition has been met
-        after tt(wait) has returned.)
 
     ithtq(wait_for)(cv_status wait_for(unique_lock<mutex> &uniqueLock,
                       std::chrono::duration<Rep, Period> const &relTime))
@@ -97,9 +91,6 @@ cond.wait_for(&unique_lock, std::chrono::seconds(5));
         called. If the previous member returns tt(cv_status::timeout), then
         tt(pred) is returned, otherwise tt(true).
 
-        Threads should verify that the required data condition has been met
-        after tt(wait_for) has returned.)
-
     ithtq(wait_until)(cv_status wait_until(unique_lock<mutex>& uniqueLock,
                         chrono::time_point<Clock, Duration> const &absTime))
        (this member is defined as a member template, using the template
@@ -123,8 +114,6 @@ cond.wait_until(&unique_lock, chrono::system_clock::now() +
         returned, otherwise tt(std::cv_status::no_timeout) is
         returned.
 
-        Threads should verify that the required data condition has been met
-        after tt(wait_until) has returned.)
 
     ittq(bool wait_until(unique_lock<mutex> &lock,
                   chrono::time_point<Clock, Duration> const &absTime,
@@ -137,11 +126,10 @@ cond.wait_until(&unique_lock, chrono::system_clock::now() +
        As long as tt(pred) returns false, the previous tt(wait_until) member
         is called. If the previous member returns tt(cv_status::timeout), then
         tt(pred) is returned, otherwise tt(true). 
-
-        Threads should verify that the required data condition has been met
-        after tt(wait_until) has returned.)
     )
 
+Threads should verify that the required condition has been attained once
+wait-members of condition variables return.
 
 
 

@@ -1,7 +1,6 @@
-In this section em(condition variables), as defined by the standard template
-library, are introduced. Condition variables allow programs to synchronize
-threads using the em(states) of data, rather than simply locking the
-em(access) to data (which is realized using mutexes).
+In this section em(condition variables) are introduced. Condition variables
+allow programs to synchronize threads using the em(states) of data, rather
+than simply locking the em(access) to data (which is realized using mutexes).
 
 Before condition variables can be used the tthi(condition_variable) header
 file must be included.
@@ -24,19 +23,18 @@ release of the lock. Often there's no action to perform, and the process is
 busy acquiring and releasing the mutex's lock. Polling forces threads to wait
 until they can lock the mutex, even though continuation might already be
 possible. The polling interval could be reduced, but that too isn't an
-attractive option, as it results in needlessly increasing the overhead
-associated with handling the associated mutexes (a situation also known as
-`busy waiting').
+attractive option, as that increases the overhead associated with handling the
+mutexes (also called `busy waiting').
 
-Contrary to merely using mutexes, polling can be prevented using condition
-variables. Using condition variables threads may em(notify) waiting threads
-that there is something for them to do. Thus threads synchronized on the
-em(states) (e.g., em(values)) of data.
+Condition variables can be used to prevent polling. Threads can use condition
+variables to em(notify) waiting threads that there is something for them to
+do. This way threads can synchronize on the values (em(states))
+of data.
 
-As the states of data may be modified by multiple threads, threads still need
-to use mutexes, but merely to control access to the data.  In addition,
-however, condition variables allow threads to release ownership of mutexes
-until a certain state has been reached, until a preset amount of time has been
+As the values of data may be modified by multiple threads, threads still need
+to use mutexes, but only for controlling access to the data.  In addition,
+condition variables allow threads to em(release) ownership of mutexes until a
+certain value has been obtained, until a preset amount of time has been
 passed, or until a preset point in time has been reached.
 
 The prototypical setup of threads using condition variables looks like this:
@@ -44,45 +42,47 @@ The prototypical setup of threads using condition variables looks like this:
     it() consumer thread(s) act like this:
         verb(
     lock the mutex
-    while the required condition is false:
+    while the required condition has not yet been attained (i.e., is false):
         wait until being notified 
-        (automatically releasing the mutex's lock).
-    the mutex's lock has been reacquired, and the condition is true:
+         (this automatically releasing the mutex's lock).
+    once the mutex's lock has been reacquired, and the required condition
+    has been attained:
         process the data
     release the mutex's lock.
         )
     it() producer thread(s) act similarly:
         verb(
     lock the mutex
-    while the condition is false:
-        process the data
-    notify waiting threads that the condition is true
+    while the required condition has not yet been attained:
+        do something to attain the required condition
+    notify waiting threads (that the required condition has been attained)
     release the mutex's lock.
         )
-    ) No matter which thread starts, the thread holding the mutex's lock will
-at some point release the lock, allowing the other process to (re)acquire
-it. If the consumer starts it immediately releases the lock once it enters its
+    ) 
+    No matter which thread starts, the thread holding the mutex's lock will at
+some point release the lock, allowing the other process to (re)acquire it. If
+the consumer starts it immediately releases the lock once it enters its
 waiting state; if the producer starts it releases the lock once the condition
-is true. There is a slight initial synchronization requirement, though. The
+is true. There is a minor initial synchronization requirement, though. The
 producer's notification will be missed if the consumer hasn't yet entered its
 waiting state. So waiting (consumer) threads should start before notifying
-(producer) threads. One the threads have started, no assumptions can be made
-about the order in which any of the tt(notify_one, notify_all, wait,
-wait_for), and tt(wait_until) members are executed.
-
+(producer) threads. Once the threads have started, no assumptions can be made
+about the order in which any of the condition variable's tt(notify_one,
+notify_all, wait, wait_for), and tt(wait_until) members are called.
 
 Condition variables come in two flavors: objects of the class 
     hi(condition_variable)tt(std::condition_variable) are used in combination
-with objects of type tt(unique_lock<mutex>). This allows for certain
-optimizations resulting in an increased efficiency compared to the efficiency
-that can be obtained with objects of the class
+with objects of type tt(unique_lock<mutex>). Because of 
+optimizations which are available for this specific combination using 
+tt(condition_variables) is somewhat more efficient than using the more
+generally applicable class
     hi(condition_variable_any)tt(std::condition_variable_any), which may be
 used with any (e.g., user supplied) lock type.
 
-Condition variable classes offer members like tt(wait, wait_for,
-wait_until, notify_one) and tt(notify_all) that may concurrently be called.
-The notifying members are always atomically executed. Execution of the
-tt(wait) members consists of three atomic parts:
+Condition variable classes (covered in detail in the next two sections) offer
+members like tt(wait, wait_for, wait_until, notify_one) and tt(notify_all)
+that may concurrently be called.  The notifying members are always atomically
+executed. Execution of the tt(wait) members consists of three atomic parts:
     itemization(
     it() the mutex is released, and the thread is suspended until its
         notification; 
@@ -108,6 +108,7 @@ tt(enum) type is provided:
         tt(lockObject), followed by verifying that the condition
         they were waiting for is true and that the lock was not
         reacquired before tt(notify_all_at_thread_exit) was called.)
+
     ithtq(cv_status)(std::cv_status) 
        (the tt(cv_status) enum is used by several member functions of the
         condition variable classes (cf. sections ref(CONDVAR1) and
@@ -124,5 +125,7 @@ namespace std
         )
         )
     )
+
+
 
 
