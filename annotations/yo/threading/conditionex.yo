@@ -41,13 +41,12 @@ d_condition) is defined:
 
 The waiting process is implemented through the member function tt(reduce):
         verbinclude(-nNs4 //reduce examples/events.cc)
-    In line 5 tt(d_condition.wait) releases the lock; waits until receiving a
-notification; and re-acquires the lock just before returning. Consequently,
+    In line 5 tt(d_condition.wait) releases the lock. It waits until receiving
+a notification, and re-acquires the lock just before returning. Consequently,
 tt(reduce's) code always has complete and unique control over tt(d_semaphore).
 
-    What about notifying the a waiting thread? This is handled by the
-`increment the number ...' lines in the producer loop, implemented through the
-member function tt(increase)
+    What about notifying the a waiting thread? This is handled in lines 4 and
+5 of the  member function tt(increase):
         verbinclude(-nNs4 //increase examples/events.cc)
     At line 4 tt(d_semaphore) is always incremented; by using a postfix
 increment it can simultaneously be tested for being zero. If it was initially
@@ -57,11 +56,11 @@ tt(d_condition.notify_one). In situations where multiple threads are waiting
 `ti(notify_all)' can also be used.
 
     Using the facilities of the class tt(Semaphore) whose constructor expects
-an initial value of its tt(semaphore) data member, the classic producer and
-consumer paradigm can now be implemented using multi-threading+footnote(A more
-elaborate example of the producer-consumer program is found in the
-tt(yo/threading/examples/events.cc) file in the bf(C++) Annotations's source
-archive):
+an initial value of its tt(semaphore) data member, the classic
+consumer-producer paradigm can now be implemented using
+multi-threading+footnote(A more elaborate example of the producer-consumer
+program is found in the tt(yo/threading/examples/events.cc) file in the
+bf(C++) Annotations's source archive):
         verb(
     Semaphore available(10);
     Semaphore filled(0);
@@ -73,19 +72,19 @@ archive):
         while (true)
         {
             ++item;
-            available.down();
+            available.reduce();
             itemQueue.push(item);
-            filled.up();
+            filled.increase();
         }
     }
     void client()
     {
         while (true)
         {
-            filled.down();
+            filled.reduce();
             size_t item = itemQueue.front();
             itemQueue.pop();
-            available.up();
+            available.increase();
             process(item);      // not implemented here
         }
     }
@@ -99,3 +98,7 @@ archive):
         consume.join();
     }
         )
+
+
+
+

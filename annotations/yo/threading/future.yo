@@ -1,40 +1,63 @@
-Asynchronous providers produce asynchronous return objects which may or may
-not share their shared state with other asynchronous return objects. 
+Condition variables allow threads to wait until data have attained certain
+values. A thread may also have to wait until a sub-thread has finished when
+calling a sub-thread's tt(join) member. 
+
+Waiting may be unwelcome: instead of just waiting our thread might also be
+doing something useful. It might as well pick up the results produced by a
+sub-thread at some point in the future. 
+
+In fact, exchanging data among threads always poses some difficulties, as it
+requires shared variables, and the use of locks and mutexes to prevent
+data corruption. Rather than waiting and using locks it would be nice if some
+asynchronous task could be started, allowing the initiating thread (or even
+other threads) to pick up the result at some point in the future, whenever the
+results are needed without having to worry about data locks or waiting times.
+For situations like these bf(C++) provides the class tt(std::future).
 
 Before using the class hi(future) tt(std::future) the tthi(future) header file
 must be included.
 
-Objects of the class template hi(future)tt(std::future) represent asynchronous
-return objects which may not share their shared state with other asynchronous
-return objects. The class's template type parameter defines the type of the
-tt(future) object's result, which may be tt(void) or a reference to a return
-type. 
+Objects of the class template hi(future)tt(std::future) contain the results
+produced by asynchronously executed tasks. The class tt(std::future) is a
+class template. Its template type parameter specifies the type of the result
+returned by the asynchronously executed task. This type may be tt(void).
 
-A tt(future's) object result is a value or an exception. The tt(future) object
-receives its result through member functions of objects that share the
-tt(future) object's shared state.
+On the other hand, the asynchronously executed task may itself end by throwing
+an exception. In that case the tt(future) object catches the exception,
+rethrowing it when its return value (i.e., the value returned by the
+asynchronously executed task) is requested.
+
+COMMENT(
 
 By default a tt(future) object has no shared state. A tt(future) object
 containing a shared state can be created by members of asynchronous providers
 (such as a tt(std::promise) (cf. section ref(PROMISE)), or by the move
 constructor. In these cases it shares its shared state with the original
-asynchronous provider. The class tt(future) does not offer a copy constructor
-or overloaded assignment operator.
+asynchronous provider. 
 
-Some of tt(future)'s members may return a value of the strongly typed
+END)
+
+Some of tt(future)'s members return a value of the strongly typed
 enumeration hi(future_status)tt(std::future_status). This enumeration defines
 three symbolic constants: tt(future_status::ready, future_status::timeout,)
 and tt(future_status::deferred). 
 
-Error conditions may be returned by tt(future_error) exceptions. These error
-conditions are represented by the values of the strongly typed enumeration 
+Error conditions may be returned by hi(future_error)tt(std::future_error)
+exceptions. These error conditions are represented by the values of the
+strongly typed enumeration
     hi(future_errc)tt(std::future_errc) defining the symbolic constants 
 tt(future_errc::broken_promise, future_errc::future_already_retrieved, 
 future_errc::promise_already_satisfied,) and tt(future_errc::no_state).
 
 In this section the members of the class template tt(future) are
-described. Examples of its use are given in subsequent sections.
-
+described. tt(Future) objects are commonly initialized by provinding an
+anonymous tt(future) object returned by factory functions. Standard available
+    COMMENT(
+        KLOPT DE VOLGENDE REGEL WEL? 
+    )
+factory functions are tt(std::async, std::promise, and std::packaged_task),
+which are introduced in upcoming sections. Examples of the use of
+tt(std::future) objects are provided in those sections.
 
 The class tt(future) has the following constructors:
     itemization(
@@ -49,11 +72,16 @@ The class tt(future) has the following constructors:
             constructor invocation. After calling the move constructor
             tt(tmp.valid()) returns tt(false).)
     )
+    The class tt(future) does not offer a copy constructor or overloaded
+assignment operator. 
 
-It has the following members (member functions of the class tt(future) do not
-synchronize with themselves or with member functions of the class
-tt(shared_future)).
+    COMMENT(
+ (member functions of the
+class tt(future) do not synchronize with themselves or with member functions
+of the class tt(shared_future)).
+    END)
 
+    tt(Std::future) offers the following members:
     itemization(
     itt(future &operator=(future &&tmp))
         quote(The move assignment operator grabs the information from the
@@ -99,11 +127,11 @@ COMMENT((30.6.8))
             until the shared state is ready or until the amount of time
             specified by tt(rel_time) has expired. Possible return values are:
             itemization(
-            itt(future_status::deferred) if the shared state contains a deferred
-                function;
+            itt(future_status::deferred) if the shared state contains a
+                deferred function;
             itt(future_status::ready) if the shared state is ready;
-            itt(future_status::timeout) if the function is returning because the
-                amount of time specified by tt(rel_time) has expired. 
+            itt(future_status::timeout) if the function is returning because
+                the amount of time specified by tt(rel_time) has expired. 
             ))
 
     itt(future_status wait_until(chrono::time_point<Clock, Duration> const
@@ -121,17 +149,23 @@ COMMENT((30.6.8))
             itt(future_status::timeout) if the function is returning because
                 the point in time specified by tt(abs_time) has expired. 
             ))
-)
-
-And the class tt(future<ResultType>) declares the following friends:
+    )
+    The class tt(std::future<ResultType>) declares the following friends:
         verb(
     std::promise<ResultType>
         )
-and
+    (sf. section ref(PROMISE)), and
         verb(
     template<typename Function, typename... Args>
-        future<typename result_of<Function(Args...)>::type> 
-        async(std::launch, Function &&fun, Args &&...args);
+        std::future<typename result_of<Function(Args...)>::type> 
+        std::async(std::launch, Function &&fun, Args &&...args);
         )
+    (cf. section ref(ASYNC)).
+
+
+
+
+
+
 
 

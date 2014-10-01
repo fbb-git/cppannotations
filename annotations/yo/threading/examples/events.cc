@@ -6,8 +6,6 @@
 #include <thread>
 #include <ctime>
 #include <iostream>
-#include <bobcat/selector>
-#include <bobcat/irandstream>
 
     class Semaphore
     {
@@ -31,8 +29,8 @@ void Semaphore::increase()
 {
     std::lock_guard<std::mutex> lk(d_mutex);    // get the lock
     if (d_semaphore++ == 0)
-        d_condition.notify_one();   // notifies one other thread
-                                    // (or use notify_all)
+        d_condition.notify_all();   // use notify_one to notify one other 
+                                    // thread
 }   // the lock is released
 //=
 
@@ -50,13 +48,9 @@ void Semaphore::reduce()
 
 
     using namespace std;
-    using namespace FBB;
 
     Semaphore     g_available(5);
     Semaphore     g_filled(0);
-    Selector      g_selector;
-    IRandStream   g_rand(0, 100000, time(0));
-    std::mutex    g_randMutex;
     queue<size_t> g_queue;
 
     struct Producer
@@ -74,17 +68,8 @@ void Semaphore::reduce()
         {
             for (size_t run = 0; run < d_trials; ++run)
             {
-                size_t msec;
-
-                g_randMutex.lock();
-                g_rand >> msec;
-                g_randMutex.unlock();
-
-                g_selector.setAlarm(0, msec);
-                g_selector.wait();
-
                 ++d_item;
-                cerr << "P " << d_item << ' ' << msec << '\n';
+                cout << "Produced item " << d_item << '\n';
                 g_available.reduce();
                 g_queue.push(d_item);
                 g_filled.increase();
@@ -95,30 +80,24 @@ void Semaphore::reduce()
     struct Consumer
     {
         size_t d_trials;
-        Consumer(size_t trials)
+        int d_nr;
+
+        Consumer(size_t trials, int nr)
         :
-            d_trials(trials)
+            d_trials(trials),
+            d_nr(nr)
         {}
 
         void operator()()
         {
-            for (size_t run = 0; run < d_trials; ++run)
+            for (size_t run = 0; run != d_trials; ++run)
             {
                 g_filled.reduce();
                 size_t d_item = g_queue.front();
                 g_queue.pop();
                 g_available.increase();
-
-                size_t msec;
-
-                g_randMutex.lock();
-                g_rand >> msec;
-                g_randMutex.unlock();
-
-                g_selector.setAlarm(0, msec);
-                g_selector.wait();
-                cout << "\t\tC Retrieved item " << d_item << ' ' <<
-                                                            msec << '\n';
+                cout << "\t\tConsumer " << d_nr << " got item " << 
+                                                        d_item << '\n';
             }
         }
     };
@@ -134,12 +113,15 @@ void Semaphore::reduce()
         cerr << "Go!\n";
         size_t trials = stoul(argv[1]);
 
-        Producer prod(trials);
-        Consumer cons(trials);
+        Producer prod(trials); //  << 1);
+        Consumer cons1(trials, 1);
+//        Consumer cons2(trials, 2);
 
+        thread consume1(cons1);
+//        thread consume2(cons2);
         thread produce(prod);
-        thread consume(cons);
 
         produce.join();
-        consume.join();
+        consume1.join();
+//        consume2.join();
     }
