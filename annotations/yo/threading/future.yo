@@ -50,7 +50,7 @@ tt(future_errc::broken_promise, future_errc::future_already_retrieved,
 future_errc::promise_already_satisfied,) and tt(future_errc::no_state).
 
 In this section the members of the class template tt(future) are
-described. tt(Future) objects are commonly initialized by provinding an
+described. tt(Future) objects are commonly initialized by providing an
 anonymous tt(future) object returned by factory functions. Standard available
     COMMENT(
         KLOPT DE VOLGENDE REGEL WEL? 
@@ -63,7 +63,7 @@ The class tt(future) has the following constructors:
     itemization(
     itt(future())
         quote(The default constructor constructs an tt(future) object that
-            does not refer to a shared state. Its tt(valid) member returns
+            does not refer to shared results. Its tt(valid) member returns
             tt(false).)
 
     itt(future(future &&tmp) noexcept)
@@ -81,7 +81,7 @@ class tt(future) do not synchronize with themselves or with member functions
 of the class tt(shared_future)).
     END)
 
-    tt(Std::future) offers the following members:
+    tt(Std::future) provides the following members:
     itemization(
     itt(future &operator=(future &&tmp))
         quote(The move assignment operator grabs the information from the
@@ -96,40 +96,42 @@ of the class tt(shared_future)).
 
     itt(ResultType get())
         quote(This member first calls the member tt(wait) (see below), after
-            which the value which is stored in the shared state is
-            returned. With tt(future<Type>) specifications the returned value
-            is the moved shared value if tt(Type) supports move assignment,
-            otherwise a copy is returned.  With tt(future<Type &>)
+            which the results produced by the associated asynchronoust task
+            arereturned. With tt(future<Type>) specifications the returned
+            value is the moved shared value if tt(Type) supports move
+            assignment, otherwise a copy is returned.  With tt(future<Type &>)
             specifications a tt(Type &) is returned, with tt(future<void>)
             specifications nothing is returned. If the shared value is an
             exception, it is thrown instead of returned. After calling this
-            member the tt(future) object's tt(valid) member returns tt(false).)
+            member the tt(future) object's tt(valid) member returns
+            tt(false).)
 
     itt(bool valid() const)
-        quote(Returns tt(true) only if tt(*this) refers to a shared state.  If
-            tt(valid) returns tt(false) only the tt(future's) destructor and
-            move constructor can safely be called. When other members are
-            called while tt(valid) returns tt(false) a
-            hi(future_error)tt(std::future_error) exception is thrown (having
-            the value hi(no_state)tt(future_errc::no_state)).)
+        quote(Returns tt(true) only if tt(*this) refers to results produced by
+            the associated asynchronous task.  If tt(valid) returns tt(false)
+            only the tt(future's) destructor and move constructor can safely
+            be called. When other members are called while tt(valid) returns
+            tt(false) a hi(future_error)tt(std::future_error) exception is
+            thrown (having the value hi(no_state)tt(future_errc::no_state)).)
 
     itt(void wait() const)
-        quote(This member blocks until the shared state is ready.)
+        quote(This member blocks until the results produced by
+            the associated asynchronous task are available.)
 
 COMMENT(future_status?)
     itt(future_status wait_for(chrono::duration<Rep, Period> const &rel_time) 
         const)
         quote(This member template derives the template types tt(Rep) and
             tt(Period) from the actually specified duration (cf. section
-            ref(DURATION)). If the shared state contains a deferred function
-            nothing happens. Otherwise tt(wait_for) blocks
+            ref(DURATION)). If the results contain a deferred function nothing
+            happens. Otherwise tt(wait_for) blocks
 COMMENT((30.6.8)) 
-            until the shared state is ready or until the amount of time
+            until the results are available or until the amount of time
             specified by tt(rel_time) has expired. Possible return values are:
             itemization(
-            itt(future_status::deferred) if the shared state contains a
+            itt(future_status::deferred) if the results contains a
                 deferred function;
-            itt(future_status::ready) if the shared state is ready;
+            itt(future_status::ready) if the results are avaiable;
             itt(future_status::timeout) if the function is returning because
                 the amount of time specified by tt(rel_time) has expired. 
             ))
@@ -138,14 +140,14 @@ COMMENT((30.6.8))
                                                         &abs_time) const)
         quote(This member template derives the template types tt(Clock) and
             tt(Duration) from the actually specified tt(abs_time) (cf. section
-            ref(TIMEPOINT)). If the shared state contains a deferred function
-            nothing happens. Otherwise tt(wait_until) blocks until the shared
-            state is ready or until the point in time specified by
+            ref(TIMEPOINT)). If the results contain a deferred function
+            nothing happens. Otherwise tt(wait_until) blocks until the results
+            are available or until the point in time specified by
             tt(abs_time) has expired. Possible return values are:
            itemization(
-            itt(future_status::deferred) if the shared state contains a
+            itt(future_status::deferred) if the results contain a
                 deferred function;
-            itt(future_status::ready) if the shared state is ready;
+            itt(future_status::ready) if the results are available;
             itt(future_status::timeout) if the function is returning because
                 the point in time specified by tt(abs_time) has expired. 
             ))

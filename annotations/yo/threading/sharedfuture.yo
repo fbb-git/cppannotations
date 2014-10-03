@@ -1,26 +1,31 @@
-The class template hi(shared_future)tt(std::shared_future) defines a type for
-asynchronous return objects which may share their shared state with other
-asynchronous return objects. 
+When the results of an asynchronous task are made available through a 
+tt(std::future) object, then only one instance of that tt(std::future) object
+can exist. On the other hand, multiple instances of 
+    hi(shared_future)tt(std::shared_future)
+objects may exist, each referring to the same results of an executed
+asynchronous task. 
 
-Before using the class tt(std::future) the tthi(future) header file
+Before using the class tt(std::shared_future) the tthi(future) header file
 must be included.
 
-A default-constructed shared_future object has no
-shared state. A shared_future object with shared state can be created by
-conversion from a future object and shares its shared state with the original
-asynchronous provider (30.6.4) of the shared state. The result (value or
-exception) of a shared_future object can be set by calling a respective
-function on an object that shares the same shared state.
+When using multiple instances of tt(shared_future) objects, the results of the
+associated asynchronous task become ready (available) at exactly the same
+moment in time. 
 
-Note: Member functions of shared_future do not synchronize with themselves,
-but they synchronize with the shared shared state.
+When multiple threads access the results stored in a single tt(future) object,
+access to these results must normally be synchronized using mutexes. However,
+when multiple threads access a single tt(shared_future) object, then each of
+these threads may access the results of the asynchronously executed task
+without further synchronization. The relationship between the classes
+tt(future) and tt(shared_future) resembles the relationship between the
+classes tt(unique_ptr) and tt(shared_ptr): there can only be one instance of a
+tt(unique_pointer), pointing to data, whereas there can be many instances of a
+tt(shared_pointer), each pointing to the same data.
+
 
 The effect of calling any member function other than the destructor, the
 move-assignment operator, or valid() on a shared_future object for which
 valid() == false is undefined.
-
-Note: Implementations are encouraged to detect this case and throw an object
-of type future_error with an error condition of future_errc::no_state.
 
 template <class R>
 class shared_future 
@@ -50,114 +55,115 @@ class shared_future
                                 abs_time) const; 
 };
 
-The implementation shall provide the template shared_future and two
-specializations, shared_future<R&> and shared_future<void>. These differ only
-in the return type and return value of the member function get, as set out in
-its description, below.
 
-shared_future() noexcept;
-    Effects: constructs an empty shared_future object that does not refer to
-            an shared state. 
-    Postcondition: valid() == false.
 
-shared_future(const shared_future& rhs);
 
-    Effects: constructs a shared_future object that refers to the same shared
-            state as rhs (if any). 
-    Postcondition: valid() returns the same value as rhs.valid().
+In this section the members of the class template tt(shared_future) are
+described. 
 
-shared_future(future<R>&& rhs) noexcept;
-shared_future(shared_future&& rhs) noexcept;
+? tt(Shared_future) objects are commonly initialized by providing an
+? anonymous tt(shared_future) object returned by factory functions. Standard
+? available
+?     COMMENT(
+?         KLOPT DE VOLGENDE REGEL WEL? 
+?     )
+? factory functions are tt(std::async, std::promise, and std::packaged_task),
+? which are introduced in upcoming sections. Examples of the use of
+? tt(std::future) objects are provided in those sections.
 
-    Effects: move constructs a shared_future object that refers to the shared
-            state that was originally referred to by rhs (if any). 
-    Postconditions:
-        — valid() returns the same value as rhs.valid() returned prior to the
-            constructor invocation. 
-        — rhs.valid() == false.
+The class tt(shared_future) has the following constructors:
+    itemization(
+    itt(shared_future() noexcept)
+        quote(an empty tt(shared_future) object is constructed that does not
+            refer to shared results. After using this constructor the object's
+            tt(valid) member returns tt(false).)
 
-~shared_future();
+    itt(shared_future(shared_future const &other))
+        quote(a tt(shared_future) object is constructed that refers to the
+            same results as tt(other) (if any). After using this constructor
+            the object's tt(valid) member returns the same value as
+            tt(other.valid()).)
 
-    Effects:
-        — releases any shared state (30.6.4);
-        — destroys *this.
+    itt(shared_future(future<Result> &&tmp) noexcept)
+        quote( Effects: move constructs a shared_future object that refers to
+            the results that was originally referred to by tt(tmp) (if
+            any). After using this constructor the object's tt(valid) member
+            returns the same value as tt(tmp.valid()) returned prior to the
+            constructor invocation, and tt(tmp.valid()) returns tt(false).)
+    )
 
-shared_future& operator=(shared_future&& rhs);
+The class's destructor destroys the tt(shared_future) object for which it is
+called. If the object for which the destructor is called is the last
+tt(shared_future) object, and no tt(std::promise) or
+tt(std::packaged_task) is associated with the results associated
+with the current object, then the results are also destroyed.
 
-    Effects:
-        — releases any shared state (30.6.4);
-        — move assigns the contents of rhs to *this.
-    Postconditions:
-        — valid() returns the same value as rhs.valid() returned prior to the
-            assignment. 
-        — rhs.valid() == false.
+tt(Std::shared_future) provides the following members:
+    itemization(
+    itt(shared_future& operator=(shared_future &&tmp))
+        quote(The move assignment operator releases the current opject's
+            shared results, and move assigns tt(tmp)'s results to the current
+            object. After calling the move assignment operator the current
+            object's tt(valid) member returns the same value as
+            tt(tmp.valid()) returned prior to the
+            invocation of the move assignment operator, and tt(tmp.valid())
+            returns tt(false).)
 
-shared_future& operator=(const shared_future& rhs);
+    itt(shared_future& operator=(shared_future const &rhs))
+        quote(The assignment operator releases the current opject's
+            shared results, and tt(rhs)'s results are shared with the current
+            object. After calling the assignment operator the current
+            object's tt(valid) member returns the same value as
+            tt(tmp.valid()).)
 
-    Effects:
-        — releases any shared state (30.6.4);
-        — assigns the contents of rhs to *this. 
-            Note: As a result, *this refers to the same shared state as rhs
-                    (if any). 
-    Postconditions: valid() == rhs.valid().
+    itt(Result const &shared_future::get() const)
+        quote((Specializations for tt(shared_future<Result &>) and
+            tt(shared_future<void>) are also available). This member waits
+            until the shared results are available, and subsequently returns
+            tt(Result const &). Note that access to the data stored in
+            tt(Results), accessed through tt(get) is not synchronized. It is
+            the responsibility of the programmer to avoid race conditions when
+            accessing tt(Result's) data. If tt(Result) holds an exception, it
+            is thrown when tt(get) is called.)
 
-const R& shared_future::get() const;
-R& shared_future<R&>::get() const;
-void shared_future<void>::get() const;
+    itt(bool valid() const)
+        quote(Returns tt(true) if the current object refers to shared results)
 
-    Note: as described above, the template and its two required
-            specializations differ only in the return type and return value of
-            the member function get. 
+    itt(void wait() const)
+        quote(Blocks until shared results are available (i.e., the associated
+            asynchronous task has produced results.))
 
-    Note: access to a value object stored in the shared state is
-            unsynchronized, so programmers should apply only those operations
-            on R that do not introduce a data race (1.10). 
+    itt(future_status wait_for(const chrono::duration<Rep, Period>& rel_time)
+            const)
+        quute((The template types tt(Rep) and tt(Period) normally are derived
+            by the compiler from the actual tt(rel_time) specification.) If
+            the shared results contain a deferred function (cf. section
+            ref(ASYNC)) nothing happens. Otherwise tt(wait_for) blocks until
+            the results of the associated asynchronous task has produced
+            results, or until the
+            relative time specified by tt(rel_time) has expired. The member
+            returns 
+            itemization(
+            itt(future_status::deferred) if the shared results contain a
+                deferred function;
+            itt(future_status::ready) if the shared results are available;
+            itt(future_status::timeout) if the function is returning because
+                the amount of time specified by tt(rel_time) has expired. 
+            ))
 
-    Effects: wait()s until the shared state is ready, then retrieves the value
-            stored in the shared state. 
-    Returns:
-        — shared_future::get() returns a const reference to the value stored
-            in the object’s shared state. 
-            Note: Access through that reference after the shared state has been
-                destroyed produces undefined behavior; this can be avoided by not
-                storing the reference in any storage with a greater lifetime than
-                the shared_future object that returned the reference.
-        — shared_future<R&>::get() returns the reference stored as value in
-            the object’s shared state. 
-        — shared_future<void>::get() returns nothing.
-    Throws: the stored exception, if an exception was stored in the shared
-            state.
-
-bool valid() const;
-
-    Returns: true only if *this refers to an shared state.
-
-void wait() const;
-
-    Effects: blocks until the shared state is ready.
-
-template <class Rep, class Period>
-future_status wait_for(const chrono::duration<Rep, Period>& rel_time) const;
-
-    Effects: none if the shared state contains a deferred function (30.6.8),
-            otherwise blocks until the shared state is ready or until the
-            relative timeout (30.2.4) specified by rel_time has expired. 
-    Returns:
-        — future_status::deferred if the shared state contains a deferred
-            function.  
-        — future_status::ready if the shared state is ready.
-        — future_status::timeout if the function is returning because the
-            relative timeout (30.2.4) specified by rel_time has expired.
-
-template <class Clock, class Duration>
-future_status wait_until(const chrono::time_point<Clock, Duration>& abs_time)
-                                                                        const; 
-
-    Effects: none if the shared state contains a deferred function (30.6.8),
-            otherwise blocks until the shared state is ready or until the
-            absolute timeout (30.2.4) specified by abs_time has expired. 
-    Returns:
-    — future_status::deferred if the shared state contains a deferred function.
-    — future_status::ready if the shared state is ready.
-    — future_status::timeout if the function is returning because the absolute
-            timeout (30.2.4) specified by abs_time has expired. 
+    itt(future_status wait_until(const chrono::time_point<Clock, Duration>&
+            abs_time) const)
+        quote((The template types tt(Clock) and tt(Duration) normally are
+            derived by the compiler from the actual tt(abs_time)
+            specification.) If the shared results contain a deferred function
+            nothing happens. Otherwise tt(wait_until) blocks until the shared
+            results are available or until the point in time specified by
+            tt(abs_time) has expired. Possible return values are:
+           itemization(
+            itt(future_status::deferred) if the shared results contain a
+                deferred function;
+            itt(future_status::ready) if the shared results are available;
+            itt(future_status::timeout) if the function is returning because
+                the point in time specified by tt(abs_time) has expired. 
+            ))
+    )
