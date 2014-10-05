@@ -1,33 +1,24 @@
 #include <iostream>
 #include <future>
 
-using namespace std;
-
+//code
 void fun()
 {
-    cerr << "    hello from fun\n";
+    std::cerr << "    hello from fun\n";
 }
 
-struct Result
+std::future<void> asyncCall(char const *label)
 {
-    void operator()();
-};
-
-//future<void> asyncCall(char const *label)
-future<
-    result_of<
-        Result()
-    >::type
-> asyncCall(char const *label)
-{
-    cerr << label << " async call starts\n";
-    auto ret = async(fun);
-    cerr << label << " async call ends\n";
+    std::cerr << label << " async call starts\n";
+    auto ret = std::async(fun);
+    std::cerr << label << " async call ends\n";
     return ret;
 }
 
 int main()
 {
-    asyncCall("First");
+    asyncCall("First")
     asyncCall("Second");
 }
+//=
+
