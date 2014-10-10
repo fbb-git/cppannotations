@@ -16,6 +16,7 @@ void results()
                 cerr << result;
             return;
         }
+
         g_resultQ.pop();
     }
 }

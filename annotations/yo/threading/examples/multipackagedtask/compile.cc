@@ -11,10 +11,7 @@ string compile(string const &line)
 
     if (cmdFork.childExit() != 0)
     {
-        {
-            lock_guard<mutex> lk(g_doneMutex);
-            g_done = true;
-        }
+        g_done = true;
         ret = cmdFork.childOutput();
     }
 

@@ -5,7 +5,7 @@ try
 {
     workForce();                    // start the worker threads
 
-    thread(dispatch).detach();      // start the dispatcher
+    thread(jobs).detach();          // start working on the jobs
 
     results();                      // handle the results.
 }

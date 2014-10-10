@@ -37,43 +37,66 @@ class Task
         }
 };
 
-//template <typename Type>
-//class GuardQueue
-//{
-//    mutex d_mutex;
-//  queue<Type> d_queue;
-//
-//    public:
-//      void push(Type &&tmp)
-//      {
-//
-//      void popFront(Type &dest)
-//      {
-//          lock_guard<mutex> lk(d_mutex);
-//          dest = dest.front();
-//      
-//};
+class TaskQueue
+{
+    mutex d_mutex;
+    queue<Task> d_queue;
 
-extern Guard g_taskGuard;
-extern mutex g_taskQMutex;
-extern queue<Task> g_taskQ;
+    public:
+        void push(Task &&tmp)
+        {
+            lock_guard<mutex> lk(d_mutex);
+            d_queue.push(move(tmp));
+        }    
+
+        void popFront(Task &dest)
+        {
+            lock_guard<mutex> lk(d_mutex);
+            dest = move(d_queue.front());
+            d_queue.pop();
+        }
+
+        bool empty() const
+        {
+            return d_queue.empty();
+        }
+};
+
+class GuardBool
+{
+    mutable mutex d_mutex;
+    bool d_value = false;
+
+    public:
+        operator bool() const
+        {
+            lock_guard<mutex> lk(d_mutex);
+            return d_value;
+        }
+        GuardBool &operator=(bool value)
+        {
+            lock_guard<mutex> lk(d_mutex);
+            d_value = value;
+            return *this;
+        }
+};
+
+    
+extern TaskQueue g_taskQ;
 
 extern mutex g_resultQMutex;
 extern queue<shared_future<string>> g_resultQ;
 extern condition_variable g_resultCond;
 
-extern mutex g_doneMutex;
-extern bool g_done;
-
-extern mutex g_qpMutex;
-extern queue<PackagedTask> g_qp;
+extern GuardBool g_done;
 
 extern Semaphore g_workforce;
 extern Semaphore g_worker;
 
 void workForce();                // start all worker threads
 
-void dispatch();
+void jobs();
+bool dispatch(string const &line);
 void worker(int nr);
 string compile(string const &line);
 void results();

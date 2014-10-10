@@ -10,11 +10,13 @@ void worker(int nr)
     {
         g_worker.reduce();
 
-        {
-            lock_guard<mutex> lk(g_taskQMutex);
-            task = move(g_taskQ.front());
-            g_taskQ.pop();
-        }
+        g_taskQ.popFront(task);
+
+//        {
+//            lock_guard<mutex> lk(g_taskQMutex);
+//            task = move(g_taskQ.front());
+//            g_taskQ.pop();
+//        }
 
         task();
 
