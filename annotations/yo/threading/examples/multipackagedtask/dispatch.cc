@@ -11,7 +11,7 @@ bool dispatch(string const &line)
         g_resultQ.push(task.result());
     }
 
-    if (g_done)
+    if (g_done.load())
         return false;
 
     g_taskQ.push(move(task));

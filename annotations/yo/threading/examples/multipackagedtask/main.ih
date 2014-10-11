@@ -4,6 +4,7 @@
 #include <queue>
 #include <future>
 #include <mutex>
+#include <atomic>
 
 #include "semaphore/semaphore.h"
 #include "cmdfork/cmdfork.h"
@@ -62,33 +63,14 @@ class TaskQueue
         }
 };
 
-class GuardBool
-{
-    mutable mutex d_mutex;
-    bool d_value = false;
-
-    public:
-        operator bool() const
-        {
-            lock_guard<mutex> lk(d_mutex);
-            return d_value;
-        }
-        GuardBool &operator=(bool value)
-        {
-            lock_guard<mutex> lk(d_mutex);
-            d_value = value;
-            return *this;
-        }
-};
-
-    
 extern TaskQueue g_taskQ;
 
 extern mutex g_resultQMutex;
 extern queue<shared_future<string>> g_resultQ;
 extern condition_variable g_resultCond;
 
-extern GuardBool g_done;
+//extern GuardBool g_done;
+extern atomic_bool g_done;
 
 extern Semaphore g_workforce;
 extern Semaphore g_worker;
