@@ -1,0 +1,88 @@
+Members of the class tt(std::future) may return errors vy throwing
+tt(std::future_error) exceptions. These error conditions are represented by
+the values of the strongly typed enumeration
+    hi(future_errc)tt(std::future_errc) defining the following 
+symbolic constants:
+    itemization(
+    iti(broken_promise)
+        quote( 
+   tt(Broken_promise) is thrown when a tt(future) object was received whose
+    value was never assigned by a tt(promise) or tt(packaged_task). For
+    example, an object of the class tt(promise<int>) should set the value of
+    the tt(future<int>) object returned by its tt(get_future) member
+    (cf. section ref(PROMISE)), but if it doesn't do so, then a
+    tt(broken_promise) exception is thrown, as illustrated by the following
+    program:
+   verbinsert(-n //code examples/brokenpromise.cc)
+   At line 3 a tt(promise) object is created, but its value is ever
+    set. Consequently, it `breaks its promise' to produce a value: when
+    tt(main) tries to retrieve its value (in line 9) a tt(std::futue_error)
+    exception is thrown containing the the tt(future_errc::broken_promise)
+    value)
+
+    iti(future_already_retrieved) 
+        quote(
+   tt(Future_already_retrieved) is thrown when multiple attempts are made to
+    retrieve the tt(future) object from, e.g., a tt(promise) or
+    tt(packaged_task) object that (eventually) should be ready. For example:
+   verbinsert(-n //code examples/alreadyretrieved.cc)
+   Note that after defining the tt(std::promise) object in line 3 no value is
+    assigned to its tt(future). Even though no value has as yet been assigned
+    to the tt(future) object, it em(is) a valid object. I.e., after some time
+    the future should be ready, and the future's tt(get) member should produce
+    a value.
+        )
+
+    iti(promise_already_satisfied) 
+        quote(
+   tt(Promise_already_satisfied) is thrown when multiple attempts are made to
+    assign a value to a tt(promise) object. For example:
+   verbinsert(-n //code examples/promisealreadysatisfied.cc)
+        )
+
+    iti(no_state) 
+        quote(
+   tt(No_state) is thrown when a member function (other than tt(valid), see
+    below) of a tt(future) object is called when its tt(valid) member returns
+    tt(false). This happens, e.g., when calling members of a default
+    constructed tt(future) object. tt(No_state) is not thrown for tt(future)
+    objects returned by the tt(async) factory function or returned by the
+    tt(get_future) members of tt(promise) or tt(packaged_task) type
+    of objects. Here is an example:
+   verbinsert(-n //code examples/nostate.cc)
+        )
+    )
+
+The class   hi(future_error)tt(std::future_error) is derived from the class
+tt(std::exception), and offers, in addition to the tt(char const *what()
+const) member also the member hi(code)tt(std::error_code const &code() const),
+returning an hi(error_code)tt(std::error_code) object associated
+with the thrown exception. 
+
+
+
+The class tt(error_code) offers these members:
+    itemization(
+    iti(Assign error code (public member function )
+
+operator=
+    Assign error code (public member function )
+
+clear
+    Clear error code (public member function )
+
+value
+    Error value (public member function )
+
+category
+    Get category (public member function )
+
+default_error_condition
+    Default error condition (public member function )
+
+message
+    Get message (public member function )
+
+operator bool
+    Convert to bool (public member function )    )
+

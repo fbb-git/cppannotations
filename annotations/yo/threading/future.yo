@@ -37,27 +37,21 @@ asynchronous provider.
 
 END)
 
+In this section the members of the class template tt(future) are
+described. tt(Future) objects are commonly initialized using anonymous
+tt(future) objects returned by the factory function tt(std::async) or by the
+tt(get_future) members of the classes tt(std::promise), and
+tt(std::packaged_task), which are introduced in upcoming sections. Examples of
+the use of tt(std::future) objects are provided in those sections.
+
 Some of tt(future)'s members return a value of the strongly typed
 enumeration hi(future_status)tt(std::future_status). This enumeration defines
 three symbolic constants: tt(future_status::ready, future_status::timeout,)
 and tt(future_status::deferred). 
 
-Error conditions may be returned by hi(future_error)tt(std::future_error)
+Error conditions are returned through tt(std::future_error)
 exceptions. These error conditions are represented by the values of the
-strongly typed enumeration
-    hi(future_errc)tt(std::future_errc) defining the symbolic constants 
-tt(future_errc::broken_promise, future_errc::future_already_retrieved, 
-future_errc::promise_already_satisfied,) and tt(future_errc::no_state).
-
-In this section the members of the class template tt(future) are
-described. tt(Future) objects are commonly initialized by providing an
-anonymous tt(future) object returned by factory functions. Standard available
-    COMMENT(
-        KLOPT DE VOLGENDE REGEL WEL? 
-    )
-factory functions are tt(std::async, std::promise, and std::packaged_task),
-which are introduced in upcoming sections. Examples of the use of
-tt(std::future) objects are provided in those sections.
+strongly typed enumeration tt(std::future_errc), covered in the next section.
 
 The class tt(future) has the following constructors:
     itemization(
@@ -106,13 +100,15 @@ of the class tt(shared_future)).
             member the tt(future) object's tt(valid) member returns
             tt(false).)
 
-    itt(bool valid() const)
-        quote(Returns tt(true) only if tt(*this) refers to results produced by
-            the associated asynchronous task.  If tt(valid) returns tt(false)
-            only the tt(future's) destructor and move constructor can safely
-            be called. When other members are called while tt(valid) returns
-            tt(false) a hi(future_error)tt(std::future_error) exception is
-            thrown (having the value hi(no_state)tt(future_errc::no_state)).)
+    itt(bool valid() const) 
+        quote(
+   Returns tt(true) if the (tt(future)) object for which tt(valid) is called
+    refers to an object returned by an asynchronous task.  If tt(valid)
+    returns tt(false), the tt(future) object exists, but in addition to
+    tt(valid) only its destructor and move constructor can safely be
+    called. When other members are called while tt(valid) returns tt(false) a
+    hi(future_error)tt(std::future_error) exception is thrown (having the
+    value hi(no_state)tt(future_errc::no_state)).)
 
     itt(void wait() const)
         quote(This member blocks until the results produced by

@@ -1,0 +1,26 @@
+When data are shared among multiple threads data corruption is usually
+prevented using mutexes. To increment a simple tt(int) using this strategy
+code as shown below is commonly used:
+        verb(    {
+        lock_guard<mutex> lk(intVarMutex);
+        ++intVar;
+    }
+        )
+    The compound statement is used to restrict the lifetime of the
+tt(lock_guard), so tt(intVar) is locked for only a short little while. 
+
+    Using this scheme is not complex, but at the end of the day having to
+define a tt(lock_guard) for every single use of a simple variable, and having
+to define a matching mutex for each simple variable is a bit annoying and
+cumbersome.
+
+    bf(C++), offers a way out through the use of emi(atomic data types).
+Atomic data types are available for all basic types, and also for (trivial)
+user defined types. Trivial types are (see also section ref(TRAITSCPPX)) all
+scalar types, arrays of elements of a trivial type, and classes only defining
+default constructors, copy constructors, destructors, and having non-static
+data members which themselves are of trivial types.
+
+    
+
+    
