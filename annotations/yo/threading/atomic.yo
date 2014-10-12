@@ -1,3 +1,6 @@
+Before using the facilities introduced in this section the tthi(atomic) header
+file must be included.
+
 When data are shared among multiple threads data corruption is usually
 prevented using mutexes. To increment a simple tt(int) using this strategy
 code as shown below is commonly used:
@@ -21,6 +24,41 @@ scalar types, arrays of elements of a trivial type, and classes only defining
 default constructors, copy constructors, destructors, and having non-static
 data members which themselves are of trivial types.
 
+The class template ti(atomic<Type>)tt(std::atomic<Type>) is available for all
+built-in types, including pointer types. E.g., tt(std::atomic<bool>) defines
+an atomic tt(bool) type. For many types alternative somewhat shorter
+type names are available. E.g, instead of tt(std::atomic<unsigned short>) the
+type tt(std::atomic_ushort) can be used. Refer to the tt(atomic) header file
+for a complete list of alternate names.
+
+If tt(Trivial) is a user-defined trivial type then tt(std::atomic<Trivial>)
+defines an atomic variant of tt(Trivial): such a type does not require 
+a separate tt(mutex) to synchronize access by multiple threads.
+
+Objects of the class template tt(std::atomic<Type>) cannot directly be
+copied or assigned to each other. However, they can be initialized by values
+of type tt(Type), and values of type tt(Type) can also directly be assigned to
+tt(std::atomic<Type>) objects. 
+
+The class tt(std::atomic<Type>) defines the following members:
+    itemization(
+    ithtq(compare_exchange_strong)(bool compare_exchange_strong(Type
+        &oldValue, Type newValue) noexcept)
+       () 
+    ithtq(compare_exchange_weak)(bool compare_exchange_weak(Type &oldValue,
+        Type newValue) noexcept)
+       () 
+    ithtq(exchange)(Type exchange(Type) noexcept)
+       ()
+    ithtq(is_lock_free)(bool is_lock_free() const noexept)
+       ()
+    ithtq(load)(Type load() const noexcept)
+       ()
+    ithtq(operator Type() const noexcept)
+       ()
+    ithtq(store)(void store(Type) noexcept)
+       ()
+    )
     
 
     
