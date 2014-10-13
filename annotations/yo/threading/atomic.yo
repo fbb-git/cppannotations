@@ -31,7 +31,8 @@ type names are available. E.g, instead of tt(std::atomic<unsigned short>) the
 type tt(std::atomic_ushort) can be used. Refer to the tt(atomic) header file
 for a complete list of alternate names.
 
-If tt(Trivial) is a user-defined trivial type then tt(std::atomic<Trivial>)
+If tt(Trivial) is a user-defined trivial type then
+        hi(atomic<Trivial>)tt(std::atomic<Trivial>)
 defines an atomic variant of tt(Trivial): such a type does not require 
 a separate tt(mutex) to synchronize access by multiple threads.
 
@@ -40,25 +41,227 @@ copied or assigned to each other. However, they can be initialized by values
 of type tt(Type), and values of type tt(Type) can also directly be assigned to
 tt(std::atomic<Type>) objects. 
 
-The class tt(std::atomic<Type>) defines the following members:
+The class tt(std::atomic<Type>) provides several public members, listed
+below. Non-member (free) functions operating on tt(atomic<Type>) objects 
+are also available. 
+
+
+The tt(std::memory_order) enumeration defines the following symbolic
+constants, which are used to specify ordering constraints of atomic operations:
+    itemization(
+    itt(memory_order_acq_rel:) the operation must be a read-modify-write
+        operation, combining tt(memory_order_acquire) and
+        tt(memory_order_release); 
+    itt(memory_order_acquire:) the operation is an acquire operation. It
+        synchronizes with a release operation that wrote the same memory
+        location; 
+    itt(memory_order_consume:) the operation is a consume operation on the
+        involved memory location;
+    itt(memory_order_relaxed:) no ordering constraints are provided by the
+        operation;
+    itt(memory_order_release:) the operation is a release operation. It
+        synchronizes with acquire operations on the same location;
+    itt(memory_order_sec_cst:) the default memory order specification for all
+        operations. Memmory storing operations use tt(memory_order_release),
+        memory load operations use tt(memory_order_acquire), and
+        read-modify-write operations use tt(memory_order_acq_rel).
+    )
+
+The memory order cannot be specified for the overloaded operators provided by
+tt(atomic<Type>). Otherwise, most tt(atomic) member functions may also be
+given a final tt(memory_order) argument. Where this is not available it is
+explictly mentioned at the function's description.
+
+
+Here are the standard available tt(std::atomic<Type>) member functions:
     itemization(
     ithtq(compare_exchange_strong)(bool compare_exchange_strong(Type
-        &oldValue, Type newValue) noexcept)
-       () 
+        &currentValue, Type newValue) noexcept)
+       (The value in the atomic object is compared to tt(newValue) using
+        byte-wise comparisons. If equal tt(true) is returned, and
+        tt(newValue) is stored in the atomic object; if unequal tt(false) is
+        returned and the object's current value is stored in
+        tt(currentValue);)
+
     ithtq(compare_exchange_weak)(bool compare_exchange_weak(Type &oldValue,
         Type newValue) noexcept)
-       () 
-    ithtq(exchange)(Type exchange(Type) noexcept)
-       ()
+       (The value in the atomic object is compared to tt(newValue) using
+        byte-wise comparisons. If equal tt(true) is returned, and tt(newValue)
+        is stored in the atomic object; if unequal, or tt(newValue) cannot be
+        atomically assigned to the current object tt(false) is returned and
+        the object's current value is stored in tt(currentValue);)
+
+    ithtq(exchange)(Type exchange(Type newValue) noexcept)
+       (The object's current value is returned, and tt(newValue) is assigned
+        to the current object;)
+
     ithtq(is_lock_free)(bool is_lock_free() const noexept)
-       ()
+       (If the operations on the current object can be performed lock-free
+        tt(true) is returned, otherwise tt(false).
+        This member has no tt(memory_order) parameter;)
+
     ithtq(load)(Type load() const noexcept)
-       ()
+       (The object's value is returned;)
+
     ithtq(operator Type() const noexcept)
-       ()
-    ithtq(store)(void store(Type) noexcept)
-       ()
+       (The object's value is returned;)
+
+    ithtq(store)(void store(Type newValue) noexcept)
+       (tt(NewValue) is assigned to the current object. Note that the standard
+        assignment operator can also be used.)
     )
     
+In addition to the above members, integral atomic types `tt(Integral)'
+(essentially the atomic variants of all built-in integral types) also offer
+the following member functions:
+    itemization(
+    ithtq(fetch_add)(Integral fetch_add(Integral value) noexcept)
+       (tt(Value) is added to the object's value, and the object's
+        value at the time of the call is returned;)
 
+    ithtq(fetch_sub)(Integral fetch_sub(Integral value) noexcept)
+       (tt(Value) is subtracted from the object's value, and the object's
+        value at the time of the call is returned;)
+
+    ithtq(fetch_and)(Integral fetch_and(Integral mask) noexcept)
+       (The tt(bit-and) operator is applied to the object's value and
+        tt(mask), assigning the resulting value to the currrent object. The
+        object's value at the time of the call is returned;)
+
+    ithtq(fetch_|=)(Integral fetch_|=(Integral mask) noexcept)
+       (The tt(bit-or) operator is applied to the object's value and tt(mask),
+        assigning the resulting value to the currrent object. The object's
+        value at the time of the call is returned;)
+
+    ithtq(fetch_^=)(Integral fetch_^=(Integral mask) noexcept)
+       (The tt(bit-xor) operator is applied to the object's value and
+        tt(mask), assigning the resulting value to the currrent object. The
+        object's value at the time of the call is returned;)
+
+    ithtq(operator++)(Integral operator++() noexcept)
+       (The prefix increment operator, returning object's new value;)
     
+    ithtq(operator++)(Integral operator++(int) noexcept)
+       (The postfix increment operator, returning the object's value before it
+        was incremented;)
+
+    ithtq(operator--)(Integral operator--() noexcept)
+       (The prefix decrement operator, returning object's new value;)
+    
+    ithtq(operator--)(Integral operator--(int) noexcept)
+       (The postfix decrement operator, returning the object's value before it
+        was decremented;)
+
+    ithtq(operator+=)(Integral operator+=(Integral value) noexcept)
+       (tt(Value) is added to the object's current value and the object's
+        new value is returned;)
+
+    ithtq(operator-=)(Integral operator-=(Integral value) noexcept)
+       (tt(Value) is subtracted from the object's current value and the
+        object's new value is returned;)
+
+    ithtq(operator&=)(Integral operator&=(Integral mask) noexcept)
+       (The tt(bit-and) operator is applied to the object's current value and
+        tt(mask), assigning the resulting value to the currrent object. The
+        object's new value is returned;)
+
+    ithtq(operator|=)(Integral operator|=(Integral mask) noexcept)
+       (The tt(bit-or) operator is applied to the object's current value and
+        tt(mask), assigning the resulting value to the currrent object. The
+        object's new value is returned;)
+
+    ithtq(operator^=)(Integral operator^=(Integral mask) noexcept)
+       (The tt(bit-xor) operator is applied to the object's current value and
+        tt(mask), assigning the resulting value to the currrent object. The
+        object's new value is returned;)
+    )
+    
+Some of the free member functions have names ending in tt(_explicit). The
+tt(_explicit) functions define an additional ti(memory_order order) parameter,
+which is not available for the non-tt(_explicit) functions (e.g.,
+tt(atomic_load(atomic<Type> *ptr)) and tt(atomic_load_explicit(atomic<Type>
+*ptr, memory_order order)))
+
+Here ar the free functions that are available for all atomic types:
+    itemization(
+    ithtq(atomic_compare_exchange_strong(_explicit))(bool
+        std::atomic_compare_exchange_strong(_explicit)(std::atomic<Type> *ptr,
+        Type *oldValue, Type newValue) noexept)
+       (returns tt(ptr->compare_exchange_strong(*oldValue, newValue));)
+
+    ithtq(atomic_compare_exchange_weak(_explicit))(bool
+        std::atomic_compare_exchange_weak(_explicit)(std::atomic<Type> *ptr,
+        Type *oldValue, Type newValue) noexept)
+       (returns tt(ptr->compare_exchange_weak(*oldValue, newValue));)
+
+    ithtq(atomic_exchange(_explicit))(Type
+        std::atomic_exchange(_explicit)(std::atomic<Type> *ptr, Type newValue)
+        noexept)
+       (returns tt(ptr->exchange(newValue));)
+
+    ithtq(atomic_init)(void std::atomic_init(std::atomic<Type> *ptr, Type
+        init) noexept)
+       (Stores tt(init) em(non)-atomically in tt(*ptr). The object pointed to
+        by tt(ptr) must have been default constructed, and as yet no member
+        functions must have been called for it.
+        This function has no tt(memory_order) parameter;)
+
+    ithtq(atomic_is_lock_free)(bool std::atomic_is_lock_free(std::atomic<Type>
+        const *ptr) noexept)
+       (returns tt(ptr->is_lock_free()).
+        This function has no tt(memory_order) parameter;)
+
+    ithtq(atomic_load(_explicit))(Type
+        std::atomic_load(_explicit)(std::atomic<Type> *ptr) noexept)
+       (returns tt(ptr->load());)
+
+    ithtq(atomic_store(_explicit))(void
+        std::atomic_store(_explicit)(std::atomic<Type> *ptr, Type value)
+        noexept)
+       (calls tt(ptr->store(value)).)
+    )    
+
+In addition to the abovementioned free functions tt(atomic<Integral>) types
+also offer the following free member functions:
+    itemization(
+    ithtq(atomic_fetch_add(_explicit))(Integral
+        std::atomic_fetch_add(_explicit)(std::atomic<Integral> *ptr, Integral
+        value) noexcept)
+       (returns tt(ptr->fetch_add(value));)
+
+    ithtq(atomic_fetch_sub(_explicit))(Integral
+        std::atomic_fetch_sub(_explicit)(std::atomic<Integral> *ptr, Integral
+        value) noexcept)
+       (returns tt(ptr->fetch_sub(value));)
+
+    ithtq(atomic_fetch_and)(Integral
+        std::atomic_fetch_and(_explicit)(std::atomic<Integral> *ptr, Integral
+        mask) noexcept)
+       (returns tt(ptr->fetch_and(value));)
+
+
+    ithtq(atomic_fetch_or)(Integral
+        std::atomic_fetch_or(_explicit)(std::atomic<Integral> *ptr, Integral
+        mask) noexcept)
+       (returns tt(ptr->fetch_or(value));)
+
+
+    ithtq(atomic_fetch_xor)(Integral
+        std::atomic_fetch_xor(_explicit)(std::atomic<Integral> *ptr, Integral
+        mask) noexcept)
+       (returns tt(ptr->fetch_xor(mask)).)
+    )
+
+
+
+
+
+
+
+
+
+
+
+
+
+

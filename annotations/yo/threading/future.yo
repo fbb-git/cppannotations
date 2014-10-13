@@ -27,16 +27,6 @@ an exception. In that case the tt(future) object catches the exception,
 rethrowing it when its return value (i.e., the value returned by the
 asynchronously executed task) is requested.
 
-COMMENT(
-
-By default a tt(future) object has no shared state. A tt(future) object
-containing a shared state can be created by members of asynchronous providers
-(such as a tt(std::promise) (cf. section ref(PROMISE)), or by the move
-constructor. In these cases it shares its shared state with the original
-asynchronous provider. 
-
-END)
-
 In this section the members of the class template tt(future) are
 described. tt(Future) objects are commonly initialized using anonymous
 tt(future) objects returned by the factory function tt(std::async) or by the
@@ -55,16 +45,15 @@ strongly typed enumeration tt(std::future_errc), covered in the next section.
 
 The class tt(future) has the following constructors:
     itemization(
-    itt(future())
-        quote(The default constructor constructs an tt(future) object that
-            does not refer to shared results. Its tt(valid) member returns
-            tt(false).)
+    ittq(future())
+       (The default constructor constructs an tt(future) object that does not
+        refer to shared results. Its tt(valid) member returns tt(false).)
 
-    itt(future(future &&tmp) noexcept)
-        quote (The move constructor is available. Its tt(valid) member 
-            returns what tt(tmp.valid()) would haved returned prior to the
-            constructor invocation. After calling the move constructor
-            tt(tmp.valid()) returns tt(false).)
+    ittq(future(future &&tmp) noexcept) 
+       (The move constructor is available. Its tt(valid) member returns what
+        tt(tmp.valid()) would haved returned prior to the constructor
+        invocation. After calling the move constructor tt(tmp.valid()) returns
+        tt(false).)
     )
     The class tt(future) does not offer a copy constructor or overloaded
 assignment operator. 
@@ -77,53 +66,49 @@ of the class tt(shared_future)).
 
     tt(Std::future) provides the following members:
     itemization(
-    itt(future &operator=(future &&tmp))
-        quote(The move assignment operator grabs the information from the
-            tt(tmp) object; following this, tt(tmp.valid()) returns
-            tt(false).) 
+    ittq(future &operator=(future &&tmp))
+       (The move assignment operator grabs the information from the tt(tmp)
+        object; following this, tt(tmp.valid()) returns tt(false).)
 
-    itt(std::shared_future<ResultType> share() &&)
-        quote(This member turns an r-value reference to a
-            tt(future<ResultType>) into a tt(std::shared_future<ResultType>)
-            (see section ref(SHAREDFUTURE)). After calling this function, the
-            tt(future's valid) member returns tt(false).)
+    ittq(std::shared_future<ResultType> share() &&)
+       (This member turns an r-value reference to a tt(future<ResultType>)
+        into a tt(std::shared_future<ResultType>) (see section
+        ref(SHAREDFUTURE)). After calling this function, the tt(future's
+        valid) member returns tt(false).)
 
-    itt(ResultType get())
-        quote(This member first calls the member tt(wait) (see below), after
-            which the results produced by the associated asynchronoust task
-            arereturned. With tt(future<Type>) specifications the returned
-            value is the moved shared value if tt(Type) supports move
-            assignment, otherwise a copy is returned.  With tt(future<Type &>)
-            specifications a tt(Type &) is returned, with tt(future<void>)
-            specifications nothing is returned. If the shared value is an
-            exception, it is thrown instead of returned. After calling this
-            member the tt(future) object's tt(valid) member returns
-            tt(false).)
+    ittq(ResultType get())
+       (This member first calls the member tt(wait) (see below), after which
+        the results produced by the associated asynchronoust task
+        arereturned. With tt(future<Type>) specifications the returned value
+        is the moved shared value if tt(Type) supports move assignment,
+        otherwise a copy is returned.  With tt(future<Type &>) specifications
+        a tt(Type &) is returned, with tt(future<void>) specifications nothing
+        is returned. If the shared value is an exception, it is thrown instead
+        of returned. After calling this member the tt(future) object's
+        tt(valid) member returns tt(false).)
 
-    itt(bool valid() const) 
-        quote(
-   Returns tt(true) if the (tt(future)) object for which tt(valid) is called
-    refers to an object returned by an asynchronous task.  If tt(valid)
-    returns tt(false), the tt(future) object exists, but in addition to
-    tt(valid) only its destructor and move constructor can safely be
-    called. When other members are called while tt(valid) returns tt(false) a
-    hi(future_error)tt(std::future_error) exception is thrown (having the
-    value hi(no_state)tt(future_errc::no_state)).)
+    ittq(bool valid() const) 
+       (Returns tt(true) if the (tt(future)) object for which tt(valid) is
+        called refers to an object returned by an asynchronous task.  If
+        tt(valid) returns tt(false), the tt(future) object exists, but in
+        addition to tt(valid) only its destructor and move constructor can
+        safely be called. When other members are called while tt(valid)
+        returns tt(false) a hi(future_error)tt(std::future_error) exception is
+        thrown (having the value hi(no_state)tt(future_errc::no_state)).)
 
-    itt(void wait() const)
-        quote(This member blocks until the results produced by
-            the associated asynchronous task are available.)
+    ittq(void wait() const)
+       (This member blocks until the results produced by the associated
+        asynchronous task are available.)
 
-COMMENT(future_status?)
-    itt(future_status wait_for(chrono::duration<Rep, Period> const &rel_time) 
-        const)
-        quote(This member template derives the template types tt(Rep) and
-            tt(Period) from the actually specified duration (cf. section
-            ref(DURATION)). If the results contain a deferred function nothing
-            happens. Otherwise tt(wait_for) blocks
+    ittq(std::future_status wait_for(chrono::duration<Rep, Period> const
+        &rel_time) const)
+       (This member template derives the template types tt(Rep) and tt(Period)
+        from the actually specified duration (cf. section ref(DURATION)). If
+        the results contain a deferred function nothing happens. Otherwise
+        tt(wait_for) blocks
 COMMENT((30.6.8)) 
-            until the results are available or until the amount of time
-            specified by tt(rel_time) has expired. Possible return values are:
+        until the results are available or until the amount of time
+        specified by tt(rel_time) has expired. Possible return values are:
             itemization(
             itt(future_status::deferred) if the results contains a
                 deferred function;
@@ -132,14 +117,14 @@ COMMENT((30.6.8))
                 the amount of time specified by tt(rel_time) has expired. 
             ))
 
-    itt(future_status wait_until(chrono::time_point<Clock, Duration> const
+    ittq(future_status wait_until(chrono::time_point<Clock, Duration> const
                                                         &abs_time) const)
-        quote(This member template derives the template types tt(Clock) and
-            tt(Duration) from the actually specified tt(abs_time) (cf. section
-            ref(TIMEPOINT)). If the results contain a deferred function
-            nothing happens. Otherwise tt(wait_until) blocks until the results
-            are available or until the point in time specified by
-            tt(abs_time) has expired. Possible return values are:
+       (This member template derives the template types tt(Clock) and
+        tt(Duration) from the actually specified tt(abs_time) (cf. section
+        ref(TIMEPOINT)). If the results contain a deferred function nothing
+        happens. Otherwise tt(wait_until) blocks until the results are
+        available or until the point in time specified by tt(abs_time) has
+        expired. Possible return values are:
            itemization(
             itt(future_status::deferred) if the results contain a
                 deferred function;
