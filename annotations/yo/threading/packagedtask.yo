@@ -8,51 +8,8 @@ results of function calls can be transferred between threads.
 Before using the class template tt(packaged_task) the tthi(future) header file
 must be included.
  
-Any futures
-that share the shared state will then be able to access the stored result.
-
-
-
-
-template<class> class packaged_task; // undefined
-
-template<class R, class... ArgTypes>
-class packaged_task<R(ArgTypes...)> 
-{
-    public:
-    typedef R result_type;
-    // construction and destruction
-    packaged_task() noexcept;
-    template <class F>
-    explicit packaged_task(F f);
-    template <class F, class Allocator>
-    explicit packaged_task(allocator_arg_t, const Allocator& a, F f);
-    explicit packaged_task(R(*f)(ArgTypes...));
-    template <class F>
-    explicit packaged_task(F&& f);
-    template <class F, class Allocator>
-    explicit packaged_task(allocator_arg_t, const Allocator& a, F&& f);
-    ~packaged_task();
-
-    // no copy
-    packaged_task(packaged_task&) = delete;
-    packaged_task& operator=(packaged_task&) = delete;
-
-    // move support
-    packaged_task(packaged_task&& other) noexcept;
-    packaged_task& operator=(packaged_task&& other);
-
-    void swap(packaged_task& other) noexcept;
-    bool valid() const noexcept;
-
-    // result retrieval
-    future<R> get_future();
-
-    // execution
-    void operator()(ArgTypes... );
-    void make_ready_at_thread_exit(ArgTypes...);
-    void reset();
-};
+Any futures that share the shared state will then be able to access the stored
+result.
 
 Before covering the class's interface, let's first look at an example to get
 an idea about how a tt(packaged_task) can be used. Remember that the essence
@@ -80,14 +37,45 @@ std) have been specified):
         tt(packaged_task) receives its function's arguments, which it
         eventually will pass on to its configured function. Finally, at line
         29 it clears tt(command), thus preparing itself for the next request.
-    it() Lines 33-53 define tt(main). First, at line 35 an anonymous detached
-        thread executing tt(run) is started. It immediately obtains the lock
-        of tt(commandMutex), but noticing tt(command) is empty, it waits,
-        releasing the lock. Then in a loop (lines 37-52) it reads commands
-        from the standard input until an empty or no line is received (lines
-        39-41). By convention the line's first letter specifies a request, and
-        the remaining characters (which are copied to tt(command) (lines
-        42-45) the contents of the request. The 
+    it() Lines 33-53 define tt(main):
+        itemization(
+        it() First, at line 35 an anonymous detached thread executing tt(run)
+            is started. It immediately obtains the lock of tt(commandMutex),
+            but noticing tt(command) is empty, it waits, releasing the lock.
+        )
+        Then the main loop starts (lines 37-52):
+        itemization(
+        it() The main thread reads commands from the standard input until an
+            empty or no line is received (lines 39-41).
+        it() By convention the line's first letter specifies a request, and
+            the remaining characters (which are copied to tt(command), lines
+            42-45) define the contents of the request. 
+        it() The tt(packaged_task) is constructed next (line 46), configuring
+            the tt(packaged_task) with either the tt(length) or the tt(file)
+            function. 
+        it() Then, in line 49 the results, stored in a tt(future), are
+            retrieved. Although at this point the tt(future) might not be
+            ready, the tt(future) object itself em(is), and it is simply
+            returned in tt(result).
+        it() Now we're ready to inform the second thread that it can use
+            tt(command): the thread is notified in line 50.
+        )
+       Anything may happen thereafter: the main thread may do as it pleases,
+        but eventually it will need the results produced by the second thread.
+       itemization(
+        it() The main thread obtains the results by calling tt(result.get())
+            in line 51. If, by this time, tt(result) doesn't yet contain the
+            results produced by the tt(packaged_task) it blocks; otherwise the
+            result (an tt(int) as per the tt(int (std::string)
+            packaged_task's) template type parameter) is already available and
+            can immediately be used.
+        )
+    )
+    Now that we've seen an example of a program using a tt(packaged_task),
+let's have a look at its interface:
+    itemization(
+    
+
 
 packaged_task() noexcept;
 
@@ -223,3 +211,47 @@ struct uses_allocator<packaged_task<R>, Alloc>;
 
     Requires: Alloc shall be an Allocator (17.6.3.5).
 
+
+
+
+
+
+template<class> class packaged_task; // undefined
+
+template<class R, class... ArgTypes>
+class packaged_task<R(ArgTypes...)> 
+{
+    public:
+    typedef R result_type;
+    // construction and destruction
+    packaged_task() noexcept;
+    template <class F>
+    explicit packaged_task(F f);
+    template <class F, class Allocator>
+    explicit packaged_task(allocator_arg_t, const Allocator& a, F f);
+    explicit packaged_task(R(*f)(ArgTypes...));
+    template <class F>
+    explicit packaged_task(F&& f);
+    template <class F, class Allocator>
+    explicit packaged_task(allocator_arg_t, const Allocator& a, F&& f);
+    ~packaged_task();
+
+    // no copy
+    packaged_task(packaged_task&) = delete;
+    packaged_task& operator=(packaged_task&) = delete;
+
+    // move support
+    packaged_task(packaged_task&& other) noexcept;
+    packaged_task& operator=(packaged_task&& other);
+
+    void swap(packaged_task& other) noexcept;
+    bool valid() const noexcept;
+
+    // result retrieval
+    future<R> get_future();
+
+    // execution
+    void operator()(ArgTypes... );
+    void make_ready_at_thread_exit(ArgTypes...);
+    void reset();
+};
