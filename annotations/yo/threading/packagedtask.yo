@@ -8,9 +8,6 @@ results of function calls can be transferred between threads.
 Before using the class template tt(packaged_task) the tthi(future) header file
 must be included.
  
-Any futures that share the shared state will then be able to access the stored
-result.
-
 Before covering the class's interface, let's first look at an example to get
 an idea about how a tt(packaged_task) can be used. Remember that the essence
 of tt(packaged_task) is that there is a thread preparing (packaging) a task
@@ -72,186 +69,124 @@ std) have been specified):
         )
     )
     Now that we've seen an example of a program using a tt(packaged_task),
-let's have a look at its interface:
+let's have a look at its interface. Note that the class tt(packaged_task) is a
+class template: its template type parameter specifies the prototype of a
+function or function object implementing the task performed by the
+tt(packaged_task) object.
+
+Constructors and destructor:
     itemization(
+    ittq(packaged_task() noexcept)
+       (The default constructor constructs a tt(packaged_task) object which is
+        not associated with a function or shared state;)
+
+    ittq(explicit packaged_task(ReturnType(Args...) &&function))
+       (A tt(packaged_task) is constructed for a function or function object
+        expecting arguments of types tt(Args...), and returning a value of
+        type tt(ReturnType). The tt(packaged_task) class template specifies
+        tt(ReturnType (Args...)) as its template type parameter. The
+        constructed object contains a shared state, and a (move constructed)
+        copy of tt(function).
+
+       Optionally an tt(Allocator) may be specified as second template type
+        parameter, in which case first two arguments are
+        hi(allocator_arg_t)tt(std::allocator_arg_t, Allocator const
+        &alloc). The type tt(std::allocator_arg_t) is a type introduced to
+        disambiguate constructor selections, and can simply be specified as
+        tt(std::allocator_arg_t()).
+
+        This constructor may throw a tt(std::bad_alloc) exception or
+        exceptions thrown by tt(function's) copy or move constructors)
+
+    ittq(packaged_task(packaged_task &&tmp) noexcept)
+       (The move constructor moves  any existing shared state from tt(tmp) to
+        the newly constructed object, removing the shared state from tt(tmp).)
+
+    ittq(~packaged_task())
+       (The object's shared state (if any) is abandoned)
+    )
+
+Member functions:
+    itemization(
+    ithtq(get_future)(future<ReturnType> get_future())
+       (A tt(std::future) object haring the current object's shared state is
+        returned. A tt(future_error) exception is thrown upon error,
+        containing 
+       itemization(
+       itt(future_already_retrieved) if tt(get_future) was already called on a
+            tt(packaged_task) object containing the same shared state as the
+            current object;
+        itt(no_state) if the current object has no shared state.
+       ).
+       Note: Any tt(futures) that share the object's shared state will be able
+        to access the result returned by the object's task.)
+
+    ittq(void make_ready_at_thread_exit(Args... args))
+       (Calls tt(void operator()(Args... args)) (see below) when the current
+        thread exits, once all objects of thread storage duration associated
+        with the current thread have been destroyed.)
+
+    ittq(packaged_task &operator=(packaged_task &&tmp))
+       (The move assignment operator first releases the current object's
+        shared state (if available), after which the current object and
+        tt(tmp) are swapped;)
+
+    ittq(void operator()(Args... args)
+       (The tt(args) arguments are perfectly forwarded to the current object's
+        stored task. When the stored task returns its return value is stored
+        in the current object's shared state. Otherwise any exception thrown
+        by the task is stored in the object's shared state. Following this the
+        object's shared state is made ready, and any threads blocked in a
+        function waiting for the object's shared state to become ready are
+        unblocked. A tt(future_error) exception is thrown upon error,
+        containing 
+       itemization(
+       itt(promise_already_satisfied) if the shared state has already been
+            made ready;
+        itt(no_state) if the current object does not have any shared state.
+       )
+       A successful call to this member synchronizes with a call to any member
+        function of a tt((shared_)future) object that shares the current
+        object's shared state. Completing the call of the stored task and the
+        storage of the result or exception into the shared state synchronizes
+        with the successful return from any member function that detects that
+        the state is set to ready.))
     
+    ittq(void reset())
+       (Abandons any available shared state, initializing the current object
+        to tt(packaged_task(std::move(funct))), where tt(funct) is the
+        object's stored task. This member may throw the following exceptions:
+       itemization(
+       itt(bad_alloc) if memory for the new shared state could not be
+            allocated;
+        it() any exception thrown by the move constructor of the task stored in
+                the shared state;   
+        itt(future_error) with a tt(no_state) error condition if the current
+            object contains no shared state.
+       ))
 
+    ittq(void swap(packaged_task &other) noexcept)
+       (The shared states and stored tasks of the current object  and other
+        are swapped.) 
 
-packaged_task() noexcept;
+    ittq(bool valid() const noexcept)
+       (Returns tt(true) if the current object contains a shared state,
+        otherwise tt(false) is returned;)
+    )
 
-    Effects: constructs a packaged_task object with no shared state and no
-                stored task. 
+The following non-member (free) function operating on tt(packaged_task)
+objects is available:
+    itemization(
+    ittq(void swap(packaged_task<ReturnType(Args...)> &lhs, 
+                   packaged_task<ReturnType(Args...)> &rhs) noexcept)
+       (Calls tt(lhs.swap(rhs)))
+    )
 
-template <class F>
-packaged_task(F f);
-
-template <class F, class Allocator>
-explicit packaged_task(allocator_arg_t, const Allocator& a, F f);
-
-packaged_task(R(*f)(ArgTypes...));
-
-template <class F>
-packaged_task(F&& f);
-
-template <class F, class Allocator>
-explicit packaged_task(allocator_arg_t, const Allocator& a, F&& f);
-
-    Requires: INVOKE (f, t1, t2, ..., tN, R), where t1, t2, ..., tN are values
-                of the corresponding types in ArgTypes..., shall be a valid
-                expression. Invoking a copy of f shall behave the same as
-                invoking f.
-    Effects: constructs a new packaged_task object with an shared state and
-                stores a copy of f as the object’s stored task. The
-                constructors that take an Allocator argument use it to
-                allocate memory needed to store the internal data structures. 
-    Throws: any exceptions thrown by the copy or move constructor of f, or
-                std::bad_alloc if memory for the internal data structures
-                could not be allocated. packaged_task(packaged_task&& other)
-                noexcept;
-    Effects: constructs a new packaged_task object and transfers ownership of
-                other’s shared state to *this, leaving other with no shared
-                state.
-    Postcondition: other has no shared state.
-
-packaged_task& operator=(packaged_task&& other);
-
-    Effects:
-        — releases any shared state (30.6.4).
-        — packaged_task(other).swap(*this).
-
-~packaged_task();
-
-    Effects: Abandons any shared state. (30.6.4).
-
-void swap(packaged_task& other) noexcept;
-
-    Effects: exchanges the shared states and stored tasks of *this and other.
-    Postcondition: *this has the same shared state and stored task (if any) as
-                other prior to the call to swap. other has the same shared
-                state and stored task (if any) as *this prior to the call to
-                swap. 
-
-bool valid() const noexcept;
-
-    Returns: true only if *this has an shared state.
-
-future<R> get_future();
-
-    Returns: A future object that shares the same shared state as *this.
-    Throws: a future_error object if an error occurs.
-    Error conditions:
-        — future_already_retrieved if get_future has already been called on a
-                packaged_task object with the same shared state as *this. 
-        — no_state if *this has no shared state.
-
-void operator()(ArgTypes... args);
-    Effects: INVOKE (f, t1, t2, ..., tN, R), where f is the stored task of
-                *this and t1, t2, ..., tN are the values in args.... If the
-                task returns normally, the return value is stored as the
-                asynchronous result in the shared state of *this, otherwise
-                the exception thrown by the task is stored. The shared state
-                of *this is made ready, and any threads blocked in a function
-                waiting for the shared state of *this to become ready are
-                unblocked.
-    Throws: a future_error exception object if there is no shared state or the
-                stored task has already been invoked. 
-    Error conditions:
-        — promise_already_satisfied if the shared state is already ready.
-        — no_state if *this has no shared state.
-    Synchronization: a successful call to operator() synchronizes with (1.10)
-                a call to any member function of a future or shared_future
-                object that shares the shared state of *this. The completion
-                of the invocation of the stored task and the storage of the
-                result (whether normal or exceptional) into the shared state
-                synchronizes with (1.10) the successful return from any member
-                function that detects that the state is set to ready. 
-                    Note: operator() synchronizes and serializes with other
-                functions through the shared state. 
-
-void make_ready_at_thread_exit(ArgTypes... args);
-    Effects: INVOKE (f, t1, t2, ..., tN, R), where f is the stored task and
-                t1, t2, ..., tN are the values in args.... If the task returns
-                normally, the return value is stored as the asynchronous
-                result in the shared state of *this, otherwise the exception
-                thrown by the task is stored. In either case, this shall be
-                done without making that state ready (30.6.4)
-                immediately. Schedules the shared state to be made ready when
-                the current thread exits, after all objects of thread storage
-                duration associated with the current thread have been
-                destroyed.
-    Throws: future_error if an error condition occurs.
-    Error conditions:
-        — promise_already_satisfied if the shared state already has a stored
-                value or exception. 
-        — no_state if *this has no shared state.
-
-void reset();
-
-    Effects: as if *this = packaged_task(std::move(f)), where f is the task
-                stored in *this.  
-               Note: This constructs a new shared state for *this. The old
-                state is abandoned (30.6.4).  
-    Throws:
-        — bad_alloc if memory for the new shared state could not be allocated.
-        — any exception thrown by the move constructor of the task stored in
-                the shared state. 
-        — future_error with an error condition of no_state if *this has no
-                shared state. 30.6.9.2
-
-packaged_task globals:
-
-template <class R, class... ArgTypes>
-void swap(packaged_task<R(ArgTypes...)>& x, packaged_task<R(ArgTypes...)>& y)
-          noexcept; 
-
-    Effects: x.swap(y)
-
-template <class R, class Alloc>
-struct uses_allocator<packaged_task<R>, Alloc>;
+COMMENT(
+    template <class R, class Alloc>
+    struct uses_allocator<packaged_task<R>, Alloc>;
 
     Requires: Alloc shall be an Allocator (17.6.3.5).
+END)
 
 
-
-
-
-
-template<class> class packaged_task; // undefined
-
-template<class R, class... ArgTypes>
-class packaged_task<R(ArgTypes...)> 
-{
-    public:
-    typedef R result_type;
-    // construction and destruction
-    packaged_task() noexcept;
-    template <class F>
-    explicit packaged_task(F f);
-    template <class F, class Allocator>
-    explicit packaged_task(allocator_arg_t, const Allocator& a, F f);
-    explicit packaged_task(R(*f)(ArgTypes...));
-    template <class F>
-    explicit packaged_task(F&& f);
-    template <class F, class Allocator>
-    explicit packaged_task(allocator_arg_t, const Allocator& a, F&& f);
-    ~packaged_task();
-
-    // no copy
-    packaged_task(packaged_task&) = delete;
-    packaged_task& operator=(packaged_task&) = delete;
-
-    // move support
-    packaged_task(packaged_task&& other) noexcept;
-    packaged_task& operator=(packaged_task&& other);
-
-    void swap(packaged_task& other) noexcept;
-    bool valid() const noexcept;
-
-    // result retrieval
-    future<R> get_future();
-
-    // execution
-    void operator()(ArgTypes... );
-    void make_ready_at_thread_exit(ArgTypes...);
-    void reset();
-};
