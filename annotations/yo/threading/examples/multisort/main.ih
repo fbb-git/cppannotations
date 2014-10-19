@@ -1,0 +1,90 @@
+#include <iostream>
+#include <string>
+#include <thread>
+#include <queue>
+#include <future>
+#include <mutex>
+#include <vector>
+#include <algorithm>
+
+#include "semaphore/semaphore.h"
+
+using namespace std;
+
+typedef std::vector<int>::iterator Iter;
+typedef std::pair<Iter, Iter> Pair;
+
+class TaskQueue
+{
+    mutex d_mutex;
+    queue<Pair> d_queue;
+
+    public:
+        void push(Pair &&tmp)
+        {
+            lock_guard<mutex> lk(d_mutex);
+            d_queue.push(move(tmp));
+        }    
+
+        void rawPushFront(TaskQueue &other)
+        {
+            d_queue.push(other.d_queue.front());
+            other.d_queue.pop();
+        }
+            
+        Pair popFront()
+        {
+            lock_guard<mutex> lk(d_mutex);
+            Pair front(move(d_queue.front()));
+            d_queue.pop();
+            return front;
+        }
+
+        size_t size() const
+        {
+            return d_queue.size();
+        }
+
+        bool empty() const
+        {
+            return d_queue.empty();
+        }
+};
+
+extern TaskQueue g_workQ;
+
+extern TaskQueue g_taskQ;
+extern mutex g_taskMutex;
+extern condition_variable g_taskCondition;
+
+extern size_t g_sizeofWorkforce;
+
+extern mutex g_cerrMutex;
+
+extern Semaphore g_workforce;
+extern Semaphore g_worker;
+
+extern vector<int> g_data;
+
+
+void workForce();                // start all worker threads
+void readData();
+void scheduler();
+void display();
+bool wip();
+bool newTask();
+
+void sorter(Pair const &range);
+void worker(int nr);
+
+void pushQueue(Iter const &begin, Iter const &end);
+
+inline int at(Iter const &iter)
+{
+    return iter - g_data.begin();
+}
+
+
+
+
+

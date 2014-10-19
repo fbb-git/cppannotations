@@ -6,7 +6,7 @@
 
 class Semaphore
 {
-    std::mutex d_mutex;
+    mutable std::mutex d_mutex;
     std::condition_variable d_condition;
     size_t d_nAvailable;
 
@@ -15,6 +15,8 @@ class Semaphore
 
         void reduce();      // reduce # available
         void increase();    // increase # available, notify if initially 0
+
+        size_t size() const;
 };
 
 #endif

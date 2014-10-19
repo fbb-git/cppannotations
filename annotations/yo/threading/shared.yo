@@ -1,39 +1,44 @@
 Just before a thread ends it may have produced some results. These results may
-have to to be communicated to other threads. Many classes handling multi
-threading use  hi(shared state)em(shared states) to communicate information
-and results to other threads. Results may be values, objects or exceptions.
+have to to be communicated to other threads. In multi threaded programs
+several classes and functions can be used that produce hi(shared
+state)em(shared states), making it easy to communicate results toother
+threads. In this context, results may be values, objects or exceptions.
 
-Objects that obtain results from shared states are called 
+Objects that contain such shared states are called 
     hi(asynchronous return object)em(asynchronous return objects). However,
 due to the nature of multi threading, a thread may query an asynchronous
-return object for its result, which in fact may not yet be available. In those
-cases the requesting thread will have to wait. For this asynchronous return
-objects offer tt(wait) functions, which may block until the shared state has
-been made ready.
+return object before its result are actually available. In those cases the
+requesting thread blocks, waiting for the results to become
+available. Asynchronous return objects offer tt(wait) and tt(get) members
+which, respectively, em(wait) until the results have become available, and
+em(produce) the asynchronous results once they are available. The phrase that
+is used to indicate that the results are available is `the shared state has
+been made ready'.
 
 Shared states are made ready by 
     hi(asynchronous provider)em(asynchronous providers). Asynchronous
-providers are simply objects providing results to shared states. Making a
-shared state ready means that an asynchronous provider
+providers are simply objects or functions providing results to shared
+states. Making a shared state ready means that an asynchronous provider
     itemization(
     it() marks its shared state as being ready, and
-    it() unblocks any waiting threads (e.g., by returning from its blocking
-        members, like tt(wait)).
+    it() unblocks any waiting threads (e.g., by allowing blocking members,
+        like tt(wait), to return).
     )
 
-Once a shared state is ready it contains a value or an exception which can be
-retrieved by objects having access to the shared state. While code is waiting
-for a shared state to become ready the value or exception that is going to be
-stored in the shared state may be computed. When multiple threads try to
-access the same shared state they must use synchronizing mechanisms (like
-mutexes, cf. section ref(MUTEX)) to prevent access-conflicts.
+Once a shared state has been made ready it contains a value, object, or
+exception which can be retrieved by objects having access to the shared
+state. While code is waiting for a shared state to become ready the value or
+exception that is going to be stored in the shared state may be computed. When
+multiple threads try to access the same shared state they must use
+synchronizing mechanisms (like mutexes, cf. section ref(MUTEX)) to prevent
+access-conflicts.
 
 Shared states use reference counting to keep track of the number of
 asynchronous return objects or asynchronous providers that hold references to
 them. These return objects and providers may release their references to these
 shared states hi(shared state: releasing) (which is called `releasing the
-shared state). If this happens when a  return object or provider holds the
-last reference to the shared state, 
+shared state). This happens when a return object or provider holds the last
+reference to the shared state, and
     hi(shared state: destruction) the shared state is destroyed.
 
 On the other hand, an asynchronous provider may also 
@@ -46,5 +51,11 @@ provider, in sequence,
     it() makes its shared data ready; and
     it() releases its shared data.
     )
+
+Objects of the class tt(std::future) (see the next section) are asynchronous
+return objects. They can be produced by the tt(std::async) (section
+ref(ASYNC)) family of functions, and by objects of the classes
+tt(std::packaged_task) (section ref(PACKAGE)), and tt(std::promise) (section
+ref(PROMISE)).
 
 
