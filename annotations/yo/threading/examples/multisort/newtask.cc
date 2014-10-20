@@ -1,5 +1,6 @@
 #include "main.ih"
 
+//code
 bool newTask()
 {
     bool done;
@@ -10,7 +11,4 @@ bool newTask()
 
     return not done;
 }
-
-
-
-
+//=

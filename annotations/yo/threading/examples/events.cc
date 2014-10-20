@@ -12,23 +12,30 @@
 //data
 std::mutex d_mutex;
 std::condition_variable d_condition;
-size_t d_semaphore;
+size_t d_available;
 //=
         public:
-            Semaphore(size_t semaphore)
+            Semaphore(size_t available)
             :
-                d_semaphore(semaphore)
+                d_available(available)
             {}
 
             void reduce();
             void increase();
+            size_t size() const;    // returning d_available
     };
+
+size_t Semaphore::size() const
+{
+    lock_guard<mutex> lk(d_mutex);
+    return d_nAvailable;
+}
 
 //increase
 void Semaphore::increase()
 {
     std::lock_guard<std::mutex> lk(d_mutex);    // get the lock
-    if (d_semaphore++ == 0)
+    if (d_available++ == 0)
         d_condition.notify_all();   // use notify_one to notify one other 
                                     // thread
 }   // the lock is released
@@ -38,11 +45,11 @@ void Semaphore::increase()
 void Semaphore::reduce()
 {
     std::unique_lock<std::mutex> lk(d_mutex);   // get the lock
-    while (d_semaphore == 0)
+    while (d_available == 0)
         d_condition.wait(lk);   // internally releases the lock
                                 // and waits, on exit
                                 // acquires the lock again
-    --d_semaphore;              // dec. semaphore
+    --d_available;              // dec. available
 }   // the lock is released
 //=
 

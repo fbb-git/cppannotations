@@ -1,13 +1,8 @@
 #include "main.ih"
 
-void sorter(Pair const &range)
+//code
+void partition(Pair const &range)
 {
-//    {
-//        lock_guard<mutex> lk(g_cerrMutex);
-//        cerr << "sorting " << at(range.first) << " to " << at(range.second) <<
-//        '\n';
-//    }
-
     if (range.second - range.first < 2)
         return;
 
@@ -17,11 +12,7 @@ void sorter(Pair const &range)
 
     swap(*range.first, *lhsEnd);
 
-    pushQueue(range.first, lhsEnd);
-    pushQueue(rhsBegin, range.second);    
+    pushTask(range.first, lhsEnd);
+    pushTask(rhsBegin, range.second);    
 }
-
-
-
-
-
+//=

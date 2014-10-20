@@ -1,5 +1,6 @@
 #include "main.ih"
 
+//code
 void scheduler()
 {
     while (newTask())
@@ -10,6 +11,7 @@ void scheduler()
         g_worker.increase();            // activate a worker
     }
 }
+//=
 
 
 

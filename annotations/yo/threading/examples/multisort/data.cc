@@ -13,5 +13,3 @@ size_t g_sizeofWorkforce = 8;
 Semaphore g_workforce(g_sizeofWorkforce);
 Semaphore g_worker(0);
 
-mutex g_cerrMutex;
-

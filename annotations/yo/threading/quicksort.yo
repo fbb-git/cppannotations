@@ -1,0 +1,131 @@
+The quicksort sorting algorithm (Hoare, 1962) is a well-known sorting
+algorithm. Given an array of tt(n) elements, it works like this:
+    itemization(
+    it() Pick an element from the array, and partition the array with respect
+        to this element (call it the em(pivot element). This leaves us with
+        two (possibly empty) sub-arrays: one to the left of the pivot element,
+        and one to the right of the pivot element;
+    it() Recursively perform quicksort on the left-hand sub-array;
+    it() Recursively perform quicksort on the right-hand sub-array.
+    )
+
+To convert this algorithm to a multi-threaded algorithm appears to be be a
+simple task: 
+        verb(
+    void quicksort(Iterator begin, Iterator end)
+    {
+        if (end - begin < 2)            // less than 2 elements are left
+            return;                     // and we're done
+
+        Iter pivot = partition(begin, end); // determine an iterator pointing
+                                            // to the pivot element
+
+        thread lhs(quicksort, begin, pivot);// start threads on the left-hand
+                                            // side sub-arrays
+        thread rhs(quicksort, pivot + 1, end);  // and on the right-hand side
+                                                // sub-arrays
+        lhs.join();
+        rhs.join();                         // and we're done
+    }
+        )
+
+Unfortunately, this translation to a multi-threaded approach won't work for 
+reasonably large arrays because of a phenomenon called emi(overpopulation):
+more threads are started than the operating system is prepared to give us. In
+those cases a em(Resource temporarily unavailable) exception is thrown, and
+the program ends.
+
+Overpopulation can be avoided by using a em(pool of workers), where each
+`worker' is a thread, which in this case is responsible for handling one (sub)
+array, but not for the nested calls. The pool of workers is controlled by a
+scheduler, receiving the requests to sort sub-arrays, and passing these
+requests on to the next available worker. 
+
+The main data structure of the example program developed in this section is a
+queue of tt(std::pairs) containing iterators of the array to be sorted
+(cf. fig(sorting), the sources of the program are found in the annotation()'s
+tt(yo/threading/examples/multisort) directory). Two queues are being used: one
+queue is a task-quueue, receiving the iterators of sub-arrays to be
+partitioned. Instead of immediately launching new threads (the tt(lhs) and
+tt(rhs) threads in the above example), the ranges to be sorted are pushed on
+the task-queue. The other queue is the work-queue: elements are moved from the
+task-queue to the work-queue, where they will be processed by one of the
+worker threads.
+
+    figure(memory/sorting)
+    (Data structure used for multi-threading quicksort)
+    (sorting)
+    
+The program's tt(main) function starts the work force, reads the data, pushes
+the arrays tt(begin) and tt(end) iterators on the task queue and then starts
+the scheduler. Once the scheduler ends the sorted array is displayed:
+        verb(
+    int main()
+    {
+        workForce();            // start the worker threads
+        readData();             // read the data into vector<int> g_data
+        g_taskQ.push(           // prepare the main task
+                    Pair(g_data.begin(), g_data.end())
+                ); 
+        scheduler();            // sort g_data
+        display();              // show the sorted elements
+    }
+        )
+
+The workforce consists of a bunch of detached threads. Each thread represents
+a worker, implemented in the function tt(void worker). Since the number of
+worker threads is fixed, overpopulation doesn't occur. Once the array has been
+sorted and the program stops these detached threads simply end:
+        verb(
+    for (size_t idx = 0; idx != g_sizeofWorkforce; ++idx)
+        thread(worker).detach();
+        )
+
+The scheduler continues for as long as there are sub-arrays to sort. When this
+is the case the task queue's front element is moved to the work queue. This
+reduces the work queue's size, and prepares an assignment for the next
+available worker. The scheduler now waits until a worker is available. Once 
+workers are available one of them is informed of the waiting assignment, and
+the scheduler waits for the next task:
+        verbinsert(-s4 //code examples/multisort/scheduler.cc)
+
+The function tt(newTask) simply checks whether the task queue is empty. If so,
+and none of the workers is currently busy sorting a sub-array then the array
+has been sorted, and tt(newTask) can return tt(false).  When the task queue is
+empty but a worker is still busy, it may be that new sub-array dimensions are
+going to be placed on the task queue by an active worker. Whenever a worker is
+active the tt(Semaphore g_workforce's) size is less than the size of the work
+force:
+        verbinsert(-s4 //code examples/multisort/wip.cc)
+        verbinsert(-s4 //code examples/multisort/newtask.cc)
+        
+Each detached worker thread performs a continuous loop. In the loop it waits
+for a notification by the scheduler. Once it receives a notification it
+retrieves its assignment from the work queue, and partitions the sub-array
+specified in its assignment. Partitioning may result in new tasks. Once this
+has been completed the worker has completed its assignment: it increments the
+available workforce and notifies the scheduler that it should check whether
+all tasks have been performed:
+        verbinsert(-s4 //code examples/multisort/worker.cc)
+
+Sub-arrays smaller than two elements need no partitioning. All larger
+sub-arrays are partitioned relative to their first element. The
+tt(std::partition) generic algorithm does this well, but if the pivot is
+itself an element of the array to partition then the pivot's final location is
+undetermined: it may, e.g., be found anywhere in the range of elements which
+are at least equal to the pivot. By calling tt(std::partition) relative to
+sub-array's first element, paritioning its remaining elements, and then
+swapping the sub-array's first element with the element just before the one
+pointed to by tt(std::partition's) return value, two new sub-arrays are
+obtained. These sub-arrays contain, respectively, elements which are smaller
+than, and elements which are as least as big as the pivot. Two iterator pairs
+defining these two sub-arrays are thereupon added to the task queue, creating
+two new tasks to be dealt with by the scheduler:
+        verbinsert(-s4 //code examples/multisort/parition.cc)
+
+
+
+
+
+
+

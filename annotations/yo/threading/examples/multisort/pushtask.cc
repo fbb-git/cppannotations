@@ -1,6 +1,6 @@
 #include "main.ih"
 
-void pushQueue(Iter const &begin, Iter const &end)
+void pushTask(Iter const &begin, Iter const &end)
 {
     g_taskQ.push(Pair(begin, end));
 
