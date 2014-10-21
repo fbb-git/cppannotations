@@ -13,7 +13,7 @@ condition_variable g_readyCond;
 
 atomic_bool g_done;
 
-size_t g_sizeofWorkforce = 4;
+size_t g_sizeofWorkforce = 6;
 
 Semaphore g_workforce(g_sizeofWorkforce);
 Semaphore g_worker(0);

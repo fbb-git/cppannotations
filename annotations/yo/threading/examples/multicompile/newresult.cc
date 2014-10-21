@@ -1,5 +1,6 @@
 #include "main.ih"
 
+//code
 bool newResult()
 {
     unique_lock<mutex> lk(g_resultQMutex);
@@ -18,8 +19,4 @@ bool newResult()
 
     return not g_resultQ.empty();
 }
-
-
-
-
-
+//=

@@ -1,10 +1,11 @@
 #include "main.ih"
 
+//code
 void results()
 {
     while (newResult())
     {
-        Result result = g_resultQ.front().get();
+        Result const &result = g_resultQ.front().get();
 
         cerr << result.display;
         if (not result.ok)
@@ -13,8 +14,4 @@ void results()
         g_resultQ.pop();
     }
 }
-
-
-
-
-
+//=

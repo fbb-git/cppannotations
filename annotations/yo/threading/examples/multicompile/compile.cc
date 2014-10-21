@@ -1,5 +1,6 @@
 #include "main.ih"
 
+//code
 Result compile(string const &line)
 {
     string command("/usr/bin/g++ -Wall --std=c++11 -c " + line);
@@ -15,5 +16,6 @@ Result compile(string const &line)
 
     return ret;
 }
+//=
 
     

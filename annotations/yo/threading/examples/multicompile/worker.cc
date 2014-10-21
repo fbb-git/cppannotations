@@ -1,9 +1,8 @@
 #include "main.ih"
 
-void worker(int nr)
+//code
+void worker()
 {
-    string line;
-
     Task task;
 
     while (true)
@@ -16,8 +15,4 @@ void worker(int nr)
         g_workforce.increase();
     }
 }
-
-
-
-
-
+//=
