@@ -1,0 +1,101 @@
+#include <iostream>
+#include <string>
+#include <thread>
+#include <queue>
+#include <future>
+#include <mutex>
+#include <atomic>
+
+#include "semaphore/semaphore.h"
+#include "cmdfork/cmdfork.h"
+
+using namespace std;
+
+struct Result
+{
+    bool ok;
+    string display;
+};
+
+typedef packaged_task<Result (string const &fname)> PackagedTask;
+
+class Task
+{
+    string d_command;
+    PackagedTask d_task;
+
+    public:
+        Task()  = default;
+    
+        Task(string const &command, PackagedTask &&tmp)
+        :
+            d_command(command),
+            d_task(move(tmp))
+        {}
+    
+        void operator()()
+        {
+            d_task(d_command);
+        }
+    
+        shared_future<Result> result()
+        {
+            return d_task.get_future().share();
+        }
+};
+
+class TaskQueue
+{
+    mutex d_mutex;
+    queue<Task> d_queue;
+
+    public:
+        void push(Task &&tmp)
+        {
+            lock_guard<mutex> lk(d_mutex);
+            d_queue.push(move(tmp));
+        }    
+
+        void popFront(Task &dest)
+        {
+            lock_guard<mutex> lk(d_mutex);
+            dest = move(d_queue.front());
+            d_queue.pop();
+        }
+
+        bool empty() const
+        {
+            return d_queue.empty();
+        }
+};
+
+extern TaskQueue g_taskQ;
+
+extern mutex g_resultQMutex;
+extern queue<shared_future<Result>> g_resultQ;
+extern condition_variable g_resultCond;
+
+extern mutex g_readyMutex;
+extern atomic_bool g_ready;
+extern condition_variable g_readyCond;
+
+extern atomic_bool g_done;
+
+extern size_t g_sizeofWorkforce;
+
+extern Semaphore g_workforce;
+extern Semaphore g_worker;
+
+void workforce();                // start all worker threads
+
+void jobs();
+bool dispatch(string const &line);
+void worker(int nr);
+Result compile(string const &line);
+void results();
+void push(shared_future<Result> const &sharedResult);
+bool newResult();
+
+
+
+
