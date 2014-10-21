@@ -11,7 +11,7 @@ The program uses a tt(class Task) containing a command-specification
 sources of the program are found in the annotation()'s
 tt(yo/threading/examples/multicompile) directory)).
 
-    figure(memory/compile)
+    figure(threading/compile)
     (Data structure used for the multi-threading compilation)
     (compile)
 
@@ -19,26 +19,26 @@ Like before (at the multi-threaded quicksort example) tt(main) first starts
 its workforce as detached threads. Following this, the compilation jobs are
 performed by yet another detached thread. Eventually, the results of the
 compilation jobs are handled by tt(results):
-        verbinsert(-s4 //code examples/multicompile/main.cc)
+        verbinclude(-s4 //code examples/multicompile/main.cc)
 
 The tt(jobs)-thread reads the names of the files to compile from the standard
 input stream, and passes them on to tt(dispatch) for further handling by the
 workers. Lines 7 and 8 are executed at the end, and are a safeguard against
 empty input. The safeguard is discussed below, where tt(newResult) is
 described. 
-        verbinsert(-ns4 //code examples/multicompile/jobs.cc)
+        verbinclude(-ns4 //code examples/multicompile/jobs.cc)
 
 The dispatcher (shown next) ignores empty lines. Also, if a compilation has
 failed by the time the dispatcher is called, processing stops (lines
 6-7). Otherwise, the dispacher waits for an available worker, prepares a new
 task, and notifies a worker to handle it:
-        verbinsert(-s4 //code examples/multicompile/dispatch.cc)
+        verbinclude(-s4 //code examples/multicompile/dispatch.cc)
 
 The function tt(newTask) prepares the program for another task. First a
 tt(Task) object is created. tt(Task) contains the name of the file to compile,
 and a tt(packaged_task). It encapsulates all activities that are associated
 with a tt(packaged_task). Here is its (in-class) definition:
-        verbinsert(-ns4 //task examples/multicompile/main.ih)
+        verbinclude(-ns4 //task examples/multicompile/main.ih)
 
 Note (lines 22-25) that tt(result) returns a tt(shared_future). Since the
 dispatcher runs in a different thread than the one processing the results, the
@@ -51,14 +51,14 @@ the result queue. Although the actual results aren't available by this time,
 the tt(result) function (see below) is notified that something has been pushed
 on its queue. Additionally, the tt(Task) itself is pushed on the task queue,
 where a worker may retrieve it:
-        verbinsert(-s4 //task examples/multicompile/main.ih)
+        verbinclude(-s4 //task examples/multicompile/main.ih)
 
-        verbinsert(-s4 //code examples/multicompile/pushresultq.cc)
+        verbinclude(-s4 //code examples/multicompile/pushresultq.cc)
 
 The workers have a simple task: retrieve the next task from the task queue's
 front, then perform that task. Whatever happens inside the tasks themselves is
 of no concern: the worker thread eventually ends when the program ends:
-        verbinsert(-s4 //code examples/multicompile/worker.cc)
+        verbinclude(-s4 //code examples/multicompile/worker.cc)
 
 This completes the description of how tasks are handled. The task itself has
 not yet been presented. In the current example program source files are being
@@ -71,12 +71,12 @@ be zero. In this case no further compilation tasks will be initiated (lines 11
 and 12; the implementation of the tt(class CmdFork) is available from the
 annotation()'s tt(yo/threading/examples/cmdfork) directory). Here is the
 function tt(compile):
-        verbinsert(-ns4 //code examples/multicompile/compile.cc)
+        verbinclude(-ns4 //code examples/multicompile/compile.cc)
 
 The tt(results) function continues for as long as there are results. Once
 results are available they are displayed. Whenever a compilation has failed
 the tt(Result's d_ok) member is tt(false) and tt(results) ends:
-        verbinsert(-s4 //code examples/multicompile/results.cc)
+        verbinclude(-s4 //code examples/multicompile/results.cc)
 
 The function tt(newResult) controls tt(results' while)-loop. It returns
 tt(true) when there are some results avilable in the result queue. When no
@@ -87,5 +87,5 @@ thread is busy. Whenever a result is pushed on the result queue, and also once
 the input stream has been processed tt(newResult) is notified. Following the
 notification tt(newResults) returns, and tt(results) either ends or shows the
 results appearing at te result queue's front:
-        verbinsert(-s4 //code examples/multicompile/newresult.cc)
+        verbinclude(-s4 //code examples/multicompile/newresult.cc)
 

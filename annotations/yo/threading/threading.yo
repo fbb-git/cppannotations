@@ -4,20 +4,20 @@ mult-threaded problem should be used. Not so much because it's often simpler
 than using lower levels of abstraction, but because higher levels of
 abstraction are usually semantically closer to the original problem
 description, resulting in code which is easier to understand and therefore
-easier to maintain. Also, high-abstraction classes also provide exception
+easier to maintain.  Also, high-abstraction classes also provide exception
 safety and prevent the occurrence of memory leaks.
 
 bf(C++)'s main tool for creating multi-threaded programs is the class
 tt(std::thread), and some examples of its use have already been shown at the
-beginning of this chapter.
+beginning of this chapter. 
 
 Characteristics of individual threads can be queried from the
 tt(std::this_thread) namespace. Also, tt(std::this_thread) offers some control
 over the behavior of an individual thread.
 
 To synchronize access to shared data bf(C++) offers em(mutexes) (implemented
-by the class tt(std::mutex) and em(condition variables) are implemented by the
-class tt(std::condition_variable).
+by the class tt(std::mutex)) and em(condition variables) (implemented by the
+class tt(std::condition_variable)).
 
 Members of these classes may throw tt(system_error) objects (cf. section
 ref(SYSTEMERROR)) when encountering a low-level error condition.
@@ -25,37 +25,6 @@ ref(SYSTEMERROR)) when encountering a low-level error condition.
 
 
 COMMENT(
-
-
-What if you don't want to share your data? What if you want exactly the
-opposite: For each thread to have its own copy? This is the scenario addressed
-by the new thread_local storage duration keyword.
-
-Thread Local Data
-
-The thread_local keyword can be used with any object declaration at namespace
-scope at local scope, and specifies that such a variable is thread local. Each
-thread thus has its own copy of that variable, and that copy exists for the
-entire duration of that thread. It is essentially a per-thread static
-variable, so each thread's copy of a variable declared at local scope is
-initialized the first time that particular thread passes through the
-declaration, and they retain their values until that thread exits:
-
-
-    std::string foo(std::string const& s2)
-    {
-        thread_local std::string s="hello";
-
-        s+=s2;
-        return s;
-    }
-
-
-In this function, each thread's copy of s starts life with the contents
-"hello." Every time the function is called, the supplied string is appended to
-that thread's copy of s. As you can see from this example, this even works
-with class types that have constructors and destructors (such as std::string),
-which is an improvement over the pre-C++11 compiler extensions.
 
 Thread-local storage isn't the only change to the concurrency support in the
 core language: There's also a brand new multi-threading aware memory model,
@@ -77,3 +46,11 @@ simple user-defined type. You can look up the relevant documentation for the
 details.
 
 END)
+
+
+
+
+
+
+
+

@@ -2,7 +2,7 @@ The quicksort sorting algorithm (Hoare, 1962) is a well-known sorting
 algorithm. Given an array of tt(n) elements, it works like this:
     itemization(
     it() Pick an element from the array, and partition the array with respect
-        to this element (call it the em(pivot element). This leaves us with
+        to this element (call it the em(pivot element)). This leaves us with
         two (possibly empty) sub-arrays: one to the left of the pivot element,
         and one to the right of the pivot element;
     it() Recursively perform quicksort on the left-hand sub-array;
@@ -45,14 +45,14 @@ The main data structure of the example program developed in this section is a
 queue of tt(std::pairs) containing iterators of the array to be sorted
 (cf. fig(sorting), the sources of the program are found in the annotation()'s
 tt(yo/threading/examples/multisort) directory). Two queues are being used: one
-queue is a task-quueue, receiving the iterators of sub-arrays to be
+queue is a task-queue, receiving the iterators of sub-arrays to be
 partitioned. Instead of immediately launching new threads (the tt(lhs) and
 tt(rhs) threads in the above example), the ranges to be sorted are pushed on
 the task-queue. The other queue is the work-queue: elements are moved from the
 task-queue to the work-queue, where they will be processed by one of the
 worker threads.
 
-    figure(memory/sorting)
+    figure(threading/sorting)
     (Data structure used for multi-threading quicksort)
     (sorting)
     
@@ -87,7 +87,7 @@ reduces the work queue's size, and prepares an assignment for the next
 available worker. The scheduler now waits until a worker is available. Once 
 workers are available one of them is informed of the waiting assignment, and
 the scheduler waits for the next task:
-        verbinsert(-s4 //code examples/multisort/scheduler.cc)
+        verbinclude(-s4 //code examples/multisort/scheduler.cc)
 
 The function tt(newTask) simply checks whether the task queue is empty. If so,
 and none of the workers is currently busy sorting a sub-array then the array
@@ -96,8 +96,8 @@ empty but a worker is still busy, it may be that new sub-array dimensions are
 going to be placed on the task queue by an active worker. Whenever a worker is
 active the tt(Semaphore g_workforce's) size is less than the size of the work
 force:
-        verbinsert(-s4 //code examples/multisort/wip.cc)
-        verbinsert(-s4 //code examples/multisort/newtask.cc)
+        verbinclude(-s4 //code examples/multisort/wip.cc)
+        verbinclude(-s4 //code examples/multisort/newtask.cc)
         
 Each detached worker thread performs a continuous loop. In the loop it waits
 for a notification by the scheduler. Once it receives a notification it
@@ -106,7 +106,7 @@ specified in its assignment. Partitioning may result in new tasks. Once this
 has been completed the worker has completed its assignment: it increments the
 available workforce and notifies the scheduler that it should check whether
 all tasks have been performed:
-        verbinsert(-s4 //code examples/multisort/worker.cc)
+        verbinclude(-s4 //code examples/multisort/worker.cc)
 
 Sub-arrays smaller than two elements need no partitioning. All larger
 sub-arrays are partitioned relative to their first element. The
@@ -121,11 +121,4 @@ obtained. These sub-arrays contain, respectively, elements which are smaller
 than, and elements which are as least as big as the pivot. Two iterator pairs
 defining these two sub-arrays are thereupon added to the task queue, creating
 two new tasks to be dealt with by the scheduler:
-        verbinsert(-s4 //code examples/multisort/parition.cc)
-
-
-
-
-
-
-
+        verbinclude(-s4 //code examples/multisort/partition.cc)

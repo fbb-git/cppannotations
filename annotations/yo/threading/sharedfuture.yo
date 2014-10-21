@@ -1,77 +1,35 @@
-When the results of an asynchronous task are made available through a 
-tt(std::future) object, then only one instance of that tt(std::future) object
-can exist. On the other hand, multiple instances of 
-    hi(shared_future)tt(std::shared_future)
-objects may exist, each referring to the same results of an executed
-asynchronous task. 
+When a thread activates an asynchronous provider (e.g., a tt(std::async)) then
+the return value of the asynchronously called function becomes available in
+the activating thread through a tt(std::future) object. The
+tt(future) object cannot be used by another thread. If this is required (e.g.,
+see this chapter's final section) the tt(future) object must be converted to a
+    hi(shared_future)tt(std::shared_future) object. 
 
 Before using the class tt(std::shared_future) the tthi(future) header file
 must be included.
 
+Multiple instances of tt(shared_future) objects may exist, each referring to
+the results of a single asynchronous task. (Multiple) tt(shared_future)
+objects may be constructed from a single tt(future) object. Once a
+tt(shared_future) object is available, its tt(get) member (see below) can be
+called multiple times to retrieve the results of the original tt(future)
+object.
+
 When using multiple instances of tt(shared_future) objects, the results of the
-associated asynchronous task become ready (available) at exactly the same
-moment in time. 
+associated asynchronous task are made ready (become available) at exactly the
+same moment in time.
 
-When multiple threads access the results stored in a single tt(future) object,
-access to these results must normally be synchronized using mutexes. However,
-when multiple threads access a single tt(shared_future) object, then each of
-these threads may access the results of the asynchronously executed task
-without further synchronization. The relationship between the classes
-tt(future) and tt(shared_future) resembles the relationship between the
-classes tt(unique_ptr) and tt(shared_ptr): there can only be one instance of a
-tt(unique_pointer), pointing to data, whereas there can be many instances of a
-tt(shared_pointer), each pointing to the same data.
+The relationship between the classes tt(future) and tt(shared_future)
+resembles the relationship between the classes tt(unique_ptr) and
+tt(shared_ptr): there can only be one instance of a tt(unique_pointer),
+pointing to data, whereas there can be many instances of a tt(shared_pointer),
+each pointing to the same data. 
 
+The effect of calling any member of a tt(shared_future) object for which
+tt(valid() == false) other than the destructor, the move-assignment operator,
+or tt(valid) is undefined.
 
-The effect of calling any member function other than the destructor, the
-move-assignment operator, or valid() on a shared_future object for which
-valid() == false is undefined.
-
-template <class R>
-class shared_future 
-{
-    public:
-        shared_future() noexcept;
-        shared_future(const shared_future& rhs);
-        shared_future(future<R>&&) noexcept;
-        shared_future(shared_future&& rhs) noexcept;
-
-        ~shared_future();
-
-        shared_future& operator=(const shared_future& rhs);
-        shared_future& operator=(shared_future&& rhs);
-
-        // retrieving the value
-        see below get() const;
-
-        // functions to check state
-        bool valid() const;
-        void wait() const;
-        template <class Rep, class Period>
-        future_status wait_for(const chrono::duration<Rep, Period>& rel_time)
-                                                                        const; 
-        template <class Clock, class Duration>
-        future_status wait_until(const chrono::time_point<Clock, Duration>&
-                                abs_time) const; 
-};
-
-
-
-
-In this section the members of the class template tt(shared_future) are
-described. 
-
-? tt(Shared_future) objects are commonly initialized by providing an
-? anonymous tt(shared_future) object returned by factory functions. Standard
-? available
-?     COMMENT(
-?         KLOPT DE VOLGENDE REGEL WEL? 
-?     )
-? factory functions are tt(std::async, std::promise, and std::packaged_task),
-? which are introduced in upcoming sections. Examples of the use of
-? tt(std::future) objects are provided in those sections.
-
-The class tt(shared_future) has the following constructors:
+The class tt(shared_future) supports the following constructors:
     itemization(
     itt(shared_future() noexcept)
         quote(an empty tt(shared_future) object is constructed that does not
@@ -83,6 +41,13 @@ The class tt(shared_future) has the following constructors:
             same results as tt(other) (if any). After using this constructor
             the object's tt(valid) member returns the same value as
             tt(other.valid()).)
+
+    itt(shared_future(shared_future<Result> &&tmp) noexcept)
+        quote( Effects: move constructs a shared_future object that refers to
+            the results that was originally referred to by tt(tmp) (if
+            any). After using this constructor the object's tt(valid) member
+            returns the same value as tt(tmp.valid()) returned prior to the
+            constructor invocation, and tt(tmp.valid()) returns tt(false).)
 
     itt(shared_future(future<Result> &&tmp) noexcept)
         quote( Effects: move constructs a shared_future object that refers to

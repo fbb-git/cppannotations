@@ -55,16 +55,17 @@ a move constructor.
     )
 
     Be careful when passing local variables as arguments to thread objects: if
-the thread continues when the function whose local variable is used
-terminates, then the thread uses a wild pointer or wild reference, as the
-local variable no longer exists. To prevent this from happening (illustrated
-by the next example):
+the thread continues to run when the function whose local variables are used
+terminates, then the thread suddenly uses wild pointers or wild references, as
+the local variables no longer exist. To prevent this from happening
+(illustrated by the next example) do as follows:
         itemization(
         it() pass an anonymous copy of the local variable as argument to the
 tt(thread) constructor, or
-        it() call tt(join) on the thread object to make sure the thread has
+        it() call tt(join) on the thread object to ensure that the thread has
 finished within the local variable's lifetime.
         )
+
     verbinclude(-ans4 examples/locals.cc)
     In line 18 be sure not to call tt(std::ref(text)) instead of
 tt(std::string(text)).
@@ -91,30 +92,30 @@ operator's lhs and tt(tmp's) state is changed to the thread's default state
 
     ithtq(detach)(void detach())
        (Requires tt(joinable) (see below) to return tt(true).  The thread for
-which tt(detach) is called continues its execution. The (e.g., parent) thread
-calling tt(detach) continues its execution immediately beyond the
-tt(detach)-call.  After calling tt(object.detach()), `tt(object)' no longer
-represents the, possibly still continuing but now detached, thread of
-execution. It is the detached thread's implementation's responsibility to
-release its resources when its execution ends.
+which tt(detach) is called continues to run. The (e.g., parent) thread calling
+tt(detach) continues immediately beyond the tt(detach)-call.  After calling
+tt(object.detach()), `tt(object)' no longer represents the (possibly still
+continuing but now detached) thread of execution. It is the detached thread's
+implementation's responsibility to release its resources when its execution
+ends.
 
 Since tt(detach) disconnects a thread from the running program, e.g.,
 tt(main) no longer can wait for the thread's completion.  As a program
 ends when tt(main) ends, its still running detached threads also stop, and
-program may not properly complete all its threads, as demonstrated by
+a program may not properly finish all its threads, as demonstrated by
 the following example: 
             verbinclude(-a examples/threads2.cc)
 
-    A detached threads may very well continue to run after the function that
-started it has returned. Here, too, you should be very careful not to pass
+    A detached thread may very well continue to run after the function that
+launched it has finished. Here, too, you should be very careful not to pass
 local variables to the detached thread, as their references or pointers will
 be undefined once the function defining the local variables terminates:
             verbinclude(-a examples/detached.cc)
         )
 
     ithtq(get_id)(id get_id() const noexcept)
-       (If the current object does not represent a running thread the static
-value hi(id)tt(thread::id) is returned. Otherwise, the thread's unique ID
+       (If the current object does not represent a running thread 
+hi(id)tt(thread::id()) is returned. Otherwise, the thread's unique ID
 (also obtainable from with the thread from tt(this_thread::get_id())) is
 returned.)
 
@@ -123,7 +124,7 @@ returned.)
 tt(join) until the thread for which tt(join) is called has
 completed. Following its completion the object whose tt(join) member was
 called no longer represents a running thread, and its tt(get_id) member will
-return tt(std::thread::id).
+return tt(std::thread::id()).
 
         This member was used in several examples shown so far. As noted: when
 tt(main) ends while a joinable thread is still running, tt(terminate) is
