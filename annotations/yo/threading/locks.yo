@@ -1,9 +1,9 @@
 Locks are used to simplify the use of mutexes. Before locks can be used the
 tthi(mutex) header file must be included.
 
-Whenever threads share data, and at least one of the threads may change the
-data mutexes should be used to prevent multiple threads from using the same
-data synchronously.
+Whenever threads share data, and at least one of the threads may change common
+data, mutexes should be used to prevent threads from using the same data
+synchronously.
 
 Usually locks are released at the end of action blocks. This requires explicit
 calls to the mutexes' tt(unlock) function, with introduces comparable problems
@@ -22,23 +22,22 @@ explicit unlocking and locking of the mutexes they control, while their
 destructors preserve the unlock-guarantee also offered by tt(lock_guard);)
     )
 
-    The class tt(lock_guard) defines a limited, but useful interface:
+    The class tt(lock_guard) offers a limited, but useful interface:
     itemization(
 
     ittq(lock_guard<Mutex>(Mutex &mutex))
         (when defining a tt(lock_guard) object the mutex type (e.g.,
 tt(std::mutex, std::timed_mutex)) is specified, and a mutex of the indicated
 type is provided as its argument. The construction blocks until the
-tt(lock_guard) object owns the lock. The mutex lock is released again by its
-destructor.)
+tt(lock_guard) object owns the lock. The tt(lock_guard's) destructor
+automatically releases the mutex lock.)
 
     ittq(lock_guard<Mutex>(Mutex &mutex, std::adopt_lock_t))
         (this constructor is used to transfer control over the mutex from the
 calling thread to the tt(lock_guard).  The mutex lock is released again by the
 tt(lock_guard's) destructor. At construction time the mutex must already be
-owned by the calling thread. Here is an illustration showing how it can be
-used: 
-        verbinclude(-an examples/threadaction.cc)
+owned by the calling thread. Here is an illustration of how it can be used:
+        verbinclude(-n //code examples/threadaction.cc)
             itemization(
             it() At line 1 tt(threadAction) receives a reference to a
 mutex. Assume the mutex owns the lock;
@@ -60,15 +59,16 @@ constructor.)
 
     Here is a simple example of a multi-threaded program using tt(lock_guards)
 to prevent information inserted into tt(cout) from getting mixed.
+        verbinclude(-s4 //code examples/insertguard.cc)
 
-
-    Like tt(lock_guard), a mutex-type must be specified when defining objects
-of the class hi(unique_lock)tt(std::unique_lock).  The class tt(unique_lock)
-is much more elaborate than the basic tt(lock_guard) class template.  Its
-interface does not define a copy constructor or overloaded assignment
-operator, but it em(does) define a move constructor and a move assignment
-operator. In the following overview of tt(unique_lock)'s inteface tt(Mutex)
-refers to the mutex-type that is specified when defining a tt(unique_lock):
+    As with tt(lock_guard), a mutex-type must be specified when defining
+objects of the class hi(unique_lock)tt(std::unique_lock).  The class
+tt(unique_lock) is much more elaborate than the basic tt(lock_guard) class
+template.  Its interface does not define a copy constructor or overloaded
+assignment operator, but it em(does) define a move constructor and a move
+assignment operator. In the following overview of tt(unique_lock)'s inteface
+tt(Mutex) refers to the mutex-type that is specified when defining a
+tt(unique_lock):
     itemization(
     ittq(unique_lock() noexcept)
        (the default constructor is not yet associated with a tt(mutex)
@@ -77,12 +77,12 @@ it can do anything useful;)
 
     ittq(explicit unique_lock(Mutex &mutex))
        (initializes a tt(unique_lock) with an existing tt(Mutex) object, and
-calls tt(mutex.lock()))
+calls tt(mutex.lock());)
 
     ittq(unique_lock(Mutex &mutex, defer_lock_t) noexcept)
-       (initializes a tt(unique_lock) with an existing tt(Mutex) object,
-but does not call tt(mutex.lock()). Call it by passing a tt(defer_lock_t) as
-the constructor's second argument, e.g.,
+       (initializes a tt(unique_lock) with an existing tt(Mutex) object, but
+does not call tt(mutex.lock()). Call it by passing a tt(defer_lock_t) object
+as the constructor's second argument, e.g.,
             verb(
 unique_lock<mutex> ul(mutexObj, defer_lock_t())     // or, anonymous:
 unique_lock<mutex>{mutexObj, defer_lock_t()}
@@ -102,8 +102,8 @@ and assumes that the current thread has already locked the mutex;)
         &relTime) noexcept)
        (this constructor tries to obtain ownership of the tt(Mutex) object by
 calling tt(mutex.try_lock_for(relTime)). The specified mutex type must
-therefore support this member (e.g., it is a tt(std::timed_mutex)). This
-constructor could, e.g., be called like this:
+therefore support this member (e.g., it is a tt(std::timed_mutex)). It could
+be called like this:
            verb(
 std::unique_lock<std::timed_mutex> ulock(timedMutex, 
                                          std::chrono::seconds(5));
@@ -140,7 +140,7 @@ tt(false) is returned;)
 
     ittq(unique_lock& operator=(unique_lock &&tmp) noexcept)
        (if the left-hand operand owns a lock, it will call its mutex's
-tt(unlock) member, whereafter tt(tmp)'s state is transferred to the left-hand
+tt(unlock) member, whereafter tt(tmp's) state is transferred to the left-hand
 operand;)
 
     ithtq(owns_lock)(bool owns_lock() const noexcept)
@@ -158,21 +158,21 @@ tt(unique_lock) object, discarding that association;)
        (tries to obtain ownership of the mutex that is associated witg the
 tt(unique_lock), returning tt(true) if this succeeds, and tt(false)
 otherwise. If no mutex is currently associated with the tt(unique_lock)
-object, then a tt(system_error) exception is thrown.)
+object, then a tt(system_error) exception is thrown;)
 
     ithtq(try_lock_for)(bool try_lock_for(chrono::duration<Rep, Period> const
         &relTime)) 
        (this member function tries to obtain ownership of the tt(Mutex) object
 managed by the tt(unique_lock) object by calling the mutex's
 tt(try_lock_for(relTime)) member. The specified mutex type must therefore
-support this member (e.g., it is a tt(std::timed_mutex)).)
+support this member (e.g., it is a tt(std::timed_mutex));)
 
     ithtq(try_lock_until)(bool try_lock_until(chrono::time_point<Clock,
         Duration> const &absTime))
        (this member function tries to obtain ownership of the tt(Mutex) object
 managed by the tt(unique_lock) object by calling the mutex's
 tt(mutex.try_lock_until(absTime)) member. The specified mutex type must
-therefore support this member (e.g., it is a tt(std::timed_mutex)))
+therefore support this member (e.g., it is a tt(std::timed_mutex));)
 
     ithtq(unlock)(void unlock())
        (releases ownership of the mutex (or reduces the mutex's lock count). A

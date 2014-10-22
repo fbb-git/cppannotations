@@ -49,12 +49,15 @@ dynamically allocated memory, we can use a comparable technique to encapsulate
 thread joining in an object's destructor.
 
 By defining the tt(thread) object inside a class we're sure that by the time
-the our object goes out of scope, even if the tt(threadedActions) function
+the our object goes out of scope, even if the tt(childActions) function
 throws an exception, the thread's tt(join) member is called. Here are the bare
 essentials of our tt(JoinGuard) class, providing the join-guarantee (using
 in-line member implementations for brevity):
         verbinclude(-ans4 examples/joinguard.h)
     itemization(
+    it() At line 3 tt(childActions) is declared. Its implementation defines
+the child thread's actions.
+
     it() At line 8 its only constructor starts: it receives a temporary
 tt(thread) object, which is moved, in line 10, to tt(JoinGuard's d_thread)
 data member. 
@@ -77,11 +80,6 @@ ends tt(parent), but just before that tt(JoinGuard's) destructor makes sure
 that the child-thread has been joined.
     )
 
-
-In line 3 tt(childActions) is declared. Its implementation defines
-the child thread's actions.
-
-    it() 
 
 
 

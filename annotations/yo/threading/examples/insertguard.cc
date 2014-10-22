@@ -6,6 +6,7 @@
 
 using namespace std;
 
+//code
 bool oneLine(istream &in, mutex &mut, int nr)
 {
    lock_guard<mutex> lg(mut);
@@ -38,3 +39,4 @@ int main(int argc, char **argv)
     t2.join();
     t3.join();
 }
+//=

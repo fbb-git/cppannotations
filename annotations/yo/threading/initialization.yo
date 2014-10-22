@@ -4,7 +4,7 @@ tthi(mutex) header file must be included.
 
 In single threaded programs the initialization of global data not necessarily
 happens at the same point in code. An example is the initialization of the
-object of a singleton class (cf. em(Gamma et al.) (1995) Design Patterns,
+object of a singleton class (cf. em(Gamma et al.) (1995), Design Patterns,
 Addison-Wesley). Singleton classes may define a single static pointer data
 member tt(Singleton *s_object), pointing to the singleton's object, and may 
 offer a static member tt(instance), implemented something like this:
@@ -20,12 +20,12 @@ offer a static member tt(instance), implemented something like this:
 
 With multi-threaded programs this approach immediately gets complex. For
 example, if two threads call tt(instance) at the same time, while tt(s_object)
-still equals 0, then both may call tt(new_Singleton), resulting in one
-dynamically allocated tt(Singleton) object being unreachable. Other threads,
-called after tt(s_object) was initialized for the first time, may either
-return a reference to that object, or may return a reference to the object
-initialized by the second thread. Not exactly the expected behavior of a
-singleton. 
+still equals 0, then both may call tt(new Singleton), resulting in one
+dynamically allocated tt(Singleton) object becoming unreachable. Other
+threads, called after tt(s_object) was initialized for the first time, may
+either return a reference to that object, or may return a reference to the
+object initialized by the second thread. Not exactly the expected behavior of
+a singleton.
 
 Mutexes (cf. section ref(MUTEX)) can be used to solve these kinds of problems,
 but they result in some overhead and inefficiency, as the mutex must be
@@ -46,8 +46,8 @@ only once. This function may be a free function or it may be the address of a
 class member function;
 
     it() If the second argument is the address of a class member function,
-then the object for which the member function should be called is provided as
-tt(call_once's) third argument
+then the object for which the member function should be called must be
+provided as tt(call_once's) third argument.
     )
     A thread-safe implementation of the singleton's tt(instance) function can
 now easily be designed (using in-class implementations for brevity):
@@ -71,21 +71,20 @@ However, there are additional ways to initialize data, even for multi-threaded p
     itemization(
     it() First, suppose a constructor is declared with the ti(constexpr)
 keyword (cf. section ref(CONSTEXPR)), satisfying the requirements for constant
-initialization. In this case, an static object, initialized using that
+initialization. In this case, a static object, initialized using that
 constructor, is guaranteed to be initialized before any code is run as part of
-the static initialization phase. This is the option chosen for tt(std::mutex),
-because it eliminates the possibility of race conditions with initialization
-of mutexes at a global scope.
+the static initialization phase. This used by tt(std::mutex), as it eliminates
+the possibility of race conditions when global mutexes are initialized.
     it() Second, a static variable defined within a compound statement may be
 used (e.g., a static local variable within a function body).  Static
 variables hi(static variable: initialization) defined within a compound
 statement are initialized the first time the function is called at the point
-in the code where the static variable is defined:
+in the code where the static variable is defined. Here is an example:
         verbinclude(-a examples/staticlocal.cc)
     This feature causes a thread to wait automatically if another thread is
 still initializing the static data (note that em(non-static) data never cause
-problems, as each non-static local variables have lifes that are completely
-restricted to their own threads).
+problems, as non-static local variables only exist within their own thread of
+execution).
     )
 
 
