@@ -4,7 +4,7 @@
 using namespace std;
 
 class Singleton
-{ 
+{
     static std::once_flag s_once;
     static Singleton *s_singleton;
 

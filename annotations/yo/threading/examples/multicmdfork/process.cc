@@ -23,14 +23,10 @@ void process(int nr)
         CmdFork cmdFork(command);
         cmdFork.fork();
 
-        cout << "Worker " << nr << ": " << line << " returns " << 
+        cout << "Worker " << nr << ": " << line << " returns " <<
                 cmdFork.childExit() << '\n'
                 << cmdFork.childOutput() << '\n';
 
         g_workforce.increase();
     }
 }
-
-
-
-

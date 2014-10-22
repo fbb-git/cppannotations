@@ -9,4 +9,3 @@ void Semaphore::reduce()
                                 // acquires the lock again
     --d_nAvailable;              // dec. semaphore
 }
-

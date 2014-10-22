@@ -36,7 +36,7 @@ void Semaphore::increase()
 {
     std::lock_guard<std::mutex> lk(d_mutex);    // get the lock
     if (d_available++ == 0)
-        d_condition.notify_all();   // use notify_one to notify one other 
+        d_condition.notify_all();   // use notify_one to notify one other
                                     // thread
 }   // the lock is released
 //=
@@ -103,7 +103,7 @@ void Semaphore::reduce()
                 size_t d_item = g_queue.front();
                 g_queue.pop();
                 g_available.increase();
-                cout << "\t\tConsumer " << d_nr << " got item " << 
+                cout << "\t\tConsumer " << d_nr << " got item " <<
                                                         d_item << '\n';
             }
         }

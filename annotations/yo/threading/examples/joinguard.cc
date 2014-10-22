@@ -23,15 +23,3 @@ catch (std::exception const &exc)
 {
     std::cout << exc.what() << '\n';
 }
-
-
-
-
-
-
-
-
-
-
-
-

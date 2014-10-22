@@ -9,6 +9,3 @@ int main()
     promise.set_value(155);
 }
 //=
-
-
-

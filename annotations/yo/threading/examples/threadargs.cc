@@ -39,7 +39,7 @@ void r_refMoveOK(MoveOK &&tmp)
 int main()
 {
      int value = 0;
- 
+
      std::thread(valueArg,   value).join();
      std::thread(refArg,     ref(value)).join();
      std::thread(r_refArg,   move(value)).join();
@@ -58,9 +58,3 @@ int main()
     std::thread(r_refMoveOK, moveOK).join();
     cout << moveOK.d_value << '\n';
 }
-
-
-
-
-
-

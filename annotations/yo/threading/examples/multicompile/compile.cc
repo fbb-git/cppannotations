@@ -4,11 +4,11 @@
 Result compile(string const &line)
 {
     string command("/usr/bin/g++ -Wall --std=c++11 -c " + line);
-    
+
     CmdFork cmdFork(command);
     cmdFork.fork();
 
-    Result ret {cmdFork.childExit() == 0, 
+    Result ret {cmdFork.childExit() == 0,
                 line + "\n" + cmdFork.childOutput()};
 
     if (not ret.ok)
@@ -17,5 +17,3 @@ Result compile(string const &line)
     return ret;
 }
 //=
-
-    

@@ -5,10 +5,10 @@ bool newResult()
 {
     unique_lock<mutex> lk(g_resultQMutex);
 
-    while 
+    while
     (
         (
-            g_resultQ.empty() 
+            g_resultQ.empty()
             &&
             g_workforce.size() != g_sizeofWorkforce
         )

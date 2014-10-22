@@ -6,8 +6,8 @@
 #include <mutex>
 #include <atomic>
 
-#include "semaphore/semaphore.h"
-#include "cmdfork/cmdfork.h"
+#include "../semaphore/semaphore.h"
+#include "../cmdfork/cmdfork.h"
 
 using namespace std;
 
@@ -27,18 +27,18 @@ class Task
 
     public:
         Task()  = default;
-    
+
         Task(string const &command, PackagedTask &&tmp)
         :
             d_command(command),
             d_task(move(tmp))
         {}
-    
+
         void operator()()
         {
             d_task(d_command);
         }
-    
+
         shared_future<Result> result()
         {
             return d_task.get_future().share();
@@ -56,7 +56,7 @@ class TaskQueue
         {
             lock_guard<mutex> lk(d_mutex);
             d_queue.push(move(tmp));
-        }    
+        }
 
         void popFront(Task &dest)
         {
@@ -97,7 +97,3 @@ void pushResultQ(shared_future<Result> const &sharedResult);
 void results();
 void worker();
 void workforce();
-
-
-
-

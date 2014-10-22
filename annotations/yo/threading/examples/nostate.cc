@@ -8,6 +8,3 @@ int main()
     fut.get();
 }
 //=
-
-
-

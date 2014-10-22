@@ -32,10 +32,3 @@ int main()
     oops();
     this_thread::sleep_for(seconds(1));
 }
-
-
-
-
-
-
-

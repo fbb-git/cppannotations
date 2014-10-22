@@ -3,7 +3,7 @@
 int main(int argc, char **argv)
 try
 {
-    thread workers[] = 
+    thread workers[] =
         {
             thread(process, 1),
             thread(process, 2),
@@ -26,5 +26,3 @@ catch (exception const &exc)
 {
     cerr << "Exception: " << exc.what() << '\n';
 }
-    
-

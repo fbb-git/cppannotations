@@ -11,4 +11,3 @@ void jobs()
     g_resultCond.notify_one();
 }
 //=
-

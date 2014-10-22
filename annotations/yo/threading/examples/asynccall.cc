@@ -41,21 +41,14 @@ int main()
 
 cout << "Calling\n";
     auto fut = async(launch::async,
-                    &Object::member, 
-                                    &obj, 
-                                    
+                    &Object::member,
+                                    &obj,
+
                                     133,  "hello world");
 
 cout << "Getting\n";
     auto ret = fut.get();
 
-    
+
     cout << "Text: " << ret << ", value: " << obj.value() << '\n';
 }
-
-
-
-
-
-
-

@@ -11,7 +11,7 @@ class CmdFork: public FBB::Fork
     FBB::Pipe d_childOutput;   // child writes this
     std::string d_command;
     int d_childExit = -1;
-    
+
     public:
         CmdFork(std::string const &command);
         int childExit() const;
@@ -22,7 +22,7 @@ class CmdFork: public FBB::Fork
        void childProcess()      override;
        void parentProcess()     override;
 };
-        
+
 inline int CmdFork::childExit() const
 {
     return d_childExit;

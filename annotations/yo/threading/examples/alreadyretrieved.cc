@@ -9,6 +9,3 @@ int main()
     promise.get_future();
 }
 //=
-
-
-

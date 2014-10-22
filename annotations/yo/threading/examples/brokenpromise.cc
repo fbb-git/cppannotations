@@ -17,6 +17,3 @@ catch (std::exception const &exc)
     std::cerr << exc.what() << '\n';
 }
 //=
-
-
-

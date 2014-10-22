@@ -30,7 +30,3 @@ int main()
     Single::instance();
     Single::instance();
 }
-
-
-
-

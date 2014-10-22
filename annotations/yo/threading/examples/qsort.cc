@@ -41,5 +41,3 @@ int main()
         cout << el << ' ';
     cout << '\n';
 }
-
-    
