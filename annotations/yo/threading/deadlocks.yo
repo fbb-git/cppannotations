@@ -14,24 +14,24 @@ references to objects of lockable types:
        (When the function returns locks were obtained on all tt(li)
         objects. If a lock could not be obtained for at least one of the
         objects, then all locks obtained so far are relased, even if the
-        object for which no lock could be obtained threw an exception.)
+        object for which no lock could be obtained threw an exception;)
     ittq(int std::try_lock(L1 &l1, ...))
        (This function calls the lockable objects' tt(try_lock) members. If all
         locks could be obtained, then -1 is returned. Otherwise the (0-based)
         index of the first argument which could not be locked is returned,
-        releasing all previously obtained locks)
+        releasing all previously obtained locks.)
     )
     
-As an example consider the following small multi-threaded program: The threads
-use mutexes to obtain unique access to tt(cout) and an tt(int value). However,
-tt(fun1) first locks tt(cout) (line 7), and then tt(value) (line 10); tt(fun2)
-first locks tt(value) (line 16) and then tt(cout) (line 19). Clearly, if
-tt(fun1) has locked tt(cout) tt(fun2) can't obtain the lock until tt(fun1) has
-released it. Unfortunately, tt(fun2) has locked tt(value), and the functions
-only release their locks when returning. But in order to access the
-information in tt(value) tt(fun1) it must have obtained a lock on tt(value),
-which it can't, as tt(fun2) has already locked tt(value): the threads are
-waiting for each other, and neither thread gives in.
+As an example consider the following little multi-threaded program: The
+threads use mutexes to obtain unique access to tt(cout) and to an tt(int
+value). However, tt(fun1) first locks tt(cout) (line 7), and then tt(value)
+(line 10); tt(fun2) first locks tt(value) (line 16) and then tt(cout) (line
+19). Clearly, if tt(fun1) has locked tt(cout) tt(fun2) can't obtain the lock
+until tt(fun1) has released it. Unfortunately, tt(fun2) has locked tt(value),
+and the functions only release their locks when returning. But in order to
+access the information in tt(value) tt(fun1) it must have obtained a lock on
+tt(value), which it can't, as tt(fun2) has already locked tt(value): the
+threads are waiting for each other, and neither thread gives in.
         verbinclude(-ns4 //code examples/deadlock.cc)
 
 A good recipe for avoiding deadlocks is to prevent nested (or multiple) mutex
