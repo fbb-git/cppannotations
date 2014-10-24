@@ -4,19 +4,19 @@ used). Using condition variables, a thread simply sleeps until it is notified
 by another thread. In a producer-consumer type of program this is usually
 accomplished like this:
         verb(
-    producer loop:
-        - produce the next item
-        - wait until there's room to store the item,
-            then reduce the available storage
-        - store the item
-        - increment the number of items in store
-
     consumer loop:
         - wait until there's an item in store,
-            then reduce the number of items in store
+            then reduce the number of stored items
         - remove the item from the store
         - increment the number of available storage locations
         - do something with the retrieved item
+
+    producer loop:
+        - produce the next item
+        - wait until there's room to store the item,
+            then reduce the number of available storage locations
+        - store the item
+        - increment the number of stored items
     )
 
 It is important that the two storage administrative tasks (registering the
@@ -30,8 +30,8 @@ performed by the client or by the producer. For the consumer `waiting' means:
     it() Release the lock.
     )
     This scheme is implemented in a class tt(Semaphore), offering members
-tt(reduce) and tt(increase). For a more extensive discussion of semaphores see
-i(Tanenbaum, A.S.) and i(Austin, T.) (2013)
+tt(wait) and tt(notify_all). For a more extensive discussion of semaphores see
+em(i(Tanenbaum, A.S.) and i(Austin, T.)) (2013)
     i(Structured Computer Organization), Pearson Prentice-Hall.
 
 The data member containing the actual count is called ti(d_semaphore). It is
@@ -39,15 +39,15 @@ protected by tt(mutex d_mutex).  In addition a tt(condition_variable
 d_condition) is defined:
         verbinclude(-s4 //data examples/events.cc)
 
-The waiting process is implemented through the member function tt(reduce):
-        verbinclude(-nNs4 //reduce examples/events.cc)
+The waiting process is implemented through its member function tt(wait):
+        verbinclude(-nNs4 //wait examples/events.cc)
     In line 5 tt(d_condition.wait) releases the lock. It waits until receiving
 a notification, and re-acquires the lock just before returning. Consequently,
-tt(reduce's) code always has complete and unique control over tt(d_semaphore).
+tt(wait's) code always has complete and unique control over tt(d_semaphore).
 
     What about notifying the a waiting thread? This is handled in lines 4 and
-5 of the  member function tt(increase):
-        verbinclude(-nNs4 //increase examples/events.cc)
+5 of the  member function tt(notify_all):
+        verbinclude(-nNs4 //notify_all examples/events.cc)
     At line 4 tt(d_semaphore) is always incremented; by using a postfix
 increment it can simultaneously be tested for being zero. If it was initially
 zero then tt(d_semaphore) is now one. A thread waiting until tt(d_semaphore)
@@ -66,36 +66,36 @@ bf(C++) Annotations's source archive):
     Semaphore filled(0);
     std::queue itemQueue;
 
+    void client()
+    {
+        while (true)
+        {
+            filled.wait();
+            size_t item = itemQueue.front();
+            itemQueue.pop();
+            available.notify_all();
+            process(item);      // not implemented here
+        }
+    }
+
     void producer()
     {
         size_t item = 0;
         while (true)
         {
             ++item;
-            available.reduce();
+            available.wait();
             itemQueue.push(item);
-            filled.increase();
+            filled.notify_all();
         }
     }
-    void client()
-    {
-        while (true)
-        {
-            filled.reduce();
-            size_t item = itemQueue.front();
-            itemQueue.pop();
-            available.increase();
-            process(item);      // not implemented here
-        }
-    }
-
     int main()
     {
-        thread produce(producer);
         thread consume(consumer);
+        thread produce(producer);
 
-        produce.join();
         consume.join();
+        produce.join();
     }
         )
 

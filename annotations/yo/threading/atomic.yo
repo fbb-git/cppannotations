@@ -1,7 +1,7 @@
 Before using the facilities introduced in this section the tthi(atomic) header
 file must be included.
 
-When data are shared among multiple threads data corruption is usually
+When data are shared among multiple threads, data corruption is usually
 prevented using mutexes. To increment a simple tt(int) using this strategy
 code as shown below is commonly used:
         verb(    {
@@ -9,22 +9,22 @@ code as shown below is commonly used:
         ++intVar;
     }
         )
-    The compound statement is used to restrict the lifetime of the
-tt(lock_guard), so tt(intVar) is locked for only a short little while. 
+    The compound statement is used to limit the tt(lock_guard's) lifetime, so
+that tt(intVar) is only locked for a short little while.
 
-    Using this scheme is not complex, but at the end of the day having to
-define a tt(lock_guard) for every single use of a simple variable, and having
-to define a matching mutex for each simple variable is a bit annoying and
-cumbersome.
+    This scheme is not complex, but at the end of the day having to define a
+tt(lock_guard) for every single use of a simple variable, and having to define
+a matching mutex for each simple variable is a bit annoying and cumbersome.
 
-    bf(C++), offers a way out through the use of emi(atomic data types).
+    bf(C++) offers a way out through the use of emi(atomic data types).
 Atomic data types are available for all basic types, and also for (trivial)
 user defined types. Trivial types are (see also section ref(TRAITSCPPX)) all
-scalar types, arrays of elements of a trivial type, and classes only defining
-default constructors, copy constructors, destructors, and having non-static
-data members which themselves are of trivial types.
+scalar types, arrays of elements of a trivial type, and classes whose
+constructors, copy constructors, and destructors all have default
+implementations, and their non-static data members are themselves of trivial
+types.
 
-The class template ti(atomic<Type>)tt(std::atomic<Type>) is available for all
+The class template hi(atomic<Type>)tt(std::atomic<Type>) is available for all
 built-in types, including pointer types. E.g., tt(std::atomic<bool>) defines
 an atomic tt(bool) type. For many types alternative somewhat shorter
 type names are available. E.g, instead of tt(std::atomic<unsigned short>) the
@@ -36,14 +36,20 @@ If tt(Trivial) is a user-defined trivial type then
 defines an atomic variant of tt(Trivial): such a type does not require 
 a separate tt(mutex) to synchronize access by multiple threads.
 
-Objects of the class template tt(std::atomic<Type>) cannot directly be
-copied or assigned to each other. However, they can be initialized by values
-of type tt(Type), and values of type tt(Type) can also directly be assigned to
-tt(std::atomic<Type>) objects. 
-
-The class tt(std::atomic<Type>) provides several public members, listed
-below. Non-member (free) functions operating on tt(atomic<Type>) objects 
-are also available. 
+Objects of the class template tt(std::atomic<Type>) cannot directly be copied
+or assigned to each other. However, they can be initialized by values of type
+tt(Type), and values of type tt(Type) can also directly be assigned to
+tt(std::atomic<Type>) objects. Moreover, since tt(atomic<Type>) types offer
+conversion operators returning their tt(Type) values, an tt(atomic<Type>)
+objects can also be assigned to or initialized by another tt(atomic<Type>)
+object using a tt(static_cast):
+        verb(
+    atomic<int> a1 = 5;
+    atomic<int> a2(static_cast<int>(a1));
+        )
+    The class tt(std::atomic<Type>) provides several public members, shown
+below. Non-member (free) functions operating on tt(atomic<Type>) objects are
+also available.
 
 
 The tt(std::memory_order) enumeration defines the following symbolic

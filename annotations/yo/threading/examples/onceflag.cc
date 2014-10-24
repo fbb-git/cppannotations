@@ -1,4 +1,4 @@
-// initializing a (reduced to the essentials) singleton, using std::once_flag.
+// initializing a (waitd to the essentials) singleton, using std::once_flag.
 // don't forget -pthread
 
 #include <iostream>

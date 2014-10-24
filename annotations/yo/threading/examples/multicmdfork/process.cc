@@ -5,7 +5,7 @@ void process(int nr)
     string line;
     while (true)
     {
-        g_worker.reduce();
+        g_worker.wait();
         {
             lock_guard<mutex> lk(g_qsMutex);
             line = g_qs.front();
@@ -14,7 +14,7 @@ void process(int nr)
 
         if (line == "q")
         {
-            g_workforce.increase();
+            g_workforce.notify_all();
             return;
         }
 
@@ -27,6 +27,6 @@ void process(int nr)
                 cmdFork.childExit() << '\n'
                 << cmdFork.childOutput() << '\n';
 
-        g_workforce.increase();
+        g_workforce.notify_all();
     }
 }

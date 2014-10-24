@@ -13,8 +13,8 @@ class Semaphore
     public:
         Semaphore(size_t nAvailable);
 
-        void reduce();      // reduce # available
-        void increase();    // increase # available, notify if initially 0
+        void wait();      // wait # available
+        void notify_all();    // notify_all # available, notify if initially 0
 
         size_t size() const;
 };

@@ -56,7 +56,7 @@ worker threads.
     (Data structure used for multi-threading quicksort)
     (sorting)
     
-The program's tt(main) function starts the work force, reads the data, pushes
+The program's tt(main) function starts the workforce, reads the data, pushes
 the arrays tt(begin) and tt(end) iterators on the task queue and then starts
 the scheduler. Once the scheduler ends the sorted array is displayed:
         verb(
@@ -111,14 +111,21 @@ all tasks have been performed:
 Sub-arrays smaller than two elements need no partitioning. All larger
 sub-arrays are partitioned relative to their first element. The
 tt(std::partition) generic algorithm does this well, but if the pivot is
-itself an element of the array to partition then the pivot's final location is
-undetermined: it may, e.g., be found anywhere in the range of elements which
-are at least equal to the pivot. By calling tt(std::partition) relative to
-sub-array's first element, paritioning its remaining elements, and then
-swapping the sub-array's first element with the element just before the one
-pointed to by tt(std::partition's) return value, two new sub-arrays are
-obtained. These sub-arrays contain, respectively, elements which are smaller
-than, and elements which are as least as big as the pivot. Two iterator pairs
-defining these two sub-arrays are thereupon added to the task queue, creating
-two new tasks to be dealt with by the scheduler:
+itself an element of the array to partition then the pivot's eventual location
+is undetermined: it may be found anywhere in the series of elements which are
+at least equal to the pivot. The two required sub-arrays, however, can easily
+be constructed:
+    itemization(
+    it() First call tt(std::partition) relative to an array's first element, 
+        partitioning the array's remaining elements, returning tt(mid),
+        pointing to the first element of the series of elements that are at
+        least as large as the array's first element;
+    it() Then swap the array's first element with element to which tt(mid - 1)
+        points;
+    it() The two sub-arrays range from, respectively, tt(array.begin()) to
+        tt(mid - 1) (elements all smaller than the pivot), and from tt(mid) to
+        tt(array.end()) (elements all at least as large as the pivot).
+    )
+    The two iterator pairs defining these two sub-arrays are thereupon added
+to the task queue, creating two new tasks to be dealt with by the scheduler:
         verbinclude(-s4 //code examples/multisort/partition.cc)

@@ -7,12 +7,12 @@ void worker()
 
     while (true)
     {
-        g_worker.reduce();
+        g_worker.wait();
 
         g_taskQ.popFront(task);
         task();
 
-        g_workforce.increase();
+        g_workforce.notify_all();
     }
 }
 //=

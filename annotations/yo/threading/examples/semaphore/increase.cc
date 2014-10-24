@@ -1,6 +1,6 @@
 #include "semaphore.ih"
 
-void Semaphore::increase()
+void Semaphore::notify_all()
 {
     lock_guard<mutex> lk(d_mutex);    // get the lock
     if (d_nAvailable++ == 0)

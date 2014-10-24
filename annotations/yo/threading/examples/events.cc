@@ -10,7 +10,7 @@
     class Semaphore
     {
 //data
-std::mutex d_mutex;
+mutable std::mutex d_mutex;
 std::condition_variable d_condition;
 size_t d_available;
 //=
@@ -20,19 +20,19 @@ size_t d_available;
                 d_available(available)
             {}
 
-            void reduce();
-            void increase();
-            size_t size() const;    // returning d_available
+            void wait();
+            void notify_all();
+            size_t size() const;                 // returning d_available
     };
 
 size_t Semaphore::size() const
 {
-    lock_guard<mutex> lk(d_mutex);
-    return d_nAvailable;
+    std::lock_guard<std::mutex> lk(d_mutex);
+    return d_available;
 }
 
-//increase
-void Semaphore::increase()
+//notify_all
+void Semaphore::notify_all()
 {
     std::lock_guard<std::mutex> lk(d_mutex);    // get the lock
     if (d_available++ == 0)
@@ -41,8 +41,8 @@ void Semaphore::increase()
 }   // the lock is released
 //=
 
-//reduce
-void Semaphore::reduce()
+//wait
+void Semaphore::wait()
 {
     std::unique_lock<std::mutex> lk(d_mutex);   // get the lock
     while (d_available == 0)
@@ -77,9 +77,9 @@ void Semaphore::reduce()
             {
                 ++d_item;
                 cout << "Produced item " << d_item << '\n';
-                g_available.reduce();
+                g_available.wait();
                 g_queue.push(d_item);
-                g_filled.increase();
+                g_filled.notify_all();
             }
         }
     };
@@ -99,10 +99,10 @@ void Semaphore::reduce()
         {
             for (size_t run = 0; run != d_trials; ++run)
             {
-                g_filled.reduce();
+                g_filled.wait();
                 size_t d_item = g_queue.front();
                 g_queue.pop();
-                g_available.increase();
+                g_available.notify_all();
                 cout << "\t\tConsumer " << d_nr << " got item " <<
                                                         d_item << '\n';
             }

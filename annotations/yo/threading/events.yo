@@ -62,13 +62,15 @@ The prototypical setup of threads using condition variables looks like this:
 some point release the lock, allowing the other process to (re)acquire it. If
 the consumer starts it immediately releases the lock once it enters its
 waiting state; if the producer starts it releases the lock once the condition
-is true. Note, however, that there is a minor initial synchronization
-requirement. The consumer misses the producer's notification if it (i.e., the
-consumer) hasn't yet entered its waiting state. So em(waiting (consumer)
-threads should start before notifying (producer) threads). Once threads have
-started, no assumptions can be made anymore about the order in which any of
-the condition variable's members (tt(notify_one, notify_all, wait, wait_for),
-and tt(wait_until)) are called.
+is true. 
+
+This protocol hides a subtle initial synchronization requirement. The consumer
+will miss the producer's notification if it (i.e., the consumer) hasn't yet
+entered its waiting state. So em(waiting (consumer) threads should start
+before notifying (producer) threads). Once threads have started, no
+assumptions can be made anymore about the order in which any of the condition
+variable's members (tt(notify_one, notify_all, wait, wait_for), and
+tt(wait_until)) are called.
 
 Condition variables come in two flavors: objects of the class 
     hi(condition_variable)tt(std::condition_variable) are used in combination

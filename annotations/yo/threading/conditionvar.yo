@@ -1,15 +1,17 @@
 The class tt(std::condition_variable)hi(condition_variable) merely offers a
-default constructor. No copy constructor or overloaded assignment operator are
+default constructor. No copy constructor or overloaded assignment operator is
 provided.
 
 Before using the class tt(condition_variable) the tthi(condition_variable)
 header file must be included.
 
-The class's destructor requires that no thread is blocked by the current
-thread. So all threads waiting on a tt(condition_variable) must
-be notified before a tt(condition_variable) object's lifetime
-ends. Calling tt(notify_all) (see below) before a tt(condition_variable's)
-lifetime ends takes care of that.
+The class's destructor requires that no thread is blocked by the thread
+destroying the tt(condition_variable). So all threads waiting on a
+tt(condition_variable) must be notified before a tt(condition_variable)
+object's lifetime ends. Calling tt(notify_all) (see below) before a
+tt(condition_variable's) lifetime ends takes care of that, as the
+tt(condition_variable's) thread releases its lock of the tt(mutex) variable,
+allowing one of the notified threads to lock the mutex.
 
 In the following member-descriptions a type tt(Predicate) indicates that a
 provided tt(Predicate) argument can be called as a function without arguments,
@@ -21,11 +23,11 @@ The class tt(condition_variable) supports several tt(wait) members, which
 block the thread until notified by another thread (or after a configurable
 waiting time). However, tt(wait) members may also spuriously unblock, without
 having reacquired the lock. Therefore, returning from tt(wait) members threads
-should verify that the required condition has actually been attained. If not,
+should verify that the required condition is actually true. If not,
 again calling tt(wait) may be appropriate.  The next piece of pseudo code
 illustrates this scheme:
        verb(
-    while (conditionNotYetMet())
+    while (conditionNotTrue())
         condVariable.wait(&uniqueLock);
         )
 
@@ -125,6 +127,6 @@ cond.wait_until(&unique_lock, chrono::system_clock::now() +
        As long as tt(pred) returns false, the previous tt(wait_until) member
         is called. If the previous member returns tt(cv_status::timeout), then
         tt(pred) is returned, otherwise tt(true).)
-    )
-Threads should verify that the required condition has been attained once
+    ) 
+    Threads should verify that the required condition is tt(true) when
 wait-members of condition variables return.

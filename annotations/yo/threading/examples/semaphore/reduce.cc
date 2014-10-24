@@ -1,6 +1,6 @@
 #include "semaphore.ih"
 
-void Semaphore::reduce()
+void Semaphore::wait()
 {
     unique_lock<mutex> lk(d_mutex);   // get the lock
     while (d_nAvailable == 0)
