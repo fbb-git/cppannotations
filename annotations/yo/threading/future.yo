@@ -1,4 +1,4 @@
-Condition variables allow threads to wait until data have attained certain
+Condition variables allow threads to wait until data have obtained certain
 values. A thread may also have to wait until a sub-thread has finished when
 calling a sub-thread's tt(join) member. 
 
@@ -7,32 +7,32 @@ doing something useful. It might as well pick up the results produced by a
 sub-thread at some point in the future. 
 
 In fact, exchanging data among threads always poses some difficulties, as it
-requires shared variables, and the use of locks and mutexes to prevent
-data corruption. Rather than waiting and using locks it would be nice if some
+requires shared variables, and the use of locks and mutexes to prevent data
+corruption. Rather than waiting and using locks it would be nice if some
 asynchronous task could be started, allowing the initiating thread (or even
-other threads) to pick up the result at some point in the future, whenever the
-results are needed without having to worry about data locks or waiting times.
+other threads) to pick up the result at some point in the future, when the
+results are needed, without having to worry about data locks or waiting times.
 For situations like these bf(C++) provides the class tt(std::future).
 
 Before using the class hi(future) tt(std::future) the tthi(future) header file
 must be included.
 
-Objects of the class template hi(future)tt(std::future) contain the results
+Objects of the class template hi(future)tt(std::future) harbor the results
 produced by asynchronously executed tasks. The class tt(std::future) is a
 class template. Its template type parameter specifies the type of the result
 returned by the asynchronously executed task. This type may be tt(void).
 
-On the other hand, the asynchronously executed task may itself end by throwing
-an exception. In that case the tt(future) object catches the exception,
-rethrowing it when its return value (i.e., the value returned by the
+On the other hand, the asynchronously executed task may throw an exception
+(ending the task). In that case the tt(future) object catches the exception,
+and rethrows it once its return value (i.e., the value returned by the
 asynchronously executed task) is requested.
 
 In this section the members of the class template tt(future) are
-described. tt(Future) objects are commonly initialized using anonymous
+described. tt(Future) objects are commonly initialized through anonymous
 tt(future) objects returned by the factory function tt(std::async) or by the
 tt(get_future) members of the classes tt(std::promise), and
-tt(std::packaged_task), which are introduced in upcoming sections. Examples of
-the use of tt(std::future) objects are provided in those sections.
+tt(std::packaged_task) (introduced in upcoming sections). Examples of the use
+of tt(std::future) objects are provided in those sections.
 
 Some of tt(future)'s members return a value of the strongly typed
 enumeration hi(future_status)tt(std::future_status). This enumeration defines
@@ -41,9 +41,9 @@ and tt(future_status::deferred).
 
 Error conditions are returned through tt(std::future_error)
 exceptions. These error conditions are represented by the values of the
-strongly typed enumeration tt(std::future_errc), covered in the next section.
+strongly typed enumeration tt(std::future_errc) (covered in the next section).
 
-The class tt(future) has the following constructors:
+The class tt(future) itself provides the following constructors:
     itemization(
     ittq(future())
        (The default constructor constructs an tt(future) object that does not
@@ -55,7 +55,7 @@ The class tt(future) has the following constructors:
         invocation. After calling the move constructor tt(tmp.valid()) returns
         tt(false).)
     )
-    The class tt(future) does not offer a copy constructor or overloaded
+    The class tt(future) does not offer a copy constructor or an overloaded
 assignment operator. 
 
     COMMENT(
@@ -64,22 +64,21 @@ class tt(future) do not synchronize with themselves or with member functions
 of the class tt(shared_future)).
     END)
 
-    tt(Std::future) provides the following members:
+Here are the members of the class tt(std::future):
     itemization(
     ittq(future &operator=(future &&tmp))
        (The move assignment operator grabs the information from the tt(tmp)
         object; following this, tt(tmp.valid()) returns tt(false).)
 
     ittq(std::shared_future<ResultType> share() &&)
-       (This member turns an r-value reference to a tt(future<ResultType>)
-        into a tt(std::shared_future<ResultType>) (see section
+       (Returns a tt(std::shared_future<ResultType>) (see section
         ref(SHAREDFUTURE)). After calling this function, the tt(future's
         valid) member returns tt(false).)
 
     ittq(ResultType get())
-       (This member first calls the member tt(wait) (see below), after which
-        the results produced by the associated asynchronoust task
-        arereturned. With tt(future<Type>) specifications the returned value
+       (First tt(wait) (see below) is called. Once tt(wait) has returned the
+        results produced by the associated asynchronoust task
+        are returned. With tt(future<Type>) specifications the returned value
         is the moved shared value if tt(Type) supports move assignment,
         otherwise a copy is returned.  With tt(future<Type &>) specifications
         a tt(Type &) is returned, with tt(future<void>) specifications nothing
@@ -97,7 +96,7 @@ of the class tt(shared_future)).
         thrown (having the value hi(no_state)tt(future_errc::no_state)).)
 
     ittq(void wait() const)
-       (This member blocks until the results produced by the associated
+       (The thread is blocked until the results produced by the associated
         asynchronous task are available.)
 
     ittq(std::future_status wait_for(chrono::duration<Rep, Period> const
