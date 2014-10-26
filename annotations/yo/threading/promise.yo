@@ -9,16 +9,16 @@ must be included.
 
 A tt(promise) is useful in cases where a tt(future) is required containing a
 specific result, but there's no function available or necessary to produce the
-necessary result. An example in which this situation is encountered is
-developed in the next section, where commands, read from the standard input
-stream, are processed by a thread distributing the commands over a `pool' of
-worker threads, each doing some `real work'. The results of the worker threads
-are received and processed by the main thread until the main thread receives a
-result containing the text tt(done). On the one hand this protocol uses
-tt(packaged_tasks) to obtain the results of the real work done by the worker
-threads; on the other hand it uses a tt(std::promise) object to create the
-final tt(future), containing the tt(done) result. The main thread ends once it
-receives that tt(done) result.
+result. 
+COMMENT(
+It could be used, e.g., when implementing a multi-threaded matrix
+multiplication. Each element of the resulting product matrix is computed as
+the inner product of two vectors: the function computing the inner product can
+be executed as a separate thread, `promising' to compute the requested value. 
+The final matrix can be constructed from the computed inner products in yet
+another thread, returning the matrix once all its elements have been
+collected.
+END)    
 
 Here is the class tt(promise)'s interface. Note that the class
 tt(promise) is a class template: its template type parameter tt(ReturnType)
@@ -46,7 +46,7 @@ Constructors and destructor:
 Member functions:
     itemization(
     ittq(std::future<ReturnType> get_future())
-       (A tt(std::future) object haring the current object's shared state is
+       (A tt(std::future) object sharing the current object's shared state is
         returned. A tt(future_error) exception is thrown upon error,
         containing 
        itemization(
@@ -54,10 +54,9 @@ Member functions:
             tt(packaged_task) object containing the same shared state as the
             current object;
         itt(no_state) if the current object has no shared state.
-       ).
-       Note: Any tt(futures) that share the object's shared state will be able
-        to access the result returned by the object's task.)
-
+       )
+       Note: Any tt(futures) that share the object's shared state may
+        access the result returned by the object's task;)
 
     ittq(promise &operator=(promise &&rhs) noexcept)
        (The move assignment operator first releases the current object's
@@ -65,13 +64,14 @@ Member functions:
         tt(tmp) are swapped;)
 
     ittq(void promise<void>::set_value())
-       (See below, at the last tt(set_value) member's description)
+       (See below, at the last tt(set_value) member's description;)
 
     ittq(void set_value(ReturnType &&value))
-       (See below, at the last tt(set_value) member's description)
+       (See below, at the last tt(set_value) member's description;)
 
     ittq(void set_value(ReturnType const &value))
-       (See below, at the last tt(set_value) member's description)
+       (See the next member function's description;)
+
     ittq(void set_value(ReturnType &value))
        (The argument (tt(value)) is atomically stored in the shared state,
         which is then also made ready. A tt(future_error) exception is thrown
@@ -82,7 +82,7 @@ Member functions:
         itt(no_state) if the current object does not have any shared state.
        )
        Alternatively, any exception thrown by tt(value)'s move or copy
-        constructor may be thrown.)
+        constructor may be thrown;)
     COMMENT(
        When multiple threads use tt(set_value) and tt(set_exception) then
         calls to set_value and set_exception on a single tt(promise) object
@@ -100,7 +100,7 @@ Member functions:
        itemization(
        itt(promise_already_satisfied) if the shared state has already been
             made ready;
-        itt(no_state) if the current object does not have any shared state.
+        itt(no_state) if the current object does not have any shared state;
        ))
 
     ittq(void set_exception_at_thread_exit(exception_ptr ptr))
@@ -112,21 +112,21 @@ Member functions:
        itemization(
        itt(promise_already_satisfied) if the shared state has already been
             made ready;
-        itt(no_state) if the current object does not have any shared state.
+        itt(no_state) if the current object does not have any shared state;
        ))
 
 
     ittq(void set_value_at_thread_exit())
        (See below, at the last tt(set_value_at_thread_exit) member's
-        description)
+        description;)
 
     ittq(void set_value_at_thread_exit(ReturnType &&value))
        (See below, at the last tt(set_value_at_thread_exit) member's
-        description)
+        description;)
 
     ittq(void set_value_at_thread_exit(ReturnType const &value))
-       (See below, at the last tt(set_value_at_thread_exit) member's
-        description)
+       (See the next tt(set_value_at_thread_exit) member's
+        description;)
 
     ittq(void set_value_at_thread_exit(ReturnType &value))
        (Stores tt(value) in the shared state without immediately making that
@@ -137,7 +137,7 @@ Member functions:
        itemization(
        itt(promise_already_satisfied) if the shared state has already been
             made ready;
-        itt(no_state) if the current object does not have any shared state.
+        itt(no_state) if the current object does not have any shared state;
        ))
 
     ittq(void swap(promise& other) noexcept)

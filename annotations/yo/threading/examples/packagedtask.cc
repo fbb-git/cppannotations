@@ -8,57 +8,57 @@
 using namespace std;
 
 //code
-mutex commandMutex;
+mutex carDetailsMutex;
 condition_variable condition;
-string command;
-packaged_task<size_t (std::string const &)> task;
+string carDetails;
+packaged_task<size_t (std::string const &)> serviceTask;
 
-size_t length(string const &str)
+size_t volkswagen(string const &type)
 {
-    return str.length();
+    cout << "performing maintenance by the book for a " << type << '\n';
+    return type.size() * 75;            // the size of the bill
 }
 
-size_t file(string const &fname)
+size_t peugeot(string const &type)
 {
-    ifstream in(fname);
-    size_t nLines = 0;
-    while (in.ignore(1000, '\n'))
-        ++nLines;
-    return nLines;
+    cout << "performing quick and dirty maintenance for a " << type << '\n';
+    return type.size() * 50;             // the size of the bill
 }
 
-void run()
+void garage()
 {
     while (true)
     {
-        unique_lock<mutex> lk(commandMutex);
-        while (command.empty())
+        unique_lock<mutex> lk(carDetailsMutex);
+        while (carDetails.empty())
             condition.wait(lk);
 
-        task(command);
-        command.clear();
+        cout << "servicing a " << carDetails << '\n';
+        serviceTask(carDetails);
+        carDetails.clear();
     }
 }
 
 int main()
 {
-    thread(run).detach();
+    thread(garage).detach();
 
     while (true)
     {
-        string line;
-        if (not getline(cin, line) || line.empty())
+        string car;
+        if (not getline(cin, car) || car.empty())
             break;
         {
-            lock_guard<mutex> lk(commandMutex);
-            command = line.substr(1);
+            lock_guard<mutex> lk(carDetailsMutex);
+            carDetails = car;
         }
-        task =  packaged_task<size_t (string const &)>(
-                    line[0] == 'l' ? length : file
+        serviceTask =  packaged_task<size_t (string const &)>(
+                    car[0] == 'v' ? volkswagen : peugeot
                 );
-        auto result = task.get_future();
+        auto bill = serviceTask.get_future();
         condition.notify_one();
-        cout << "Result of " << line << ": " << result.get() << '\n';
+        cout << "Bill for servicing a " << car << 
+                                ": EUR " << bill.get() << '\n';
     }
 }
 //=

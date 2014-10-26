@@ -1,0 +1,45 @@
+
+typedef unspecified     exception_ptr;
+
+     The type exception_ptr can be used to refer to an exception object.
+     exception_ptr shall satisfy the requirements of NullablePointer (17.6.3.3).
+     Two non-null values of type exception_ptr are equivalent and compare equal if and only if they refer
+     to the same exception.
+     The default constructor of exception_ptr produces the null value of the type.
+     exception_ptr shall not be implicitly convertible to any arithmetic, enumeration, or pointer type.
+
+exception_ptr current_exception() noexcept;
+
+     Returns: An exception_ptr object that refers to the currently handled exception (15.3) or a copy of
+     the currently handled exception, or a null exception_ptr object if no exception is being handled. The
+     referenced object shall remain valid at least as long as there is an exception_ptr object that refers to
+     it. If the function needs to allocate memory and the attempt fails, it returns an exception_ptr object
+     that refers to an instance of bad_alloc. It is unspecified whether the return values of two successive
+     calls to current_exception refer to the same exception object. 
+
+Note: That is, it is unspecified
+     whether current_exception creates a new copy each time it is called.] If the attempt
+     to copy the current exception object throws an exception, the function returns an exception_ptr
+     object that refers to the thrown exception or, if this is not possible, to an instance of bad_exception.
+
+[[noreturn]] void rethrow_exception(exception_ptr p);
+
+     Requires: p shall not be a null pointer.
+     Throws: the exception object to which p refers.
+
+template<class E> exception_ptr make_exception_ptr(E e) noexcept;
+
+Effects: Creates an exception_ptr object that refers to a copy of e, as if
+verb(
+  try {
+    throw e;
+  } catch(...) {
+    return current_exception();
+  }
+)
+
+
+
+
+
+

@@ -1,7 +1,7 @@
 #include "main.ih"
 
 //code
-int main(int argc, char **argv)
+int main()
 {
     workforce();                    // start the worker threads
     thread(jobs).detach();          // start working on the jobs

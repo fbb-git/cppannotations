@@ -1,40 +1,40 @@
 In this section another program is developed. This section's  example program
-illustrate the use of tt(packaged_tasks) and a tt(promise). 
+illustrates the use of tt(packaged_tasks). 
 
-Like the multithreaded quicksort example a worker pool is used. However, in
+Like the multi-threaded quicksort example a worker pool is used. However, in
 this example the workers in fact do not know what their task is. In the
 current example the tasks happens to be identical, but diffent tasks might as
 well have been used, without the need to update the workers.
 
 The program uses a tt(class Task) containing a command-specification
 (tt(d_command), and a task specification (tt(d_task)) (cf. fig(compile), the
-sources of the program are found in the annotation()'s
-tt(yo/threading/examples/multicompile) directory)).
+sources of the program are found in the 
+tt(yo/threading/examples/multicompile) directory) of the annotations()).
 
     figure(threading/compile)
     (Data structure used for the multi-threading compilation)
     (compile)
 
-Like before (at the multi-threaded quicksort example) tt(main) first starts
-its workforce as detached threads. Following this, the compilation jobs are
-performed by yet another detached thread. Eventually, the results of the
-compilation jobs are handled by tt(results):
+Like before tt(main) first starts its workforce as detached threads. Following
+this, the compilation jobs are performed by yet another detached
+thread. Eventually, the results of the compilation jobs are handled by
+tt(results):
         verbinclude(-s4 //code examples/multicompile/main.cc)
 
 The tt(jobs)-thread reads the names of the files to compile from the standard
 input stream, and passes them on to tt(dispatch) for further handling by the
 workers. Lines 7 and 8 are executed at the end, and are a safeguard against
-empty input. The safeguard is discussed below, where tt(newResult) is
-described. 
+empty input. The safeguard is discussed below, at tt(newResult's)
+description. 
         verbinclude(-ns4 //code examples/multicompile/jobs.cc)
 
-The dispatcher (shown next) ignores empty lines. Also, if a compilation has
+Next the dispatcher. It ignores empty lines. Also, if a compilation has
 failed by the time the dispatcher is called, processing stops (lines
 6-7). Otherwise, the dispacher waits for an available worker, prepares a new
 task, and notifies a worker to handle it:
         verbinclude(-s4 //code examples/multicompile/dispatch.cc)
 
-The function tt(newTask) prepares the program for another task. First a
+The function tt(newTask) prepares the program for the next task. First a
 tt(Task) object is created. tt(Task) contains the name of the file to compile,
 and a tt(packaged_task). It encapsulates all activities that are associated
 with a tt(packaged_task). Here is its (in-class) definition:
@@ -43,7 +43,7 @@ with a tt(packaged_task). Here is its (in-class) definition:
 Note (lines 22-25) that tt(result) returns a tt(shared_future). Since the
 dispatcher runs in a different thread than the one processing the results, the
 tt(futures) created by the dispatcher must be shared with the tt(futures)
-required by the function processing the results, hence the tt(shared_futures)
+required by the function processing the results. Hence the tt(shared_futures)
 returned by tt(Task::result). 
 
 Once a tt(Task) object has been constructed its tt(shared_future) is pushed on
@@ -60,8 +60,8 @@ front, then perform that task. Whatever happens inside the tasks themselves is
 of no concern: the worker thread eventually ends when the program ends:
         verbinclude(-s4 //code examples/multicompile/worker.cc)
 
-This completes the description of how tasks are handled. The task itself has
-not yet been presented. In the current example program source files are being
+This completes the description of how tasks are handled. The task itself
+remains to be described. In the current example program source files are being
 compiled. The compilation command is passed to the constructor of a
 tt(CmdFork) object, which starts the compiler as a child process. The result
 of the compilation is retrieved via its tt(childExit) (returning the
@@ -69,7 +69,7 @@ compiler's exit code) and tt(childOutput) (returning any textual output
 produced by the compiler) members. If compilation fails, the exit value won't
 be zero. In this case no further compilation tasks will be initiated (lines 11
 and 12; the implementation of the tt(class CmdFork) is available from the
-annotation()'s tt(yo/threading/examples/cmdfork) directory). Here is the
+annotations()' tt(yo/threading/examples/cmdfork) directory). Here is the
 function tt(compile):
         verbinclude(-ns4 //code examples/multicompile/compile.cc)
 
@@ -79,7 +79,7 @@ the tt(Result's d_ok) member is tt(false) and tt(results) ends:
         verbinclude(-s4 //code examples/multicompile/results.cc)
 
 The function tt(newResult) controls tt(results' while)-loop. It returns
-tt(true) when there are some results avilable in the result queue. When no
+tt(true) when there are some results available in the result queue. When no
 filenames are presented at the standard input stream or when no result has as
 yet been pushed on the result queue tt(newResult) waits. It also waits when 
 there are no results available in the results queue, but at least one worker
