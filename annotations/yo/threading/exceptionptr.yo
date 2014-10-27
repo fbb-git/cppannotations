@@ -1,45 +1,78 @@
+tt(Std::promise's) member tt(set_exception) does not expect an
+tt(std::exception) argument, but an object of the class
+hi(exception_ptr)tt(std::exception_ptr). In this section we take a closer look
+at the class tt(exception_ptr).
 
-typedef unspecified     exception_ptr;
+Before using the class tt(exception_ptr) the tthi(future) header file
+must be included.
 
-     The type exception_ptr can be used to refer to an exception object.
-     exception_ptr shall satisfy the requirements of NullablePointer (17.6.3.3).
-     Two non-null values of type exception_ptr are equivalent and compare equal if and only if they refer
-     to the same exception.
-     The default constructor of exception_ptr produces the null value of the type.
-     exception_ptr shall not be implicitly convertible to any arithmetic, enumeration, or pointer type.
+The class an tt(exception_ptr's) default constructor initializes it to a
+null-pointer. In the following code snippet the variable tt(isNull) is set to
+true:
+        verb(    std::exception_ptr obj;
+    bool isNull =  obj == nullptr && obj == 0;
+        )
+    The class tt(exception_ptr) provides copy and move constructors as well as
+copy and move assignment operators.
 
-exception_ptr current_exception() noexcept;
+    Two tt(exception_ptr) objects can be compared for equality. They are equal
+if they refer to the same exception. Move assignment transfers the exception
+referred to by the right-hand side operand to the left-hand side operand, and
+turns the right-hand side operand into a null pointer.
 
-     Returns: An exception_ptr object that refers to the currently handled exception (15.3) or a copy of
-     the currently handled exception, or a null exception_ptr object if no exception is being handled. The
-     referenced object shall remain valid at least as long as there is an exception_ptr object that refers to
-     it. If the function needs to allocate memory and the attempt fails, it returns an exception_ptr object
-     that refers to an instance of bad_alloc. It is unspecified whether the return values of two successive
-     calls to current_exception refer to the same exception object. 
+There is no published method directly retrieving the exception to which an
+tt(exception_ptr) object refers. However, there are some free functions
+constructing or handling tt(exception_ptr) objects:
+    itemization(
+    ithtq(current_exception)
+        (std::exception_ptr std::current_exception() noexcept)
+       (An tt(exception_ptr) object is returned referring to the currently
+        handled exception (or a copy of the currently handled exception, or a
+        default constructed tt(exception_ptr) object if no current exception
+        is available). This function can also be called when a default
+        exception catcher is used. E.g., assuming that tt(obj) refers to an
+        available tt(std::promise) object, then the following code snippet
+        assigns the exception caught by default catch clause to tt(obj):
+       verb(
+    ...
+    catch (...)
+    {
+        obj.set_exception(std::current_exception());
+    }
+       ) 
+       The exception referred to by tt(current_exception) does not have to
+        be an object of the class tt(std::exception). Any type of object or
+        value thrown as an exception is retrieved as an tt(exception_ptr) by
+        tt(current_exception). The exception referred to by an
+        tt(exception_ptr) object remains valid for at least as long as there
+        exists an tt(exception_ptr) object that refers to it. Calling
+        tt(current_exception) twice in a row then the two returned
+        tt(exception_ptr) objects may or may not refer to the same exception
+        object.)
 
-Note: That is, it is unspecified
-     whether current_exception creates a new copy each time it is called.] If the attempt
-     to copy the current exception object throws an exception, the function returns an exception_ptr
-     object that refers to the thrown exception or, if this is not possible, to an instance of bad_exception.
+    ithtq(make_exception_ptr)(std::exception_ptr make_exception_ptr(Type
+        value) noexcept)
+       (This function template constructs an tt(exception_ptr) from a value of
+        any type which is passed as its argument. tt(Type) does not
+        necessarily have to be an tt(std::exception). The constructed
+        tt(exception_ptr) could, e.g., be assigned to a tt(std::promise). When
+        the promise's future's tt(get) member is subsequently called (possibly
+        from within another thread) the exception will be thrown. Here are
+        some examples, showing how values of different types can be passed as
+        arguments to tt(make_exception_ptr), and showing how the eventually
+        constructed tt(exception_ptr) is assigned to the tt(obj), which is
+        assumed to be of a tt(std::promise) type:
+       verb(
+    auto ptr = make_exception_ptr(exception());
+    ptr = make_exception(string("hello world"));
+    ptr = make_exception(12));
 
-[[noreturn]] void rethrow_exception(exception_ptr p);
+    obj.set_exception(make_exception_ptr(ptr);
+       )
+       )
 
-     Requires: p shall not be a null pointer.
-     Throws: the exception object to which p refers.
+    ithtq(rethrow_exception)(void std::rethrow_exception(exception_ptr obj))
+       (The exception to which tt(obj) refers is thrown. Note: tt(obj)
+        cannot be a tt(nullptr).)
 
-template<class E> exception_ptr make_exception_ptr(E e) noexcept;
-
-Effects: Creates an exception_ptr object that refers to a copy of e, as if
-verb(
-  try {
-    throw e;
-  } catch(...) {
-    return current_exception();
-  }
-)
-
-
-
-
-
-
+    )
