@@ -1,29 +1,57 @@
 In addition to tt(std::package_task) and tt(std::async) the class template
-hi(promise)tt(std::promise) can be used to exchange results among different
-threads. A value or exception may be assigned to a tt(promise) in one thread,
-allowing another thread to access the tt(future) associated with the
-tt(promise) at some later point in time.
+hi(promise)tt(std::promise) can be used to obtain the results from a separate
+thread. 
 
 Before using the class template tt(promise) the tthi(future) header file
 must be included.
 
-A tt(promise) is useful in cases where a tt(future) is required containing a
-specific result, but there's no function available or necessary to produce the
-result. 
-COMMENT(
-It could be used, e.g., when implementing a multi-threaded matrix
-multiplication. Each element of the resulting product matrix is computed as
-the inner product of two vectors: the function computing the inner product can
-be executed as a separate thread, `promising' to compute the requested value. 
-The final matrix can be constructed from the computed inner products in yet
-another thread, returning the matrix once all its elements have been
-collected.
-END)    
+A tt(promise) is useful to obtain the results from another thread without
+further synchronization requirements. Consider the following program:
+        verbinclude(-s4 //code examples/promise0.cc)
+Chances are that this program shows the value 0: the tt(cout) statement is
+already executed before the detached thread has had a chance to complete its
+work. In this example that problem can easily be solved by using a
+non-detached thread, and using the thread's tt(join) member, but when multiple
+threads are used that requires named threads and as many tt(join)
+calls. Instead, using a tt(promise) might be preferred:
+        verbinclude(-ns4 //code examples/promise1.cc)
+    In this example again a detached thread is used, but its results are kept
+for future reference in a tt(promise) object, instead of directly being
+assigned to a final destination variable. The tt(promise) object contains a
+tt(future) object holding the computed value. The tt(future's get) member
+blocks until the future has been made ready, at which point the result becomes
+available. By then the detached thread may or may not yet have been
+completed. If it already completed its work then tt(get) immediately returns,
+otherwise there will be a slight delay.
 
-Here is the class tt(promise)'s interface. Note that the class
-tt(promise) is a class template: its template type parameter tt(ReturnType)
-specifies the template type parameter of the tt(std::future) that can be
-retrieved from the tt(promise) object. 
+    Promises can be useful when implementing a multi threaded version of some
+algorithm without having to use additional synchronization statements. As an
+example consider matrix multiplications.  Each element of the resulting
+product matrix is computed as the inner product of two vectors: the inner
+product of a row of the left-hand matrix operand and a column of the
+right-hand matrix operand becomes element tt([row][column]) of the resulting
+matrix. Since each element of the resulting matrix can independently be
+computed from the other elements, a multi threaded implementation is well
+possible. In the following example the function tt(innerProduct) (lines 4..11)
+leaves its result in a tt(promise) object:
+        verbinclude(-ns4 //code examples/promise2.cc)
+    Each inner product is computed by a separate (anonymous and detached)
+thread (lines 17..21), which starts as soon as the run-time system allows it
+to start. By the time the threads have finished the resulting inner products
+can be retrieved from the promises' futures. Since futures' tt(get) members
+block until their results are actually available, the resulting matrix can
+simply be displayed by calling those members in sequence (lines 23..28).
+
+    So, a tt(promise) allows us to use a thread to compute a value (or
+exception, see below), which value may then be collected by another thread at
+some future point in time. The promise remains available, and as a consequence
+further synchronization of the threads and the program starting the threads is
+not necessary. When the promise object contains an exception, rather than a
+value, its future's tt(get) member rethrows the stored exception.
+
+Here is the class tt(promise's) interface. Note that the class tt(promise) is
+a class template: its template type parameter tt(ReturnType) specifies the
+template type parameter of the tt(std::future) that can be retrieved from it.
 
 Constructors and destructor:
     itemization(
@@ -31,16 +59,16 @@ Constructors and destructor:
        (The default constructor constructs a tt(promise) object containing a
         shared state. The shared state may be returned by the member
         tt(get_future) (see below), but that future has not yet been made
-        ready.)
+        ready;)
 
     ittq(promise(promise &&tmp) noexcept)
        (The move constructor constructs a tt(promise) object, transferring
         the ownership of tt(tmp's) shared state to the newly constructed
         object. After the object has been constructed, tt(tmp) no longer
-        contains a shared state.)
+        contains a shared state;)
 
     ittq(~promise())
-       (The object's shared state (if any) is abandoned)
+       (The object's shared state (if any) is abandoned;)
     )
 
 Member functions:
