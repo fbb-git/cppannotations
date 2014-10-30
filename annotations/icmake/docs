@@ -109,14 +109,38 @@ void htmldoc()
     chdir(g_cwd);
 }
 
-void latexdoc(string us)
+void pspdf(string basename)
+{
+    string pdfname;
+    string psname;
+
+    chdir("tmp/docs/latex");
+
+    psname = basename + ".ps";
+    if (basename + ".dvi" younger psname)
+        system("dvips -o" + psname + " " + basename);
+
+    pdfname = basename + ".pdf";
+    if (psname younger pdfname)
+        system("ps2pdf " + psname + " " + pdfname);
+
+    chdir(g_cwd);
+}
+
+void runps()
+{
+    pspdf("cplusplus");
+    pspdf("cplusplusus");
+
+    exit(0);
+}
+
+void latexdoc(string us, int makeps)
 {
     string basename;
     string dvistamp;
     string latexname;
     string latexstamp;
-    string pdfname;
-    string psname;
     string ulatexname;
     string ulatexstamp;
     string yodldefine;
@@ -177,18 +201,26 @@ void latexdoc(string us)
         system("touch " + dvistamp);
     }
 
-    psname = basename + ".ps";
-    if (basename + ".dvi" younger psname)
-        system("dvips -o" + psname + " " + basename);
-
-    pdfname = basename + ".pdf";
-    if (psname younger pdfname)
-        system("ps2pdf " + psname + " " + pdfname);
-
     chdir(g_cwd);
+
+    if (makeps)
+        pspdf(basename);
 }
 
+void runtxt()
+{ 
+    system("rm -f tmp/docs/txt/cplusplus.txt");
+    txtdoc();
+    exit(0);
+}
 
+void runhtml()
+{
+    system("rm -rf tmp/docs/html tmp/html*-stamp");
+    htmldoc();
+    exit(0);
+}
+   
 void docs()
 {
     man();
@@ -197,10 +229,10 @@ void docs()
 
     md("tmp/docs/txt tmp/docs/html tmp/docs/latex");
 
-//    txtdoc();
+    txtdoc();
     htmldoc();
-//    latexdoc("");
-//    latexdoc("us");
+    latexdoc("", 1);
+    latexdoc("us", 1);
 
     exit(0);
 }
