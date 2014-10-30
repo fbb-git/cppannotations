@@ -90,7 +90,7 @@ inline bool StringPtr::iterator::operator!=(iterator const &other) const
 {
     return d_current != other.d_current;
 }
-//
+//=
 //OPSUB
 inline int StringPtr::iterator::operator-(iterator const &rhs) const
 {
