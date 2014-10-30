@@ -16,6 +16,10 @@
                 printf("Saw EOF\n");
             break;
 
+            case '0' ... '9':
+                printf("Saw number character %c\n", c);
+            break;
+
             default:
                 printf("Saw other character, hex value 0x%2x\n", c);
         }

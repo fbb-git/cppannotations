@@ -57,7 +57,7 @@ int main()
                 );
         auto bill = serviceTask.get_future();
         condition.notify_one();
-        cout << "Bill for servicing a " << car << 
+        cout << "Bill for servicing a " << car <<
                                 ": EUR " << bill.get() << '\n';
     }
 }

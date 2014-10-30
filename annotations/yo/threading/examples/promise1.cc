@@ -17,4 +17,3 @@ int main()
     cout << p.get_future().get() << '\n';
 }
 //=
-

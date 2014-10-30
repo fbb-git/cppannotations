@@ -6,7 +6,7 @@ int main()
 {
     std::promise<int> promise;
     promise.set_value(15);
-    
+
     auto fut = promise.get_future();
     auto shared1 = fut.share();
 

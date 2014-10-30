@@ -24,7 +24,7 @@ try
             auto ep = current_exception();
             if (ep == 0)
                 cerr << "current_exc. equals null if an int is thrown\n";
-            rethrow_exception(ep);       
+            rethrow_exception(ep);
         }
     }
     catch (int x)
@@ -57,7 +57,7 @@ try
 //    p.set_exception(make_exception_ptr(string("hello")));
 
     rethrow_exception(make_exception_ptr(12));
-    
+
 }
 catch (int x)
 {
