@@ -32,9 +32,12 @@
 
     int main()
     {
-        delete[] new Strings *[4]; // memory leak: no destructor called
+        auto ptr = new Strings *[4];
+        // ... code assigning `new Strings' to ptr's elements
+        delete[] ptr;               // memory leak: ~Strings() not called
+
         cout << "===========\n";
-        delete[] new Wrapper[4];       // OK: 4 x destructor called
+        delete[] new Wrapper[4];    // OK: 4 x destructor called
     }
     /*
         Generated output:
