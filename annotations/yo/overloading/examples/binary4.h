@@ -3,18 +3,20 @@
         public:
             Binary();
             Binary(int value);
-            Binary(Binary &&tmp) = default;             // or roll your own
+			// copy and move constructors are available by default, or 
+			// they can be explicitly declared and implemented.
 
             Binary &operator+=(Binary const &other);    // see the text
     };
 
-    Binary operator+(Binary const &lhs, Binary const &rhs)
+    inline Binary operator+(Binary &&lhs, Binary const &rhs)
     {
-        Binary tmp(lhs);
-        return operator+(std::move(tmp), rhs);
+        return std::move(lhs += rhs);   // avoids copy construction
     }
 
-    Binary operator+(Binary &&lhs, Binary const &rhs)
+    inline Binary operator+(Binary const &lhs, Binary const &rhs)
     {
-        return lhs += rhs;
+        Binary tmp(lhs);
+        return std::move(tmp) + rhs;
     }
+
