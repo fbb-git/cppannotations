@@ -3,9 +3,9 @@ be a very natural extension of the class's functionality. For example, the
 tt(std::string) class has various overloaded forms of tt(operator+).
 
     Most binary operators come in two flavors: the plain binary operator (like
-the tt(+) operator) and the binary assignment variant (like the tt(+=)
+the tt(+) operator) and the compound assignment variant (like the tt(+=)
 operator). Whereas the plain binary operators return values,
-the binary assignment operators return a reference to the
+the compound assignment operators return a reference to the
 object to which the operator was applied. For example, with tt(std::string)
 objects the following code (annotations below the example) may be used:
         verbinclude(-a examples/binarystring.cc)
@@ -97,18 +97,18 @@ the ambiguity to the first overloaded tt(+) operator.
 assignment operator, having the form tt(@=), with tt(@) being a binary
 operator. As this operator em(always) has a left-hand operand which is an
 object of its own class, it is implemented as a true member
-function. Furthermore, the binary assignment operator should return a
+function. Furthermore, the compound assignment operator should return a
 reference to the object to which the binary operation applies, as the
 object might be modified in the same statement. E.g.,
     tt((s2 += s3) + " postfix"). Here is our second revision of the class
 tt(Binary), showing both the declaration of the plain binary operator and the
-corresponding binary assignment operator:
+corresponding compound assignment operator:
         verbinclude(-a examples/binary2.h)
 
-How should the binary assignment operator be implemented?  When implementing
-the binary assignment operator the strong guarantee should again be kept in
-mind. Use a temporary object and swap if the binary operation might
-throw. Example:
+How should the compound addition assignment operator be implemented?  When
+implementing the compound assignment operator the strong guarantee should
+again be kept in mind. Use a temporary object and swap if the tt(add) member
+might throw. Example:
         verb(
     Binary &operator+=(Binary const &other)
     {
@@ -120,7 +120,7 @@ throw. Example:
         )
 
     It's easy to implement the plain binary operator for classes offering
-the matching binary assignment operator: the tt(lhs) argument is
+the matching compound assignment operator: the tt(lhs) argument is
 copied into a tt(Binary tmp) to which the tt(rhs) operand is added. Then
 tt(tmp) is returned. The copy construction and two statements could be
 contracted into one single return statement, but then compilers usually aren't
@@ -131,13 +131,13 @@ copy elision em(is) usually used when the steps are taken separately:
     But wait! Remember the design principle for move-aware classes that was
 given in section ref(MOVEPRINCIPLE)? When implementing binary operators we're
 doing exactly that what was mentioned in that design principle. A temporay
-object is constructed and the binary assignment operation is applied to the
+object is constructed and the compound assignment operation is applied to the
 temporary object.
 
     If the class tt(Binary) is a move-aware class then we can add a move-aware
 binary operator to our class at very little cost. The actual work is performed
-by the binary assignment operator, as described. However, this operator is
-called from the move-aware binary operator having prototype
+by the compound addition assignment operator, as described. However, this
+operator is called from the move-aware binary operator having prototype
         verb(
     Binary operator+(Binary &&ltmp, Binary const &rhs);
         )
@@ -152,7 +152,7 @@ binary operator's result.
         )
 
     Here is the declaration and implementation of the traditional and
-move-aware binary assignment operator of the class tt(Binary) for
+move-aware compound addition assignment operator of the class tt(Binary) for
 tt(operator+):
 
         verbinclude(-a examples/binary4.h)
