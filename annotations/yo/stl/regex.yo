@@ -1,0 +1,124 @@
+Before using the tt((w)regex) class presented in this section the
+tthi(regex) header file must be included.
+
+The types tt(std::regex)hi(regex) and tt(std::wregex)hi(wregex) define regular
+expression patterns. They define, respectively the types
+tt(basic_regex<char>)hi(basic_regex) and tt(basic_regex<wchar_t>)
+types. Below, the class tt(regex) will be presented, but in the examples
+tt(wregex) could also have been used.
+
+These are the steps that are commonly involved when using regular expressions:
+	itemization(
+	it() First, a regular expression is defined. This involves
+		defining or modifying a tt(regex) object.
+	it() Then the regular expression is provided with a em(target text), which
+		may result in sections of the target text matching the regular
+		expression. 
+	it() The sections of the target text matching (or not matching) the
+		regular expression are retrieved to be processed elsewhere, or:
+	it() The sections of the target text matching (or not matching) the
+		regular expression are directly modified by existing regular
+		expression facilities, after which the modified target text may be
+		processed elsewhere.
+	)
+
+The way tt(regex) objects handles regular expressions is defined by a
+tt(bit_or) combined set of tt(std::regex_constants)hi(regex_constants) values,
+resulting in a tt(regex::flag_type)hi(flag_type) value. These
+tt(regex_constants) are:
+	itemization(
+	ittq(std::regex_constants::awk)
+	   (bf(awk)(1)'s (POSIX) regular expression grammar is used to specify
+		regular exressions;)
+
+	ittq(std::regex_constants::basic)
+	   (the basic POSIX regular expression grammar is used to specify regular
+		expressions;) 
+
+	ittq(std::regex_constants::collate)
+	   (the character range operator (tt(-)) used in character classes defines
+		a locale sensitive range (e.g., tt([a-k]));)
+
+	ittq(std::regex_constants::ECMAScript)
+	   (the tt(flag_type) which is used by default by tt(regex)
+		constructors. The regular expression uses the Modified i(ECMAScript)
+		regular expression grammar;)
+
+	ittq(std::regex_constants::egrep)
+	   (bf(egrep)(1)'s (POSIX) regular expression grammar is used to specify
+		regular exressions. This is the same grammar as used by
+		tt(regex_constants::extended), with the addition of the newline
+		character (tt('\n')) as an alternative for the tt('|')-operator;)
+
+	ittq(std::regex_constants::extended)
+	   (the extended POSIX regular expression grammar is used to specify
+		regular exressions;)
+
+	ittq(std::regex_constants::grep)
+	   (bf(grep)(1)'s (POSIX) regular expression grammar is used to specify
+		regular exressions. This is the same grammar as used by
+		tt(regex_constants::basic), with the addition of the newline character
+		(tt('\n')) as an alternative for the tt('|')-operator;)
+
+	ittq(std::regex_constants::icase)
+	   (letter casing in the target string is ignored. E.g., the regular
+		expression tt(A) matches tt(a) and tt(A);)	
+
+	ittq(std::regex_constants::nosubs)
+	   (When performing matches, all sub-expressions (tt((expr))) are
+		treated as non-marked (tt(?:expr));)
+
+	ittq(std::regex_constants::optimize)
+	   (optimizes the speed of matching regular expressions, at the cost of
+		slowing down the construction of the regular expression somewhat. If
+		the same regular expression object is frequently used then this flag
+		may substantially improve the speed of matching target texts;)
+	)
+
+
+bf(Constructors)
+
+	Except for the default, move and copy constructors all constructors accept
+an additional argument of type tt(regex::flag_type)
+	itemization(
+	ittq(regex())
+	   (the default constructor defines a tt(regex) object not containing a
+		regular expression;)
+
+	ittq(explicit regex(char const *re))
+	   (the tt(regex) object containing the regular expression found at
+		tt(re). Optionally a tt(regex::flag_type) 
+                      flag_type f = std::regex_constants::ECMAScript );
+	(2) 	(since C++11)
+basic_regex( const CharT* s, std::size_t count,
+             flag_type f = std::regex_constants::ECMAScript );
+	(3) 	(since C++11)
+basic_regex( const basic_regex& other );
+	(4) 	(since C++11)
+basic_regex( basic_regex&& other );
+	(5) 	(since C++11)
+template< class ST, class SA >
+
+explicit basic_regex( const std::basic_string<CharT,ST,SA>& str,
+                      flag_type f = std::regex_constants::ECMAScript );
+	(6) 	(since C++11)
+template< class ForwardIt >
+
+basic_regex( ForwardIt first, ForwardIt last,
+             flag_type f = std::regex_constants::ECMAScript );
+	(7) 	(since C++11)
+basic_regex( std::initializer_list<CharT> init,
+             flag_type f = std::regex_constants::ECMAScript );
+	(8) 	(since C++11)
+		
+
+Constructs a new regular expression from a sequence of characters interpreted according to the flags f.
+1) Default constructor. Constructs an empty regular expression which will match nothing.
+2) Constructs a regex from a null-terminated string s.
+3) Constructs a regex from a sequence of count characters, pointed to by s.
+4) Copy constructor. Constructs a regex by copying other
+5) Move constructor. Constructs a regex by with the contents of other using move semantics.
+6) Constructs a regex from a string str.
+7) Range constructor. Constructs the string with the contents of the range [first, last).
+8) Initializer list constructor. Constructs the string with the contents of
+the initializer list init.
