@@ -39,7 +39,7 @@ tt(regex_constants) are:
 	   (the character range operator (tt(-)) used in character classes defines
 		a locale sensitive range (e.g., tt([a-k]));)
 
-	ittq(std::regex_constants::ECMAScript)
+	ithtq(std::regex_constants::ECMAScript)(ECMAScript)
 	   (the tt(flag_type) which is used by default by tt(regex)
 		constructors. The regular expression uses the Modified i(ECMAScript)
 		regular expression grammar;)
@@ -60,7 +60,7 @@ tt(regex_constants) are:
 		tt(regex_constants::basic), with the addition of the newline character
 		(tt('\n')) as an alternative for the tt('|')-operator;)
 
-	ittq(std::regex_constants::icase)
+	ithtq(std::regex_constants::icase)
 	   (letter casing in the target string is ignored. E.g., the regular
 		expression tt(A) matches tt(a) and tt(A);)	
 
@@ -79,35 +79,38 @@ tt(regex_constants) are:
 bf(Constructors)
 
 	Except for the default, move and copy constructors all constructors accept
-an additional argument of type tt(regex::flag_type)
+an additional argument of type tt(regex::flag_type). If not specified the
+value tt(regex_constants::ECMAScript) is used
 	itemization(
 	ittq(regex())
 	   (the default constructor defines a tt(regex) object not containing a
 		regular expression;)
 
-	ittq(explicit regex(char const *re))
-	   (the tt(regex) object containing the regular expression found at
-		tt(re). Optionally a tt(regex::flag_type) 
-                      flag_type f = std::regex_constants::ECMAScript );
-	(2) 	(since C++11)
-basic_regex( const CharT* s, std::size_t count,
-             flag_type f = std::regex_constants::ECMAScript );
-	(3) 	(since C++11)
-basic_regex( const basic_regex& other );
-	(4) 	(since C++11)
-basic_regex( basic_regex&& other );
-	(5) 	(since C++11)
+	ittq(explicit regex(char const *pattern))
+	   (defines a tt(regex) object containing the regular expression found at
+		tt(pattern);)
+
+	ittq(regex(char const *pattern, std::size_t count))
+	   (defines a tt(regex) object containing the regular expression found at
+		tt(pattern), 
+COUNT;)
+
 template< class ST, class SA >
 
-explicit basic_regex( const std::basic_string<CharT,ST,SA>& str,
-                      flag_type f = std::regex_constants::ECMAScript );
-	(6) 	(since C++11)
-template< class ForwardIt >
+	ittq(explicit basic_regex(std::string const &pattern))
+	   (defines a tt(regex) object containing the regular expression found at
+		tt(pattern). This constructor is defined as a member template,
+		accepting tt(basic_string)-type arguments for which non-standard XXX
+		and allocators were used;)
 
-basic_regex( ForwardIt first, ForwardIt last,
-             flag_type f = std::regex_constants::ECMAScript );
-	(7) 	(since C++11)
-basic_regex( std::initializer_list<CharT> init,
+
+	ittq(regex(ForwardIterator first, ForwardIterator last))
+	   (defines a tt(regex) object containing the regular expression found at
+		the (forward) iterator range rangett(first, last). This constructor is
+		defined as a member template, accepting any forward iterator type
+		which can be used to define the regular expression's pattern;)
+
+	ittq(regex(std::initializer_list<CharT> init,
              flag_type f = std::regex_constants::ECMAScript );
 	(8) 	(since C++11)
 		
