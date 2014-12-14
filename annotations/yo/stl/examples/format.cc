@@ -19,7 +19,7 @@ int main()
     cout << "Producing a std::string: " << sm.format(fmt) << '\n';
 
     cout << "Using an ostream_iterator: ";
-    *sm.format(ostream_iterator<char>(cout, ""), fmt) = '\n';
+    *sm.format(ostream_iterator<char>(cout), fmt) = '\n';
 
     string out(40, 'x');
     *sm.format(out.begin(), fmt) = ' ';
