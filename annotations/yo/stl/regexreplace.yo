@@ -5,18 +5,24 @@ tt(match_results::format) member discussed in section ref(FORMAT). The
 following overloaded variants are available:
     itemization(
     ittq(OutputIt regex_replace(OutputIter out, 
-                        BidirIter first, BidirIter last,
+                        BidirConstIter first, BidirConstIter last,
                         std::regex const &re, std::string const &fmt))
-       (tt(OutputIter) and tt(BidirIter) are, respectively, output- and
-        bidirectional iterators. The characters in the range rangett(first,
-        last) are copied to out, replacing any sequences that match tt(re)
-        according to the format string defined by tt(fmt).  First the match
-        result's tt(prefix()) is copied to tt(out), followed by the formatted
-        replacement string as defined by tt(fmt). Having processed all
-        sub-matches the match result's tt(suffix) is copied to tt(out);)
+       (tt(OutputIter) is an output iterator; tt(BidirConstIter) a
+        bidirectional const iterator.
+       itemization(
+        it() The regular expression tt(re) is applied to
+            the characters in the range rangett(first, last);
+        it() For each match, its prefix (starting at the first character for
+            the first match, or just beyond the last character of the previous
+            match) is copied to tt(out), followed by the formatted replacement
+            string defined by tt(fmt).
+        it() Following the last match, that match result's
+            tt(suffix) is copied to tt(out);
+        )
+        (an example is provided below))
 
-    ittq(OutputIt regex_replace( OutputIter out, BidirIter first, BidirIter
-                        last, std::regex const &re, char const *fmt))
+    ittq(OutputIt regex_replace( OutputIter out, BidirConstIter first,
+        BidirConstIter last, std::regex const &re, char const *fmt))
        (This variant behaves like the first variant;)
 
     ittq(std::string regex_replace(std::string const &str,
@@ -37,3 +43,44 @@ following overloaded variants are available:
                    std::regex const &re, char const *fmt))
        (This variant behaves like the previous variant;)
     )
+
+The following example embeds all the words in a line of text in a pair of
+emphasizing html tags (headers and tt(using namespace std) declaraction are
+assumed):
+        verb(
+    int main()
+    {
+        string target("... oh, when the Saints, ...");
+    
+        regex re("\\w+");
+        *regex_replace(ostream_iterator<char>(cout), 
+                target.cbegin(), target.cend(), re, 
+                "<em>$&</em>") = '\n';
+    }
+        )
+
+Note that tt(regex_replace) does not allow conditional replacement. If that's
+required then a more complex approach is required, as shown in the next
+example:
+        verbinsert(-ns4 //code examples/regexplain.cc)
+In this example
+    itemization(
+    it() two functions are declared: tt(modify) returns tt(true) if
+        modification of a target string is requested, tt(replace) replaces
+        tt(match) starting at tt(begin) in tt(target), returning the length of
+        the replacement text;
+    it() at line 13 the begin position of the next tt(regex_search) is
+        computed: each matching process starts just beyond the last character
+        processed so far;
+    it() at lines 14 through 16 the next field matching the regular expression
+        is searched (defined in line 8 as any alphanumeric word). If none is
+        found the tt(while) statement ends;
+    it() at lines 18 and 20 the next offset is determined by adding the
+        initial position of the next sub-string in  target matching tt(re) and
+        the length of the (possibly modified) sub-string to tt(offset);
+    it() if a modification is requested (line 21) then the matched sub-string
+        is replaced by another text in line 22.
+    )
+
+    
+    
