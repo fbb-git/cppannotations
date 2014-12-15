@@ -34,20 +34,18 @@ int main()
     while (true)
     {
         auto begin = target.begin() + offset;
-        if (not regex_search(string::const_iterator(begin), 
+        if (not regex_search(string::const_iterator(begin),
                                             target.cend(), match, re))
             break;
 
         size_t pos = match.position(0);
 
-        offset += pos + 
-                (modify(match[0]) ? 
-                    replace(target, begin + pos,  match[0]) 
-                        : 
+        offset += pos +
+                (modify(match[0]) ?
+                    replace(target, begin + pos,  match[0])
+                        :
                     match.length(0));
     }
     cout << "new text: " << target << '\n';
 }
 //=
-
-

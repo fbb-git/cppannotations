@@ -25,14 +25,12 @@ int main()
 
         size_t pos = match.position(0);
 
-        offset += pos + 
-                modify(match[0]) ? 
-                    replace(target, begin + pos,  match[0]) 
-                        : 
+        offset += pos +
+                modify(match[0]) ?
+                    replace(target, begin + pos,  match[0])
+                        :
                     match.length(0);
     }
     cout << "new text: " << target << '\n';
 }
 //=
-
-

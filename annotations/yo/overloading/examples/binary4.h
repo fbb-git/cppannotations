@@ -3,8 +3,8 @@
         public:
             Binary();
             Binary(int value);
-			// copy and move constructors are available by default, or 
-			// they can be explicitly declared and implemented.
+                        // copy and move constructors are available by default, or
+                        // they can be explicitly declared and implemented.
 
             Binary &operator+=(Binary const &other);    // see the text
     };
@@ -19,4 +19,3 @@
         Binary tmp(lhs);
         return std::move(tmp) + rhs;
     }
-
