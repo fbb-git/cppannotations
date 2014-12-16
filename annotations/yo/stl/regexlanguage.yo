@@ -5,91 +5,71 @@ expressions, parentheses can be used to group elements together to form a
 units on which operators operate. For an extensive discussion the reader is
 referred to, e.g., section 15.10 of the url(ecma-international.org)
     (http://ecma-international.org/ecma-262/5.1/#sec-15.10) page, which
-describes the characteristics of the regular expressions as used by default by
-bf(C++)'s tt(regex) classes. 
+describes the characteristics of the regular expressions used by default by
+bf(C++)'s tt(regex) classes.
 
-Below the `atoms' of bf(C++)'s default definition of regular expressions are
-summarized:
+bf(C++)'s default definition of regular expressions distinguishes the
+following em(atoms):
     itemization(
-    ittq(x)
-       (the character `x';)
+    itt(x): the character `x';
 
-    ittq(.)
-       (any character except for the newline character;)
+    itt(.): any character except for the newline character;
 
-    ittq([xyz])
-       (a character class; in this case, either an `x', a `y', or a `z'
-        mathces the regular expression.  See also the paragraph about
-        character classes below;)
+    itt([xyz]): a character class; in this case, either an `x', a `y', or a `z'
+        matches the regular expression.  See also the paragraph about
+        character classes below;
 
-    ittq([abj-oZ]) 
-       (a character class containing a range of characters; this regular
-        expression matches an `a', a `b', any letter from `j' through `o', or
-        a `Z'.  See also the paragraph about character classes below;)
+    itt([abj-oZ]): a character class containing a range of characters; this
+        regular expression matches an `a', a `b', any letter from `j' through
+        `o', or a `Z'.  See also the paragraph about character classes below;
 
-    ittq([^A-Z])
-       (a negated character class: this regular expression matches any
-        character but those in the class.  In this case, any character
-        em(except for) an uppercase letter.  See also the paragraph about
-        character classes below;)
+    itt([^A-Z]): a negated character class: this regular expression matches
+        any character but those in the class beyond tt(^).  In this case, any
+        character em(except for) an uppercase letter.  See also the paragraph
+        about character classes below;
 
-    ittq([^A-Z\n])
-       (any character EXCEPT an uppercase letter or a newline.  See also the
-        paragraph about character classes below;)
-
-    ittq([:predef:])
-       (a em(predefined) set of characters. See below for an overview. When
-        used, it is interpreted as an element in a character
+    itt([:predef:]): a em(predefined) set of characters. See below for an
+        overview. When used, it is interpreted as an element in a character
         class. It is therefore always embedded in a set of square brackets
-        defining the character class (e.g., tt([[:alnum:]]));)
+        defining the character class (e.g., tt([[:alnum:]]));
 
-    ittq(\X)
-       (if X is `a', `b', `f', `n', `r', `t', or `v', then the ANSI-C
+    itt(\X): if X is `a', `b', `f', `n', `r', `t', or `v', then the ANSI-C
         interpretation of `\x'. Otherwise, a literal `X' (used to escape
-        operators such as `*');)
+        operators such as tt(*));
 
-    ittq((r))
-       (a regular expression tt(r) by itself. It is used to override
-        precedence (see below), but also to define tt(r) as a 
-        emi(marked sub-expression) whose matching characters may directly be
-        retrieved from, e.g., an tt(std::smatch) object (cf. section 
-        ref(SMATCH));)
+    itt((r)): the regular expression tt(r). It is used to override precedence
+        (see below), but also to define tt(r) as a
+       emi(marked sub-expression) whose matching characters may directly be
+        retrieved from, e.g., an tt(std::smatch) object (cf. section
+        ref(SMATCH));
 
-    ittq((?:r))
-       (a regular expression tt(r) by itself. It is used to override
-        precedence (see below), but it does em(not) count as a 
-        em(marked sub-expression);)
-
+    itt((?:r)): the regular expression tt(r). It is used to override
+        precedence (see below), but it is em(not) regarded as a em(marked
+        sub-expression);
     )
 
 In addition to these basic atoms, the following special atoms are available
 (which can also be used in character classes):
     itemization(
-    ittq(\s)
-        (a white space character;)
+    itt(\s): a white space character;
 
-    ittq(\S)
-        (any character but a white space character;)
+    itt(\S): any character but a white space character;
 
-    ittq(\d)
-        (a decimal digit character;)
+    itt(\d): a decimal digit character;
 
-    ittq(\D)
-        (any character but a decimal digit character;)
+    itt(\D): any character but a decimal digit character;
 
-    ittq(\w)
-        (an alphanumeric character or an underscore (tt(_)) character;)
+    itt(\w): an alphanumeric character or an underscore (tt(_)) character;
 
-    ittq(\W)
-       (any character but an alphanumeric character or an underscore (tt(_))
-        character;) 
+    itt(\W): any character but an alphanumeric character or an underscore
+        (tt(_)) character.
     )
 
 Atoms may be concatenated. If tt(r) and tt(s) are atoms then the regular
 expression tt(rs) matches a target text if the target text matches tt(r)
 em(and) tt(s), in that order (without any intermediate characters 
 inside the target text). E.g., the regular expression tt([ab][cd]) matches the
-target text tt(ac), but not the target text tt(a:c).
+target text tt(ac), but not the target text tt(a:c). 
 
 Atoms may be combined using operators. Operators bind to the preceding
 atom. If an operator should operate on multiple atoms the atoms must be
@@ -102,39 +82,31 @@ character class consisting of two characters: a backslash and a star.
 The following operators are supported (tt(r) and tt(s) represent regular
 expression atoms):
     itemization(
-    ittq(r*)
-        (zero or more tt(r)s;)
+    itt(r*): zero or more tt(r)s;
 
-    ittq(r+)
-        (one or more tt(r)s;)
+    itt(r+): one or more tt(r)s;
 
-    ittq(r?)
-        (zero or one tt(r)s (that is, an optional r);)
+    itt(r?): zero or one tt(r)s (that is, an optional r);
 
-    ittq(r{m, n})
-        (where tt(1 <= m <= n): matches `r' at least m, but at most n times;)
+    itt(r{m, n}): where tt(1 <= m <= n): matches `r' at least m, but at most n
+        times;
 
-    ittq(r{m,})
-        (where tt(1 <= m): match `r' m or more times;)
+    itt(r{m,}): where tt(1 <= m): matches `r' m or more times;
 
-    ittq(r{m})
-        (where tt(1 <= m): match `r' exactly m times;)
+    itt(r{m}): where tt(1 <= m): matches `r' exactly m times;
 
-    ittn(r|s)
-       (matches either an `r' or an `s'. This operator has a lower priority
-        than any of the multiplication operators;)
+    ittn(r|s): matches either an `r' or an `s'. This operator has a lower
+        priority than any of the multiplication operators;
 
-    ittq(^r) 
-       (tt(^) is a pseudo operator. This expression matches `r', if
+    itt(^r) : tt(^) is a pseudo operator. This expression matches `r', if
         appearing at the beginning of the target text. If the tt(^)-character
         is not the first character of a regular expression it is interpreted
-        as a literal tt(^)-character;)
+        as a literal tt(^)-character;
 
-    ittq(r$)
-       (tt($) is a pseudo operator. This expression matches `r', if appearing
-        at the end of the target text. If the tt($)-character is not the last
-        character of a regular expression it is interpreted as a literal
-        tt($)-character;)
+    itt(r$): tt($) is a pseudo operator. This expression matches `r', if
+        appearing at the end of the target text. If the tt($)-character is not
+        the last character of a regular expression it is interpreted as a
+        literal tt($)-character;
     )
 
 When a regular expression contains marked sub-expressions and multipliers, and

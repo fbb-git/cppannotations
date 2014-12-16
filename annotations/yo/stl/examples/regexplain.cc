@@ -19,8 +19,8 @@ int main()
     while (true)
     {
         auto begin = target.begin() + offset;
-        if (not regex_search(
-                    string::const_iterator(begin), target.cend(), match, re))
+        if (not regex_search(string::const_iterator(begin), 
+                             target.cend(), match, re))
             break;
 
         size_t pos = match.position(0);
