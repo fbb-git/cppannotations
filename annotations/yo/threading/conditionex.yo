@@ -66,11 +66,12 @@ bf(C++) Annotations's source archive):
     Semaphore filled(0);
     std::queue itemQueue;
 
-    void client()
+    void consumer()
     {
         while (true)
         {
             filled.wait();
+                // mutex lock the queue with multiple consumers
             size_t item = itemQueue.front();
             itemQueue.pop();
             available.notify_all();
@@ -85,6 +86,7 @@ bf(C++) Annotations's source archive):
         {
             ++item;
             available.wait();
+                // mutex lock the queue with multiple consumers
             itemQueue.push(item);
             filled.notify_all();
         }

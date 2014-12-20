@@ -4,8 +4,8 @@
 #include <condition_variable>
 #include <queue>
 #include <thread>
-#include <ctime>
 #include <iostream>
+#include <chrono>
 
     class Semaphore
     {
@@ -58,6 +58,8 @@ void Semaphore::wait()
 
     Semaphore     g_available(5);
     Semaphore     g_filled(0);
+
+    mutex g_qMutex;
     queue<size_t> g_queue;
 
     struct Producer
@@ -73,12 +75,15 @@ void Semaphore::wait()
 
         void operator()()
         {
-            for (size_t run = 0; run < d_trials; ++run)
+            for (size_t run = 0; run != d_trials; ++run)
             {
                 ++d_item;
-                cout << "Produced item " << d_item << '\n';
+                cout << "Produced item " << d_item << endl;
                 g_available.wait();
-                g_queue.push(d_item);
+                {
+                    lock_guard<mutex> lg(g_qMutex);
+                    g_queue.push(d_item);
+                }
                 g_filled.notify_all();
             }
         }
@@ -100,11 +105,16 @@ void Semaphore::wait()
             for (size_t run = 0; run != d_trials; ++run)
             {
                 g_filled.wait();
-                size_t d_item = g_queue.front();
-                g_queue.pop();
+                size_t d_item;
+                {
+                    lock_guard<mutex> lg(g_qMutex);
+                    d_item = g_queue.front();
+                    this_thread::sleep_for(chrono::milliseconds(10));
+                    g_queue.pop();
+                }
                 g_available.notify_all();
                 cout << "\t\tConsumer " << d_nr << " got item " <<
-                                                        d_item << '\n';
+                                                        d_item << endl;
             }
         }
     };
@@ -118,17 +128,22 @@ void Semaphore::wait()
             return 1;
         }
         cerr << "Go!\n";
-        size_t trials = stoul(argv[1]);
+        size_t trials = stoul(argv[1]) + 2 / 3 * 3;
 
         Producer prod(trials); //  << 1);
-        Consumer cons1(trials, 1);
-//        Consumer cons2(trials, 2);
+        Consumer cons1(trials / 3, 1);
+        Consumer cons2(trials / 3, 2);
+        Consumer cons3(trials / 3, 3);
 
         thread consume1(cons1);
-//        thread consume2(cons2);
+        thread consume2(cons2);
+        thread consume3(cons3);
         thread produce(prod);
 
         produce.join();
         consume1.join();
-//        consume2.join();
+        consume2.join();
+        consume3.join();
     }
+
+
