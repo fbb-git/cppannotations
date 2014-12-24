@@ -145,5 +145,3 @@ void Semaphore::wait()
         consume2.join();
         consume3.join();
     }
-
-
