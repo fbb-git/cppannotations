@@ -16,6 +16,4 @@ int main()
     si ip3 = ip;
     si ip4;
     cout << *ip << ip.use_count() << '\n';
-
-    return 0;
 }

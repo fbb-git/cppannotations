@@ -24,8 +24,6 @@
                                             // comparator:
         result = binary_search(sarr, last, "foxtrot", greater<string>());
         cout << (result ? "found " : "didn't find ") << "foxtrot" << '\n';
-
-        return 0;
     }
     /*
         Displays:

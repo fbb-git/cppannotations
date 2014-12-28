@@ -19,6 +19,4 @@
                 stringOne.at(0);    // now "Hello Horld"
         if (stringOne.at(0) == 'H')
             stringOne.at(0) = 'W';  // now "Wello Horld"
-
-        return 0;
     }

@@ -24,6 +24,4 @@
         )
             cout << *iter << " ";
         cout << '\n';
-
-        return 0;
     }

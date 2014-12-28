@@ -28,6 +28,4 @@
             cout << "stringOne before stringTwo in the alphabet\n";
         else
             cout << "The two strings are the same\n";
-
-        return 0;
     }

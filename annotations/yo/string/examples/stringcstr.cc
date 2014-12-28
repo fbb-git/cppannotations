@@ -8,6 +8,4 @@
         char const *cString = stringOne.c_str();
 
         cout << cString << '\n';
-
-        return 0;
     }

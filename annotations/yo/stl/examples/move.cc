@@ -37,8 +37,6 @@ using namespace std;
     {
         Data &&ref = makeData(1);
         cout << ref.d_value << '\n';
-
-        return 0;
     }
     /*
         Output with g++ 4.3.3:

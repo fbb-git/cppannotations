@@ -30,7 +30,6 @@
                   argc == 2 ? TableType::VERTICAL : TableType::HORIZONTAL);
 
         cout << table << '\n';
-        return 0;
     }
     /*
         Example of generated output:

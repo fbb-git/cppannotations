@@ -22,6 +22,4 @@ int main()
 
     unique_ptr<Move> ip3(new Move);
     unique_ptr<Move> ip4(move(ip3));
-
-    return 0;
 }

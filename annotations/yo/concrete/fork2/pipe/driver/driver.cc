@@ -50,6 +50,4 @@ int main(int argc, char **argv)
     cerr << "second line" << '\n';
 
     waitpid(pid, 0, 0);
-
-    return 0;
 }

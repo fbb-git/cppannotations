@@ -37,5 +37,4 @@
             }
             cout << line << '\n';
         }
-        return 0;
     }

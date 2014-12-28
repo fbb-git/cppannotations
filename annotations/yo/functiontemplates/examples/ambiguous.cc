@@ -7,5 +7,4 @@
     int main()
     {
         std::cout << fun(add) << '\n';
-        return 0;
     }

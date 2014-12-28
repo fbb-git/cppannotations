@@ -18,6 +18,4 @@ int main()
 
     cout << "Element " << *result.first << " was " <<
         (result.second ? "" : "not ") << "inserted\n";
-
-    return 0;
 }

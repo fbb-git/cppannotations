@@ -8,6 +8,4 @@
 
         stringTwo = stringOne;      // assign stringOne to stringTwo
         stringTwo = "Hello world";  // assign a C-string to StringTwo
-
-        return 0;
     }

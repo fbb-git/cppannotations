@@ -45,5 +45,4 @@ int main(int argc, char **argv)
                 "          unterminated label section\n";
         return 1;
     }
-    return 0;
 }

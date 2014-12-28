@@ -156,6 +156,4 @@ int main()
     cout << "Using test[1] (= " << test[1] <<
                                         " + 2) in an expression as rvalue\n";
     int n = test[1] + 2;
-
-    return 0;
 }

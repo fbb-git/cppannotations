@@ -42,8 +42,6 @@
         cout << "Upper bound for 7: ";
         copy(pi.second, range + size, ostream_iterator<int>(cout, " "));
         cout << '\n';
-
-        return 0;
     }
     /*
         Displays:

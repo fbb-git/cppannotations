@@ -16,7 +16,6 @@
             cout << rowMargins[idx] << '\n';
 
         cout << "Sum total: " << Matrix<1, 1>(matrix) << '\n';
-        return 0;
     }
     /*
         Generated output from input: 1 2 3 4 5 6

@@ -10,6 +10,4 @@
         ostreambuf_iterator<char> out(cout.rdbuf());
 
         copy(in, eof, out);
-
-        return 0;
     }

@@ -7,6 +7,4 @@ int main(int argc, char **argv)
     parser.setDebug(argc == 1);
 
     parser.parse();
-
-    return 0;
 }
