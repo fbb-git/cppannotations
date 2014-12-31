@@ -4,15 +4,14 @@ void head()
 {
 
     cout << "\n"
-"<html>\n"
-"<head>\n"
+"<!DOCTYPE html><html><head>\n"
 "<title>C++ Annotations HTML Index </title>\n"
+"<style> td {vertical-align: top; font-size: 90%; } </style>\n"
 "</head>\n"
-"<body text=\"black\" bgcolor=\"white\"  >\n"
+"<body>\n"
 "\n"
 "<h1>Index</h1>\n"
 "\n"
-"<font size=-2>\n"
 "<table>\n"
 "<tr>\n";
 }

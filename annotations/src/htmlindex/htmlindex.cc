@@ -36,7 +36,7 @@ int main(int argc, char **argv)
         n = indexVector.size(),
         halfway = (n + 1) / 2;
 
-    cout << "<td valign=top>\n" <<
+    cout << "<td>\n" <<
         "<table>\n";                    // left column as a table
 
     for (unsigned idx = 0; idx < halfway; idx++)    // print left column
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 
     cout << "</table>\n" <<
             "</td>\n" <<                    // left column done
-            "<td valign=top>\n" <<
+            "<td>\n" <<
             "<table>\n";                    // right column as a table
 
     for (unsigned idx = halfway; idx < n; idx++)    // print right column

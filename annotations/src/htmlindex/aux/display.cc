@@ -15,8 +15,8 @@ void display(unsigned idx)
     }
 
     cout <<
-        "   <td valign=top> " << ie.getKey() << " </td>\n" <<
-        "   <td valign=top>\n";
+        "   <td> " << ie.getKey() << " </td>\n" <<
+        "   <td>\n";
 
     ie.showRefs();
 
