@@ -30,12 +30,8 @@ void cleanup(string task, string files)
 
     filelist = strtok(files, " ");
     
-    if (!exists("tmp/" + task + "-stamp"))
-    {
-        for (idx = sizeof(filelist); idx--; )
-            system("tmp/bin/" + task + " -q " + element(idx, filelist));
-        run("touch tmp/" + task + "-stamp");
-    }
+    for (idx = sizeof(filelist); idx--; )
+        system("tmp/bin/" + task + " -q " + element(idx, filelist));
 }
 
 void txtdoc()
@@ -62,6 +58,7 @@ void htmldoc()
     if (!exists("tmp/docs/html/annotations.gif"))
         system("cp -r html/* tmp/docs/html");
 
+                                    // convert .yo to .html
     if (!exists("tmp/docs/html/cplusplus.html"))
     {
         chdir("yo");
@@ -71,42 +68,38 @@ void htmldoc()
     }
 
     chdir("tmp/docs/html");
-
-    if (!exists("index.html"))
+                                    // index.html is the file holding the
+                                    // <iframe>s: add it and related files
+                                    // to tmp/docs/html
+    if (!exists("index.html"))          
         system("cp ../../../single/* .");
 
     htmlList = (list)"cplusplus.html" + makelist("cplusplus??.html");
 
-    if (!exists("../../html-stamp"))
+                                    // patch the html-files
+    for (idx = sizeof(htmlList); idx--; )
     {
-        for (idx = sizeof(htmlList); idx--; )
-        {
-            html = element(idx, htmlList);
-            system("../../../scripts/patchhtml < " + html + " > _" + html);
-            system("mv _" + html + " " + html);
-        }
-        run("touch ../../html-stamp");
+        html = element(idx, htmlList);
+        system("../../../scripts/patchhtml < " + html + " > _" + html);
+        system("mv _" + html + " " + html);
     }
 
-    if (!exists("contents.html"))
-        system("../../../scripts/htmlcontentspage > contents.html");
+                                    // create the contents page
+    system("../../../scripts/htmlcontentspage > contents.html");
 
-    if (!exists("cppindex.html"))
-    {
-        system("grep '^<index' cplusplus.html cplusplus??.html > "
-                                                    "cplusplus.index");
-        system("../../bin/htmlindex < cplusplus.index > cppindex.html");
-    }
+                                    // write index entries to cplusplus.index
+                                    // and create cppindex.html
+    system("grep '^<index' cplusplus.html cplusplus??.html > "
+                                                        "cplusplus.index");
+    system("../../bin/htmlindex < cplusplus.index > cppindex.html");
 
-    if (!exists("../../htmlidx-stamp"))
+                                    // remove the <index> entries from the
+                                    // html files
+    for (idx = sizeof(htmlList); idx--; )
     {
-        for (idx = sizeof(htmlList); idx--; )
-        {
-            html = element(idx, htmlList);
-            system("../../bin/rmindexlines < " + html + " > _" + html);
-            system("mv _" + html + " " + html);
-        }
-        run("touch ../../htmlidx-stamp");
+        html = element(idx, htmlList);
+        system("../../bin/rmindexlines < " + html + " > _" + html);
+        system("mv _" + html + " " + html);
     }
 
     chdir(g_cwd);
