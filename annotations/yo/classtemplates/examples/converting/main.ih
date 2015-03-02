@@ -1,0 +1,65 @@
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+class VehicleBase
+{
+    // original Vehicle members, not implementing the
+    // redefinable interface 
+
+    template <class Derived>
+    friend class Vehicle;
+
+    size_t d_massFactor = 1;
+};
+
+class CarBase: public virtual VehicleBase
+{
+    // original Car members, not implementing the
+    // redefinable interface 
+
+    int x = 1000;
+    friend class Car;
+};
+
+class TruckBase: public CarBase
+{
+    // original Truck members, not implementing the
+    // redefinable interface 
+
+    friend class Truck;
+};
+
+template <class Derived>
+class Vehicle: public virtual VehicleBase
+{
+    public:
+        int mass() const
+        {
+            return d_massFactor *
+                    static_cast<Derived const *>(this)->vmass();
+        }
+};
+
+class Car: public CarBase, public Vehicle<Car>
+{
+    friend class Vehicle<Car>;
+
+    int vmass() const
+    {
+       return x;
+    }
+};
+
+class Truck: public TruckBase, public Vehicle<Truck>
+{
+    friend class Vehicle<Truck>;
+
+    private:
+        int vmass() const
+        {
+            return 15000;
+        }
+};
+
