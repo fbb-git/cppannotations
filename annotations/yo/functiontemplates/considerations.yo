@@ -3,7 +3,7 @@ We've managed to design our first function template:
     Look again at tt(add)'s parameters.  By specifying tt(Type const &)
 rather than tt(Type) superfluous copying is prevented, at the same time
 allowing values of primitive types to be passed as arguments to the
-function. So, when tt(add(3, 4)) is called, tt(int(4)) is assigned to
+function. So, when tt(add(3, 4)) is called, tt(int{4}) is assigned to
 tt(Type const &rvalue). In general, function parameters should be defined as
 tt(Type const &) to prevent unnecessary copying. The compiler is smart enough
 to handle `references to references' in this case, which is something the
@@ -14,7 +14,7 @@ been provided):
         verb(
     int main()
     {
-        size_t const &var = size_t(4);
+        size_t const &var = size_t{4};
         cout << add(var, var) << '\n';
     }
         )
@@ -28,7 +28,7 @@ anymore. The following therefore fails to compile:
         verb(
     int main()
     {
-        cout << add(string("a"), string("b")) << '\n';
+        cout << add(string{"a"}, string{"b"}) << '\n';
     }
         )
     Here, a tt(string const &) cannot be used to initialize a tt(string &).
@@ -38,7 +38,7 @@ the compiler decides that tt(Type) apparently is a tt(string const):
         verb(
     int main()
     {
-        string const &s = string("a");
+        string const &s = string{"a"};
         cout << add(s, s) << '\n';
     }
         )
@@ -81,7 +81,7 @@ function template:
     template <typename Type, size_t Size>
     Type sum(Type const (&array)[Size])
     {
-        Type tp = Type();
+        Type tp{};  // note: the default constructor must exist.
 
         for (size_t idx = 0; idx < Size; idx++)
             tp += array[idx];

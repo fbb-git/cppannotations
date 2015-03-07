@@ -1,7 +1,6 @@
 #include <iostream>
 #include <future>
 
-//code
 void fun()
 {
     std::cerr << "    hello from fun\n";
@@ -15,9 +14,16 @@ std::future<void> asyncCall(char const *label)
     return ret;
 }
 
+//code
 int main()
 {
-    asyncCall("First");
-    asyncCall("Second");
+    auto ret1 = asyncCall("First");
+    auto ret2 = asyncCall("Second");
+
+    ret1.get();
+    ret2.get();
 }
 //=
+
+
+

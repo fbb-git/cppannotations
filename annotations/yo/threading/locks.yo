@@ -42,12 +42,13 @@ owned by the calling thread. Here is an illustration of how it can be used:
             it() At line 1 tt(threadAction) receives a reference to a
 mutex. Assume the mutex owns the lock;
 
-            it() At line 3 control is transferred to the tt(lock_guard). Since
-we don't explicitly use the tt(lock_guard) object, an anonymous object can be
-defined;
+            it() At line 3 control is transferred to the tt(lock_guard). Even
+though we don't explicitly use the tt(lock_guard) object, an object should be
+defined to prevent the compiler from destroying an anonymous object before the
+function ends;
     
             it() When the function ends, at line 5, the mutex's lock is
-released.
+released by the tt(lock_guard's) destructor.
             )
         )
     ittq(mutex_type)
@@ -84,8 +85,7 @@ calls tt(mutex.lock());)
 does not call tt(mutex.lock()). Call it by passing a tt(defer_lock_t) object
 as the constructor's second argument, e.g.,
             verb(
-unique_lock<mutex> ul(mutexObj, defer_lock_t())     // or, anonymous:
-unique_lock<mutex>{mutexObj, defer_lock_t()}
+unique_lock<mutex> ul(mutexObj, defer_lock_t())
             )
         )
 

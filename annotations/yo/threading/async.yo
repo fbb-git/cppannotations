@@ -15,7 +15,7 @@ it could throw an exception.
 
 In those cases tt(join) cannot be used: if an exception leaves a thread, then
 your program ends. Here is an example:
-    verbinclude(-s4 //code examples/throwing.cc)
+    verbinclude(-ns4 //code examples/throwing.cc)
     In line 3 tt(thrower) throws an exception, leaving the thread. This
 exception is not caught by tt(main)'s try-block (as it is defined in another
 thread). As a consequence, the program terminates.
@@ -112,14 +112,14 @@ used by the basic tt(async) call it is likely that the function which is
 passed to tt(async) doesn't immediately start. The tt(launch::deferred) policy
 allows the implementor to defer its execution until the program explicitly
 asks for the function's results. Consider the following program:
-        verbinclude(-ans4 examples/async1.cc)
-    Although tt(async) is called in line 9, when the program is run its output
-may not show tt(fun's) output line.  This is a result of the use of
-tt(lauch::deferred): the system simply defers tt(fun's) execution until
+        verbinclude(-ns4 //code examples/async2.cc)
+    Although tt(async) is called in line 9, the program's output may not show
+tt(fun's) output line when it is run.  This is a result of the (default) use
+of tt(lauch::deferred): the system simply defers tt(fun's) execution until
 requested, which doesn't happen. But the tt(future) object that's returned by
 tt(async) has a member tt(wait). Once tt(wait) returns the shred state must be
 available. In other words: tt(fun) must have finished. Here is what happens
-when line 14 is changed into tt(async(fun).wait()):
+when after line 9 the line tt(ret.wait()) is inserted:
         verb(
     First async call starts
         hello from fun
@@ -128,9 +128,22 @@ when line 14 is changed into tt(async(fun).wait()):
         hello from fun
     Second async call ends
         )
-    Evaluation of tt(fun) can thus be controlled to the point where we want
-it, maybe even after calling tt(asyncCall), as shown in the next
-example. 
+    Actually, evaluation of tt(fun) can be requested at the point where we
+need its results, maybe even after calling tt(asyncCall), as shown in the next
+example:
+        verbinclude(-ns4 //code examples/async4.cc)
+    Here the tt(ret1) and tt(ret2 std::future) objects are created, but their
+tt(fun) functions aren't evaluated yet. Evaluation occurs at lines 6 and 7,
+resulting in the following output:
+        verb(
+    First async call starts
+    First async call ends
+    Second async call starts
+    Second async call ends
+        hello from fun
+        hello from fun
+        )    
+
 
 The tt(std::async) function template is used to start a thread, making its
 results available to the calling thread. On the other hand, we may only be

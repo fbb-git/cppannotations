@@ -38,13 +38,13 @@ void r_refMoveOK(MoveOK &&tmp)
 
 int main()
 {
-     int value = 0;
+    int value = 0;
 
-     std::thread(valueArg,   value).join();
-     std::thread(refArg,     ref(value)).join();
-     std::thread(r_refArg,   move(value)).join();
+    std::thread(valueArg,   value).join();
+    std::thread(refArg,     ref(value)).join();
+    std::thread(r_refArg,   move(value)).join();
 
-//    std::thread(refArg,     value);
+//  std::thread(refArg,     value);
 
     std::thread(r_refArg,   value).join();
     cout << "value after r_refArg: " << value << '\n';
