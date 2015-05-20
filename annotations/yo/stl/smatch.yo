@@ -1,40 +1,62 @@
-Once a tt(regex) object is available, it can be used to match the regular
-expression against some target text. Several functions are available
-performing such matches, like em(regex_match, regex_search,) and
-em(regex_replace), which are covered in the next section. 
+Once a tt(regex) object is available, it can be used to match some target text
+against the regular expression. To match a target text against a regular
+expression the following functions, described in the next section
+(ref(REGALG)), are available:
+    itemization(
+    itt(regex_match) merely matches a target text against a regular
+expression, informing the caller whether a match was found or not;
+    itt(regex_search) also  matches a target text against a regular
+expression, but allows retrieval of matches of marked sub-expressions (i.e.,
+parenthesized regular expressions);
+    itt(regex_replace) matches a target text against a regular
+expression, and replaces pieces of matched sections of the target text by
+another text.
+    )
 
-Usually the result of a regular expression matching process is made available
-in an object of the class tt(std::match_results),hi(match_results). Before
-using the tt(match_results) class the tthi(regex) header file must be
+    These functions must be provided with a target text and a (const reference
+to) a tt(regex) object. Usually another argument, a
+tt(std::match_results)hi(match_results) object is passed to these functions
+containing details about the regular expression matching procedure.
+
+Before using the tt(match_results) class the tthi(regex) header file must be
 included.
 
-Comparable to tt(regex's) specializations, specializations of
-tt(match_results) exist. These specializations differ in the types of
-iterators or pointers that are used by tt(match_results). They are:
+Various specializations of the tt(match_results) types exist. The
+specialization of the tt(match_results) type that is used should match the
+specializations of the used tt(regex) type. E.g., if the regular expression
+was specified as a tt(char const *) the tt(match_results) specialization
+should also operate on tt(char const *) values.
+
+The following specializations are available:
     itemization(
     ittq(cmatch)
        (defines tt(match_results<char const *>), using a tt(char const *) type
-        of iterator;)
+        of iterator. It should be used with a tt(regex(char const *)) regular
+        expression specification;)
     ittq(wcmatch)
        (defines tt(match_results<wchar_ const *>), using a tt(wchar_t const *)
-        type of iterator;)
+        type of iterator. It should be used with a tt(regex(wchar_t const *))
+        regular expression specification;)
     ittq(smatch)
        (defines tt(match_results<std::string::const_iterator>), using a
-        tt(std::string::const_iterator) type of iterator;)
+        tt(std::string::const_iterator) type of iterator. It should be used
+        with a tt(regex(std::string const &)) regular expression
+        specification;)
     ittq(wsmatch)
        (defines tt(match_results<std::wstring::const_iterator>), using a
-        tt(std::wstring::const_iterator) type of iterator.)
+        tt(std::wstring::const_iterator) type of iterator. It should be used
+        with a tt(regex(wstring const &)) regular expression specification.)
     )
 
 bf(Constructors)
 
-The class tt(match_results) provides the standard default, copy, and move
-constructors. In fact, the default constructor defines one parameter, for
-which a default argument is defined.  Its parameter is an tt(Allocator const
-&), by default initialized with the default allocator. Objects of the class
-tt(match_results) receive their match-related information through their member
-functions, usually in combination with one of the predefined functions
-implementing the matching algorithms.
+The default, copy, and move constructors are available. The default
+constructor defines an tt(Allocator const &) parameter, which by default is
+initialized to the default allocator. Normally, objects of the class
+tt(match_results) receive their match-related information by passing them to
+the above mentioned functions, like tt(regex_match). When returning from these
+functions members of the class tt(match_results) can be used to retrieve
+specific results of the matching process.
 
 bf(Member functions)
 
@@ -46,8 +68,8 @@ bf(Member functions)
        (Returns a (const) reference to sub-match tt(idx). With tt(idx) value 0
         a reference to the full match is returned. If tt(idx >= size()) (see
         below) a reference to an empty sub-range of the target string is
-        returned. The behavior of this member is undefined if tt(ready()) (see
-        below) returns tt(false);)
+        returned. The behavior of this member is undefined if the member
+        tt(ready()) (see below) returns tt(false);)
 
     ittq(Iterator begin() const)
        (Returns an iterator to the first sub-match. tt(Iterator) is a
