@@ -1,14 +1,22 @@
 The regular expression matching function tt(std::regex_match)hi(regex_match)
-returns tt(true) if the regular expression represented by its provided
-tt(regex) argument fully matches the provided target text. The following
-overloaded variants of this function are available:
+returns tt(true) if the regular expression defined in its provided
+tt(regex) argument em(fully) matches the provided target text. This means that
+tt(match_results::prefix) and tt(match_results::suffix) must return empty
+strings. But defining sub-expressions is OK.
+
+The following overloaded variants of this function are available:
     itemization(
     ittq(bool regex_match(BidirConstIter first, BidirConstIter last,
                   std::match_results &results,
                   std::regex const &re))
-       (tt(BidirConstIter) is a bidirectional const iterator. The range 
+       (tt(BidirConstIter) is a bidirectional const iterator. The range
         rangett(first, last) defines the target text. The match results are
-        returned in tt(results);)
+        returned in tt(results). The types of the iterators must match the
+        type of the tt(match_results) that's used. E.g., a tt(cmatch) should
+        be used if the iterators are of tt(char const *) types, and a
+        tt(smatch) should be used if the iterators are of
+        tt(string::const_iterator) types. Similar correspondence requirements
+        hold true for the other overloaded versions of this function;)
 
     ittq(bool regex_match(BidirConstIter first, BidirConstIter last,
         std::regex const &re))
@@ -40,4 +48,39 @@ overloaded variants of this function are available:
         objects as target strings, as this would result in invalid string
         iterators in the tt(match_result) argument.)
     )
+    Here is a small example: the regular expression matches the matched text
+(provided by tt(argv[1])) if it starts with 5 digits and then 
+merely contains  letters (tt([[:alpha:]])). The digits can be retrieved as
+sub-expression 1:
+        verb(
+    #include <iostream>
+    #include <regex>
+    
+    using namespace std;
+    
+    int main(int argc, char const **argv)
+    {
+        regex re("(\\d{5})[[:alpha:]]+"); 
+
+        cmatch results;
+
+        if (not regex_match(argv[1], results, re))
+            cout << "No match\n";
+        else
+            cout << "size: " << results.size() << ": " << 
+                    results.str(1) << " -- " << results.str() << '\n';
+    }
+        )
+
+
+
+
+
+
+
+
+
+
+
+
 

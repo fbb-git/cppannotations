@@ -1,19 +1,17 @@
-The tt(match_results::format)ti(format) member applies the sub-expressions
+The tt(match_results::format)ti(format) member applies sub-expressions
 contained in a tt(match_results) object to the contents of a regular
-expression
-	emi(format string), producing text in which hi(format specifier)format
-specifiers (like tt($&)) and escape sequences (like tt(\n)) are replaced by
-matching sub-expressions available from the current tt(match_results) object.
+expression emi(format string), producing text in which 
+    hi(format specifier)format specifiers (like tt($&)) and escape sequences
+(like tt(\n)) are replaced by matching sub-expressions available from the
+current tt(match_results) object. The tt(format) member therefore is primarily
+used to create text that is modified with respect to the original target
+text. 
 
 As an initial illustration: if tt(results) is a tt(match_results) object and
 tt(match[0]) (the fully matched text) equals `tt(hello world)', then calling
-tt(format) with the format string tt(this is [$&]) (the format specifier
-tt($&) represents the fully matched text) produces the text tt(this is [hello
-world]). 
-
-In the format string all standard bf(C) escape sequences are recognized and
-converted to their usual characters. In addition, the following format
-specifiers can be used:
+tt(format) with the format string tt(this is [$&]) produces the text tt(this
+is [hello world]). The specification tt($&) is a format specifier. The
+following format specifiers can be used:
 	itemization(
 	itt($`): corresponds to the text returned by the tt(prefix) member: all
 		characters in the original target string up to the first character
@@ -26,53 +24,10 @@ specifiers can be used:
 		of the fully matched text;
 	itt($$): corresponds to the single tt($) character.
 	)
+    In addition to the format specifiers the format string recognizes all
+standard bf(C) escape sequences, which are converted to their usual characters
+(e.g., tt(\n) is converted to the newline character).
 
-All overloaded tt(format) members accept a final
-tt(regex_constants::match_flag_type)hi(match_flag_type) argument, which is a
-bit-masked type. All tt(format) members specify the default argument
-tt(match_default). 
-
-The following constants are defined for tt(match_flag_type) (see also section
-ref(REGALG); rangett(first, last) refers to the character sequence being
-matched):
-	itemization(
-	iti(format_default) (not a bit-mask value, but equal to 0): ECMAScript
-		rules are used to construct strings in tt(std::regex_replace);
-
-	iti(format_first_only): tt(std::regex_replace) only replaces the first
-		match;
-
-	iti(format_no_copy): non-matching strings are not passed to the output
-		by tt(std::regex_replace);
-
-	iti(format_sed):  POSIX bf(sed)(1) rules are used to construct strings in
-		tt(std::regex_replace);
-
-	iti(match_any): if multiple matches are possible, then any match is an
-		acceptable result;
-
-	iti(match_continuous): sub-sequences are only matching if they start at
-		tt(first); 
-
-	iti(match_not_bol): the first character in rangett(first, last) is treated
-		as an ordinary character:  tt(^) does not match rangett(first, first);
-
-	iti(match_not_bow): tt(\b) does not match rangett(first, first);
-
-	iti(match_default) (not a bit-mask value, but equal to 0): ECMAScript
-		rules are used to construct strings in tt(std::regex_replace);
-
-	iti(match_not_eol): the last character in rangett(first, last) is treated
-		as an ordinary character: tt($) does not match rangett(last,last);
-
-	iti(match_not_eow): tt(\b) does  not match rangett(last, last);
-
-	iti(match_not_null): empty sequences are not considered matches;
-
-	iti(match_prev_avail): tt(--first) refers to a valid character
-		position. When specified tt(match_not_bol) and tt(match_not_bow) are
-		ignored;
-	)
 
 Four overloaded versions of the tt(format) members are available. Their final
 tt(regex_constants::match_flag_type) parameter, by default initialized to

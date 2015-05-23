@@ -15,19 +15,26 @@ another text.
 
     These functions must be provided with a target text and a (const reference
 to) a tt(regex) object. Usually another argument, a
-tt(std::match_results)hi(match_results) object is passed to these functions
-containing details about the regular expression matching procedure.
+tt(std::match_results)hi(match_results) object is also passed to these
+functions, to contain the results of the regular expression matching
+procedure.
 
 Before using the tt(match_results) class the tthi(regex) header file must be
 included.
 
-Various specializations of the tt(match_results) types exist. The
-specialization of the tt(match_results) type that is used should match the
-specializations of the used tt(regex) type. E.g., if the regular expression
-was specified as a tt(char const *) the tt(match_results) specialization
-should also operate on tt(char const *) values.
+Examples of using tt(match_results) objects are provided in section
+ref(REGALG). This and the next section are primarily for referential
+purposes. 
 
-The following specializations are available:
+Various specializations of the class tt(match_results) exist. The
+specialization that is used should match the specializations of the used
+tt(regex) class. E.g., if the regular expression was specified as a tt(char
+const *) the tt(match_results) specialization should also operate on tt(char
+const *) values. The various specializations of tt(match_results) have been
+given names that can easily be remembered, so selecting the appropriate
+specialization is simple.
+
+The class tt(match_results) has the following specializations:
     itemization(
     ittq(cmatch)
        (defines tt(match_results<char const *>), using a tt(char const *) type
@@ -54,7 +61,7 @@ The default, copy, and move constructors are available. The default
 constructor defines an tt(Allocator const &) parameter, which by default is
 initialized to the default allocator. Normally, objects of the class
 tt(match_results) receive their match-related information by passing them to
-the above mentioned functions, like tt(regex_match). When returning from these
+the above-mentioned functions, like tt(regex_match). When returning from these
 functions members of the class tt(match_results) can be used to retrieve
 specific results of the matching process.
 
@@ -89,16 +96,17 @@ bf(Member functions)
 
     ittq(ReturnType format(Parameters) const)
        (As this member requires a fairly extensive description, it would break
-        the flow of the current overview. Therefore it's covered in the
-        link(next section)(FORMAT) (section ref(FORMAT));)
+        the flow of the current overview. This member is used in combination
+        with the tt(regex_replace) function, and it is therefore covered in
+        detail in that function's section (ref(REGREP));)
 
     ittq(allocator_type get_allocator() const)
        (Returns the object's allocator;)
 
     ittq(bool empty() const)
        (Returns tt(true) if the tt(match_results) object contains
-        no matches (which is also true after using the default
-        constructor). Otherwise returns tt(false);)
+        no matches (which is also returned after merely using the default
+        constructor). Otherwise it returns tt(false);)
 
     ittq(int length(size_t idx = 0) const)
        (Returns the length of sub-match tt(idx). By default the length of
@@ -111,28 +119,31 @@ bf(Member functions)
         value;)
 
     ittq(int position(size_t idx = 0) const)
-       (Returns the offset of the first character of sub-match tt(idx). By
-        default the position of the first character of the full match is
-        returned. If tt(idx >= size()) (see below) -1 is returned;)
+       (Returns the offset in the target text of the first character of
+        sub-match tt(idx). By default the position of the first character of
+        the full match is returned. If tt(idx >= size()) (see below) -1 is
+        returned;)
 
     ittq(std::string const &prefix() const)
-       (Returns a (const) reference ending at the first character of the full
-        match;)
+       (Returns a (const) reference to a sub-string of the target text that
+        ends at the first character of the full match;)
 
     ittq(bool ready() const)
        (No match results are available from a default constructed
         tt(match_results) object. It receives its match results from one of
-        the mentioned matching functions. Returns tt(true) once the match
-        results are available, and tt(false) otherwise.)
+        the mentioned matching functions. Returns tt(true) once match results
+        are available, and tt(false) otherwise.)
 
     ittq(size_type size() const)
        (Returns the number of sub-matches. E.g., with a regular expression
         tt((abc)|(def)) and target tt(defcon) three submatches are reported:
-        the total match (def), the empty text for tt((abc)), and tt(def) for
-        the tt((def)) marked sub-expression. Note that when multipliers are
-        used only the last match counts, and is reported. E.g., for the
-        pattern tt((a|b)+) and target tt(aaab) two sub-matches are reported:
-        the total match tt(aaab), and the last match (tt(b));)
+        the total match (def); the empty text for tt((abc)); and tt(def) for
+        the tt((def)) marked sub-expression. 
+
+        Note: when multipliers are used only the last match is counted and
+        reported. E.g., for the pattern tt((a|b)+) and target tt(aaab) em(two)
+        sub-matches are reported: the total match tt(aaab), and the last match
+        (tt(b));)
 
     ittq(std::string str(size_t idx = 0) const)
        (Returns the characters defining sub-match tt(idx). By default this is
@@ -140,8 +151,8 @@ bf(Member functions)
         returned;)
 
     ittq(std::string const &suffix() const)
-       (Returns a (const) reference starting beyond the last character of the
-        full match;)
+       (Returns a (const) reference to a sub-string of the target text that
+        starts beyond the last character of the full match;)
 
     ittq(void swap(match_results &other) noexcept)
        (Swaps the current tt(match_results) object with tt(other). Also
