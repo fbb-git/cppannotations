@@ -5,24 +5,24 @@
 
 using namespace std;
 
-//code
 int main()
 {
-    regex re("hi");
-    smatch sm;
+//start
+    regex re("([[:alpha:]]+)\\s+(\\d+)");  // letters blanks digits
 
-    if (not regex_search("just say ``hi, there''", sm, re))
+    smatch results;
+    string target("this value 1024 is interesting");
+
+    if (not regex_search(target, results, re))
         return 1;
-
-    string fmt("fully matched: $&, beyond: $'");
-
-    cout << "Producing a std::string: " << sm.format(fmt) << '\n';
-
-    cout << "Using an ostream_iterator: ";
-    *sm.format(ostream_iterator<char>(cout), fmt) = '\n';
-
-    string out(40, 'x');
-    *sm.format(out.begin(), fmt) = ' ';
-    cout << "Overwriting an existing std::string: " << out << '\n';
-}
 //=
+    results.format(ostream_iterator<char>(cout, ""), string("$2"));
+    cout << '\n';
+
+    string reverse(results.format("$2 and $1"));
+    cout << reverse << '\n';
+}
+
+
+
+

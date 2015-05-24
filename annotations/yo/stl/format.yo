@@ -1,88 +1,83 @@
-The tt(match_results::format)ti(format) member applies sub-expressions
-contained in a tt(match_results) object to the contents of a regular
-expression emi(format string), producing text in which 
-    hi(format specifier)format specifiers (like tt($&)) and escape sequences
-(like tt(\n)) are replaced by matching sub-expressions available from the
-current tt(match_results) object. The tt(format) member therefore is primarily
-used to create text that is modified with respect to the original target
-text. 
+The tt(match_results::format)ti(format) member is a rather complex member
+function of the class tt(match_results), which can be used to modify text
+which was previously matched against a regular expression, e.g., using the
+function tt(regex_search). Because of its complexity and because the
+functionality of another
+regular expression processing function (tt(regex_replace) offers similar
+functionality it is discussed at this point in the annotations(), just before
+discussing the tt(regex_replace) function.
 
-As an initial illustration: if tt(results) is a tt(match_results) object and
-tt(match[0]) (the fully matched text) equals `tt(hello world)', then calling
-tt(format) with the format string tt(this is [$&]) produces the text tt(this
-is [hello world]). The specification tt($&) is a format specifier. The
-following format specifiers can be used:
+The tt(format) member operates on (sub-)matches contained in a
+tt(match_results) object, using a emi(format string), and producing text in
+which hi(format specifier) format specifiers (like tt($&)) are replaced by
+matching sections of the originally provided target text. In addition, the
+tt(format) member recognizes all standard bf(C) escape sequences (like
+tt(\n)). The tt(format) member is used to create text that is modified with
+respect to the original target text.
+
+As a preliminary illustration: if tt(results) is a tt(match_results) object
+and tt(match[0]) (the fully matched text) equals `tt(hello world)', then
+calling tt(format) with the format string tt(this is [$&]) produces the text
+tt(this is [hello world]). Note the specification tt($&) in this format
+string: this is an example of a format specifier. Here is an overview of all
+supported format specifiers:
 	itemization(
 	itt($`): corresponds to the text returned by the tt(prefix) member: all
-		characters in the original target string up to the first character
+		characters in the original target text up to the first character
 		of the fully matched text;
-	itt($&): corresponds to the fully matched text;
-	itt($n): (n an integral natural number): corresponds to the text returned
-		bu tt(operator[](n));
+	itt($&): corresponds to the fully matched text (i.e., the text returned by
+        the tt(match_results::str) member);
+	itt($n): (where tt(n) is an integral natural number): corresponds to the
+        text returned bu tt(operator[](n));
 	itt($'): corresponds to the text returned by the tt(suffix) member: all
 		characters in the original target string beyond the last character
 		of the fully matched text;
 	itt($$): corresponds to the single tt($) character.
 	)
-    In addition to the format specifiers the format string recognizes all
-standard bf(C) escape sequences, which are converted to their usual characters
-(e.g., tt(\n) is converted to the newline character).
 
+Four overloaded versions of the tt(format) members are available. All
+overloaded versions define a final tt(regex_constants::match_flag_type)
+parameter, which is by default initialized to tt(match_default). This final
+parameter is not explicitly mentioned in the following coverage of the
+tt(format) members.
 
-Four overloaded versions of the tt(format) members are available. Their final
-tt(regex_constants::match_flag_type) parameter, by default initialized to
-tt(match_default), is not explicitly mentioned below.
+To further illustrate the way the tt(format) members can be used it is assumed
+that the following code has been executed:
+    verbinclude(-ns4 //start examples/format.cc)
+  After calling tt(regex_search) (line 6) the results of the regular
+expression matching process are available in the tt(match_results results)
+object that is defined in line 3.
 
-The first two overloaded tt(format) functions expect an output-iterator which
-receives the formatted strings. The final output iterator value is returned:
+The first two overloaded tt(format) functions expect an output-iterator to
+where the formatted text is written. These overloaded members return the 
+final output iterator, pointing just beyond the character that was last
+written.
 	itemization(
 	ittq(OutputIter format(OutputIter out, char const *first, char const
 		*last) 	const)
 	   (the characters in the range rangett(first, last) are applied to the 
 		sub-expressions stored in the tt(match_results) object, and the
-		resulting string is inserted at tt(out) (an example is provided at the
-		end of this section);)
+		resulting string is inserted at tt(out). An illustration is provided
+        with the next overloaded version;)
 
 	ittq(OutputIter format(OutputIter out, std::string const &fmt) 	const)
 	   (the contents of tt(fmt) are applied to the sub-expressions stored in
 		the tt(match_results) object, and the resulting string is inserted at
-		tt(out);)
+		tt(out). The next line of code inserts the value 1024 into tt(cout)
+        (note that tt(fmt) em(must) be a tt(std::string), hence the explicit
+        use of the tt(string) constructor):
+         verb(results.format(ostream_iterator<char>(cout, ""), string("$2"));)
+        )
 	)
 
-The other two overloaded tt(format) functions expect a tt(std::string) or NTBS
-defining the format string, returning a tt(std::string) containing the 
-formatted text:
+The other two overloaded tt(format) members expect an tt(std::string) or an
+NTBS defining the format string. Both members return a tt(std::string)
+containing the formatted text:
 	itemization(
 	itt(std::string format(std::string const &fmt) const)
-	itt(std::string format(char const *fmt) const)
+	ittq(std::string format(char const *fmt) const)
+       (In the example a tt(string) is initialized in which the order of
+        the first and second marked sub-expressions has been swapped:
+    verb(string reverse(results.format("$2 and $1"));)
 	)
-
-Here is an example using various tt(format) members. When using the members
-expecting output iterators you need to make sure that the locations
-subsequently referred to by the iterators exist. For tt(ostream) iterators
-that should be no problem, but for, e.g., an tt(std::string) you must ensure
-that the string object has a large enough size to accomodate the inserted
-characters. Of course, the last two overloaded tt(format) members elegantly
-solve that problem. Another possibility is to define your own output iterators
-(as explained in section ref(RANDOMIT)).  In the example it is assumed that
-all required headers have been included and that tt(using namespace std) has
-been declared:
-		verbinclude(-ns4 //code examples/format.cc)
-	Some details:
-	itemization(
-	it() after defining a tt(regex) pattern and an tt(smatch)
-		(tt(match_results)) object the regular expression is matched against a
-		target sentence in line 6;
-	it() in line 9 a format string is defined, using tt($&) and tt($');
-	it() in line 11 the format string is applied to tt(smatch), producing a
-		tt(std::string), which is inserted into tt(cout);
-	it() identical results can be obtained using an iterator. In line 14 an
-		tt(ostream_iterator) is used (note that tt(format) returns the final
-		tt(ostream_iterator), whose tt(operator*) can be used to insert
-		another character into the stream);
-	it() finally, lines 16-18 illustrate how tt(format) using a
-		tt(string::iterator) can be used to overwrite the contents of an
-		existing tt(std::string) object.
-	)
-
 
