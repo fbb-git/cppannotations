@@ -24,6 +24,3 @@ int main()
     ret2.get();
 }
 //=
-
-
-

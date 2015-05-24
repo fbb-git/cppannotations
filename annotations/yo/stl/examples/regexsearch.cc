@@ -33,15 +33,10 @@ int main()
                         "Match:  "  << results.str()    << "\n"
                         "Suffix: "  << results.suffix() << "\n";
                 for (size_t idx = 1; idx != results.size(); ++idx)
-                    cout << "Match " << idx << " at offset " << 
+                    cout << "Match " << idx << " at offset " <<
                                 results.position(idx) << ": " <<
                                 results.str(idx) << '\n';
             }
         }
     }
 }
-
-
-
-
-

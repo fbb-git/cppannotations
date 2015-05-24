@@ -22,7 +22,3 @@ int main()
     string reverse(results.format("$2 and $1"));
     cout << reverse << '\n';
 }
-
-
-
-

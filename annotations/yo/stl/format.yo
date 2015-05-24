@@ -2,10 +2,9 @@ The tt(match_results::format)ti(format) member is a rather complex member
 function of the class tt(match_results), which can be used to modify text
 which was previously matched against a regular expression, e.g., using the
 function tt(regex_search). Because of its complexity and because the
-functionality of another
-regular expression processing function (tt(regex_replace) offers similar
-functionality it is discussed at this point in the annotations(), just before
-discussing the tt(regex_replace) function.
+functionality of another regular expression processing function
+(tt(regex_replace)) offers similar functionality it is discussed at this point
+in the annotations(), just before discussing the tt(regex_replace) function.
 
 The tt(format) member operates on (sub-)matches contained in a
 tt(match_results) object, using a emi(format string), and producing text in
@@ -21,19 +20,19 @@ calling tt(format) with the format string tt(this is [$&]) produces the text
 tt(this is [hello world]). Note the specification tt($&) in this format
 string: this is an example of a format specifier. Here is an overview of all
 supported format specifiers:
-	itemization(
-	itt($`): corresponds to the text returned by the tt(prefix) member: all
-		characters in the original target text up to the first character
-		of the fully matched text;
-	itt($&): corresponds to the fully matched text (i.e., the text returned by
+    itemization(
+    itt($`): corresponds to the text returned by the tt(prefix) member: all
+        characters in the original target text up to the first character
+        of the fully matched text;
+    itt($&): corresponds to the fully matched text (i.e., the text returned by
         the tt(match_results::str) member);
-	itt($n): (where tt(n) is an integral natural number): corresponds to the
+    itt($n): (where tt(n) is an integral natural number): corresponds to the
         text returned bu tt(operator[](n));
-	itt($'): corresponds to the text returned by the tt(suffix) member: all
-		characters in the original target string beyond the last character
-		of the fully matched text;
-	itt($$): corresponds to the single tt($) character.
-	)
+    itt($'): corresponds to the text returned by the tt(suffix) member: all
+        characters in the original target string beyond the last character
+        of the fully matched text;
+    itt($$): corresponds to the single tt($) character.
+    )
 
 Four overloaded versions of the tt(format) members are available. All
 overloaded versions define a final tt(regex_constants::match_flag_type)
@@ -52,32 +51,33 @@ The first two overloaded tt(format) functions expect an output-iterator to
 where the formatted text is written. These overloaded members return the 
 final output iterator, pointing just beyond the character that was last
 written.
-	itemization(
-	ittq(OutputIter format(OutputIter out, char const *first, char const
-		*last) 	const)
-	   (the characters in the range rangett(first, last) are applied to the 
-		sub-expressions stored in the tt(match_results) object, and the
-		resulting string is inserted at tt(out). An illustration is provided
+    itemization(
+    ittq(OutputIter format(OutputIter out, char const *first, char const
+        *last)  const)
+       (the characters in the range rangett(first, last) are applied to the 
+        sub-expressions stored in the tt(match_results) object, and the
+        resulting string is inserted at tt(out). An illustration is provided
         with the next overloaded version;)
 
-	ittq(OutputIter format(OutputIter out, std::string const &fmt) 	const)
-	   (the contents of tt(fmt) are applied to the sub-expressions stored in
-		the tt(match_results) object, and the resulting string is inserted at
-		tt(out). The next line of code inserts the value 1024 into tt(cout)
+    ittq(OutputIter format(OutputIter out, std::string const &fmt)  const)
+       (the contents of tt(fmt) are applied to the sub-expressions stored in
+        the tt(match_results) object, and the resulting string is inserted at
+        tt(out). The next line of code inserts the value 1024 into tt(cout)
         (note that tt(fmt) em(must) be a tt(std::string), hence the explicit
         use of the tt(string) constructor):
          verb(results.format(ostream_iterator<char>(cout, ""), string("$2"));)
         )
-	)
+    )
 
 The other two overloaded tt(format) members expect an tt(std::string) or an
 NTBS defining the format string. Both members return a tt(std::string)
 containing the formatted text:
-	itemization(
-	itt(std::string format(std::string const &fmt) const)
-	ittq(std::string format(char const *fmt) const)
+    itemization(
+    itt(std::string format(std::string const &fmt) const)
+    ittq(std::string format(char const *fmt) const)
        (In the example a tt(string) is initialized in which the order of
         the first and second marked sub-expressions has been swapped:
     verb(string reverse(results.format("$2 and $1"));)
-	)
+    )
+    )
 
