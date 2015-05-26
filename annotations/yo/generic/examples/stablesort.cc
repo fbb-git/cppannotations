@@ -5,14 +5,14 @@
     #include <iterator>
     using namespace std;
 
-    struct Pss: public pair<string, string>                             // 1
+    struct Pss: public pair<string, string>                         // 1
     {
         Pss(string const &s1, string const &s2)
         :
             pair<string, string>(s1, s2)
         {}
     };
-    ostream &operator<<(ostream &out, Pss const &p)           // 2
+    ostream &operator<<(ostream &out, Pss const &p)                 // 2
     {
         return out << "    " << p.first << " " << p.second << '\n';
     }
@@ -20,32 +20,32 @@
     {
         string Pss::*d_field;
         public:
-            Sortby(string Pss::*field)                             // 3
+            Sortby(string Pss::*field)                              // 3
             :
                 d_field(field)
             {}
-            bool operator()(Pss const &p1, Pss const &p2) const         // 4
+            bool operator()(Pss const &p1, Pss const &p2) const     // 4
             {
                 return p1.*d_field < p2.*d_field;
             }
     };
     int main()
     {
-        vector<Pss> namecity;                                           // 5
+        vector<Pss> namecity {                                      // 5
+                Pss("Hampson",   "Godalming"),
+                Pss("Moran",     "Eugene"),
+                Pss("Goldberg",  "Eugene"),
+                Pss("Moran",     "Godalming"),
+                Pss("Goldberg",  "Chicago"),
+                Pss("Hampson",   "Eugene")
+        };
 
-        namecity.push_back(Pss("Hampson",   "Godalming"));
-        namecity.push_back(Pss("Moran",     "Eugene"));
-        namecity.push_back(Pss("Goldberg",  "Eugene"));
-        namecity.push_back(Pss("Moran",     "Godalming"));
-        namecity.push_back(Pss("Goldberg",  "Chicago"));
-        namecity.push_back(Pss("Hampson",   "Eugene"));
-
-        sort(namecity.begin(), namecity.end(), Sortby(&Pss::first));    // 6
+        sort(namecity.begin(), namecity.end(), Sortby(&Pss::first));// 6
 
         cout << "sorted by names:\n";
         copy(namecity.begin(), namecity.end(), ostream_iterator<Pss>(cout));
 
-                                                                        // 7
+                                                                    // 7
         stable_sort(namecity.begin(), namecity.end(), Sortby(&Pss::second));
 
         cout << "sorted by names within sorted cities:\n";
