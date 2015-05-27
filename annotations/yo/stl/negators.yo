@@ -1,37 +1,62 @@
 em(Negators) hi(negators) are function adaptors converting the values
-returned by predicate function. Since there are unary and binary predicate
-functions, two i(negator function) adaptors were predefined: ti(not1) is
+returned by predicate function. Traditionally, matching ttbind1st) and
+tt(bind2nd), two i(negator function) adaptors were predefined: ti(not1) is
 the negator to use with unary predicates, ti(not2) is the negator to
-with binary function objects.
+with binary function objects. In specific situations they may still be usable
+in combination with the tt(bind) function template, but since tt(bind1st) and
+tt(bind2nd) will be deprecated in i(C++17), alternative implementations are
+being considered for tt(not1) and tt(not2) as well ((see, e.g.,
+lurl(https://isocpp.org/files/papers/n4076.html)).  
 
-Example: to count the number of persons in a tt(vector<string>) vector ordered
-alphabetically before (i.e., em(not) exceeding) a certain reference text one
-of  the following alternatives could be used:
+Since tt(not1) and tt(not2) are still part of the bf(C++) standard, their use
+is briefly illustrated here. An alternate implementation, suggesting how a
+future tt(not_fn) might be designed and how it can be used is provided in
+section ref(NOTFN).
+
+Here are some examples illustrating the use of tt(not1) and tt(not2): To count
+the number of elements in a vector of strings (tt(vs)) that are alphabetically
+ordered before a certain reference string (tt(target)) one of the following
+alternatives could be used:
     itemization(
-    it() a i(binary predicate) that directly offers the required comparison:
+    it() a i(binary predicate) directly performing the required comparison:
         verb(
-count_if(stringVector.begin(), stringVector.end(),
-    bind2nd(less_equal<string>(), referenceText))
+count_if(vs.begin(), vs.end(), bind2nd(less<string>(), target))
         )
-    it() tt(not2) in combination  with the tt(greater<>) predicate:
+or, using tt(bind):
         verb(
-count_if(stringVector.begin(), stringVector.end(),
-    bind2nd(not2(greater<string>()), referenceText))
+count_if(vs.begin(), vs.end(), bind(less<string>(), _1, target));
         )
-        Here tt(not2) is used as it negates the truth value of a binary
-tt(operator()), in this case the tt(greater<string>::operator()) member
-function.
-    it() tt(not1) in combination with the tt(bind2nd) predicate:
+    it() The comparison can be reversed, using the tt(not2) negator:
         verb(
-count_if(stringVector.begin(), stringVector.end(),
-    not1(bind2nd(greater<string>(), referenceText)))
+count_if(vs.begin(), vs.end(),  
+        bind2nd(not2(greater_equal<string>()), target));
         )
-        Here tt(not1) is used as it negates the truth value of a unary
-tt(operator()), in this case the tt(bind2nd) function adaptor.
-    )
-    The use of negators is illustrated by the following program:
-        verbinclude(-a examples/adaptors.cc)
+        Here tt(not2) is used as it negates the truth value of
+tt(greater_equal's) truth value. tt(Not2) receives two arguments (one of
+tt(vs's) elements and tt(target)), passes them on to tt(greater_equal), and
+returns the negated return value of the called tt(greater_equal) function.
 
+In this example tt(bind) could also have been used:
+        verb(
+count_if(vs.begin(), vs.end(),  
+        bind(not2(greater_equal<string>()), _1, target));
+        )
+    it() tt(not1) in combination with the tt(bind2nd) predicate: here the
+arguments that are passed to tt(not1)'s function call operator (i.e., the
+elements of the tt(vs) vector) are passed on to tt(bind2nd)'s function call
+operator, which in turn calls tt(greater_equal), using tt(target) as its
+second argument. The value that is returned by tt(bind2nd)'s function call
+operator is then negated and subsequently returned as the return value of
+tt(not1's) function call operator:
+        verb(
+count_if(vs.begin(), vs.end(),
+    not1(bind2nd(greater_equal<string>(), target)))
+        )
+    When using tt(bind) in this example a compilation error results, which can
+be avoided using tt(not_fn) (section ref(NOTFN)).
+    )
+
+    COMMENT(
     One may wonder which of these alternative approaches is the faster. Using
 the first approach, in which a directly available function object was used,
 two actions must be performed for each iteration by tt(count_if):
@@ -67,3 +92,4 @@ actually performed.
 With a commonly used optimization flag like tt(-O2) the compiler tries to
 grant inline requests. However, if the compiler ignores the inline requests
 the first variant will be faster.
+    END)
