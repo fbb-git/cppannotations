@@ -1,5 +1,11 @@
-Member function adaptors allow the use of generic algorithms when the function
-to call is a member function of a class. Consider the following class:
+The member function adaptors introduced in this section allow the use of
+generic algorithms when the function to call is a member function of a
+class. They are, however, deprecated in the upcoming i(C++17) standard, as
+their use can easily be replaced by tt(bind) (cf. section(BIND)). The member
+function adaptors are briefly mentioned, followed by an illustration of how
+tt(bind) can be used instead.
+
+Consider the following class:
         verb(
     class Data
     {
@@ -16,40 +22,44 @@ objects stored in the vector, as tt(for_each) accepts either a (non-member)
 function or a function object as its third argument, but does not accept a
 member function.
 
-    The member function adaptor tt(mem_fun_ref) can be used to solve this
-problem. It expects the address of a member function without any parameters
-and its function call operator calls that function for the object that is
-passed to its function call operator. In the next example tt(vector<Data>
-data) is filled with tt(Data) objects. Then tt(for_each) is used to display the
-information in the various tt(Data) objects that are stored in the tt(data)
-vector:
+    The member function adaptor tt(mem_fun_ref) and tt(bind) can be used to
+solve this problem. tt(Mem_fun_ref) expects the address of a member function
+not defining any parameters, and tt(mem_fun_ref's) function call operator
+calls that function for the object that is passed as argument to its function
+call operator. The example shows its use, as well as an alternative using
+tt(bind) (using namespaces tt(std) and tt(placeholders) is assumed): 
         verb(
     int main()
     {
         vector<Data> data;
-
-        // the 'data' vector is filled with Data objects here
-
+                                            // deprecated in C++17
         for_each(data.begin(), data.end(), mem_fun_ref(&Data::display));
+
+                                            // alternative, using bind
+        for_each(data.begin(), data.end(), bind(&Data::display, _1));
     }
         )
 
 A second member function adaptor is tt(mem_fun), which is used to call a
-member function from a em(pointer) to an object. The above example could
-be rewritten to something like:
+member function from a em(pointer) to an object. Here tt(bind) can also be
+used, as it detects the pointers (as well as tt(shared_ptr) objects, if used)
+in the vector tt(data): 
         verb(
     int main()
     {
-        vector<Data *> data;
+        vector<Data *> data { new Data };
 
-        data.push_back(new Data);   // multiple push-backs if applicable
-
+                                            // deprecated in C++17
         for_each(data.begin(), data.end(), mem_fun(&Data::display));
 
-        // delete the Data objects pointed to by data's elements
+                                            // alternative, using bind
+        for_each(data.begin(), data.end(), bind(&Data::display, _1));
+
+        delete data[0];
     }
         )
 
+    COMMENT(
 An interesting observation is that tlurl(http://www.sgi.com) provides an
 example of the use of tt(mem_fun) where polymorphic members are used. If
 tt(Data::display) is a virtual member function and tt(Derived1) and
@@ -86,3 +96,14 @@ public interface should be provided by tt(Data) as follows:
     In the above example tt(mem_fun) would simply receive tt(&Data::display)'s
 address. No need to modify the above tt(main) function, but now tt(Data)'s
 polymorphic features are completely separated from its public interface.
+    END)
+
+
+
+
+
+
+
+
+
+

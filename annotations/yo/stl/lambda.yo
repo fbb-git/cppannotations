@@ -1,4 +1,4 @@
-C++ supports hi(lambda expression) em(lambda expressions). As we'll see in
+bf(C++) supports hi(lambda expression) em(lambda expressions). As we'll see in
 chapter ref(GENERIC) em(generic algorithms) often accept arguments that can
 either be function objects or plain functions. Examples are the tt(sort)
 (cf. section ref(SORT)) and tt(find_if) (cf. section ref(FINDIF)) generic
@@ -54,7 +54,6 @@ the lamba expression should specify tt(mutable), as follows:
     The lambda-declarator may be omitted, if no parameters are defined. The
 parameters in a lamba declarator may not be given default arguments.
 
-
 A closure object as defined by the above lamda expression could be used e.g.,
 in combination with the tt(accumulate) (cf. section ref(ACCU)) generic
 algorithm to compute the product of a series of tt(int) values stored in a
@@ -79,10 +78,10 @@ using a
         verb(
     [](int x, int y) -> int
     {
-        if (y < 0)
-            return x / static_cast<double>(y);
-
-        return z + x;
+        return y < 0 ?
+                    x / static_cast<double>(y)
+                :
+                    z + x;
     }
         )
 
@@ -235,9 +234,6 @@ compound statment, required in the last example, completely. Here goes:
     }
         )
 
-
-
-
 Another fine-tuning uses tt(this) in the lambda-capture: it also allows the
 lambda-expression to access the surrounding class members.  Example:
         verb(
@@ -338,5 +334,53 @@ in section ref(CONDEX), checking for the data's actual availability:
         )
     The lambda expression ensures that tt(wait) only returns once
 tt(semaphore) has been incremented.
-    
 
+i(C++14) further generalizes lambda expressions by introducing emi(generic
+lambda) expressions. A generic lambda expression uses tt(auto) when defining
+its parameters. When used the appropriate lambda expression is created by
+looking at the actual types of arguments. Since they are generic, they can be
+used inside one function with different types of arguments. Here is an example
+(assuming all required headers and namespace declaration):
+    verbinclude(-ns4 //code examples/genlambda.cc)
+    The generic lambda function is defined in lines 3 through 6, and is
+assigned to the tt(lambda) identifier. Then, tt(lambda) is passed to
+tt(accumulate) in lines 12 and 13. In line 12 it is instantiated to add
+tt(int) values, in line 13 to add tt(std::string) values: the same tt(lambda)
+is instantiated to two completely different functors, which are only locally
+available in tt(main).
+    
+Lambda expression are primarily used to obtain functors that are used in a
+very localized section of a program. Since they are used inside an existing
+function we should realize that once we use lambda functions multiple
+aggregation levels are mixed. Normally a function implements a task which can
+be described at its own aggregation level using just a few sentences. E.g.,
+``the function tt(std::sort) sorts a data structure by comparing its elements
+in a way that is appropriate to the context where tt(sort) is called''. By
+using an existing comparison method the aggregation level is kept, and the
+statement is clear by itself. E.g.,
+        verb(
+    sort(data.begin(), data.end(), greater<DataType>());
+        )
+    If an existing comparison method is not available, a tailor-made function
+object must be created. This could be realized using a lambda
+expression. E.g.,
+        verb(
+    sort(data.begin(), data.end(), 
+        [&](DataType const &lhs, DataType const &rhs)
+        {
+            return lhs.greater(rhs);
+        }
+    );
+        )
+    Looking at the latter example, we should realize that here two different
+aggregation levels are mixed: at the top level the intent is to sort the
+elements in tt(data), but at the nested level (inside the lambda expression)
+something completely different happens: here it is defined how the decision is
+made which of the two objects is the greater. Code exhibiting such mixed
+aggregation levels is hard to read, and should be avoided. But on the other
+hand: lambda expressions also simplify code because all additional code that
+is required when defining a tailor-made functor can be avoided. The advice,
+therefore, is to use lambda expressions sparingly, and when they are used make
+sure that their sizes remain small. As a i(rule of thumb): lambda expressions
+should be treated like in-line functions, and should merely consist of one, or
+maybe occasionally two expressions.
