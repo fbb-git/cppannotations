@@ -32,7 +32,7 @@ int main()
             [&](auto const &str)
             {
                 return not stringcasecmp(str, target);
-    
+
             }
         );
 
