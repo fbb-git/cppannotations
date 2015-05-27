@@ -22,10 +22,19 @@ int main()
     copy(istream_iterator<string>(cin), istream_iterator<string>(),
         back_inserter(v1));
 
-    auto pos = find_if(
+    auto pos = find_if(                         // deprecated in C++17
                     v1.begin(), v1.end(),
                     not1( bind2nd(ptr_fun(stringcasecmp), target) )
                );
+
+                                                // preferred alternative:
+    auto pos = find_if(v1.begin(), v1.end(),    // use a lambda expression
+            [&](auto const &str)
+            {
+                return not stringcasecmp(str, target);
+    
+            }
+        );
 
     if ( pos != v1.end())
        cout <<   "The search for `" << target << "' was successful.\n"
