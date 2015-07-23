@@ -1,15 +1,16 @@
 Section ref(NEGATORS) covered the tt(not1) and tt(not2) negators. These
-negators have limited use as they cannot always be used in combination with
-the tt(bind) function template (cf. section ref(BIND)), and they are limited
-to situations where one or two arguments are used. It is likely that in the
-upcoming i(C++17) standard they are either deprecated or augmented with a more
-generic negator, for which the name ti(not_fn) has been coined.
+negators cannot always be used in combination with the tt(bind) function
+template, and there use is limited to situations where one or two arguments
+are used. It is likely that in the upcoming i(C++17) standard they will either
+be deprecated or they will be augmented with a more generic negator, for which
+the name ti(not_fn) has been coined.
 
-In this section we'll have a look at a possible bare bones 
-implementation of such a tt(not_fn) negator.
+In this section we'll have a look at a possible bare bones implementation of
+such a tt(not_fn) negator.
 
-First we look at how tt(not_fn) can be used. In section ref(NEGATORS) it was
-noted that of the following two statements the second one won't compile:
+Let's first have a look at how tt(not_fn) can be used. When discussing the
+negators it was noted that the second of the following two statements won't
+compile:
         verb(
     count_if(vs.begin(), vs.end(), 
         bind(not2(greater_equal<string>()), _1, reftext));
@@ -17,9 +18,8 @@ noted that of the following two statements the second one won't compile:
     count_if(vs.begin(), vs.end(),
         not1(bind(greater_equal<string>()), _1, reftext));
         )
-
-The alternative, tt(not_fn), should be usable in both situations, resulting in
-the following statements:
+    Here we'll develop an alternative, tt(not_fn), replacing tt(not1) and
+tt(not2) in the above statements:
         verb(
     count_if(vs.begin(), vs.end(),                          // 1
         bind(not_fn(greater_equal<string>()), _1, reftext));
@@ -27,32 +27,35 @@ the following statements:
     count_if(vs.begin(), vs.end(),                          // 2
         not_fn(bind(greater_equal<string>()), _1, reftext));
         )
+  In statement 1 tt(not_fn) is passed the tt(greater_equal<string>()) functor,
+in statement 2 tt(not_fn) is passed a functor, returned by tt(bind). By
+defining tt(not_fn) as a template function the compiler is able to determine
+the argument's type. Thus tt(not_fn) merely needs a tt(typename Fun) template
+type parameter.
 
-Here, tt(not_fn) is called with an argument which happens to be tt(bind's)
-return value. tt(Bind) returns a functor, and its actual type is simply
-determined by the compiler. Hence tt(not_fn) merely needs a tt(typename Fun)
-template type parameter. Depending on the situation, the functor's function
-call operators may receive different types and numbers of arguments (in the
-example, where tt(count_if) is used it receives one argument), and those
-arguments must be forwarded to the function object which is returned by
-tt(bind). Summarizing we have this situation:
-        itemization(
-        it() tt(bind) returns a functor, whose function call operator may 
-            expect arguments. A functor may also directly be defined, as with,
-            e.g., tt(greater_equal<string>()) in statement 1;
-        it() tt(not_fn) receives the functor, and passes it on to an object of
-            some class (e.g., tt(struct not_fn_)), which is also a functor;
-        it() this tt(not_fn_) object is returned by tt(not_fn), becoming the
-            functor which is called by, e.g., a generic algorithm like
-            tt(count_if);
-        it() the generic algorithm calls the functor's function call operator,
-            passing it a certain number of arguments of certain types.
-        it() tt(not_fn_'s) function call operator receives the arguments, and
-            perfectly forwards them to the functor, originally specified when
-            tt(not_fn) was called;
-        )
-    The first of these steps simply produces a functor which is passed to
-tt(not_fn), defined like this:
+    When used, tt(not_fn's) function call operators may receive different
+types and numbers of arguments (in statement 1 it receives two arguments from
+tt(bind's) function call operator, in statement 2 it receives one argument
+from tt(count_if)).  Those arguments must in turn be forwarded to the function
+call operator of the function object that was passed to
+tt(not_fn). Summarizing we have this situation (see figure ref(NOTFNFIG)):
+    enumeration(
+    eit() Some function or functor must be called, e.g., tt(greater_equal),
+        but its return value must be negated;
+    eit() The function is passed to the function template tt(not_fn). The
+        compiler determines its type. This type is used to construct a
+        tt(not_fn_) class template, which is returned by tt(not_fn);
+    eit() The tt(not_fn_) object itself is a functor, and its tt(operator())
+        member perfectly forwards its arguments to the function originally
+        specified a steps 1 and 2, and returns the negated return value of the
+        original function;
+    eit() Some calling function receives the tt(not_fn_) object, and calls its
+        tt(operator()) with the appropriate argument(s). 
+    )
+
+    figure(classtemplates/notfn)(Using not_fn)(NOTFNFIG)
+
+    In step 2 tt(not_fn) is used. It is defined like this:
         verb(
     template <typename Fun>
     not_fn_<Fun> not_fn(Fun const &fun)
@@ -64,8 +67,8 @@ tt(not_fn), defined like this:
 functor to call (e.g., tt(greater_equal<string>()) or the functor returned by
 tt(bind)).
 
-    tt(Not_fn_) object's constructor saves a reference to the received
-functor, to be called later by its function call operator:
+    Also in step 2 tt(not_fn_)'s constructor is mentioned, saving
+a reference to the function mentioned in step 1:
         verb(
     template <typename Fun>
     struct not_fn_
@@ -80,9 +83,10 @@ functor, to be called later by its function call operator:
     };
         )
     
-    Then, the tt(not_fn_)'s function call operator (receiving its arguments
-from, e.g., a generic algorithm), perfectly forwards its arguments to the
-stored function object, returning its negated return value:
+    In step 3 tt(not_fn_)'s function call operator is used. It perfectly
+forwards its arguments to step 1's function, which can be accessed via its
+tt(d_fun) data member. The function call operator returns tt(d_fun's) negated 
+return value:
         verb(
     template <typename ... ParTypes>
     bool operator()(ParTypes && ...types)
@@ -91,21 +95,16 @@ stored function object, returning its negated return value:
     }
         )
 
-    The example below shows how tt(not_fn) can be used: using
+    The next example shows how tt(not_fn) can be used: using
 tt(equal_to<string>()) two ways to count the number of elements in a string
 vector that are not equal to tt("b") are shown. The program's output displays
 two twos:
-        verb(
-    int main()
-    {
-        vector<string> vs {"a", "a", "b"};
-        string reftext {"b"};
-    
-        cout << 
-            count_if(vs.begin(), vs.end(),
-                bind(not_fn(equal_to<string>()), _1, reftext)) << '\n' <<
-            count_if(vs.begin(), vs.end(), 
-                not_fn(bind(equal_to<string>(), _1, reftext))) << '\n';
-    }
-        )
-COMMENT(see also examples/notfn.cc)
+        verbinclude(-ns4 //main examples/notfn.cc)
+
+
+
+
+
+
+
+

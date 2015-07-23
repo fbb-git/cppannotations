@@ -29,24 +29,16 @@ not_fn_<Fun> not_fn(Fun const &fun)
 using namespace std;
 using namespace placeholders;
 
+//main
 int main()
 {
     vector<string> vs {"a", "a", "b"};
     string reftext {"b"};
 
-    cout << 
-        count_if(vs.begin(), vs.end(),                      // OK
-            bind(not_fn(equal_to<string>()), _1, reftext))
-                << '\n';
-    cout << 
-        count_if(vs.begin(), vs.end(), 
-            not_fn(bind(equal_to<string>(), _1, reftext)))
-                << '\n';
+    cout <<
+        count_if(vs.begin(), vs.end(),
+            bind(not_fn(equal_to<string>()), _1, reftext)) << '\n' <<
+        count_if(vs.begin(), vs.end(),
+            not_fn(bind(equal_to<string>(), _1, reftext))) << '\n';
 }
-
-
-
-
-
-
-
+//=
