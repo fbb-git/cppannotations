@@ -1,5 +1,7 @@
 #!/usr/bin/icmake -qt/tmp/htmlindex
 
+#include "../../compilers.im"
+
 string
     CLASSES;
 
@@ -8,22 +10,12 @@ void setClasses()
     CLASSES += " aux indexentry";
 }
 
-
-#define COMPILER "g++"
-#define COMPILER "g++-4.5"
-
-// COPT: the set of C-options
-#define COPT "--std=c++11 -Wall -g -O2 "
-
-// LOPT: the set of linker options
-#define LOPT "-s"
-
 #define ECHO_REQUEST ON
 
 // Extra libraries required. Remove lib and .a from the library names.
 // E.g., #define LIBS "m Xt" to link libm.a and libXt.a explicitly
 // Specify libs from the most specific to the most general one.
-#define LIBS "bobcat"
+#define LIBS ${BOBCAT}
 
 // Extra library-paths required. 
 // E.g., #define LIBPATH "/some/path /some/other/path" to search these paths
@@ -34,7 +26,6 @@ void setClasses()
 string                                      // contain options for
     libs,                                   // extra libs, e.g., "-lrss -licce"
     libpath,                                // extra lib-paths, eg, "-L../rss"
-    copt,
     lopt,
     libxxxa;                                // expanded lib-name
 
@@ -168,7 +159,7 @@ list file_list(string type, string library)
 
 void link(string library, string exe)
 {
-    exec(COMPILER, "-o", exe, 
+    exec(GPP, "-o", exe, 
         ofiles,
         libs, "-L.", libpath, lopt
     );
@@ -180,10 +171,8 @@ void link(string library, string exe)
 
 void c_compile(list cfiles)
 {
-        string
-                nextfile;
-        int
-                i;
+    string nextfile;
+    int i;
                 
     if (!exists("o"))
         system("mkdir o");
@@ -195,10 +184,9 @@ void c_compile(list cfiles)
                                         // compile all files separately
         for (i = 0; nextfile = element(i, cfiles); i++)
         {
-                exec(COMPILER,
+                exec(GPP,
                 "-c -o o/" + change_ext(nextfile, "o") + " "
-                COPT + " " +
-                copt + " " + nextfile);
+                CPPOPT + " " + nextfile);
         }
     }
 }
@@ -375,7 +363,7 @@ void main()
 
     setlibs();
 
-    lopt = LOPT;
+    lopt = "-s";
 
     system("mkdir -p ../../tmp/bin");   // make destination if it doesn't 
                                         // already exist
