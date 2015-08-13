@@ -17,3 +17,130 @@ fact we compute
     tmpvar += three[idx];
     tmp[idx] = tmp;
         )
+
+In this section we'll use a tt(typedef std::vector<int> IntVect) to illustrate
+the construction of an expression template. The design can easily be applied
+to other types.
+
+Starting point is a simple tt(main) function, in which several tt(IntVect)
+objects are added. E.g., 
+        verb(
+    int main()
+    {
+        IntVect one;
+        IntVect two;
+        IntVect three;
+        IntVect four;
+        
+        // assume the IntVects somehow have received values
+
+        four = one + two + three + four;
+    }
+        )
+    At this point the code does not contain anything special. Nothing suggests
+that expression templates are going to be used. However, when looking at 
+tt(operator+) it's immediately clear that we're encountering something
+special:
+        verb(
+    template<typename LHS, typename RHS>
+    BinExpr<LHS, RHS, plus>  operator+(LHS const &lhs, RHS const &rhs)
+    {
+        return BinExpr<LHS, RHS, plus>(lhs, rhs);
+    }
+        )
+    There is one intriguing element here that is worth emphasizing: note that
+tt(operator+) does not return, e.g., an tt(LHS) object. Normally the signature
+op tt(operator+) looks something like this: tt(LHS operator+(LHS const &lhs,
+RHS const &rhs), but here a `tt(BinExpr)', an expression template, is returned
+instead.
+            
+Our expression template is called tt(BinExpr). It has three template type
+parameters: two object types and a template template parameter performing the
+requested operation. The expression template requires that the operation
+operates on two values of type tt(value_type). E.g., with tt(IntVect) and
+tt(operator+) the operation can be tt(std::plus<int>), where tt(value_type)
+equals tt(int), and tt(DataType) is tt(IntVect). 
+
+In ordinary binary arithmetic operations the values at either side of the
+arithmetic operators are tt(value_types). When adding object types, like
+tt(IntVect) the expression template must somehow be able to determine what
+these tt(value_types) are. For that we em(require) that data types define a
+type tt(value_type) (vectors already do this).
+
+We can now write the initial lines of our tt(BinExpr) expression template:
+        verb(
+    template<typename LHS, typename RHS, template <typename> class  Operation>
+    struct BinExpr 
+    {
+        typedef typename BasicType<LHS>::DataType DataType;
+        typedef typename DataType::value_type value_type;
+        ...
+    };
+        )
+    Although the tt(DataTypes) of the tt(LHS) and tt(RHS) types might differ,
+their tt(value_types) must be equal. When a tt(BinExpr) is defined for two 
+tt(IntVect) types, the tt(DataType) of course is tt(IntVect). But when
+adding two tt(IntVect) objects the returned object becomes a tt(BinExpr). The
+first time this happens, tt(value_type) will be tt(int), determined from
+tt(IntVect::value_type). Thereafter tt(BinExpr) at nested levels 
+receive at least one tt(BinExpr). But since tt(BinExpr) itself also defines a
+tt(DataType) and a tt(value_type) the nested tt(BinExpr) in turn is able to
+determine and use a tt(DataType) and tt(value_type). 
+
+    To make this work, a tt(BasicType) trait class defining the appropriate
+tt(DataType) is used. In its generic form it is initialized with a type, which
+becomes the type tt(BasicType::DataType):
+        verb(
+    template<typename Type>
+    struct BasicType
+    {
+        typedef Type DataType;
+    };
+        )
+    But when tt(BasicType) is proviced with a tt(BinExpr) type a
+specialization is used defining tt(DataType) as tt(BinExpr's DataType):
+        verb(
+    template<typename LHS, typename RHS, template<typename> class Operation>
+    struct BasicType<BinExpr<LHS, RHS, Operation>>
+    {
+        typedef typename BinExpr<LHS, RHS, Operation>::DataType DataType;
+    };
+        )
+    Since tt(BinExpr) refers to tt(BasicType) and tt(BasicType) refers to
+tt(BinExpr) a forward declaration is required. Our expression template's
+design uses the following ordering:
+        verb(
+        // forward declaration of BinExpr:
+    template<typename LHS, typename RHS, template<typename> class Operation>
+    struct BinExpr;
+
+        // generic definition of BasicType
+    template<typename Type> 
+    struct BasicType
+    {
+        typedef Type DataType;
+    };
+
+        // BasicType specialization for BinExpr
+    template<typename LHS, typename RHS, template<typename> class Operation>
+    struct BasicType<BinExpr<LHS, RHS, Operation>>
+    {
+        typedef typename BinExpr<LHS, RHS, Operation>::DataType DataType;
+    };
+
+        // implementation of BinExpr
+    template<typename LHS, typename RHS, template <typename> class Operation>
+    struct BinExpr 
+    {
+        typedef typename BasicType<RHS>::DataType DataType;
+        typedef typename DataType::value_type value_type;
+        ...
+    }
+        )
+    
+
+
+
+
+
+
