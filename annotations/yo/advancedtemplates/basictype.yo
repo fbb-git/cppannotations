@@ -1,0 +1,64 @@
+The tt(BinExpr) expression template needs to be aware of two types before it
+can instantiate objects. First, tt(ObjType) must be known, as this is the 
+type of object that is handled by the expression template. tt(ObjType) objects
+contain values, and we require that the type of these values can be determined
+as tt(ObjType::value_type). E.g., for our tt(IntVect) data type tt(value_type)
+is tt(int). 
+
+In expressions like tt(one + two + three), the tt(BinExpr) expression template
+receives two tt(IntVect) objects. This is always true: the tt(BinExpr) that is
+first constructed receives two tt(IntVect) objects. In this case tt(ObjType)
+is simply tt(LHS), and tt(ObjType::value_type) is also available: either
+tt(value_type) is already defined by tt(LHS) or tt(BinExpr) em(requires) that
+it defines type tt(value_type). 
+
+Since arguments to tt(BinExpr) objects are not em(always) of the basic
+tt(ObjType) type (tt(BinExpr) objects at the next nesting level receive at
+least one tt(BinExpr) argument) we need a way to determine tt(ObjType) from a
+tt(BinExpr). For this we use a em(trait class). The 
+trait class tt(BasicType) receives a typename template argument, and equates
+its type tt(ObjType) to the received template type argument:
+        verb(
+    template<typename Type>
+    struct BasicType
+    {
+        typedef Type ObjType;
+    };
+        )
+    A specialization handles the cae where tt(Type) in fact is a tt(BinExpr):
+    template<typename LHS, typename RHS, template<typename> class Operation>
+        verb(
+    template<typename LHS, typename RHS, template<typename> class Operation>
+    struct BasicType<BinExpr<LHS, RHS, Operation>>
+    {
+        typedef typename BinExpr<LHS, RHS, Operation>::ObjType ObjType;
+    };
+        )
+    
+    Since tt(BinExpr) em(requires) that tt(ObjType::value_type) is a defined
+type, tt(value_type) has automatically been taken care of. 
+
+    As tt(BinExpr) refers to tt(BasicType) and tt(BasicType) refers to
+tt(BinExpr) somewhere we must provide a forward declaration. As tt(BinExpr's)
+declaration has already been provided, we start with that declaration,
+resulting in:
+        verb(
+    BinExpr's declaration
+
+    BasicType's definition
+
+    BasicType's specialization (for BinExpr)
+
+    template<typename LHS, typename RHS, template<typename> class Operation>
+    class BinExpr 
+    {
+        LHS const &d_lhs;
+        RHS const &d_rhs;
+
+        public:
+            typedef typename BasicType<RHS>::DataType DataType;
+            typedef typename DataType::value_type value_type;
+
+            // all BinExpr member functions
+    };
+        )

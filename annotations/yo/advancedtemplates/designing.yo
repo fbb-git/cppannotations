@@ -1,146 +1,77 @@
 The standard implementation of an expression like tt(one + two + three), where
-the objects are, 
-e.g., vectors, requires repeated index expression evaluations of the resulting
-temporary object. I.e., the standard implementation requires us to compute
+the objects are, e.g., vectors, requires repeated index expression evaluations
+of the resulting temporary object. I.e., the standard implementation evaluates
+the following expressions for each index of our objects:
         verb(
     tmp[idx] = one[idx];
     tmp[idx] += two[idx];
     tmp[idx] += three[idx];
         )
-    for each separate index of our objects.
+    Conseqently, if the vectors have tt(n) elements, then for each line we
+need to evaluate tt(2 * n) index expressions. If we have tt(k) vectors then in
+total we perform tt(k * 2 * n) index evaluations.
 
-Expression templates allow us to postpone the index evaluations, so that in
-fact we compute
+Expression templates allow us to avoid many of these index expression
+evaluations. When using expression templates the vectors are available from
+inside expression templates, but their elements are not used by the addition
+operations. Assuming our expression template is named ET, and we want to add
+tt(one + two + three), then the first tt(+) operator merely creates tt(ET(one,
+two)). Note that no addition is actually performed, tt(ET) merely stores
+(constant) references to tt(one) (becoming tt(ET's lhs) data member) and
+tt(two) (becoming tt(ET's rhs) data member). In general, tt(ET) thus stores
+references to the first and second arguments that are passed to its
+constructor.
+
+At the next addition operator another tt(ET) is created. Its constructor
+arguments are, respectively, the tt(ET) object that was constructed for
+tt(one) and tt(two), and the vector tt(three). Again, no addition is performed
+by the ET objects.
+
+This algorithm easily generalizes to any number of vectors. Parentheses can
+aslo be used. E.g., tt((one + two) + (three + four)) results in
         verb(
-    tmpvar = one[idx];
-    tmpvar += two[idx];
-    tmpvar += three[idx];
-    tmp[idx] = tmp;
-        )
-
-In this section we'll use a tt(typedef std::vector<int> IntVect) to illustrate
-the construction of an expression template. The design can easily be applied
-to other types.
-
-Starting point is a simple tt(main) function, in which several tt(IntVect)
-objects are added. E.g., 
-        verb(
-    int main()
-    {
-        IntVect one;
-        IntVect two;
-        IntVect three;
-        IntVect four;
-        
-        // assume the IntVects somehow have received values
-
-        four = one + two + three + four;
-    }
-        )
-    At this point the code does not contain anything special. Nothing suggests
-that expression templates are going to be used. However, when looking at 
-tt(operator+) it's immediately clear that we're encountering something
-special:
-        verb(
-    template<typename LHS, typename RHS>
-    BinExpr<LHS, RHS, plus>  operator+(LHS const &lhs, RHS const &rhs)
-    {
-        return BinExpr<LHS, RHS, plus>(lhs, rhs);
-    }
-        )
-    There is one intriguing element here that is worth emphasizing: note that
-tt(operator+) does not return, e.g., an tt(LHS) object. Normally the signature
-op tt(operator+) looks something like this: tt(LHS operator+(LHS const &lhs,
-RHS const &rhs), but here a `tt(BinExpr)', an expression template, is returned
-instead.
-            
-Our expression template is called tt(BinExpr). It has three template type
-parameters: two object types and a template template parameter performing the
-requested operation. The expression template requires that the operation
-operates on two values of type tt(value_type). E.g., with tt(IntVect) and
-tt(operator+) the operation can be tt(std::plus<int>), where tt(value_type)
-equals tt(int), and tt(DataType) is tt(IntVect). 
-
-In ordinary binary arithmetic operations the values at either side of the
-arithmetic operators are tt(value_types). When adding object types, like
-tt(IntVect) the expression template must somehow be able to determine what
-these tt(value_types) are. For that we em(require) that data types define a
-type tt(value_type) (vectors already do this).
-
-We can now write the initial lines of our tt(BinExpr) expression template:
-        verb(
-    template<typename LHS, typename RHS, template <typename> class  Operation>
-    struct BinExpr 
-    {
-        typedef typename BasicType<LHS>::DataType DataType;
-        typedef typename DataType::value_type value_type;
-        ...
-    };
-        )
-    Although the tt(DataTypes) of the tt(LHS) and tt(RHS) types might differ,
-their tt(value_types) must be equal. When a tt(BinExpr) is defined for two 
-tt(IntVect) types, the tt(DataType) of course is tt(IntVect). But when
-adding two tt(IntVect) objects the returned object becomes a tt(BinExpr). The
-first time this happens, tt(value_type) will be tt(int), determined from
-tt(IntVect::value_type). Thereafter tt(BinExpr) at nested levels 
-receive at least one tt(BinExpr). But since tt(BinExpr) itself also defines a
-tt(DataType) and a tt(value_type) the nested tt(BinExpr) in turn is able to
-determine and use a tt(DataType) and tt(value_type). 
-
-    To make this work, a tt(BasicType) trait class defining the appropriate
-tt(DataType) is used. In its generic form it is initialized with a type, which
-becomes the type tt(BasicType::DataType):
-        verb(
-    template<typename Type>
-    struct BasicType
-    {
-        typedef Type DataType;
-    };
-        )
-    But when tt(BasicType) is proviced with a tt(BinExpr) type a
-specialization is used defining tt(DataType) as tt(BinExpr's DataType):
-        verb(
-    template<typename LHS, typename RHS, template<typename> class Operation>
-    struct BasicType<BinExpr<LHS, RHS, Operation>>
-    {
-        typedef typename BinExpr<LHS, RHS, Operation>::DataType DataType;
-    };
-        )
-    Since tt(BinExpr) refers to tt(BasicType) and tt(BasicType) refers to
-tt(BinExpr) a forward declaration is required. Our expression template's
-design uses the following ordering:
-        verb(
-        // forward declaration of BinExpr:
-    template<typename LHS, typename RHS, template<typename> class Operation>
-    struct BinExpr;
-
-        // generic definition of BasicType
-    template<typename Type> 
-    struct BasicType
-    {
-        typedef Type DataType;
-    };
-
-        // BasicType specialization for BinExpr
-    template<typename LHS, typename RHS, template<typename> class Operation>
-    struct BasicType<BinExpr<LHS, RHS, Operation>>
-    {
-        typedef typename BinExpr<LHS, RHS, Operation>::DataType DataType;
-    };
-
-        // implementation of BinExpr
-    template<typename LHS, typename RHS, template <typename> class Operation>
-    struct BinExpr 
-    {
-        typedef typename BasicType<RHS>::DataType DataType;
-        typedef typename DataType::value_type value_type;
-        ...
-    }
+    ET(ET(one, two), ET(three, four))
         )
     
+Presumably, at some point we want to make the sum of the vectors
+available. For this the expression template is provided with a
+conversion operator, converting the tt(ET) object to a vector, or maybe an
+assignment operator doing the same.
 
+The conversion operator looks like this:
+        verb(
+    operator ET::VecType() const
+    {                                                        
+        VecType retVal;
+        retVal.reserve(size());
 
+        for (size_t ix = 0, end = size(); ix != end; ++ix)
+            new(&retVal[ix]) value_type((*this)[ix]);
+                                                     
+        return retVal;
+    }
+        )
+    Placement new is used for efficiency reasons: there's no need to
+initialize tt(retVal) with default values first. The really interesting part,
+however is hidden behind the tt((*this)[idx]) expression: at this point the
+real addition takes place. 
 
+    tt(ET's) index operator simply adds the values returned by the
+corresponding index expressions of its tt(lhs) and tt(rhs) data members. If
+these data members refer to vectors then the corresponding 
+elements of those vectors are added. If a data member itself refers to an ET
+object, then that nested tt(ET) object's index operator will do the same
+addition on its own data members. So, an expression like tt((*this)[0]) will
+return tt(first[0] + second[0] + third[0]), and the computed sum is then
+stored in tt(retVal[0]) by placement new.
 
+    In this case the required number of index expression evaluations are tt(n
+* k) (for the n elements of the k vectors) plus n (for the n elements of
+tt(retVal), adding up to tt((k + 1) * n). 
 
+Since tt((k + 1) * n < 2 * k * n) for tt(k > 1) expression templates evaluate
+the requested addition more efficiently than the traditional implementation of
+tt(operator+). An additional benefit of using expression templates is that
+they do not create additional temporary vector objects if parenthesized
+expressions are used.
 

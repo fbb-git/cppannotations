@@ -1,0 +1,104 @@
+In this section we'll use a tt(typedef std::vector<int> IntVect) to illustrate
+the construction of an expression template. 
+
+Starting point is a simple tt(main) function, in which several tt(IntVect)
+objects are added. E.g., 
+        verb(
+    int main()
+    {
+        IntVect one;
+        IntVect two;
+        IntVect three;
+        IntVect four;
+        
+        // ... assume the IntVects somehow receive values
+
+        four = one + two + three + four;
+    }
+        )
+    At this point the code does not suggest that expression templates are
+going to be used. However, tt(operator+'s) implementation is special: it's a
+template merely returning an object constructed by tt(operator+):
+        verb(
+    template<typename LHS, typename RHS>
+    BinExpr<LHS, RHS, plus>  operator+(LHS const &lhs, RHS const &rhs)
+    {
+        return BinExpr<LHS, RHS, plus>(lhs, rhs);
+    }
+        )
+            
+Our expression template is called tt(BinExpr). It has three template type
+parameters: two object types and a template template parameter performing the
+requested operation. Its declaration looks like this:
+        verb(
+    template<typename LHS, typename RHS, template<typename> class Operation>
+    struct BinExpr;
+        )
+    Since tt(LHS) and tt(RHS) can either be the data type that is processed by
+the expression template, or a tt(BinExpr) two different typenames are
+required. tt(Operation) is the operation that is performed by the expression
+template. By using a template template parameter we can use tt(BinExpr) to
+perform any operation we want, not just addition. Predefined function
+templates like tt(std::plus) can be used for the standard arithmetic
+operators; for other operators we can define our own function templates.
+
+tt(BinExpr's) constructor initializes constant references to tt(lhs) and
+tt(rhs). Its in-class implementation is
+        verb(
+    BinExpr(LHS const &lhs, RHS const &rhs)
+    :
+        d_lhs(lhs),
+        d_rhs(rhs)
+    {}
+        )
+
+    To retrieve the resulting tt(IntVect) a conversion operator is defined. We
+already encountered its implentation (in the previous section). Here is it,
+as an in-class implemented tt(BinExpr) member:
+        verb(
+    operator ObjType() const
+    {                                                        
+        ObjType retVal;
+        retVal.reserve(size());
+
+        for (size_t idx = 0, end = size(); idx != end; ++idx)
+            new(&retVal[idx]) value_type((*this)[idx]);
+                                                     
+        return retVal;
+    }
+        )
+    We return to the type tt(ObjType) below. At this point it can be
+considered an tt(IntVect). The member tt(size()) simply returns
+tt(d_lhs.size()): in any sequence of tt(IntVect) additions tt(LHS) eventually
+is an tt(IntVect), and so every tt(BinExpr) defines a valid tt(size()) like
+so:
+        verb(
+    size_t size() const
+    {
+        return d_lhs.size();
+    }
+        )
+
+    The only remaining member to implement is tt(operator[]). Since it
+receives an index, it only needs to perform the requested operation on the
+corresponding index elements of its tt(d_lhs) and tt(d_rhs) data members. The
+beauty of expression templates is that if either one itself is a tt(BinExpr)
+that expression template in turn calls its tt(operator[]), eventually
+performing the requested operation on all corresponding elements of all
+tt(IntVect) objects. Here is its implementation:
+        verb(
+    value_type operator[](size_t ix) const
+    {
+        static Operation<value_type> operation;
+
+        return operation(d_lhs[ix], d_rhs[ix]);
+    }
+        )
+    This implementation uses another type: tt(value_type) which is the 
+type of the elements of the vector type that is processed by the expression
+template. Like tt(ObjType) before, its definition is covered below. The static
+data member tt(operation) simply is an instantiation of the tt(Operation) type
+that is specified when constructing an tt(ExprType) object. 
+
+So, it's about time to have a look at tt(ObjType) and tt(value_type): we do
+that in the next section.
