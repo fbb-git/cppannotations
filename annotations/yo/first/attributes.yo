@@ -1,45 +1,91 @@
-Standard attributes
+Attributes hi(attribute) are compiler directives that are inserted into source
+files to inform the compiler of some peculiarity of the code (variable or
+function) following the attribute.
 
-Only the following attributes are defined by the C++ standard. All other attributes are implementation-specific.
+The C++ standard defines the following attributes:
 
-[[noreturn]] 	Indicates that the function does not return.
+itemization(
+    ithtq(noreturn)([[noreturn]])
+        (tt([[noreturn]]) indicates that the function does not
+return. tt([[noreturn]]'s) behavior is undefined if the function declared with
+this attribute actually returns. The following standard functions have this
+attribute: tt(std::_Exit, std::abort, std::exit, std::quick_exit,
+std::unexpected, std::terminate, std::rethrow_exception,
+std::throw_with_nested, std::nested_exception::rethrow_nested), Here is an
+example of a function declaration and definition using the tt([[noreturn]])
+attribute:
+        verb(
+    [[noreturn]] void doesntReturn();
 
-This attribute applies to function declarations only. The behavior is
-undefined if the function with this attribute actually returns.  The following
-standard functions have this attribute: std::_Exit, std::abort, std::exit,
-std::quick_exit, std::unexpected, std::terminate, std::rethrow_exception,
-std::throw_with_nested, std::nested_exception::rethrow_nested
+    [[noreturn]] void doesntReturn()
+    {
+        exit(0);
+    }
+        )
+        )
+    ithtq(carries_dependency)([[carries_dependency]])
+        (This attribute is currently not yet covered by the annotations(). At
+this point in the annotations() it can safely be ignored.
+    COMMENT(
+tt([[carries_dependency]]) Indicates that dependency chain in
+release-consume std::memory_order propagates in and out of the function, which
+allows the compiler to skip unnecessary memory fence instructions.  This
+attribute may appear in two situations:
 
-[[carries_dependency]] Indicates that dependency chain in release-consume
-std::memory_order propagates in and out of the function, which allows the
-compiler to skip unnecessary memory fence instructions.  This attribute may
-appear in two situations:
-
-1) it may apply to the parameter declarations of a function or
+(1) it may apply to the parameter declarations of a function or
 lambda-expressions, in which case it indicates that initialization of the
 parameter carries dependency into lvalue-to-rvalue conversion of that object.
 
-2) It may apply to the function declaration as a whole, in which case it
+(2) It may apply to the function declaration as a whole, in which case it
 indicates that the return value carries dependency to the evaluation of the
 function call expression.
-
 
 This attribute must appear on the first declaration of a function or one of
 its parameters in any translation unit. If it is not used on the first
 declaration of a function or one of its parameters in another translation
 unit, the program is ill-formed; no diagnostic required.
 
-
 See std::kill_dependency for example usage
+    END)
+    )
+    ithtq(deprecated)([[deprecated]])
+        (This attribute (and its alternative form
+tt([[deprecated("reason")]])) is not available before the c14() standard.  It
+indicates that the use of the name or entity declared with this attribute is
+allowed, but discouraged for some reason. This attribute can be used for
+classes, typedef-names, variables, non-static data members, functions,
+enumerations, and template specializations. An existing non-deprecated entity
+may be redeclared deprecated, but once an entity has been declared deprecated
+it cannot be redeclared as `undeprecated'. When encountering the
+tt([[deprecated]]) attribute the compiler generates a warning, e.g.,
+    verb(
+    demo.cc:12:24: warning: 'void deprecatedFunction()' is deprecated 
+                    [-Wdeprecated-declarations] deprecatedFunction();
 
-[[deprecated]](C++14)
-[[deprecated("reason")]](C++14) 	Indicates that the use of the name or
-entity declared with this attribute is allowed, but discouraged for some
-reason. This attribute is allowed in declarations of classes, typedef-names,
-variables, non-static data members, functions, enumerations, and template
-specializations. A name declared non-deprecated may be redeclared
-deprecated. A name declared deprecated cannot be un-deprecated by redeclaring
-it without this attribute.
+    demo.cc:5:21: note: declared here
+                     [[deprecated]] void deprecatedFunction()
+    )
+
+    When using the alternative form (e.g., 
+        tt([[deprecated("do not use")]] void fun())) the compiler generates a
+warning showing the text between the double quotes, e.g.,
+    verb(
+    demo.cc:12:24: warning: 'void deprecatedFunction()' is deprecated: 
+        do not use [-Wdeprecated-declarations] 
+     deprecatedFunction();
+
+    demo.cc:5:38: note: declared here
+         [[deprecated("do not use")]] void deprecatedFunction()
+    )
+    )
+)
+    
+    
+
+
+
+
+
 
 
 
