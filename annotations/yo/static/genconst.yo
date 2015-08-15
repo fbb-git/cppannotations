@@ -44,7 +44,8 @@ following characteristics:
     itemization(
     it() it returns a value;
     it() its return type is given the tt(constexpr) modifier;
-    it() its body consists of one single return statement
+    it() its body consists of one single return statement (but see also the
+notes about C++14 at end of this section)
     )
     Such functions are also called
         hi(named constant expression)
@@ -151,3 +152,21 @@ maintain proper data hiding:
         encounters the functions' definitions. That's why tt(s_size) was
         initialized in tt(Data)'s class interface.
     )
+
+The c14() standard relaxes the characteristics of tt(constexpr)
+functions. Using the C++14 standard, tt(constexpr) functions may 
+    itemization(
+    it() define any kind of variable except for 
+        tt(static) or tt(thread_local) variables;
+    it() define variables  without initializers;
+    it() use  conditional statements (tt(if) and tt(switch));
+    it() use  repetition statements statements, including the range-based
+        tt(for) statement;
+    it() use     expressions changing the values of objects that are local to
+        the tt(constexpr) function;
+    )
+
+In addition, C++14 allows tt(constexpr) member functions to be non-const.
+But note that non-const tt(constexpr) member functions can only
+modify data members of objects that were defined local to the tt(constexpr)
+function calling the non-const tt(constexpr) member function.

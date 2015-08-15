@@ -83,3 +83,29 @@ this:
     Although tt(d_nr)'s intialization is left out of the implementation it
 em(is) initialized due to the data member initialization provided in the
 class's interface.
+
+    An emi(aggregate) is an array or a tt(class) (usually a tt(struct) with no
+user-defined constructors, no private or protected non-static data members,
+no base classes (cf. chapter ref(INHERITANCE)), and no virtual functions
+(cf. chapter ref(POLYMORPHISM)). E.g.,
+        verb(
+    struct POD      // defining aggregate POD
+    {
+        int first = 5; 
+        double second = 1.28; 
+        std::string hello {"hello"};
+    };
+        )
+The c14() standard allows initialization of such aggregates using
+em(braced initializer lists). E.g.,
+        verb(
+    POD pod {4, 13.5, "hi there"};
+        )
+    When using  braced-initializer lists not all data members need to be
+initialized. Specification may stop at any data member, in which case the
+default (or explicitly defined initialization values) of the remaining data
+members are used. E.g.,
+        verb(
+    POD pod {4};    // uses second: 1.28, hello: "hello"
+        )
+
