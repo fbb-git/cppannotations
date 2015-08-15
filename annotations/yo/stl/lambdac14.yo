@@ -1,0 +1,73 @@
+c14() further generalizes lambda expressions by introducing 
+ emi(generic lambda) expressions. A generic lambda expression uses tt(auto)
+to  define its parameters. When used, an appropriate lambda expression is
+created by looking at the actual types of arguments. Since they are generic,
+they can be used inside one function with different types of arguments. Here
+is an example (assuming all required headers and namespace declaration):
+    verbinclude(-ns4 //code examples/genlambda.cc)
+    The generic lambda function is defined in lines 3 through 6, and is
+assigned to the tt(lambda) identifier. Then, tt(lambda) is passed to
+tt(accumulate) in lines 12 and 13. In line 12 it is instantiated to add
+tt(int) values, in line 13 to add tt(std::string) values: the same tt(lambda)
+is instantiated to two completely different functors, which are only locally
+available in tt(main).
+
+As a prelude to our coverage of templates (in particular chapter
+ref(TEMPLATES)), a generic lambda expression is equivalent to a class
+template. To illustrate: the above example of a generalized lambda function
+could also be implemented using a class template like this:
+        verb(
+    struct Lambda
+    {
+        template <typename LHS, typename RHS>
+        auto operator()(LHS const &lhs, RHS const &rhs) const 
+        {
+            return lhs + rhs;
+        }
+    };
+    auto lambda = Lambda{};
+        )
+    One of the consequences of this identity is that using tt(auto) in the
+lambda expression's parameterlist is obeys the rules of template argument
+deduction (cf. section ref(TEMPFUNARGS)), which are somewhat different from
+the way tt(auto) normally operates.
+
+
+Another extension introduced by the C++14 standard is how lambda expressions
+capture outer scope variables. C++11 uses capture by either value or
+reference. A consequence of this is that an outer scope variable of a type
+that only supports move construction cannot be passed by value to a lambda
+function. This restriction is lifted by the C++14 standard, allowing variables
+to be initialized from arbitrary expressions. This not only allows
+move-initialization of variables in the lambda introducer, but variables may
+also be initialized here that do not have a correspondingly named variable in
+the lambda expression's outer scope. Initializer expressions can be used in
+this case like so:
+        verb(
+    auto fun = [value = 1] 
+               {
+                   return value;
+               };
+        ) 
+    This lambda function (of course) returns 1: the declared capture deduces
+the type from the initializer expression as if tt(auto) had been used.
+    
+    To use move-initialization tt(std::move) should be used. E.g.,
+        verb(
+    std::unique_ptr<int> ptr(new int(10));
+    auto fun = [value = std::move(ptr)] 
+               {
+                   return *value;
+               };
+        )
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,166 @@
+A i(lambda expression) defines an
+    i(anonymous function object)hi(function object: anonymous), also called a
+    emi(closure object). When a lambda expression is evaluated it results in a
+temporary object (the closure object). The type of a closure object is called
+its emi(closure type). 
+
+Lambda expressions are used inside blocks, classes or namespaces (i.e.,
+pretty much anywhere you like). Their implied closure type is defined in the
+smallest block, class or namespace scope containing the lamba
+expression. The closure object's visibility starts at its point of definition
+and ends where its closure type ends.
+
+The closure type defines a (tt(const)) public inline function call
+operator. Here is an example of a lambda expression:
+    hi(lambda-introducer)
+    hi(lambda-declarator)
+        verb(
+    []                      // the `lambda-introducer'
+    (int x, int y)          // the `lambda-declarator'
+    {                       // a normal compound-statement
+        return x * y;
+    }
+        )
+    The function call operator of the closure object created by this lambda
+expression expects two tt(int) arguments and returns their product. It is an
+inline tt(const) member of the closure type. To drop the tt(const) attribute,
+the lamba expression should specify tt(mutable), as follows:
+        verb(
+    [](int x, int y) mutable
+    ...
+        )
+    The lambda-declarator may be omitted, if no parameters are defined. The
+parameters in a lamba declarator may not be given default arguments.
+
+A closure object as defined by the above lamda expression could be used e.g.,
+in combination with the tt(accumulate) (cf. section ref(ACCU)) generic
+algorithm to compute the product of a series of tt(int) values stored in a
+vector:
+        verb(
+    cout << accumulate(vi.begin(), vi.end(), 1,
+                [](int x, int y) { return x * y; });
+        )
+    The above lambda function uses the implicit return
+        hi(return type: implicit)
+    type tt(decltype(x * y)). An implicit return type can be used in these
+cases:
+    itemization(
+    it() the lambda expression does not contain a tt(return) statement (i.e.,
+a void lambda expression);
+    it() the lambda expression contains a single tt(return) statement; or
+    it() the lambda expression contains multiple tt(return) statements
+        returning values of identical types (e.g., all tt(int) values).
+    )
+
+    If there are multiple tt(return) statements returning values of different
+types then the lambda expression's return type must specified be explicitly
+using a
+        hi(return type: late-specified)i(late-specified return type),
+(cf. section ref(AUTO)):
+        verb(
+    [](int x, int y) -> int
+    {
+        return y < 0 ?
+                    x / static_cast<double>(y)
+                :
+                    z + x;
+    }
+        )
+
+    Variables that are visible at the location of a lambda expression can be
+accessed by the lambda expression. How these variables are accessed depends on
+the contents of the lambda-introducer (the area between the square brackets,
+called the emi(lambda-capture)). The lambda-capture allows passing a
+    i(local context) to lambda expressions. 
+
+    Visible global and static variables as well as local variables defined in
+the lambda expression's compound statement itself can directly be accessed
+and, when applicable, modified. Example:
+        verb(
+    int global;
+    
+    void fun()
+    {
+        []()  // [] may contain any specification
+        { 
+            int localVariable = 0;
+            localVariable = ++global; 
+        };
+    }
+        )
+
+    Lambda expressions that are defined inside a (non-static) class member
+function then using an initial tt(&) or tt(=) character in the lambda-capture
+enables the tt(this) pointer, allowing the lambda expression access to all
+class members (data and functions). In that case the lambda expression may
+modify the class's data members.
+
+    If a lambda expression is defined inside a function then the lambda
+expression may access all the function's local variables which are visible at
+the lambda expression's point of definition.
+
+    An initial tt(&) character in the lambda-capture accesses these local
+variables by reference. These variables can then be modified from within the
+lambda expression.
+
+    An initial tt(=) character in the lambda-capture creates a local copy of
+the referred-to local variables. Note that in this case the values of these
+local copies can only be changed by the lambda expression if the lambda
+expression is defined using the tt(mutable) keyword. E.g.,
+        verb(
+    struct Class
+    {
+        void fun()
+        {
+            int var = 0;
+            [=]() mutable
+            {
+                ++var;  // modifies the local
+            }           // copy, not fun's var
+        }
+    }
+        )
+
+    Fine-tuning is also possible. With an initial tt(=), comma-separated
+tt(&var) specifications indicate that the mentioned local variables should be
+processed by reference, rather than as copies; with an initial tt(&), comma
+separated tt(var) specifications indicate that local copies should be used of 
+the mentioned local variables. Again, these copies have immutable values
+unless the lambda expression is provided with the tt(mutable) keyword. 
+
+Another fine-tuning consists of using tt(this) in the lambda-capture: it also
+allows the lambda-expression to access the surrounding class members.
+Example:
+        verb(
+    class Data
+    {
+        std::vector<std::string> d_names;
+        public:
+            void show() const
+            {
+                int count = 0;
+                std::for_each(d_names.begin(), d_names.end(),
+                    [this, &count](std::string const &name)
+                    {
+                        std::cout << ++count << ' ' <<
+                            capitalized(name) << '\n';
+                    }
+                );
+            }
+        private:
+            std::string capitalized(std::string name);
+    };
+        )
+
+Although lambda expressions are anonymous function objects, they em(can) be
+assigned to variables. Often, the variable is defined using the keyword
+tt(auto). E.g.,
+        verb(
+    auto sqr = [](int x)
+               {
+                   return x * x;
+               };
+        )
+    The lifetime of such lambda expressions is equal to the lifetime of the
+variable receiving the lambda expression as its value. 
+

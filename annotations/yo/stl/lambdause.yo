@@ -1,0 +1,202 @@
+    Now that the syntax of lambda expressions have been covered let's see how
+they can be used in various situations.
+
+First we consider named lambda expressions. Named lambda expressions nicely
+fit in the niche of hi(function:local)
+        hi(local function)
+    local functions: when a function needs to perform computations which are
+at a conceptually lower level than the function's task itself, then it's
+attractive to encapsulate these computations in a separate support function
+and call the support function where needed.  Although support functions can be
+defined in anonymous namespaces, that quickly becomes awkward when the
+requiring function is a class member and the support function also must access
+the class's members.
+
+In that case a named lambda expression can be used: it can be defined inside
+a requiring function, and it may be given full access to the surrounding
+class. The name to which the lambda expression is assigned becomes the name of
+a function which can be called from the surrounding function. Here is an
+example, converting a numeric IP address to a dotted decimal string, which can
+also be accessed directly from an tt(Dotted) object (all implementations
+in-class to conserve space):
+        verb(
+    class Dotted
+    {
+        std::string d_dotted;
+        
+        public:
+            std::string const &dotted() const
+            {
+                return d_dotted;
+            }
+            std::string const &dotted(size_t ip)
+            {
+                auto octet = 
+                    [](size_t idx, size_t numeric)
+                    {
+                        return to_string(numeric >> idx * 8 & 0xff);
+                    };
+
+                d_dotted = 
+                        octet(3, ip) + '.' + octet(2, ip) + '.' +
+                        octet(1, ip) + '.' + octet(0, ip);
+
+                return d_dotted;
+            }
+    };
+        )
+
+Next we consider the use of generic algorithms, like 
+the tt(for_each) (cf. section ref(FOREACH)):
+        verb(
+    void showSum(vector<int> const &vi)
+    {
+        int total = 0;
+        for_each(
+            vi.begin(), vi.end(),
+            [&](int x)
+            {
+                total += x;
+            }
+        );
+        std::cout << total << '\n';
+    }
+        )
+    Here the variable tt(int total) is passed to the lambda expression by
+reference and is directly accessed by the function. Its parameter list merely
+defines an tt(int x), which is initialized in sequence by each of the values
+stored in tt(vi). Once the generic algorithm has completed tt(showSum)'s
+variable tt(total) has received a value that is equal to the sum of all the
+vector's values. It has outlived the lambda expression and its value is
+displayed.
+
+But although generic algorithms are extremely useful, there may not always be
+one that fits the task at hand. Furthermore, an algorithm like tt(for_each)
+looks a bit unwieldy, now that the language offers range-based for-loops. So
+let's try this, instead of the above implementation:
+        verb(
+    void showSum(vector<int> const &vi)
+    {
+        int total = 0;
+        for (auto el: vi)
+            [&](int x)
+            {
+                total += x;
+            };
+
+        std::cout << total << '\n';
+    }
+        )
+    But when tt(showSum) is now called, its tt(cout) statement consistently
+reports 0. What's happening here?
+
+    When a generic algorithm is given a lambda function, its implementation
+instantiates a reference to a function. that referenced function is thereupon
+called from within the generic algorithm. But, in the above example the
+range-based for-loop's nested statement merely represents the em(defintion)
+of a lamba function. Nothing is actually called, and hence tt(total) remains
+equal to 0. 
+
+    Thus, to make the above example work we not only must em(define) the
+lambda expression, but we must also em(call) the lambda function. We can do
+this by  giving the lambda function a em(name), and then call the
+lamba function by its given name:
+        verb(
+    void showSum(vector<int> const &vi)
+    {
+        int total = 0;
+        for (auto el: vi)
+        {
+            auto lambda = [&](int x)
+                            {
+                                total += x;
+                            };
+
+            lambda(el);
+        }
+        std::cout << total << '\n';
+    }
+        )
+    
+In fact, there is no need to give the lambda function a name: the tt(auto
+lambda) definition represents the lambda function, which could also
+directly be called. The syntax for doing this may look a
+bit weird, but there's nothing wrong with it, and it allows us to drop the
+compound statment, required in the last example, completely. Here goes:
+        verb(
+    void showSum(vector<int> const &vi)
+    {
+        int total = 0;
+        for (auto el: vi)
+            [&](int x)
+            {
+                total += x;
+            }(el);          // immediately append the 
+                            // argument list to the lambda
+                            // function's definition
+        std::cout << total << '\n';
+    }
+        )
+
+lambda expressions can also be used to prevent spurious returns from
+tt(condition_variable's wait) calls (cf. section ref(CONDEX)). 
+
+The class tt(condition_variable) allows us to do so by offering tt(wait)
+members expecting a lock em(and) a predicate. The predicate checks the data's
+state, and returns tt(true) if the data's state allows the data's
+processing. Here is an alternative implementation of the tt(down) member shown
+in section ref(CONDEX), checking for the data's actual availability:
+        verb(
+    void down()
+    {
+        unique_lock<mutex> lock(sem_mutex);
+        condition.wait(lock, 
+            [&]()
+            {
+                return semaphore != 0
+            }
+        );
+        --semaphore;
+    }
+        )
+    The lambda expression ensures that tt(wait) only returns once
+tt(semaphore) has been incremented.
+
+    
+Lambda expression are primarily used to obtain functors that are used in a
+very localized section of a program. Since they are used inside an existing
+function we should realize that once we use lambda functions multiple
+aggregation levels are mixed. Normally a function implements a task which can
+be described at its own aggregation level using just a few sentences. E.g.,
+``the function tt(std::sort) sorts a data structure by comparing its elements
+in a way that is appropriate to the context where tt(sort) is called''. By
+using an existing comparison method the aggregation level is kept, and the
+statement is clear by itself. E.g.,
+        verb(
+    sort(data.begin(), data.end(), greater<DataType>());
+        )
+    If an existing comparison method is not available, a tailor-made function
+object must be created. This could be realized using a lambda
+expression. E.g.,
+        verb(
+    sort(data.begin(), data.end(), 
+        [&](DataType const &lhs, DataType const &rhs)
+        {
+            return lhs.greater(rhs);
+        }
+    );
+        )
+    Looking at the latter example, we should realize that here two different
+aggregation levels are mixed: at the top level the intent is to sort the
+elements in tt(data), but at the nested level (inside the lambda expression)
+something completely different happens. Inside the lambda expression we define
+how a the decision is made about which of the two objects is the greater. Code
+exhibiting such mixed aggregation levels is hard to read, and should be
+avoided. 
+
+On the other hand: lambda expressions also simplify code because the overhead
+of defining a tailor-made functor is avoided. The advice, therefore, is to use
+lambda expressions sparingly. em(When) they are used make sure that their
+sizes remain small. As a i(rule of thumb): lambda expressions should be
+treated like in-line functions, and should merely consist of one, or maybe
+occasionally two expressions.
