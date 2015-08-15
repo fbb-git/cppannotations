@@ -1,79 +1,55 @@
-COMMENT(see examples/vector*.cc)
+COMMENT(see examples/vector*.cc, exprtempl.*)
 
 Assume we are processing tt(std::vector) objects. Vectors may be assigned to
-each other, but that's about it. Its member functions tend to process the
-current vector, and arithmetic operations like addition, subtraction,
-multiplication and the like cannot automatically be applied to pairs of
-vectors. 
+each other, but that's about it. We've seen (cf. section ref(VECTOR)) that its
+member functions tend to operate on the current vector, but arithmetic
+operations like addition, subtraction, multiplication and the like cannot
+be applied to pairs of vectors.
 
-However, implementing, e.g., the addition operator for vectors is not
-particularly difficult. After defining tt(typedef std::vector<Type> VecType) 
-we could implement free functions 
+Furtunately implementing, e.g., the addition operator for vectors is not
+particularly difficult. If tt(VecType) is our vector type, then implementing
+free functions like
     tt(VecType operator+(VecType const &lhs, VecType const &rhs)) and 
-    tt(VecType operator+(VecType &&lhs, VecType const &rhs)) performing the
-additions (in our own classes we might also implement the class member
-tt(operator+=), but we probably shouldn't do that because of Liskov's
-Substitution Principle). Let's assume below that our class em(does) offer a
-tt(operator+=) member.
+    tt(VecType operator+(VecType &&lhs, VecType const &rhs)) 
+        performing the additions is a simple exercise (cf. chapter
+ref(OVERLOADING)).
 
-Now consider an expression like tt(one + two + three). It takes two steps to
-compute this sum: first, tt(tmp = one + two) is computed, where tt(tmp) is an
-(in practice anonymous) temporary variable; then tt(tmp += three) is computed
-to produce the final result. Once the compiler has created the temporary
-variable, it can reuse it until done. So, tt(one + two + three + four)
-computes in step two tt(tmp += three) and in step three tt(tmp += four). 
+Now consider an expression like tt(one + two + three + four). It takes four
+steps to compute this sum: first, tt(tmp = one) is computed, creating the
+eventual return value. The vector tt(tmp) is an (in practice anonymous)
+temporary variable. Then tt(tmp += two) is computed, followed by tt(tmp +=
+three), and finally by tt(tmp += four), obtaining the final result (of course
+we shouldn't implement tt(std::vector::operator+=) as the std namespace is
+off-limits to us, and we shouldn't derive a class from tt(std::vector)
+offering tt(operator+=) according to Liskov's Substitution Principle
+(cf. section ref(INHERITWHY)), but we could get around that, 
+    COMMENT(by deriving a class offering operator+= in an anonymous namespace
+        and performing downcasts to the base class vectorthere.) 
+    and here we simply assume tt(operator+=) is available).
 
-Since these steps are also performed when our variables are objects of our
-class tt(VecType), tt(operator+) is called first. Its implementation looks
-something like this:
+Here's how we might implement tt(operator+=) for tt(VecType):
         verb(
-    VecType operator+(VecType const &lhs, VecType const &rhs)
-    {
-        VecType tmp(lhs);
-        tmp += rhs;
-        return tmp;
-    }
-        )
-    while tt(operator+='s) implementation looks like this:
-        verb(
-    VecType &operator+=(VecType const &rhs)
+    VecType &VecType::operator+=(VecType const &rhs)
     {
         for (size_t idx = 0, end = size(); idx != end; ++idx)
             (*this)[idx] += rhs[idx];
         return *this;
     }
         )
-    All elements of our tt(VecType tmp) are visited for each tt(+) operator
-that is used in the addition expression. So, for tt(one + two + three + four)
-we compute, for each index value and temporary tt(VecType tmp):
-        verb(
-    tmp[idx] = one[idx];
-    tmp[idx] += two[idx];
-    tmp[idx] += three[idx];
-    tmp[idx] += four[idx];
-        )
-    These four statements harbor a certain degree of inefficiency. If, instead
-of these statements, we could execute the expression
-        verb(
-    tmp[idx] = one[idx] + two[idx] + three[idx] + four[idx];
-        )
-    then we would in fact compute:
-        verb(
-    tmpvar = one[idx];
-    tmpvar += two[idx];
-    tmpvar += three[idx];
-    tmpvar += four[idx];
-    tmp[idx] = tmp;
-        )
-    The last expression can be optimized away by the compiler's return value
-optimization algorithm, in which case tt(tmpvar) is used as a synonym of 
-tt(tmp[idx]). The net effect being that instead of four index expression
-evaluations only one index expression must be evaluated, resulting in a
-somewhat more efficient evaluation of these kinds of expressions.
+    Consider this implementation: once we add a tt(VecType) object we have to
+perform tt(2 * n) index evaluations. When adding tt(k VecType) objects this
+sums up to about tt(2 * k * n) index expression evaluations: a lot of
+evaluations if we're adding many and/or big vectors.
 
-Such optimizations can be achieved by using em(expression templates),
-    hi(expression template)hi(template: expression template) which is the
-topic of the next section.
+    If instead we could manage to perform the evaluations `row by row', each
+vector element would be accessed only once. This would dramatically cut down
+on our index evaluations. We would only need to perform approx. tt(n * k)
+index expression evaluations.
+
+    Expression templates 
+    hi(expression template)hi(template: expression template) 
+    allow us to achieve precisely this kind of optimization. We'll have a look
+at their design and implementation in the coming sections.
     
     
     
