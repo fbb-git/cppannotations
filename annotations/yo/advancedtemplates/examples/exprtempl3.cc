@@ -21,7 +21,7 @@ struct BasicType<BinExpr<LHS, RHS, Operation>>
 };
 
 template<typename LHS, typename RHS, template <typename> class  Operation>
-struct BinExpr 
+struct BinExpr
 {
     typedef typename BasicType<RHS>::ObjType ObjType;
     typedef typename ObjType::value_type value_type;
@@ -68,7 +68,7 @@ struct VI: public vector<int>
 {
     static size_t const s_max = 10000;
 
-    
+
 VI()
     :
         vector<int>(s_max, 1)

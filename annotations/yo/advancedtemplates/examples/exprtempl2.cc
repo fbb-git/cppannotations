@@ -23,7 +23,7 @@ struct BasicType<BinExpr<LHS, RHS, Operation>>
 size_t g_binExpr;
 
 template<typename LHS, typename RHS, template <typename> class  Operation>
-struct BinExpr 
+struct BinExpr
 {
     string d_name;
 
@@ -39,7 +39,7 @@ struct BinExpr
         d_lhs(lhs),
         d_rhs(rhs)
     {
-        cout << "creating " << d_name << 
+        cout << "creating " << d_name <<
                 " holding " << lhs.d_name << " and " << rhs.d_name << '\n';
     }
 
@@ -160,11 +160,3 @@ int main()
     cout << four.d_name << ' ' << four.size() << " first value = " <<
                 four[0] << '\n';
 }
-
-
-
-
-
-
-
-

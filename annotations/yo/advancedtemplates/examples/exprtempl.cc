@@ -20,7 +20,7 @@ struct BasicType<BinExpr<LHS, RHS, Operation>>
 };
 
 template<typename LHS, typename RHS, template <typename> class  Operation>
-struct BinExpr 
+struct BinExpr
 {
     typedef typename BasicType<RHS>::ObjType ObjType;
     typedef typename ObjType::value_type value_type;

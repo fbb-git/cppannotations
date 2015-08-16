@@ -44,9 +44,3 @@ int main(int argc, char **argv)
 
     cout << d.front() << ", " << d.back() << '\n';
 }
-
-
-
-
-
-
