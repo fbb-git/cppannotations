@@ -1,0 +1,131 @@
+The c14() standard defines the type hi(shared_lock)tt(std::shared_lock),
+available after including the tthi(shared_mutex) header file.
+
+An object of the type tt(std::shared_lock) controls the shared ownership of a
+lockable object within a scope. Shared ownership of the lockable object may be
+acquired at construction time or thereafter, and once acquired, it may be
+transferred to another tt(shared_lock) object. Objects of type tt(shared_lock)
+cannot be copied, but move construction and assignment is supported. 
+
+The behavior of a program is undefined if the contained pointer to a mutex
+(tt(pm)) has a non-zero value and the lockable object pointed to by tt(pm) does
+not exist for the entire remaining lifetime of the tt(shared_lock)
+object. The supplied mutex type must be a tt(shared_mutex) or a type having
+the same characteristics.
+
+The type tt(shared_lock) offers the following constructors, destructor and
+operators:
+    itemization(
+    ittq(shared_lock() noexcept)
+        (The default constructor creates a tt(shared_lock) which is not owned
+by a thread and for which tt(pm == 0);)
+
+    ittq(explicit shared_lock(mutex_type &mut))
+        (This constructor locks the mutex, calling tt(mut.lock_shared()). The
+calling thread may not already own the lock. Following the construction tt(pm
+== &mut), and the lock is owned by the current thread;)
+
+    ittq(shared_lock(mutex_type &mut, defer_lock_t) noexcept)
+        (This constructor assigns tt(pm) to tt(&mut), but the calling thread 
+does not own the lock;)
+
+    ittq(shared_lock(mutex_type &mut, try_to_lock_t))
+        (This constructor tries to locks the mutex, calling
+tt(mut.try_lock_shared()). The calling thread may not already own the
+lock. Following the construction tt(pm == &mut), and the lock may or may not
+be owned by current thread, depending on the return value of
+tt(try_lock_shared;))
+
+    ittq(shared_lock(mutex_type &mut, adopt_lock_t))
+        (This constructor can be called if the calling thread has shared
+ownership of the mutex. Following the construction tt(pm == &mut), and the
+lock is owned by the current thread;)
+
+    ittq(shared_lock(mutex_type &mut,
+                chrono::time_point<Clock, Duration> const &abs_time))
+        (This constructor is a member template, where tt(Clock) and
+tt(Duration) are types specifying a clock and absolute time (cf. section
+ref(TIMESPEC)). It can be called if the calling thread does not already own
+the mutex. It calls tt(mut.try_lock_shared_until(abs_time)). Following the
+construction tt(pm == &mut), and the lock may or may not be owned by current
+thread, depending on the return value of tt(try_lock_shared_until;))
+
+    ittq(shared_lock(mutex_type &mut, 
+                chrono::duration<Rep, Period> const &rel_time))
+        (This constructor is a member template, where tt(Clock) and
+tt(Period) are types specifying a clock and relative time (cf. section
+ref(TIMESPEC)). It can be called if the calling thread does not already own
+the mutex. It calls tt(mut.try_lock_shared_for(abs_time)). Following the
+construction tt(pm == &mut), and the lock may or may not be owned by current
+thread, depending on the return value of tt(try_lock_shared_for;))
+
+    ittq(shared_lock(shared_lock &&tmp) noexcept)
+        (The move constructor transfers the information in tt(tmp) to the
+newly constructed tt(shared_lock). Following the construction tt(tmp.pm == 0)
+and tt(tmp) no longer owns the lock;)
+
+    ittq(~shared_lock())
+        (If the lock is owned by the current thread, 
+tt(pm->unlock_shared()) is called;)
+        
+    itt(shared_lock &operator=(shared_lock &&tmp) noexcept)
+        (The move assignment operator calls tt(pm->unlock_shared) and then
+transfers the information in tt(tmp) to the
+current tt(shared_lock) object. Following this tt(tmp.pm == 0)
+and tt(tmp) no longer owns the lock;)
+
+    ithtq(operator bool)(explicit operator bool () const noexcept)
+    (Returns whether or not the tt(shared_lock) object owns the lock.)
+    )
+
+The following members are provided:
+
+    itemization(
+    ithtq(lock)(void lock())
+    (Calls tt(pm->lock_shared()), after which the current tread owns the
+shared lock. Exceptions may be thrown from tt(lock_shared), and otherwise if
+tt(pm == 0) or if the current thread already owns the lock;)
+
+    ithtq(mutex)(mutex_type *mutex() const noexcept)
+    (Returns tt(pm);)
+
+    ithtq(release)(mutex_type *release() noexcept)
+    (Returns the previous value of tt(pm), which is equal to zero after
+calling this member. Also, the current object no longer owns the lock;)
+
+    ithtq(swap)(void swap(shared_lock &other) noexcept)
+    (Swaps the data members of the current and the tt(other) tt(shared_lock)
+objects. There is also a free member tt(swap), a function template, swapping
+two tt(shared_lock<Mutex>) objects, where tt(Mutex) represents the mutex type
+for which the shared lock objects were instantiated: tt(void
+swap(shared_lock<Mutex> &one, shared_lock<Mutex> &two) noexcept);)
+
+    ithtq(try_lock)(bool try_lock())
+        (Calls tt(pm->try_lock_shared()), returning this call's return value.
+Exceptions may be thrown from tt(try_lock_shared), and
+otherwise if tt(pm == 0) or if the current thread already owns the lock;)
+
+    ithtq(try_lock_for)(bool try_lock_for(const chrono::duration<Rep, Period>&
+rel_time))
+    (A member template, where tt(Clock) and tt(Period) are types specifying a
+clock and relative time (cf. section ref(TIMESPEC)). It calls
+tt(mut.try_lock_shared_for(abs_time)). Following the call the lock may or may
+not be owned by current thread, depending on the return value of
+tt(try_lock_shared_until).  Exceptions may be thrown from
+tt(try_lock_shared_for), and otherwise if tt(pm == 0) or if the current thread
+already owns the lock;)
+
+    ithtq(try_lock_until)(bool try_lock_until(const chrono::time_point<Clock,
+Duration>& abs_time))
+    (A member template, where tt(Clock) and tt(Duration) are types specifying
+a clock and absolute time (cf. section ref(TIMESPEC)). It calls
+tt(mut.try_lock_shared_until(abs_time)), returning its return value. Following
+the call the lock may or may not be owned by current thread, depending on the
+return value of tt(try_lock_shared_until).  Exceptions may be thrown from
+tt(try_lock_shared_until), and otherwise if tt(pm == 0) or if the current
+thread already owns the lock;)
+
+    ithtq(unlock)(void unlock())
+    (Unlocks the shared mutex lock, releasing its ownership. Throws an
+exception if the shared mutex was not owned by the current thread.)
+    )

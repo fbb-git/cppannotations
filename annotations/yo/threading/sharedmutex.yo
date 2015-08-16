@@ -1,0 +1,66 @@
+The c14() standard defines the type tt(std::shared_mutex), available after
+including the tthi(shared_mutex) header file.
+
+The type tt(std::shared_mutex) is a shared mutex type. Shared mutex types
+behave like tt(timed_mutex) types and optionally have the characteristics
+described below.
+
+>    In this description, m denotes an object of a
+>    mutex type, rel_type denotes an object of an instantiation of duration
+>    (20.11.5), and abs_time denotes an object of an instantiation of time_point
+>    (20.11.6).
+
+The class tt(shared_mutex) provides a non-recursive mutex with shared
+ownership semantics, comparable to, e.g., the tt(shared_ptr) type.
+A program using tt(shared_mutexes) is undefined if:
+    itemization(
+    it() it destroys a shared_mutex object owned by any thread;
+    it() a thread recursively attempts to gain ownership of a
+        tt(shared_mutex);   
+    it() a thread terminates while owning a tt(shared_mutex).
+    )
+
+
+Shared mutex types provide a shared lock ownership mode. Multiple threads can
+simultaneously hold a shared lock ownership of a tt(shared_mutex) type of
+object. But no thread can hold a shared lock while another thread holds an
+exclusive lock on the same tt(shared_mutex) object, and vice-versa.
+
+The type tt(shared_mutex) offers the following members:
+    itemization(
+    ithtq(lock_shared)(void lock_shared())
+    (Blocks the calling thread until shared ownership of the mutex can be
+obtained by the calling thread. An exception is thrown if the current thread
+already owns the lock, if it is not allowed to lock the mutex, or if the mutex
+is already locked and blocking is not possible;)
+
+    ithtq(unlock_shared)(void unlock_shared())
+    (Releases a shared lock on the mutex held by the calling thread. Nothing
+happens if the current thread does not already own the lock;)
+
+    ithtq(try_lock_shared)(bool try_lock_shared())
+    (The current thread attempts to obtain shared ownership of the mutex
+without blocking. If shared ownership is not obtained, there is no effect and
+tt(try_lock_shared) immediately returns.  Returns tt(true) if the shared
+ownership lock was acquired, tt(false) otherwise.  An implementation may fail
+to obtain the lock even if it is not held by any other thread. Initially the
+calling thread may not yet own the mutex;)
+
+    ithtq(try_lock_shared_for)(bool try_lock_shared_for(rel_time))
+    (Attempts to obtain shared lock ownership for the calling thread within
+the relative time period specified by tt(rel_time). If the time specified by
+tt(rel_time) is less than or equal to tt(rel_time.zero()), the member attempts
+to obtain ownership without blocking (as if by calling
+tt(try_lock_shared())). The member shall return within the time interval
+specified by rel_time only if it has obtained shared ownership of the mutex
+object.  Returns tt(true) if the shared ownership lock was acquired, tt(false)
+otherwise. Initially the calling thread may not yet own the mutex;)
+
+    ithtq(try_lock_shared_until)(bool try_lock_shared_until(abs_time))
+    (Attempts to obtain shared lock ownership for the calling thread until the
+time specified by tt(abs_time) has passed. If the time specified by
+tt(abs_time) has already passed then the member attempts to obtain ownership
+without blocking (as if by calling tt(try_lock_shared())).  Returns tt(true)
+if the shared ownership lock was acquired, tt(false) otherwise. Initially the
+calling thread may not yet own the mutex;)
+    )
