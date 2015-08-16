@@ -1,42 +1,33 @@
-The standard implementation of an expression like tt(one + two + three), where
-the objects are, e.g., vectors, requires repeated index expression evaluations
-of the resulting temporary object. I.e., the standard implementation evaluates
-the following expressions for each index of our objects:
-        verb(
-    tmp[idx] = one[idx];
-    tmp[idx] += two[idx];
-    tmp[idx] += three[idx];
-        )
-    Conseqently, if the vectors have tt(n) elements, then for each line we
-need to evaluate tt(2 * n) index expressions. If we have tt(k) vectors then in
-total we perform tt(k * 2 * n) index evaluations.
+As we've seen, when using a standard implementation of an expression like
+tt(one + two + three + four), where the objects are vectors having tt(n)
+elements, then if we have tt(k) vectors we have to perform a total of tt(k * 2
+* n) index evaluations.
 
-Expression templates allow us to avoid many of these index expression
-evaluations. When using expression templates the vectors are available from
-inside expression templates, but their elements are not used by the addition
-operations. Assuming our expression template is named ET, and we want to add
-tt(one + two + three), then the first tt(+) operator merely creates tt(ET(one,
-two)). Note that no addition is actually performed, tt(ET) merely stores
-(constant) references to tt(one) (becoming tt(ET's lhs) data member) and
-tt(two) (becoming tt(ET's rhs) data member). In general, tt(ET) thus stores
-references to the first and second arguments that are passed to its
-constructor.
+Expression templates allow us to avoid many of these evaluations. When using
+expression templates these templates may access the vectors, but their
+elements are not accessed during addition operations. 
+
+Assuming our expression template is named ET, and we want to add tt(one + two
++ three), then the first tt(+) operator merely creates tt(ET(one, two)). Note
+that no addition is actually performed, tt(ET) merely stores (constant)
+references to tt(one) (becoming tt(ET's lhs) data member) and tt(two)
+(becoming tt(ET's rhs) data member). In general, tt(ET) stores references to
+the two arguments that are passed to its constructor.
 
 At the next addition operator another tt(ET) is created. Its constructor
-arguments are, respectively, the tt(ET) object that was constructed for
-tt(one) and tt(two), and the vector tt(three). Again, no addition is performed
-by the ET objects.
+arguments are, respectively, the tt(ET) object that has just been constructed
+for tt(one) and tt(two), and the vector tt(three). Again, no addition is
+performed by the ET objects.
 
 This algorithm easily generalizes to any number of vectors. Parentheses can
-aslo be used. E.g., tt((one + two) + (three + four)) results in
+also be used. E.g., tt((one + two) + (three + four)) results in
         verb(
     ET(ET(one, two), ET(three, four))
         )
     
-Presumably, at some point we want to make the sum of the vectors
-available. For this the expression template is provided with a
-conversion operator, converting the tt(ET) object to a vector, or maybe an
-assignment operator doing the same.
+Presumably, at some point we want to obtain the sum of the vectors. For this
+the expression template is provided with a conversion operator, converting the
+tt(ET) object to a vector, or maybe an assignment operator doing the same.
 
 The conversion operator looks like this:
         verb(
@@ -53,17 +44,17 @@ The conversion operator looks like this:
         )
     Placement new is used for efficiency reasons: there's no need to
 initialize tt(retVal) with default values first. The really interesting part,
-however is hidden behind the tt((*this)[idx]) expression: at this point the
-real addition takes place. 
+however, is hidden behind the tt((*this)[idx]) expression: at this point the
+real addition takes place.
 
     tt(ET's) index operator simply adds the values returned by the
-corresponding index expressions of its tt(lhs) and tt(rhs) data members. If
-these data members refer to vectors then the corresponding 
-elements of those vectors are added. If a data member itself refers to an ET
-object, then that nested tt(ET) object's index operator will do the same
-addition on its own data members. So, an expression like tt((*this)[0]) will
-return tt(first[0] + second[0] + third[0]), and the computed sum is then
-stored in tt(retVal[0]) by placement new.
+corresponding index expressions of its tt(lhs) and tt(rhs) data members. If a
+data member refers to a vector then the corresponding vector element is used,
+adding it to the other data member's value. If a data member itself refers to
+an ET object, then that nested tt(ET) object's index operator performs the
+same addition on its own data members, returning their sum. So, an expression
+like tt((*this)[0]) returns tt(first[0] + second[0] + third[0]), and the
+computed sum is then stored in tt(retVal[0]) using placement new.
 
     In this case the required number of index expression evaluations are tt(n
 * k) (for the n elements of the k vectors) plus n (for the n elements of
@@ -72,6 +63,6 @@ tt(retVal), adding up to tt((k + 1) * n)).
 Since tt((k + 1) * n < 2 * k * n) for tt(k > 1) expression templates evaluate
 the requested addition more efficiently than the traditional implementation of
 tt(operator+). An additional benefit of using expression templates is that
-they do not create additional temporary vector objects if parenthesized
+they do not create additional temporary vector objects when parenthesized
 expressions are used.
 
