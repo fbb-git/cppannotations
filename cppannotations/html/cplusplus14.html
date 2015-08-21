@@ -1,0 +1,2550 @@
+<!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<title> <div style="text-align: center">C++ Annotations Version 10.3.0</div> </title>
+<style type="text/css">
+    figure {text-align: center;}
+    img {vertical-align: center;}
+</style>
+</head>
+<body >
+<hr>
+<ul>
+    <li> <a href="cplusplus.html">Table of Contents</a>
+    <li> <a href="cplusplus13.html">Previous Chapter</a>
+    <li> <a href="cplusplus15.html">Next Chapter</a>
+</ul>
+<hr>
+<a name="POLYMORPHISM"></a><a name="l273"></a>
+<h1>Chapter 14: Polymorphism</h1>
+
+<blockquote>
+    <em>
+        Don't hesitate to send in feedback: send an e-mail if you like the
+        C++ Annotations; if you think that important material was omitted;
+        if you find errors or typos in the text or the code examples;
+        or if you just feel like e-mailing. Send your e-mail to
+        <a href="mailto:f.b.brokken@rug.nl">Frank B. Brokken</a>.
+<p>
+<strong>Please</strong> state the document version you're referring to, as found in
+        the title (in this document: 10.3.0) and please state chapter and
+        paragraph name or number you're referring to.
+<p>
+All received mail is processed conscientiously, and received
+        suggestions for improvements are usually processed by the
+        time a new version of the Annotations is released. Except for the
+        incidental case I will normally not acknowledge the receipt of
+        suggestions for improvements. Please don't interpret this as me not
+        appreciating your efforts.
+    </em>
+</blockquote>
+<p>
+Using inheritance classes may be derived from other classes, called base
+classes. In the previous chapter we saw that base class pointers may be used
+to point to derived class objects. We also saw that when a base class pointer
+points to an object of a derived class it is the type of the pointer
+rather than the type of the object it points to what determines which member
+functions are visible. So when a <code>Vehicle *vp</code>, points to a <code>Car</code> object
+<code>Car</code>'s <code>speed</code> or <code>brandName</code> members can't be used.
+<p>
+In the previous chapter two fundamental ways classes may be related to each
+other were discussed: a class may be <a name="an1771"></a><em>implemented-in-terms-of</em> another
+class and it can be stated that a derived class <a name="an1772"></a><em>is-a</em> base class. The
+former relationship is usually implemented using composition, the latter
+is usually implemented using a special form of inheritance, called
+<a name="an1773"></a><em>polymorphism</em>, the topic of this chapter.
+<p>
+An <em>is-a</em> relationship between classes allows us to apply the
+ <a name="an1774"></a><em>Liskov Substitution Principle</em> (<a name="an1775"></a><em>LSP</em>) according to which a derived
+class object may be passed to and used by code expecting a pointer or
+reference to a base class object. In the <strong>C++</strong> Annotations so far the LSP has been
+applied many times. Every time an <code>ostringstream, ofstream</code> or <code>fstream</code>
+was passed to functions expecting an <code>ostream</code> we've been applying this
+principle. In this chapter we'll discover how to design our own classes
+accordingly.
+<p>
+LSP is implemented using a technique called <a name="an1776"></a><em>polymorphism</em>: although a base
+class pointer is used it performs actions defined in the (derived) class
+of the object it actually points to. So, a <code>Vehicle *vp</code> might behave like
+a <code>Car *</code> when pointing to a <code>Car</code>&nbsp;(In one of the StarTrek
+movies, Capt.  Kirk was in trouble, as usual. He met an extremely beautiful
+lady who, however, later on changed into a hideous troll. Kirk was quite
+surprised, but the lady told him: ``Didn't you know I am a polymorph?'').
+<p>
+Polymorphism is implemented using a feature called <a name="an1777"></a><em>late binding</em>. It's
+called that way because the decision <em>which</em> function to call (a base class
+function or a function of a derived class) cannot be made at <em>compile-time</em>,
+but is postponed until the program is actually executed: only then it is
+determined which member function will actually be called.
+<p>
+In <strong>C++</strong> late binding is <em>not</em> the default way functions are called. By
+default <a name="an1778"></a><em>static binding</em> (or <a name="an1779"></a><em>early binding</em>) is used. With static
+binding the functions that are called are determined by the compiler, merely
+using the class types of objects, object pointers or object refences.
+<p>
+Late binding is an inherently different (and slightly slower) process as it is
+decided at <a name="an1780"></a>run-time, rather than at <a name="an1781"></a>compile-time what function is going
+to be called. As <strong>C++</strong> supports <em>both</em> late- and early-binding <strong>C++</strong>
+programmers are offered an option as to what kind of binding to use.  Choices
+can be optimized to the situations at hand. Many other languages offering
+object oriented facilities (e.g., <strong>Java</strong>) only or by default offer late
+binding. <strong>C++</strong> programmers should be keenly aware of this. Expecting early
+binding and getting late binding may easily produce nasty bugs.
+<p>
+Let's look at a simple example to start appreciating the differences between
+late and early binding. The example merely illustrates. Explanations of
+<em>why</em> things are as shown are shortly provided.
+<p>
+Consider the  following little program:
+        <pre>
+    #include &lt;iostream&gt;
+    using namespace std;
+
+    class Base
+    {
+        protected:
+            void hello()
+            {
+                cout &lt;&lt; "base hello\n";
+            }
+        public:
+            void process()
+            {
+                hello();
+            }
+    };
+    class Derived: public Base
+    {
+        protected:
+            void hello()
+            {
+                cout &lt;&lt; "derived hello\n";
+            }
+    };
+    int main()
+    {
+        Derived derived;
+
+        derived.process();
+    }
+</pre>
+<p>
+The important characteristic of the above program is the <code>Base::process</code>
+function, calling <code>hello</code>. As <code>process</code> is the only member that is defined
+in the public interface it is the only member that can be called by code not
+belonging to the two classes. The class <code>Derived</code>, derived from <code>Base</code>
+clearly inherits <code>Base</code>'s interface and so <code>process</code> is also available in
+<code>Derived</code>. So the <code>Derived</code> object in <code>main</code> is able to call
+<code>process</code>, but not <code>hello</code>.
+<p>
+So far, so good. Nothing new, all this was covered in the previous
+chapter.  One may wonder why <code>Derived</code> was defined at all.  It was
+presumably defined to create an implementation of <code>hello</code> that's appropriate
+for <code>Derived</code> but differing from <code>Base::hello</code>'s
+implementation. <code>Derived</code>'s author's reasoning was as follows: <code>Base</code>'s
+implementation of <code>hello</code> is not appropriate; a <code>Derived</code> class object can
+remedy that by providing an appropriate implementation. Furthermore our author
+reasoned:
+    <blockquote>``since the type of an
+object determines the interface that is used, <code>process</code> must call
+<code>Derived::hello</code> as <code>hello</code> is called via <code>process</code> from a <code>Derived</code>
+class object''.</blockquote>
+<p>
+Unfortunately our author's reasoning is flawed, due to static binding. When
+<code>Base::process</code> was compiled static binding caused the compiler to bind
+the <code>hello</code> call to <code>Base::hello()</code>.
+<p>
+The author <em>intended</em> to create a <code>Derived</code> class that <code>is-a</code> <code>Base</code>
+class. That only partially succeeded: <code>Base</code>'s interface was inherited, but
+after that <code>Derived</code> has relinquished all control over what happens. Once
+we're in <code>process</code> we're only able to see <code>Base</code>'s member
+implementations. Polymorphism offers a way out, allowing us to redefine (in a
+derived class) members of a base class allowing these redefined members to be
+used from the base class's interface.
+<p>
+This is the essence of LSP: public inheritance should not be used to reuse the
+base class members (in derived classes) but to be reused (by the base class,
+polymorphically using derived class members reimplementing base class
+members).
+<p>
+Take a second to appreciate the implications of the above little program. The
+<code>hello</code> and <code>process</code> members aren't too impressive, but the implications
+of the example are. The <code>process</code> member could implement directory travel,
+<code>hello</code> could define the action to perform when encountering a
+file. <code>Base::hello</code> might simply show the name of a file, but
+<code>Derived::hello</code> might delete the file; might only list its name if its
+younger than a certain age; might list its name if it contains a certain text;
+etc., etc.. Up to now <code>Derived</code> would have to implement <code>process</code>'s
+actions itself; Up to now code expecting a <code>Base</code> class reference or pointer
+could only perform <code>Base</code>'s actions. Polymorphism allows us to reimplement
+members of base classes and to use those reimplemented members in code
+expecting base class references or pointers. Using polymorphism existing code
+may be reused by derived classes reimplementing the appropriate members of
+their base classes. It's about time to uncover how this magic can be realized.
+<p>
+Polymorphism, which is not
+the default in <strong>C++</strong>, solves the problem and allows the author of the
+classes to reach its goal. For the curious reader: prefix <code>void hello()</code> in
+the <code>Base</code> class with the keyword <code>virtual</code> and recompile. Running the
+modified program produces the intended and expected <code>derived hello</code>. Why
+this happens is explained next.
+<p>
+<a name="virfunc"></a><a name="l274"></a>
+<h2>14.1: Virtual functions</h2>
+By default the behavior of a member function called via a pointer or reference
+is determined by the implementation of that function in the pointer's or
+reference's class. E.g., a <code>Vehicle *</code> activates <code>Vehicle</code>'s member
+functions, even when pointing to an object of a derived class. This is known
+as as <em>early</em> or
+    <a name="an1782"></a> <a name="an1783"></a> <em>static</em> binding: the function to
+call is determined at
+ <a name="an1784"></a>compile-time. In <strong>C++</strong> <em>late</em>
+ <a name="an1785"></a> or <a name="an1786"></a> <em>dynamic</em> binding is realized using
+<em>virtual member functions</em>.
+<p>
+A member function becomes a <a name="an1787"></a>virtual member function when its declaration
+starts with the keyword <a name="an1788"></a><code>virtual</code>. It is stressed once again that in
+<strong>C++</strong>, different from several other object oriented languages, this is
+<em>not</em> the default situation. By default <em>static</em> binding is used.
+<p>
+Once a function is declared <code>virtual</code> in a base class, it remains virtual in
+all derived classes. The keyword <code>virtual</code> should not be mentioned with
+members declared virtual in the base class. In derived classes those members
+should be provided with the <a name="an1789"></a><code>override</code> indicator.
+<p>
+In the vehicle classification system (see section <a href="cplusplus13.html#VehicleSystem">13.1</a>), let's
+concentrate on the members <code>mass</code> and <code>setMass</code>. These members define the
+<a name="an1790"></a><em>user interface</em> of the class <code>Vehicle</code>. What we would like to accomplish
+is that this user interface can be used for <code>Vehicle</code> and for any class
+inheriting from <code>Vehicle</code>, since objects of those classes are themselves
+also <code>Vehicles</code>. 
+<p>
+If we can define the user interface of our base class (e.g., <code>Vehicle</code>) such
+that it remains usable irrespective of the classes we derive from <code>Vehicle</code>
+our software achieves an enormous reusability: we design or software around
+<code>Vehicle's</code> user interface, and our software will also properly function for
+derived classes. Using plain inheritance doesn't accomplish this. If we define 
+        <pre>
+    std::ostream &amp;operator&lt;&lt;(std::ostream &amp;out, Vehicle const &amp;vehicle)
+    {
+        return out &lt;&lt; "Vehicle's mass is " &lt;&lt; vehicle.mass() &lt;&lt; " kg.";
+    }
+</pre>
+    and <code>Vehicle's</code> member <code>mass</code> returns 0, but <code>Car's</code> member
+<code>mass</code> returns 1000, then twice a mass of 0 is reported when the following
+program is executed:
+        <pre>
+    int main()
+    {
+        Vehicle vehicle;
+        Car vw(1000);
+
+        cout &lt;&lt; vehicle &lt;&lt; '\n' &lt;&lt; vw &lt;&lt; endl;
+    }
+</pre>
+<p>
+We've defined an overloaded insertion operator, but since it only knows
+about <code>Vehicle's</code> user interface, `<code>cout &lt;&lt; vw</code>' will use <code>vw's
+Vehicle's</code> user interface as well, thus displaying a mass of 0. 
+<p>
+Reusablility is enhanced if we add a <em>redefinable interface</em> to the base
+class's interface. A redefinable interface allows derived classes to fill in
+their own implementation, without affecting the user interface. At the same
+time the user interface will behave according to the derived class's wishes,
+and not just to the base class's default implementation.
+<p>
+Members of the reusable interface should be declared in the class's
+private sections: conceptually they merely belong to their own classes
+(cf. section <a href="cplusplus14.html#INHERITWHY">14.7</a>). In the base class these members should be
+declared <code>virtual</code>. These members can be redefined (overridden) by derived
+classes, and should there be provided with <code>override</code> indicators.
+<p>
+We keep our user interface (<code>mass</code>), and add the redefinable member 
+<code>vmass</code> to <code>Vehicle's</code> interface:
+        <pre>
+    class Vehicle
+    {
+        public:
+            int mass() const;
+            int si_mass() const;    // see below
+
+        private:
+            virtual vmass() const;
+    };
+</pre>
+    Separating the user interface from the redefinable interface is a sensible
+thing to do. It allows us to fine-tune the user interface (only one point of
+maintenance), while at the same time allowing us to standardize the expected
+behavior of the members of the redefinable interface. E.g., in many countries
+the International system of units is used, using the kilogram as the unit for
+mass. Some countries use other units (like the <em>lbs</em>: 1 kg being
+approx. 2.2046 lbs). By separating the user interface from the redefinable
+interface we can use one standard for the redefinable interface, and keep the
+flexibility of transforming the information <em>ad-lib</em> in the user
+interface. 
+<p>
+Just to maintain a clean separation of user- and redefinable interface we
+might consider adding another accessor to <code>Vehicle</code>, providing the
+<code>si_mass</code>, simply implemented like this:
+        <pre>
+    int Vehicle::si_mass() const
+    {
+        return vmass();
+    }
+</pre>
+<p>
+If <code>Vehicle</code> supports a member <code>d_massFactor</code> then its <code>mass</code> member can
+be implemented like this:
+        <pre>
+    int Vehicle::mass()
+    {
+        return d_massFactor * si_mass();
+    }
+</pre>
+    <code>Vehicle</code> itself could define <code>vmass</code> so that it returns a token
+value. E.g.,
+        <pre>
+    int Vehicle::vmass()
+    {
+        return 0;
+    }
+</pre>
+<p>
+Now let's have a look at the class <code>Car</code>. It is derived from
+<code>Vehicle</code>, and it inherits <code>Vehicle's</code> user interface. It also has a data
+member <code>int d_mass</code>, and it implements its own reusable interface:
+        <pre>
+    class Car: public Vehicle
+    {
+        ...
+        private:
+            int vmass() override;
+    }
+</pre>
+        If <code>Car</code> constructors require us to specify the car's mass (stored
+in <code>d_mass</code>), then <code>Car</code> simply implements its <code>vmass</code> member like
+this:
+        <pre>
+    int Car::vmass() const
+    {
+        return d_mass;
+    }
+</pre>
+<p>
+The class <code>Truck</code>, inheriting from <code>Car</code> needs two mass values: the
+tractor's mass and the trailer's mass. The tractor's mass is passed to its
+<code>Car</code> base class, the trailor's mass is passed to its <code>Vehicle d_trailor</code>
+data member. <code>Truck</code>, too, overrides <code>vmass</code>, this time returning the sum
+of its tractor and trailor masses:
+        <pre>
+    int Truck::vmass() const
+    {
+        return Car::si_mass() + d_trailer.si_mass();
+    }
+</pre>
+<p>
+Once a class member has been declared <code>virtual</code> it becomes
+a virtual member in all derived classes, whether or not these members are
+provided with the <code>override</code> indicator. But <code>override</code> <em>should</em> be used,
+as it allows to compiler to catch typos when writing down the derived class
+interface. 
+<p>
+A member function may be declared <code>virtual</code> <em>anywhere</em> in a
+    <a name="an1791"></a>class hierarchy, but this probably defeats the underlying polymorphic
+class design, as the original base class is no longer capable of completely
+covering the redefinable interfaces of derived classes. If, e.g, <code>mass</code> is
+declared virtual in <code>Car</code>, but not in <code>Vehicle</code>, then the specific
+characteristics of virtual member functions would only be available for
+<code>Car</code> objects and for objects of classes derived from <code>Car</code>. For a
+<code>Vehicle</code> pointer or reference static binding would remain to be used.  
+<p>
+The effect of late binding (polymorphism) is illustrated below:
+        <pre>
+    void showInfo(Vehicle &amp;vehicle)
+    {
+        cout &lt;&lt; "Info: " &lt;&lt; vehicle &lt;&lt; '\n';
+    }
+
+    int main()
+    {
+        Car car(1200);            // car with mass 1200
+        Truck truck(6000, 115,      // truck with cabin mass 6000, 
+              "Scania", 15000);     // speed 115, make Scania, 
+                                    // trailer mass 15000
+
+        showInfo(car);             // see (1) below
+        showInfo(truck);            // see (2) below
+
+        Vehicle *vp = &amp;truck;
+        cout &lt;&lt; vp-&gt;speed() &lt;&lt; '\n';// see (3) below
+    }
+</pre>
+    Now that <code>mass</code> is defined <code>virtual</code>, late binding is used:
+    <ul>
+    <li> at (1), <code>Car</code>'s mass is displayed;
+    <li> at (2) <code>Truck</code>'s mass is displayed;
+    <li> at (3) a syntax error is generated. The member
+        <code>speed</code> is not a member of <code>Vehicle</code>, and hence not callable via
+        a <code>Vehicle*</code>.
+    </ul>
+    The example illustrates that when a pointer to a class is used <em>only the
+members of that class can be called</em>.  A member's <code>virtual</code> characteristic
+only influences the type of binding (early vs. late), not the set of member
+functions that is visible to the pointer.
+<p>
+Through virtual members derived classes may redefine the behavior performed by
+functions called from base class members or from pointers or references to
+base class objects. This redefinition of base class members by derived classes
+is called <a name="an1792"></a><a name="an1793"></a><em>overriding members</em>.
+<p>
+<a name="VIRTDES"></a><a name="l275"></a>
+<h2>14.2: Virtual destructors</h2>
+When an object ceases to exist the object's <a name="an1794"></a>destructor is called. Now
+consider the following code fragment (cf. section <a href="cplusplus13.html#VehicleSystem">13.1</a>):
+        <pre>
+    Vehicle *vp = new Land(1000, 120);
+
+    delete vp;          // object destroyed
+</pre>
+    Here <code>delete</code> is applied to a base class pointer. As the base class
+defines the available interface <code>delete vp</code> calls <code>~Vehicle</code> and <code>~Land</code>
+remains out of sight. Assuming that <code>Land</code> allocates memory a
+ <a name="an1795"></a>memory leak results. Freeing memory is not the only action destructors can
+perform. In general they may perform any action that's necessary when an
+object ceases to exist. But here none of the actions defined by <code>~Land</code> are
+performed. Bad news....
+<p>
+In <strong>C++</strong> this problem is solved by
+ <a name="an1796"></a><a name="an1797"></a> <em>virtual destructors</em>.  A
+destructor can be declared <code>virtual</code>. When a base class destructor is
+declared virtual then the destructor of the actual class pointed to by a base
+class pointer <code>bp</code> is going to be called when <code>delete bp</code> is
+executed. Thus, late binding is realized for destructors even though the
+destructors of derived classes have unique names. Example:
+        <pre>
+    class Vehicle
+    {
+        public:
+            virtual ~Vehicle();     // all derived class destructors are
+                                    // now virtual as well.
+    };
+</pre>
+    By declaring a virtual destructor, the above <code>delete</code> operation
+(<code>delete vp</code>) correctly calls <code>Land</code>'s destructor, rather than
+<code>Vehicle</code>'s destructor.
+<p>
+Once a destructor is called it performs as usual, whether or not it
+is a virtual destructor. So, <code>~Land</code> first executes its own statements
+and then calls <code>~Vehicle</code>. Thus, the above <code>delete vp</code> statement
+uses late binding to call <code>~Vehicle</code> and from this point on the object
+destruction proceeds as usual.
+<p>
+Destructors should always be defined <code>virtual</code> in classes designed as a
+base class from which other classes are going to be derived. Often those
+destructors themselves have no tasks to perform. In these cases the virtual
+    <a name="an1798"></a> <a name="an1799"></a>
+    destructor is given an empty body. For example, the definition of
+<code>Vehicle::~Vehicle()</code> may be as simple as:
+        <pre>
+    Vehicle::~Vehicle()
+    {}
+</pre>
+    Resist the temptation to define virtual destructors (even empty
+destructors)
+ <a name="an1800"></a> <a name="an1801"></a>inline as this complicates class
+maintenance. Section <a href="cplusplus14.html#VTABLE">14.11</a> discusses the reason behind this
+ <a name="an1802"></a>rule of thumb.
+<p>
+<a name="l276"></a>
+<h2>14.3: Pure virtual functions</h2>
+The base class <code>Vehicle</code> is provided with its own concrete implementations
+of its virtual members (<code>mass</code> and <code>setMass</code>).  However, virtual member
+functions do not necessarily <em>have</em> to be implemented in base classes.
+<p>
+When the implementations of virtual members are omitted from base classes the
+class imposes requirements upon derived classes. The derived classes are
+required to provide the `missing implementations'.
+<p>
+This approach, in some languages (like <strong>C#, Delphi</strong>
+ <a name="an1803"></a> and <strong>Java</strong>) known as an <a name="an1804"></a><em>interface</em>, defines a
+ <a name="an1805"></a><em>protocol</em>. Derived classes <em>must</em> obey the protocol by implementing the
+as yet not implemented members. If a class contains at least one member whose
+implementation is missing no objects of that class can be defined.
+<p>
+Such incompletely defined classes are always base classes. They enforce a
+protocol by merely declaring names, return values and arguments of some of
+their members. These classes are call <a name="an1806"></a>
+ <a name="an1807"></a><em>abstract classes</em> or <em>abstract base classes</em>.  Derived classes become
+non-abtract classes by implementing the as yet not implemented members.
+<p>
+Abstract base classes are the foundation of many <em>design patterns</em>
+ <a name="an1808"></a> (cf. <em>Gamma et al.</em> (1995))
+ <a name="an1809"></a>, allowing the programmer to create highly
+ <a name="an1810"></a><em>reusable software</em>. Some of these design patterns are covered by the
+<strong>C++</strong> Annotations (e.g, the <a name="an1811"></a><em>Template Method</em> in section <a href="cplusplus24.html#FORK">24.2</a>), but for a
+thorough discussion of design patterns the reader is referred to Gamma <em>et
+al.</em>'s book.
+<p>
+Members that are merely declared in base classes are called
+ <a name="an1812"></a><em>pure virtual functions</em>. A virtual member becomes a pure virtual member
+by postfixing <a name="an1813"></a><code>= 0</code> to its declaration (i.e., by replacing the semicolon
+ending its declaration by `<code>= 0;</code>'). Example:
+        <pre>
+    #include &lt;iosfwd&gt;
+    class Base
+    {
+        public:
+            virtual ~Base();
+            virtual std::ostream &amp;insertInto(std::ostream &amp;out) const = 0;
+    };
+    inline std::ostream &amp;operator&lt;&lt;(std::ostream &amp;out, Base const &amp;base)
+    {
+        return base.insertInto(out);
+    }
+</pre>
+    All classes derived from <code>Base</code> <em>must</em> implement the <code>insertInto</code>
+member function, or their objects cannot be constructed. This is neat: all
+objects of class types derived from <code>Base</code> can now always be inserted into
+<a name="an1814"></a><code>ostream</code> objects.
+<p>
+Could the <a name="an1815"></a>virtual destructor of a base class ever be a pure virtual
+function? The answer to this question is no. First of all, there is no need to
+enforce the availability of destructors in derived classes as destructors are
+provided by default (unless a destructor is declared with the <code>= delete</code>
+attribute). Second, if it is a pure virtual member its implementation does not
+exist. However, derived class destructors eventually call their base class
+destructors. How could they call base class destructors if their
+implementations are lacking? More about this in the next section.
+<p>
+Often, but not necessarily, pure virtual member functions are
+<code>const</code> <a name="an1816"></a> member functions. This allows the
+construction of constant derived class objects. In other situations this might
+not be necessary (or realistic), and
+ <a name="an1817"></a>non-constant member functions might be required. The general rule for
+<code>const</code> member functions also applies to pure virtual functions: if the
+member function alters the object's data members, it cannot be a <code>const</code>
+member function.
+<p>
+Abstract base classes frequently don't have
+ <a name="an1818"></a> data members.  However, once a base class
+declares a pure virtual member it <em>must</em> be declared identically in derived
+classes. If the implementation of a pure virtual function in a derived class
+alters the derived class object's data, then <em>that</em> function cannot be
+declared as a <code>const</code> member. Therefore, the author of an abstract base
+class should carefully consider whether a pure virtual member function should
+be a <code>const</code> member function or not.
+<p>
+<a name="l277"></a>
+<h3>14.3.1: Implementing pure virtual functions</h3>
+    Pure virtual member functions may be implemented. To implement a pure virtual
+    <a name="an1819"></a>
+    <a name="an1820"></a>
+ member function, provide it with its normal <code>= 0;</code> specification, but
+implement it as well. Since the <code>= 0;</code> ends in a semicolon, the pure virtual
+member is always at most a declaration in its class, but an implementation may
+either be provided outside from its interface (maybe using <code>inline</code>).
+<p>
+Pure virtual member functions may be called from derived class objects or
+from its class or derived class members by specifying the base class and scope
+resolution operator together with the member to be called. Example:
+<p>
+<pre>
+#include &lt;iostream&gt;
+
+class Base
+{
+    public:
+        virtual ~Base();
+        virtual void pureimp() = 0;
+};
+Base::~Base()
+{}
+void Base::pureimp()
+{
+    std::cout &lt;&lt; "Base::pureimp() called\n";
+}
+class Derived: public Base
+{
+    public:
+        virtual void pureimp();
+};
+inline void Derived::pureimp()
+{
+    Base::pureimp();
+    std::cout &lt;&lt; "Derived::pureimp() called\n";
+}
+int main()
+{
+    Derived derived;
+
+    derived.pureimp();
+    derived.Base::pureimp();
+
+    Derived *dp = &amp;derived;
+
+    dp-&gt;pureimp();
+    dp-&gt;Base::pureimp();
+}
+// Output:
+//      Base::pureimp() called
+//      Derived::pureimp() called
+//      Base::pureimp() called
+//      Base::pureimp() called
+//      Derived::pureimp() called
+//      Base::pureimp() called
+</pre>
+<p>
+Implementing a pure virtual member has limited use. One could argue that
+the pure virtual member function's implementation may be used to perform tasks
+that can already be performed at the base class level. However, there is no
+guarantee that the base class virtual member function is actually going to be
+called.  Therefore base class specific tasks could as well be offered by a
+separate member, without blurring the distinction between a member doing some
+work and a pure virtual member enforcing a protocol.
+<p>
+<a name="FINAL"></a><a name="l278"></a>
+<h2>14.4: Explicit virtual overrides</h2>
+Consider the following situations:
+    <ul>
+    <li> A class <code>Value</code> is a <em>value</em> class. It offers a copy constructor,
+an overloaded assignment operator, maybe move operations, and a public,
+non-virtual constructor. In section <a href="cplusplus14.html#INHERITWHY">14.7</a> it is argued that such
+classes is not suited as a base class. New classes should not inherit from
+<code>Value</code>. How to enforce this?
+    <li> A polymorphic class <code>Base</code> defines a virtual member
+<code>v_process(int32_t)</code>. A class derived from <code>Base</code> needs to override this
+member, but the author mistakingly defined <code>v_proces(int32_t)</code>. How to
+prevent such errors, breaking the polymorphic behavior of the derived class?
+    <li> A class <code>Derived</code>, derived from a polymorphic <code>Base</code> class
+overrides the member <code>Base::v_process</code>, but classes that are in turn derived
+from <code>Derived</code> should no longer override <code>v_process</code>, but <em>may</em> override
+other virtual members like <code>v_call</code> and <code>v_display</code>. How to enforce this
+restricted polymorphic character for classes derived from <code>Derived</code>?
+    </ul>
+    Two special identifiers, <a name="an1821"></a><code>final</code> and <a name="an1822"></a><code>override</code> are used to realize
+the above. These identifiers are special in the sense that they only require
+their special meanings in specific contexts. Outside of this context they are
+just plain identifiers, allowing the programmer to define a variable like
+<code>bool final</code>.
+<p>
+The identifier <code>final</code> can be applied to class declarations to indicate
+that the class cannot be used as a base class. E.g.:
+        <pre>
+    class Base1 final               // cannot be a base class
+    {};
+    class Derived1: public Base1    // ERR: Base1 is final
+    {};
+
+    class Base2                     // OK as base class
+    {};
+    class Derived2 final: public Base2  // OK, but Derived2 can't be
+    {};                                 //     used as a base class
+    class Derived: public Derived2      // ERR: Derived2 is final
+    {};
+</pre>
+    The identifier <code>final</code> can also be added to virtual member
+declarations. This indicates that those virtual members cannot be overridden
+by derived classes. The restricted polymorphic character of a class, mentioned
+above, can thus be realized as follows:
+        <pre>
+    class Base
+    {
+        virtual int v_process();    // define polymorphic behavior
+        virtual int v_call();
+        virtual int v_display();
+    };
+    class Derived: public Base      // Derived restricts polymorphism
+    {                               // to v_call and v_display
+        virtual int v_process() final;
+    };
+    class Derived2: public Derived
+    {
+        // int v_process();            No go: Derived:v_process is final
+        virtual int v_display();    // OK to override
+    };
+</pre>
+    To allow the compiler to detect typos, differences in parameter types, or
+differences in member function modifiers (e.g., <code>const</code> vs. non-<code>const</code>)
+the identifier <code>override</code> can (should) be appended to derived class members
+overriding base class members. E.g.,
+        <pre>
+    class Base
+    {
+        virtual int v_process();
+        virtual int v_call() const;
+        virtual int v_display(std::ostream &amp;out);
+    };
+    class Derived: public Base
+    {
+        virtual int v_proces() override;    // ERR: v_proces != v_process
+        virtual int v_call() override;      // ERR: not const
+                                            // ERR: parameter types differ
+        virtual int v_display(std::istream &amp;out) override;
+    };
+</pre>
+<p>
+<a name="MULTIPLEPOLYMORPH"></a><a name="l279"></a>
+<h2>14.5: Virtual functions and multiple inheritance</h2>
+    In chapter <a href="cplusplus06.html#IOStreams">6</a> we encountered the class <code>fstream</code>, one class
+offering features of <code>ifstream</code> and <code>ofstream</code>. In chapter
+<a href="cplusplus13.html#INHERITANCE">13</a> we learned that a class may be derived from multiple base
+classes. Such a derived class inherits the properties of all its base
+classes. Polymorphism can also be used in combination with multiple
+inheritance.
+<p>
+Consider what would happen if more than one `path' leads from the derived
+class up to its (base) classes. This is illustrated in the next (fictitious)
+example where a class <code>Derived</code> is doubly derived from <code>Base</code>:
+        <pre>
+    class Base
+    {
+        int d_field;
+        public:
+            void setfield(int val);
+            int field() const;
+    };
+    inline void Base::setfield(int val)
+    {
+        d_field = val;
+    }
+    inline int Base::field() const
+    {
+        return d_field;
+    }
+
+    class Derived: public Base, public Base
+    {
+    };
+</pre>
+    Due to the double derivation, <code>Base</code>'s functionality now occurs twice in
+<code>Derived</code>. This results in <a name="an1823"></a>ambiguity: when the function <code>setfield()</code> is
+called for a <code>Derived</code> class object, which function will that be as there
+are two of them? The scope resolution operator won't come to the rescue and so
+the <strong>C++</strong> compiler cannot compile the above example and (correctly)
+identifies an error.
+<p>
+The above code clearly duplicates its base class in the derivation, which can
+of course easily be avoided by not doubly deriving from <code>Base</code> (or by using
+composition (!)). But duplication of a base class can also occur through
+ <a name="an1824"></a>nested inheritance, where an object is derived from, e.g., a <code>Car</code> and
+from an <code>Air</code> (cf. section <a href="cplusplus13.html#VehicleSystem">13.1</a>). Such a class would be needed
+to represent, e.g., a flying car&nbsp;(such as the one in James Bond
+vs. the Man with the Golden Gun...). An <code>AirCar</code> would ultimately contain
+two <code>Vehicles</code>, and hence two <code>mass</code> fields, two <code>setMass()</code>
+functions and two <code>mass()</code> functions. Is this what we want?
+<p>
+<a name="l280"></a>
+<h3>14.5.1: Ambiguity in multiple inheritance</h3>
+    Let's investigate closer why an <code>AirCar</code> introduces <a name="an1825"></a>ambiguity, when
+derived from <code>Car</code> and <code>Air</code>.
+    <ul>
+    <li> An <code>AirCar</code> is a <code>Car</code>, hence a <code>Land</code>, and hence a
+<code>Vehicle</code>.
+    <li> However, an <code>AirCar</code> is also an <code>Air</code>, and hence a <code>Vehicle</code>.
+    </ul>
+    The duplication of <code>Vehicle</code> data is further illustrated in
+Figure <a href="cplusplus14.html#ambiguity">14</a>.
+    <a name="ambiguity"></a><p><figure><img src="polymorphism/ambiguity.gif" alt="Figure 14 is shown here."/><br>
+<figcaption>Figure 14: Duplication of a base class in multiple derivation.</figcaption>
+</figure></p>
+
+    The internal organization of an <code>AirCar</code> is shown in
+Figure <a href="cplusplus14.html#InternalOrganization">15</a>
+    <a name="InternalOrganization"></a><p><figure><img src="polymorphism/internal.gif" alt="Figure 15 is shown here."/><br>
+<figcaption>Figure 15: Internal organization of an <code>AirCar</code> object.</figcaption>
+</figure></p>
+
+    The <strong>C++</strong> compiler detects the ambiguity in an <code>AirCar</code> object,
+and will therefore not  compile  statements like:
+        <pre>
+    AirCar jBond;
+    cout &lt;&lt; jBond.mass() &lt;&lt; '\n';
+</pre>
+    Which member function <code>mass</code> to call cannot be determined by the
+compiler but the programmer has two possibilities to resolve the ambiguity for
+the compiler:
+    <ul>
+    <li> First, the function call where the ambiguity originates can be
+modified. The ambiguity is resolved using the <a name="an1826"></a>scope resolution operator:
+    <pre>
+// let's hope that the mass is kept in the Car
+// part of the object..
+cout &lt;&lt; jBond.Car::mass() &lt;&lt; '\n';
+</pre>
+    The scope resolution operator and the class name are put right before
+the name of the member function.
+    <li> Second, a dedicated function <code>mass</code> could be created for
+the class <code>AirCar</code>:
+    <pre>
+int AirCar::mass() const
+{
+    return Car::mass();
+}
+</pre>
+    </ul>
+    The second possibility is preferred as it does not require the compiler to
+flag an error; nor does it require the programmer using the class
+<code>AirCar</code> to take special precautions.
+<p>
+However, there exists a more elegant solution, discussed in the next
+section.
+<p>
+<a name="VIRTUALBASE"></a><a name="l281"></a>
+<h3>14.5.2: Virtual base classes</h3>
+        As illustrated in Figure <a href="cplusplus14.html#InternalOrganization">15</a>, an <code>AirCar</code> represents
+<em>two</em> <code>Vehicle</code>s. This not only results in an <a name="an1827"></a>ambiguity about which
+function to use to access the <code>mass</code> data, but it also defines two
+<code>mass</code> fields in an <code>AirCar</code>. This is slightly redundant, since we can
+assume that an <code>AirCar</code> has but one mass.
+<p>
+It is, however, possible to define an <code>AirCar</code> as a class consisting of
+but one <code>Vehicle</code> and yet using multiple derivation.  This is realized by
+defining the base classes that are multiply mentioned in a derived class's
+inheritance tree as a
+ <a name="an1828"></a> <a name="an1829"></a><em>virtual base class</em>.
+<p>
+For the class <code>AirCar</code> this implies a small change when deriving an
+<code>AirCar</code> from <code>Land</code> and <code>Air</code> classes:
+        <pre>
+    class Land: virtual public Vehicle
+    {
+        // etc
+    };
+    class Car: public Land
+    {
+        // etc
+    };
+    class Air: virtual public Vehicle
+    {
+        // etc
+    };
+    class AirCar: public Car, public Air
+    {
+    };
+</pre>
+    Virtual derivation <a name="an1830"></a> ensures that a <code>Vehicle</code> is
+only added once to a derived class. This means that the route along which a
+<code>Vehicle</code> is added to an <code>AirCar</code> is no longer depending on its direct
+base classes; we can only state that an <code>AirCar</code> is a <code>Vehicle</code>.  The
+internal organization of an <code>AirCar</code> after virtual derivation is shown in
+Figure <a href="cplusplus14.html#VirtualBaseClass">16</a>.
+    <a name="VirtualBaseClass"></a><p><figure><img src="polymorphism/virtbase.gif" alt="Figure 16 is shown here."/><br>
+<figcaption>Figure 16: Internal organization of an <code>AirCar</code> object when the base
+            classes are virtual.</figcaption>
+</figure></p>
+
+<p>
+When a class <code>Third</code> inherits from a base class <code>Second</code> which in turn
+inherits from a base class <code>First</code> then the <code>First</code> class constructor
+called by the <code>Second</code> class constructor is also used when this <code>Second</code>
+constructor is used when constructing a <code>Third</code> object. Example:
+        <pre>
+    class First
+    {
+        public:
+            First(int x);
+    };
+    class Second: public First
+    {
+        public:
+            Second(int x)
+            :
+                First(x)
+            {}
+    };
+    class Third: public Second
+    {
+        public:
+            Third(int x)
+            :
+                Second(x)           // calls First(x)
+            {}
+    };
+</pre>
+    The above no longer holds true when <code>Second</code> uses virtual derivation.
+When <code>Second</code> uses virtual derivation its base class constructor is
+<em>ignored</em> when <code>Second</code>'s constructor is called from <code>Third</code>. Instead
+<code>Second</code> by default calls <code>First</code>'s default constructor. This is
+illustrated by the next example:
+        <pre>
+    class First
+    {
+        public:
+            First()
+            {
+                cout &lt;&lt; "First()\n";
+            }
+            First(int x);
+    };
+    class Second: public virtual First      // note: virtual
+    {
+        public:
+            Second(int x)
+            :
+                First(x)
+            {}
+    };
+    class Third: public Second
+    {
+        public:
+            Third(int x)
+            :
+                Second(x)
+            {}
+    };
+    int main()
+    {
+        Third third(3);     // displays `First()'
+    }
+</pre>
+<p>
+When constructing <code>Third</code> <code>First</code>'s default constructor is used by
+default. <code>Third</code>'s constructor, however, may overrule this default behavior
+by explicitly specifying the constructor to use. Since the <code>First</code> object
+must be available before <code>Second</code> can be constructed it must be specified
+first. To call <code>First(int)</code> when constructing <code>Third(int)</code> the latter
+constructor can be defined as follows:
+        <pre>
+    class Third: public Second
+    {
+        public:
+            Third(int x)
+            :
+                First(x),           // now First(int) is called.
+                Second(x)
+            {}
+    };
+</pre>
+    This behavior may seem puzzling when simple linear inheritance is used but
+it makes sense when multiple inheritance is used with base classes using
+virtual inheritance. Consider <code>AirCar</code>: when <code>Air</code> and <code>Car</code> both
+virtually inherit from <code>Vehicle</code> will <code>Air</code> and <code>Car</code> both initialize
+the common <code>Vehicle</code> object? If so, which one is going to be called first?
+What if <code>Air</code> and <code>Car</code> use different <code>Vehicle</code> constructors? All these
+questions can be avoided by passing the responsibility for the initialization
+of a common base class to the class eventually using the common base class
+object. In the above example <code>Third</code>. Hence <code>Third</code> is provided an
+opportunity to specify the constructor to use when initializing <code>First</code>.
+<p>
+Multiple inheritance may also be used to inherit from classes that do not all
+use virtual inheritance. Assume we have two classes, <code>Derived1</code> and
+<code>Derived2</code>, both (possibly virtually) derived from <code>Base</code>.
+<p>
+We now address the question which constructors will be called when calling a
+constructor of the class <code>Final: public Derived1, public Derived2</code>.
+<p>
+To distinguish the involved constructors <code>Base1</code> indicates the <code>Base</code>
+class constructor called as base class initializer for <code>Derived1</code> (and
+analogously: <code>Base2</code> called from <code>Derived2</code>). A plain <code>Base</code>  indicates
+<code>Base</code>'s  default constructor.
+<p>
+<code>Derived1</code> and <code>Derived2</code> indicate the base class initializers used when
+constructing a <code>Final</code> object.
+<p>
+Now we're ready to distinguish the various cases when constructing an object
+of the class <code>Final: public Derived1, public Derived2</code>:
+        <ul>
+        <li> classes:
+                <pre>
+Derived1: public Base
+Derived2: public Base
+</pre>
+            <blockquote>This is normal, non virtual multiple derivation. The
+                following constructors are called in the order shown:
+                <pre>
+Base1,
+Derived1,
+Base2,
+Derived2
+</pre>
+            </blockquote>
+        <li> classes:
+                <pre>
+Derived1: public Base
+Derived2: virtual public Base
+</pre>
+            <blockquote>Only <code>Derived2</code> uses virtual derivation.
+               <code>Derived2</code>'s base class constructor is ignored.  Instead,
+                <code>Base</code> is called and it is called prior to any other
+                constructor:
+               <pre>
+Base,
+Base1,
+Derived1,
+Derived2
+</pre>
+               As only one class uses virtual derivation, <em>two</em> <code>Base</code>
+                class objects remain available in the eventual <code>Final</code>
+                class.
+            </blockquote>
+        <li> classes:
+                <pre>
+Derived1: virtual public Base
+Derived2: public Base
+</pre>
+            <blockquote>Only <code>Derived1</code> uses virtual derivation.
+               <code>Derived1</code>'s base class constructor is ignored.  Instead,
+                <code>Base</code> is called and it is called prior to any other
+                constructor. Different from the first (non-virtual) case
+                <code>Base</code> is now called, rather than <code>Base1</code>:
+               <pre>
+Base,
+Derived1,
+Base2,
+Derived2
+</pre>
+            </blockquote>
+        <li> classes:
+                <pre>
+Derived1: virtual public Base
+Derived2: virtual public Base
+</pre>
+            <blockquote>Both base classes use virtual derivation and so
+                only <em>one</em> <code>Base</code> class object will be present in the
+                <code>Final</code> class object. The following constructors are called
+                in the order shown:
+                <pre>
+Base,
+Derived1,
+Derived2
+</pre>
+            </blockquote>
+        </ul>
+    Virtual derivation is, in contrast to virtual functions, a pure
+<a name="an1831"></a>compile-time issue. Virtual inheritance merely defines
+how the compiler defines a class's data organization and construction process.
+<p>
+<a name="l282"></a>
+<h3>14.5.3: When virtual derivation is not appropriate</h3>
+    Virtual inheritance can be used to merge multiply occurring base
+classes. However, situations may be encountered where multiple occurrences of
+base classes is appropriate. Consider the definition of a <code>Truck</code> (cf.
+section <a href="cplusplus13.html#Truck">13.5</a>):
+        <pre>
+    class Truck: public Car
+    {
+        int d_trailer_mass;
+
+        public:
+            Truck();
+            Truck(int engine_mass, int sp, char const *nm,
+                   int trailer_mass);
+
+            void setMass(int engine_mass, int trailer_mass);
+            int mass() const;
+    };
+    Truck::Truck(int engine_mass, int sp, char const *nm,
+                  int trailer_mass)
+    :
+        Car(engine_mass, sp, nm)
+    {
+        d_trailer_mass = trailer_mass;
+    }
+    int Truck::mass() const
+    {
+        return                  // sum of:
+            Car::mass() +    //   engine part plus
+            trailer_mass;         //   the trailer
+    }
+</pre>
+    This definition shows how a <code>Truck</code> object is constructed to contain two
+mass fields: one via its derivation from <code>Car</code> and one via its own <code>int
+d_trailer_mass</code> data member. Such a definition is of course valid, but it
+could also be rewritten. We could derive a <code>Truck</code> from a <code>Car</code>
+<em>and</em> from a <code>Vehicle</code>, thereby explicitly requesting the double presence
+of a <code>Vehicle</code>; one for the mass of the engine and cabin, and one for the
+mass of the trailer. A slight complication is that a class organization like
+        <pre>
+    class Truck: public Car, public Vehicle
+</pre>
+    is not accepted by the <strong>C++</strong> compiler. As a <code>Vehicle</code> is already part
+of a <code>Car</code>, it is therefore not needed once again. This organzation may,
+however be forced using a small trick. By creating an additional class
+inheriting from <code>Vehicle</code> and deriving <code>Truck</code> from that additional class
+rather than directly from <code>Vehicle</code> the problem is solved. Simply derive a
+class <code>TrailerVeh</code> from <code>Vehicle</code>, and then <code>Truck</code> from <code>Car</code> and
+<code>TrailerVeh</code>:
+        <pre>
+    class TrailerVeh: public Vehicle
+    {
+        public:
+            TrailerVeh(int mass)
+            :
+                Vehicle(mass)
+            {}
+    };
+    class Truck: public Car, public TrailerVeh
+    {
+        public:
+            Truck();
+            Truck(int engine_mass, int sp, char const *nm, int trailer_mass);
+            void setMass(int engine_mass, int trailer_mass);
+            int mass() const;
+    };
+    inline Truck::Truck(int engine_mass, int sp, char const *nm,
+                        int trailer_mass)
+    :
+        Car(engine_mass, sp, nm),
+        TrailerVeh(trailer_mass)
+    {}
+    inline int Truck::mass() const
+    {
+        return                      // sum of:
+            Car::mass() +        //   engine part plus
+            TrailerVeh::mass();   //   the trailer
+    }
+</pre>
+<p>
+<a name="RTTI"></a><a name="l283"></a>
+<h2>14.6: Run-time type identification</h2>
+<strong>C++</strong> offers two ways to (run-time) <a name="an1832"></a>
+retrieve the type of objects and expressions. The possibilities of <strong>C++</strong>'s
+run-time type identification are limited compared to languages like
+ <a name="an1833"></a> <strong>Java</strong>. Usually
+    <a name="an1834"></a>static type checking and <a name="an1835"></a>static type identification is used in
+<strong>C++</strong>. Static type checking is possibly safer and certainly more efficient
+than run-time type identification and should therefore be preferred over
+run-time type identification. But situations exist where run-time type
+identification is appropriate. <strong>C++</strong> offers run-time type identification
+through the <a name="an1836"></a><em>dynamic cast</em> and <a name="an1837"></a><code>typeid</code> operators.
+    <ul>
+    <li> A <code>dynamic_cast</code>  is used  to convert a base
+class <a name="an1838"></a> pointer or reference to a
+derived class pointer or reference. This is also known as <a name="an1839"></a><em>down-casting</em>.
+        <li> The <a name="an1840"></a><code>typeid</code> operator returns the actual type of an expression.
+            <a name="an1841"></a>
+    </ul>
+    These operators can be used with objects of classes having at least one
+virtual member function.
+<p>
+<a name="DYNAMICCAST"></a><a name="l284"></a>
+<h3>14.6.1: The dynamic_cast operator</h3>
+        The <a name="an1842"></a><code>dynamic_cast&lt;&gt;</code> operator is used to convert a base
+class pointer or <a name="an1843"></a> reference to,
+respectively, a <a name="an1844"></a>derived class pointer or reference. This is also called
+<a name="an1845"></a><em>down-casting</em> as direction of the cast is <em>down</em> the inheritance tree.
+<p>
+A dynamic cast's actions are determined <a name="an1846"></a>run-time; it can only be used if
+the base class declares at least one virtual member function. For the dynamic
+cast to succeed, the destination class's <code>Vtable</code> must be equal to the
+<code>Vtable</code> to which the dynamic cast's argument refers to, lest the cast fails
+and returns 0 (if a dynamic cast of a pointer was requested) or throws a
+<code>std::bad_cast</code> exception (if a dynamic cast of a reference was requested).
+<p>
+In the following example a pointer to the class <code>Derived</code> is obtained from
+the <code>Base</code> class pointer <code>bp</code>:
+        <pre>
+    class Base
+    {
+        public:
+            virtual ~Base();
+    };
+    class Derived: public Base
+    {
+        public:
+            char const *toString();
+    };
+    inline char const *Derived::toString()
+    {
+        return "Derived object";
+    }
+    int main()
+    {
+        Base *bp;
+        Derived *dp,
+        Derived d;
+
+        bp = &amp;d;
+
+        dp = dynamic_cast&lt;Derived *&gt;(bp);
+
+        if (dp)
+            cout &lt;&lt; dp-&gt;toString() &lt;&lt; '\n';
+        else
+            cout &lt;&lt; "dynamic cast conversion failed\n";
+    }
+</pre>
+    In the condition of the above <code>if</code> statement the success of the dynamic
+cast is verified. This verification is performed at <em>run-time</em>, as the
+actual class of the objects to which the pointer points is only known by then.
+<p>
+If a base class pointer is provided, the dynamic cast operator returns 0 on
+failure and a pointer to the requested derived class on success.
+<p>
+Assume a <code>vector&lt;Base *&gt;</code> is used. Such a vector's pointers may point to
+objects of various classes, all derived from <code>Base</code>. A dynamic cast
+returns a pointer to the specified class if the base class pointer indeed
+points to an object of the specified class and returns 0 otherwise.
+<p>
+We could determine the actual class of an object a pointer points to by
+performing a series of checks to find the derived class to which a base class
+pointer points. Example:
+        <pre>
+    class Base
+    {
+        public:
+            virtual ~Base();
+    };
+    class Derived1: public Base;
+    class Derived2: public Base;
+
+    int main()
+    {
+        vector&lt;Base *&gt; vb(initializeBase());
+
+        Base *bp = vb.front();
+
+        if (dynamic_cast&lt;Derived1 *&gt;(bp))
+            cout &lt;&lt; "bp points to a Derived1 class object\n";
+        else if (dynamic_cast&lt;Derived2 *&gt;(bp))
+            cout &lt;&lt; "bp points to a Derived2 class object\n";
+    }
+</pre>
+<p>
+Alternatively, a reference to a base class object may be available. In
+this case the <code>dynamic_cast</code> operator throws an <a name="an1847"></a>exception if the down
+casting fails. Example:
+        <pre>
+    #include &lt;iostream&gt;
+    #include &lt;typeinfo&gt;
+
+    class Base
+    {
+        public:
+            virtual ~Base();
+            virtual char const *toString();
+    };
+    inline char const *Base::toString()
+    {
+        return "Base::toString() called";
+    }
+    class Derived1: public Base
+    {};
+    class Derived2: public Base
+    {};
+
+    Base::~Base()
+    {}
+    void process(Base &amp;b)
+    {
+        try
+        {
+            std::cout &lt;&lt; dynamic_cast&lt;Derived1 &amp;&gt;(b).toString() &lt;&lt; '\n';
+        }
+        catch (std::bad_cast)
+        {}
+        try
+        {
+            std::cout &lt;&lt; dynamic_cast&lt;Derived2 &amp;&gt;(b).toString() &lt;&lt; '\n';
+        }
+        catch (std::bad_cast)
+        {
+            std::cout &lt;&lt; "Bad cast to Derived2\n";
+        }
+    }
+    int main()
+    {
+        Derived1 d;
+        process(d);
+    }
+    /*
+        Generated output:
+
+        Base::toString() called
+        Bad cast to Derived2
+    */
+</pre>
+<p>
+In this example the value <code>std::bad_cast</code> <a name="an1848"></a> is used. A
+<code>std::bad_cast</code> exception is thrown if the dynamic cast of a reference to a
+derived class object fails.
+<p>
+Note the form of the <code>catch</code> clause: <code>bad_cast</code> is the name of a type.
+Section <a href="cplusplus17.html#EMPTYENUM">17.4.1</a> describes how  such a type can be defined.
+<p>
+The dynamic cast operator is a useful tool when an existing base class cannot
+or should not be modified (e.g., when the sources are not available), and a
+derived class may be modified instead. Code receiving a base class pointer or
+reference may then perform a dynamic cast to the derived class to access the
+derived class's functionality.
+<p>
+You may wonder in what way the behavior of the <code>dynamic_cast</code> differs from
+that of the <code>static_cast</code>.
+<p>
+When the <code>static_cast</code> is used, we tell the compiler that it must convert a
+pointer or reference to its expression type to a pointer or reference of its
+destination type. This holds true whether the base class declares virtual
+members or not. Consequently, all the <code>static_cast</code>'s actions can be
+determined by the compiler, and the following compiles fine:
+        <pre>
+    class Base
+    {
+        // maybe or not virtual members
+    };
+    class Derived1: public Base
+    {};
+    class Derived2: public Base
+    {};
+
+    int main()
+    {
+        Derived1 derived1;
+        Base *bp = &amp;derived1;
+
+        Derived1 &amp;d1ref = static_cast&lt;Derived1 &amp;&gt;(*bp);
+        Derived2 &amp;d2ref = static_cast&lt;Derived2 &amp;&gt;(*bp);
+    }
+</pre>
+    Pay attention to the second <code>static_cast</code>: here the <code>Base</code> class
+object is cast to a <code>Derived2</code> class reference. The compiler has no problems
+with this, as <code>Base</code> and <code>Derived2</code> are related by inheritance.
+<p>
+Semantically, however, it makes no sense as <code>bp</code> in fact points to a
+<code>Derived1</code> class object. This is detected by a <code>dynamic_cast</code>.  A
+<code>dynamic_cast</code>, like the <code>static_cast</code>, converts related pointer or
+reference types, but the <code>dynamic_cast</code> provides a run-time safeguard. The
+dynamic cast fails when the requested type doesn't match the actual type of
+the object we're pointing at. In addition, the <code>dynamic_cast</code>'s use is much
+more restricted than the <code>static_cast</code>'s use, as the <code>dynamic_cast</code> can
+only be used for downcasting to derived classes having virtual members.
+<p>
+In the end a dynamic cast is a cast, and casts should be avoided whenever
+possible. When the need for dynamic casting arises ask yourself whether the
+base class has correctly been designed. In situations where code expects a
+base class reference or pointer the base class interface should be all that is
+required and using a dynamic cast should not be necessary. Maybe the base
+class's virtual interface can be modified so as to prevent the use of dynamic
+casts. Start frowning when encountering code using dynamic casts. When using
+dynamic casts in your own code always properly document why the dynamic cast
+was appropriately used and was not avoided.
+<p>
+<a name="TYPEID"></a><a name="l285"></a>
+<h3>14.6.2: The `typeid' operator</h3>
+        As with the <a name="an1849"></a><code>dynamic_cast</code> operator, <a name="an1850"></a><code>typeid</code> is usually applied to
+references to base class objects that refer to derived class
+objects. <code>Typeid</code> should only be used with base classes offering virtual
+members. 
+<p>
+Before using <code>typeid</code> the <a name="an1851"></a><code>&lt;typeinfo&gt;</code> header file must be included.
+<p>
+The <code>typeid</code> operator returns an object of type <code>type_info</code>.
+Different compilers may offer different implementations of the class
+<code>type_info</code>, but at the very least <code>typeid</code> must offer the following
+interface:
+        <pre>
+    class type_info
+    {
+        public:
+            virtual ~type_info();
+            int operator==(type_info const &amp;other) const;
+            int operator!=(type_info const &amp;other) const;
+            bool before(type_info const &amp;rhs) const
+            char const *name() const;
+        private:
+            type_info(type_info const &amp;other);
+            type_info &amp;operator=(type_info const &amp;other);
+    };
+</pre>
+    Note that this class has a private copy constructor and a private
+overloaded assignment operator. This prevents code from  constructing
+<code>type_info</code> objects and prevents code from assigning <code>type_info</code> objects
+to each other. Instead, <code>type_info</code> objects are
+constructed and returned by the <code>typeid</code> operator.
+<p>
+If the <code>typeid</code> operator is passed a base class reference it is able to
+return the actual name of the type the reference refers to. Example:
+        <pre>
+    class Base;
+    class Derived: public Base;
+
+    Derived d;
+    Base    &amp;br = d;
+
+    cout &lt;&lt; typeid(br).name() &lt;&lt; '\n';
+</pre>
+    In this example the <code>typeid</code> operator is given a base class reference.
+It prints the text ``<code>Derived</code>'', being the <a name="an1852"></a>class name of the class
+<code>br</code> actually refers to. If <code>Base</code> does not contain virtual functions, the
+text ``<code>Base</code>'' is printed.
+<p>
+The <code>typeid</code> operator can be used to determine the name of the actual
+type of <a name="an1853"></a> expressions, not just of class type
+objects. For example:
+        <pre>
+    cout &lt;&lt; typeid(12).name() &lt;&lt; '\n';     // prints:  int
+    cout &lt;&lt; typeid(12.23).name() &lt;&lt; '\n';  // prints:  double
+</pre>
+    Note, however, that the above example is suggestive at most. It <em>may</em>
+print <code>int</code> and <code>double</code>, but this is not necessarily the case. If
+portability is required, make sure no tests against these static, built-in
+text-strings are required. Check out what your compiler produces in case of
+doubt.
+<p>
+In situations where the <code>typeid</code> operator is applied to
+determine the type of a derived class, a base class <em>reference</em>
+        <a name="an1854"></a>
+    should be used as the argument of the <code>typeid</code> operator. Consider
+the following example:
+        <pre>
+    class Base;     // contains at least one virtual function
+    class Derived: public Base;
+
+    Base *bp = new Derived;     // base class pointer to derived object
+
+    if (typeid(bp) == typeid(Derived *))    // 1: false
+        ...
+    if (typeid(bp) == typeid(Base *))       // 2: true
+        ...
+    if (typeid(bp) == typeid(Derived))      // 3: false
+        ...
+    if (typeid(bp) == typeid(Base))         // 4: false
+        ...
+    if (typeid(*bp) == typeid(Derived))     // 5: true
+        ...
+    if (typeid(*bp) == typeid(Base))        // 6: false
+        ...
+
+    Base &amp;br = *bp;
+
+    if (typeid(br) == typeid(Derived))      // 7: true
+        ...
+    if (typeid(br) == typeid(Base))         // 8: false
+        ...
+</pre>
+    Here, <code>(1)</code> returns <code>false</code> as a <code>Base *</code> is not a <code>Derived
+*</code>. <code>(2)</code> returns <code>true</code>, as the two pointer types are the same, <code>(3)</code>
+and <code>(4)</code> return <code>false</code> as pointers to objects are not the objects
+themselves.
+<p>
+On the other hand, if <code>*bp</code> is used in the above expressions, then
+<code>(1)</code> and <code>(2)</code> return <code>false</code> as an object (or reference to an object)
+is not a pointer to an object, whereas <code>(5)</code> now returns <code>true</code>: <code>*bp</code>
+actually refers to a <code>Derived</code> class object, and <code>typeid(*bp)</code> returns
+<code>typeid(Derived)</code>.  A similar result is obtained if a base class reference
+is used: <code>7</code> returning <code>true</code> and <code>8</code> returning <code>false</code>.
+<p>
+The <code>type_info::before(type_info const &amp;rhs)</code> member is used to
+determine the <a name="an1855"></a><em>collating order</em> of classes. This is useful when comparing
+two <em>types</em> for equality.  The function returns a nonzero value if <code>*this</code>
+precedes <code>rhs</code> in the hierarchy or collating order of the used types. When a
+derived class is compared to its base class the comparison returns 0,
+otherwise a non-zero value. E.g.:
+        <pre>
+    cout &lt;&lt; typeid(ifstream).before(typeid(istream)) &lt;&lt; '\n' &lt;&lt; // not 0
+            typeid(istream).before(typeid(ifstream)) &lt;&lt; '\n';   // 0
+</pre>
+    With built-in types the implementor may implement that non-0 is returned
+when a `wider' type is compared to a `smaller' type and 0 otherwise:
+        <pre>
+    cout &lt;&lt; typeid(double).before(typeid(int)) &lt;&lt; '\n' &lt;&lt;   // not 0
+            typeid(int).before(typeid(double)) &lt;&lt; '\n';     // 0
+</pre>
+    When two equal types are compared, 0 is returned:
+        <pre>
+    cout &lt;&lt; typeid(ifstream).before(typeid(ifstream)) &lt;&lt; '\n';   // 0
+</pre>
+    When a <code>0</code>-pointer is passed to the <code>operator typeid</code> a <a name="an1856"></a><code>bad_typeid</code>
+exception is thrown.
+<p>
+<a name="INHERITWHY"></a><a name="l286"></a>
+<h2>14.7: Inheritance: when to use to achieve what?</h2>
+Inheritance should not be applied automatically and thoughtlessly. Often
+composition can be used instead, improving on a class's design by reducing
+coupling. When inheritance is used <em>public</em> inheritance should not
+automatically be used but the type of inheritance that is selected should
+match the programmer's intent.
+<p>
+We've seen that polymorphic classes on the one hand offer interface members
+defining the functionality that can be requested of base classes and on the
+other hand offer virtual members that can be overridden. One of the signs of
+good class design is that member functions are designed according to the
+principle of `one function, one task'. In the current context: a class member
+should either be a member of the class's public or protected interface or it
+should be available as a virtual member for reimplementation by derived
+classes. Often this boils down to virtual members that are defined in the base
+class's <em>private</em> section. Those functions shouldn't be called by code using
+the base class, but they exist to be overridden by derived classes using
+polymorphism to redefine the base class's behavior.
+<p>
+The underlying principle was mentioned before in the introductory paragraph
+of this chapter: according to the <a name="an1857"></a><em>Liskov Substitution Principle</em>
+(<a name="an1858"></a><em>LSP</em>) an <a name="an1859"></a><em>is-a</em> relationship between classes (indicating that a
+derived class object <em>is a</em> base class object) implies that a derived class
+object may be used in code expecting a base class object.
+<p>
+In this case inheritance is used <em>not</em> to let the derived class use the
+facilities already implemented by the base class but to reuse the base class
+polymorphically by reimplementing the base class's virtual members in the
+derived class.
+<p>
+In this section we'll discuss the reasons for using inheritance. Why should
+inheritance (not) be used? If it is used what do we try to accomplish by it?
+<p>
+Inheritance often competes with composition. Consider the following two
+alternative class designs:
+        <pre>
+    class Derived: // derived from Base
+    { ... };
+
+    class Composed
+    {
+        Base d_base;
+        ...
+    };
+</pre>
+    Why and when prefer <code>Derived</code> over <code>Composed</code> and vice versa? What
+kind of inheritance should be used when designing the class <code>Derived</code>?
+    <ul>
+    <li> Since <code>Composed</code> and <code>Derived</code> are offered as alternatives we are
+        looking at the design of a class (<code>Derived</code> or <code>Composed</code>) that
+        <a name="an1860"></a><em>is-implemented-in-terms-of</em> another class.
+    <li> Since <code>Composed</code> does itself not make <code>Base</code>'s interface
+        available, <code>Derived</code> shouldn't do so either. The underlying
+        principle is that <a name="an1861"></a><em>private inheritance</em> should be used when
+        deriving a classs <code>Derived</code> from <code>Base</code> where <code>Derived</code>
+        is-implemented-in-terms-of <code>Base</code>.
+    <li> Should we use inheritance or composition? Here are some arguments:
+        <ul>
+        <li> In general terms composition results in looser coupling and
+            should therefore be preferred over inheritance.
+        <li> Composition allows us to define classes having multiple members
+            of the same type (think about a class having multiple
+            <code>std::string</code> members) which can not be realized using
+            inheritance.
+        <li> Composition allows us to separate the class's interface from its
+            implementation. This allows us to modify the class's data
+            organization without the need to recompile code using our
+            class. This is also known as the <a name="an1862"></a><em>bridge design pattern</em> or the
+            <a name="an1863"></a><em>compiler firewall</em> or <a name="an1864"></a><em>pimpl</em> (pointer to the
+            implementation) idiom.
+        <li> If <code>Base</code> offers members in its <em>protected</em> interface that
+            must be used when implementing <code>Derived</code> inheritance must also
+            be used. Again: since we're implementing-in-terms-of the
+            inheritance type should be <code>private</code>.
+        <li> Protected inheritance may be considered when the derived class
+            (<code>D</code>) itself is intended as a base class that should only make
+            the members of its own base class (<code>B</code>) available to classes
+            that are derived from it (i.e., <code>D</code>).
+        </ul>
+    </ul>
+<p>
+Private inheritance should also be used when a derived class is-a certain
+type of base class, but in order to initialize that base class an object of
+another class type must be available. Example: a new <code>istream</code> class-type
+(say: a stream <code>IRandStream</code> from which random numbers can be extracted) is
+derived from <code>std::istream</code>.  Although an <code>istream</code> can be constructed
+empty (receiving its <code>streambuf</code> later using its <code>rdbuf</code> member), it is
+clearly preferable to initialize the <code>istream</code> base class right away.
+<p>
+Assuming that a <code>Randbuffer: public std::streambuf</code> has been created for
+generating random numbers then <code>IRandStream</code> can be derived from
+<code>Randbuffer</code> and <code>std::istream</code>. That way the <code>istream</code> base class can
+be initialized using the <code>Randbuffer</code> base class.
+<p>
+As a <code>RandStream</code> is definitely not a <code>Randbuffer</code> <em>public</em> inheritance
+is <em>not</em> appropriate. In this case <code>IRandStream</code>
+is-implemented-in-terms-of a <code>Randbuffer</code> and so <em>private</em> inheritance
+should be used.
+<p>
+<code>IRandStream</code>'s class interface should therefore start like this:
+        <pre>
+    class IRandStream: private Randbuffer, public std::istream
+    {
+        public:
+            IRandStream(int lowest, int highest)    // defines the range
+            :
+                Randbuffer(lowest, highest),
+                std::istream(this)                  // passes &amp;Randbuffer
+            {}
+        ...
+    };
+</pre>
+<p>
+Public inheritance should be reserved for classes for which the LSP holds
+true. In those cases the derived classes can always be used instead of the
+base class from which they derive by code merely using base class references,
+pointers or members (I.e., conceptually the derived class <a name="an1865"></a><em>is-a</em> base
+class). This most often applies to classes derived from base classes offering
+virtual members. To separate the user interface from the redefinable interface
+the base class's public interface should <em>not</em> contain virtual members
+(except for the virtual destructor) and the virtual members should all be in
+the base class's private section. Such virtual members can still be overridden
+by derived classes (this should not come as a surprise, considering how
+polymorphism is implemented) and this design offers the base class full
+control over the context in which the redefined members are used. Often the
+public interface merely calls a virtual member, but those members can always
+be redefined to perform additional duties.
+<p>
+The prototypical form of a <a name="an1866"></a> base class therefore
+looks like this:
+        <pre>
+    class Base
+    {
+        public:
+            virtual ~Base()
+            void process();             // calls virtual members (e.g.,
+                                        // v_process)
+        private:
+            virtual void v_process();   // overridden by derived classes
+    };
+</pre>
+    Alternatively a base class may offer a non-virtual destructor, which
+should then be protected. It shouldn't be public to prevent deleting objects
+through their base class pointers (in which case virtual destructors should be
+used). It should be protected to allow derived class destructors to call their
+base class destructors. Such base classes should, for the same reasons, have
+non-public constructors and overloaded assignment operators.
+<p>
+<a name="STREAMBUF"></a><a name="l287"></a>
+<h2>14.8: The `streambuf' class</h2>
+The class <a name="an1867"></a><code>std::streambuf</code> receives the character sequences
+processed by streams and defines the interface between stream objects and
+devices (like a file on disk). A <code>streambuf</code> object is usually not directly
+constructed, but usually it is used as base class of some derived class
+implementing the communication with some concrete device.
+<p>
+The primary reason for existence of the class <code>streambuf</code> is to decouple
+the <code>stream</code> classes from the devices they operate upon. The rationale here
+is to add an extra layer between the classes allowing us to communicate with
+devices and the devices themselves. This implements a <a name="an1868"></a><em>chain of command</em>
+which is seen regularly in software design.
+<p>
+The <em>chain of command</em> is considered a generic pattern when designing
+ <a name="an1869"></a>reusable software, encountered also in, e.g., the
+ <a name="an1870"></a>TCP/IP stack.
+<p>
+A <code>streambuf</code> can be considered yet another example of the chain of
+command pattern. Here the program talks to <code>stream</code> objects, which in turn
+forward their requests to <code>streambuf</code> objects, which in turn communicate
+with the devices. Thus, as we will see shortly, we are able to do in
+user-software what had to be done via (expensive) system calls before.
+<p>
+The class <code>streambuf</code> has no public constructor, but does make available
+several public member functions. In addition to these public member functions,
+several member functions are only available to classes derived from
+<code>streambuf</code>.  In section <a href="cplusplus14.html#FILEBUF">14.8.2</a> a predefined specialization of the
+class <code>streambuf</code> is introduced. All public members of <code>streambuf</code>
+discussed here are <em>also</em> available in <code>filebuf</code>.
+<p>
+The next section shows the <code>streambuf</code> members that may be overridden
+when deriving classes from <code>streambuf</code>. Chapter <a href="cplusplus24.html#CONCRETE">24</a> offers
+concrete examples of classes derived from <code>streambuf</code>.
+<p>
+The class <code>streambuf</code> is used by streams performing input operations and
+by streams performing output operations and their member functions can be
+ordered likewise. The type <code>std::streamsize</code><a name="an1871"></a> used below may,
+for all practical purposes, be considered equal to the type <code>size_t</code>.
+<p>
+<a name="STRBUFLABEL"></a>
+    <a name="an1872"></a><a name="an1873"></a>
+    When inserting information into <code>ostream</code> objects the information is
+eventually passed on to the <code>ostream</code>'s <code>streambuf</code>. The <code>streambuf</code> may
+decide to throw an exception. However, this exception does not leave the
+<code>ostream</code> using the <code>streambuf</code>. Rather, the exception is caught by the
+<code>ostream</code>, which sets its <code>ios::bad_bit</code>. Exception raised by
+manipulators inserted into <code>ostream</code> objects are not caught by the
+<code>ostream</code> objects.
+<p>
+<strong>Public members for input operations</strong>
+<p>
+<ul>
+    <li><a name="an1874"></a><code>std::streamsize in_avail()</code>:<blockquote>Returns a lower bound on the number of characters that can be read
+        immediately.</blockquote>
+    <li><a name="an1875"></a><code>int sbumpc()</code>:<blockquote>The next available character or <code>EOF</code> is returned. The returned
+        character is removed from the <code>streambuf</code> object. If no input is
+        available, <code>sbumpc</code> calls the (protected) member <a name="an1876"></a><code>uflow</code> (see
+        section <a href="cplusplus14.html#SBPROTECTED">14.8.1</a> below) to make new characters
+        available. <code>EOF</code> is returned if no more characters are
+        available.</blockquote>
+    <li><a name="an1877"></a><code>int sgetc()</code>:<blockquote>The next available character or <code>EOF</code> is returned. The character
+        is <em>not</em> removed from the <code>streambuf</code> object. To remove a
+        character from the <code>streambuf</code> object, <code>sbumpc</code> (or <code>sgetn</code>) can
+        be used.</blockquote>
+    <li><a name="an1878"></a><code>int sgetn(char *buffer, std::streamsize n)</code>:<blockquote>At most <code>n</code> characters are retrieved from the input buffer, and
+        stored in <code>buffer</code>. The actual number of characters read is
+        returned. The (protected) member <a name="an1879"></a><code>xsgetn</code> (see section
+        <a href="cplusplus14.html#SBPROTECTED">14.8.1</a> below) is called to obtain the requested number of
+        characters.</blockquote>
+    <li><a name="an1880"></a><code>int snextc()</code>:<blockquote>The current character is obtained from the input buffer and returned as
+        the next available character or <code>EOF</code> is returned. The character
+        is <em>not</em> removed from the <code>streambuf</code> object.</blockquote>
+    <li><a name="an1881"></a><code>int sputback(char c)</code>:<blockquote>Inserts <code>c</code> into the <code>streambuf</code>'s buffer to be returned as the
+        next character to read from the <code>streambuf</code> object. Caution should
+        be exercised when using this function: often there is a maximum of
+        just one character that can be put back.</blockquote>
+    <li><a name="an1882"></a><code>int sungetc()</code>:<blockquote>Returns the last character read to the input buffer, to be read again
+        at the next input operation.  Caution should be exercised when using
+        this function: often there is a maximum of just one character that
+        can be put back.</blockquote>
+    </ul>
+<p>
+<strong>Public members for output operations</strong>
+<p>
+<ul>
+    <li><a name="an1883"></a><code>int pubsync()</code>:<blockquote>Synchronizes (i.e., flush) the buffer by writing any information
+        currently available in the <code>streambuf</code>'s buffer to the
+        device. Normally only used by classes derived from <code>streambuf</code>.</blockquote>
+    <li><a name="an1884"></a><code>int sputc(char c)</code>:<blockquote>Character <code>c</code> is inserted into the <code>streambuf</code> object.  If, after
+        writing the character, the buffer is full, the function calls the
+        (protected) member function <a name="an1885"></a><code>overflow</code> to flush the buffer to the
+        device (see section <a href="cplusplus14.html#SBPROTECTED">14.8.1</a> below).</blockquote>
+    <li><a name="an1886"></a><code>int sputn(char const *buffer, std::streamsize n)</code>:<blockquote>At most <code>n</code> characters from <code>buffer</code> are inserted into the
+        <code>streambuf</code> object. The actual number of characters inserted is
+        returned. This member function calls the (protected) member <a name="an1887"></a><code>xsputn</code>
+        (see section <a href="cplusplus14.html#SBPROTECTED">14.8.1</a> below) to insert the requested number of
+        characters.</blockquote>
+    </ul>
+<p>
+<strong>Public members for miscellaneous operations</strong>
+<p>
+The next three members are normally only used by classes derived from
+<code>streambuf</code>.
+    <ul>
+    <li><a name="an1888"></a><code>ios::pos_type pubseekoff(ios::off_type offset, ios::seekdir way,
+            ios::openmode mode = ios::in | ios::out)</code>:<blockquote>Sets the offset of the next character to be read or written to
+        <code>offset</code>, relative to the standard <a name="an1889"></a> <code>ios::seekdir</code>
+        values indicating the direction of the seeking operation.</blockquote>
+    <li><a name="an1890"></a><code>ios::pos_type pubseekpos(ios::pos_type offset,
+            ios::openmode mode = ios::in | ios::out)</code>:<blockquote>Sets the <a name="an1891"></a>absolute position of the next character to be read or
+        written to <code>pos</code>.</blockquote>
+    <li><a name="an1892"></a><code>streambuf *pubsetbuf(char* buffer, std::streamsize n)</code>:<blockquote>The <code>streambuf</code> object is going to use the <a name="an1893"></a><code>buffer</code> accomodating
+        at least <code>n</code> characters.</blockquote>
+    </ul>
+<p>
+<a name="SBPROTECTED"></a><a name="l288"></a>
+<h3>14.8.1: Protected `streambuf' members</h3>
+    The <em>protected</em> members of the class <code>streambuf</code> are important for
+understanding and using <code>streambuf</code> objects. Although there are both
+protected <a name="an1894"></a>data members and protected member functions
+    <a name="an1895"></a> defined in the <code>class streambuf</code> the protected
+<em>data</em> members are not mentioned here as using them would violate the
+principle of <a name="an1896"></a><em>data hiding</em>. As <code>streambuf</code>'s set of member functions is
+quite extensive, it is hardly ever necessary to use its data members
+directly. The following subsections do not even list all protected member
+functions but only those are covered that are useful for constructing
+specializations.
+<p>
+<code>Streambuf</code> objects control a buffer, used for input and/or output, for
+which begin-, actual- and end-pointers have been defined, as depicted in
+figure <a href="cplusplus14.html#SBBUFFERS">17</a>.
+    <a name="SBBUFFERS"></a><p><figure><img src="iostreams/sbbuffers.gif" alt="Figure 17 is shown here."/><br>
+<figcaption>Figure 17: Input- and output buffer pointers of the class `streambuf'</figcaption>
+</figure></p>
+
+<p>
+<code>Streambuf</code> offers one protected constructor:
+    <ul>
+    <li><code>streambuf::streambuf()</code>:<blockquote>Default (protected) constructor of the <code>class streambuf</code>.</blockquote>
+    </ul>
+<p>
+<a name="l289"></a>
+<h4>14.8.1.1: Protected members for input operations</h4>
+        Several protected member functions are available for input operations. The
+member functions marked <code>virtual</code> may or course be redefined in derived
+classes:
+    <ul>
+    <li><a name="an1897"></a><code>char *eback()</code>:<blockquote><code>Streambuf</code> maintains three pointers controlling its input buffer:
+        <code>eback</code> points to the `end of the putback' area: characters can
+        safely be put back up to this position. See also figure
+        <a href="cplusplus14.html#SBBUFFERS">17</a>. <code>Eback</code> points to the <em>beginning</em> of the input
+        buffer.</blockquote>
+    <li><a name="an1898"></a><code>char *egptr()</code>:<blockquote><code>Egptr</code> points just beyond the last character that can be retrieved
+        from the input buffer. See also figure <a href="cplusplus14.html#SBBUFFERS">17</a>. If <code>gptr</code>
+        equals <code>egptr</code> the buffer must be refilled. This should be
+        implemented by calling <code>underflow</code>, see below.</blockquote>
+    <li><a name="an1899"></a><code>void gbump(int n)</code>:<blockquote>The object's <code>gptr</code> (see below) is advanced over  <code>n</code> positions.</blockquote>
+    <li><a name="an1900"></a><code>char *gptr()</code>:<blockquote><code>Gptr</code> points to the next character to be
+        retrieved from the object's input buffer. See also figure
+        <a href="cplusplus14.html#SBBUFFERS">17</a>.</blockquote>
+    <li><a name="an1901"></a><code>virtual int pbackfail(int c)</code>:<blockquote>This member function may be overridden by derived classes to do
+        something intelligent when putting back character <code>c</code> fails. One
+        might consider restoring the old read pointer when input buffer's
+        begin has been reached. This member function is called when ungetting
+        or putting back a character fails. In particular, it is called when
+            <ul>
+            <li><code>gptr() == 0</code>: no buffering used,
+            <li><code>gptr() == eback()</code>: no more room to push back,
+            <li><code>*gptr() != c</code>: a different character than the next character
+                to be read must be pushed back.
+            </ul>
+       If <code>c == endOfFile()</code> then the input device must be reset by one
+        character position. Otherwise <code>c</code> must be prepended to the
+        characters to be read. The function should return <code>EOF</code> on
+        failure. Otherwise 0 can be returned.</blockquote>
+    <li><a name="an1902"></a><code>void setg(char *beg, char *next, char *beyond)</code>:<blockquote>Initializes an input buffer. <code>beg</code> points to the beginning of the
+        input area, <code>next</code> points to the next character to be retrieved, and
+        <code>beyond</code> points to the location just beyond the input buffer's last
+        character. Usually <code>next</code> is at least <code>beg + 1</code>, to allow for a
+        put back operation. No input buffering is used when this member is
+        called as <code>setg(0, 0, 0)</code>. See also the member <code>uflow</code>, below.</blockquote>
+    <li><a name="an1903"></a><code>virtual streamsize showmanyc()</code>:<blockquote>(Pronounce: s-how-many-c) This member function may be overridden by
+        derived classes. It must return a guaranteed lower bound on the number
+        of characters that can be read from the device before <code>uflow</code> or
+        <code>underflow</code> returns <code>EOF</code>. By default 0 is returned (meaning
+        no or some characters are returned before the latter two functions
+        return <code>EOF</code>). When a positive value is returned then the next
+        call of <code>u(nder)flow</code> does not return <code>EOF</code>.</blockquote>
+    <li><a name="an1904"></a><code>virtual int uflow()</code>:<blockquote>This member function may be overridden by derived classes to reload an
+        input buffer with fresh characters. Its default implementation is to
+        call <code>underflow</code> (see below). If <code>underflow()</code> fails, <code>EOF</code>
+        is returned.  Otherwise, the next available character is
+        returned as <code>*gptr()</code> following a <code>gbump(-1)</code>. <code>Uflow</code> also
+        moves the pending character that is returned to the backup
+        sequence. This is different from <code>underflow()</code>, which merely returns
+        the next available character, but does not alter the input pointer
+        positions.
+<p>
+When <em>no</em> input buffering is required this function,
+        rather than <code>underflow</code>, can be overridden to produce the next
+        available character from the device to read from.</blockquote>
+    <li><a name="an1905"></a><code>virtual int underflow()</code>:<blockquote>This member function may be overridden by derived classes to read
+        another character from the device. The default implementation is to
+        return <code>EOF</code>.
+<p>
+It is called when
+            <ul>
+            <li> there is no input buffer (<code>eback() == 0</code>)
+            <li><code>gptr() &gt;= egptr()</code>: the input buffer is exhausted.
+            </ul>
+<p>
+Often, when buffering is used, the complete buffer
+        is not refreshed as this would make it impossible to put back
+        characters immediately following a reload. Instead, buffers are often
+        refreshed in halves. This system is called a <a name="an1906"></a><em>split buffer</em>.
+<p>
+Classes derived from <code>streambuf</code> for reading normally at least
+        override <code>underflow</code>. The prototypical example of an overridden
+        <code>underflow</code> function looks like this:
+            <pre>
+int underflow()
+{
+    if (not refillTheBuffer())  // assume a member d_buffer is available
+        return EOF;
+                                // reset the input buffer pointers
+    setg(d_buffer, d_buffer, d_buffer + d_nCharsRead);
+
+                                // return the next available character
+                                // (the cast is used to prevent
+                                // misinterpretations of 0xff characters
+                                // as EOF)
+    return static_cast&lt;unsigned char&gt;(*gptr());
+}
+</pre>
+        </blockquote>
+    <li><a name="an1907"></a><code>virtual streamsize xsgetn(char *buffer, streamsize n)</code>:<blockquote>This member function may be overridden by derived classes to retrieve
+        at once <code>n</code> characters from the input device. The default
+        implementation is to call <code>sbumpc</code> for every single character
+        meaning that by default this member (eventually) calls <code>underflow</code>
+        for every single character. The function returns the actual number of
+        characters read or <code>EOF</code>. Once <code>EOF</code> is returned the
+        <code>streambuf</code> stops reading the device.</blockquote>
+    </ul>
+<p>
+<a name="l290"></a>
+<h4>14.8.1.2: Protected members for output operations</h4>
+        The following  protected members are available for output
+operations. Again, some members may be overridden by derived classes:
+    <ul>
+    <li><a name="an1908"></a><code>virtual int overflow(int c)</code>:<blockquote>This member function may be overridden by derived classes to flush the
+        characters currently stored in the output buffer to the output device,
+        and then to reset the output buffer pointers so as to represent an
+        empty buffer. Its parameter <code>c</code> is initialized to the next character
+        to be processed. If no output buffering is used <code>overflow</code> is called
+        for every single character that is written to the <code>streambuf</code>
+        object. No output buffering is accomplised by setting the buffer
+        pointers (using, <code>setp</code>, see below) to 0. The
+        <a name="an1909"></a>default implementation returns <code>EOF</code>, indicating that no
+        characters can be written to the device.
+<p>
+Classes derived from <code>streambuf</code> for writing normally at least
+        override <code>overflow</code>. The prototypical example of an overridden
+        <code>overflow</code> function looks like this:
+            <pre>
+int OFdStreambuf::overflow(int c)
+{
+    sync();                             // flush the buffer
+    if (c != EOF)                       // write a character?
+    {
+        *pptr() = static_cast&lt;char&gt;(c); // put it into the buffer
+        pbump(1);                       // advance the buffer's pointer
+    }
+    return c;
+}
+</pre>
+        </blockquote>
+    <li><a name="an1910"></a><code>char *pbase()</code>:<blockquote><code>Streambuf</code> maintains three pointers controlling its output buffer:
+        <code>pbase</code> points to the beginning of the output buffer area. See also
+        figure <a href="cplusplus14.html#SBBUFFERS">17</a>.</blockquote>
+    <li><a name="an1911"></a><code>char *epptr()</code>:<blockquote><code>Streambuf</code> maintains three pointers controlling its output buffer:
+        <code>epptr</code> points just beyond the output buffer's last available
+        location. See also figure <a href="cplusplus14.html#SBBUFFERS">17</a>. If <code>pptr</code> (see below)
+        equals <code>epptr</code> the buffer must be flushed. This is implemented by
+        calling <code>overflow</code>, see before.</blockquote>
+    <li><a name="an1912"></a><code>void pbump(int n)</code>:<blockquote>The location returned by <code>pptr</code> (see below) is advanced by
+        <code>n</code>. The next character written to the stream will be entered at
+        that location.</blockquote>
+    <li><a name="an1913"></a><code>char *pptr()</code>:<blockquote><code>Streambuf</code> maintains three pointers controlling its output buffer:
+        <code>pptr</code> points to the location in the output buffer where the next
+        available character should be written. See also figure
+        <a href="cplusplus14.html#SBBUFFERS">17</a>.</blockquote>
+    <li><a name="an1914"></a><code>void setp(char *beg, char *beyond)</code>:<blockquote><code>Streambuf</code>'s output buffer is initialized to the locations passed
+        to <code>setp</code>. <code>Beg</code> points to the beginning of the output buffer and
+        <code>beyond</code> points just beyond the last available location of the
+        output buffer. Use <code>setp(0, 0)</code> to indicate that <a name="an1915"></a>no buffering
+        should be used. In that case <code>overflow</code> is called for every single
+        character to write to the device.</blockquote>
+    <li><a name="an1916"></a><code>virtual streamsize xsputn(char const *buffer, streamsize n)</code>:<blockquote>This member function may be overridden by derived classes to write a
+        series of at most <code>n</code> characters to the output buffer. The actual
+        number of inserted characters is returned. If <code>EOF</code> is returned
+        writing to the device stops. The default implementation calls
+        <code>sputc</code> for each individual character. Redefine this member if,
+        e.g., the <code>streambuf</code> should support the <code>ios::openmode ios::app</code>.
+        Assuming the class <code>MyBuf</code>, derived from <code>streambuf</code>, features a
+        data member <code>ios::openmode d_mode</code> (representing the requested
+        <code>ios::openmode</code>), and a member <code>write(char const *buf,
+        streamsize len)</code> (writing <code>len</code> bytes at <code>pptr()</code>), then the
+        following code acknowledges the <code>ios::app</code> mode:
+       <pre>
+std::streamsize MyStreambuf::xsputn(char const *buf, std::streamsize len)
+{
+    if (d_openMode &amp; ios::app)
+        seekoff(0, ios::end);
+
+    return write(buf, len);
+}
+</pre>
+       </blockquote>
+    </ul>
+<p>
+<a name="l291"></a>
+<h4>14.8.1.3: Protected members for buffer manipulation</h4>
+        Several protected members are related to buffer management and positioning:
+    <ul>
+    <li><a name="an1917"></a><code>virtual streambuf *setbuf(char *buffer, streamsize n)</code>:<blockquote>This member function may be overridden by derived classes to install a
+        buffer. The default implementation performs no actions. It is called
+        by <code>pubsetbuf</code>.</blockquote>
+    <li><a name="an1918"></a><code>virtual ios::pos_type seekoff(ios::off_type offset, 
+                   ios::seekdir way, ios::openmode mode = ios::in | ios::out)</code>:<blockquote>This member function may be overridden by derived classes to
+        reset the next pointer for input or output to a new relative
+        position (using
+       <a name="an1919"></a><a name="an1920"></a><code>ios::beg, ios::cur</code> or <a name="an1921"></a><code>ios::end</code>). The
+        default implementation indicates failure by returning -1. The function
+        is called when <code>tellg</code> or <code>tellp</code> are called. When derived class
+        supports seeking, then it should also define this function to handle
+        repositioning requests. It is called by <a name="an1922"></a><code>pubseekoff</code>. The
+        new position or an invalid position (i.e., -1) is returned.</blockquote>
+    <li><a name="an1923"></a><code>virtual ios::pos_type seekpos(ios::pos_type offset,
+            ios::openmode mode = ios::in | ios::out)</code>:<blockquote>This member function may be overridden by derived classes to
+        reset the next pointer for input or output to a new absolute
+        position (i.e, relative to <code>ios::beg</code>). The default implementation
+        indicates failure by returning -1.</blockquote>
+    <li><a name="an1924"></a><code>virtual int sync()</code>:<blockquote>This member function may be overridden by derived classes to flush the
+        output buffer to the output device or to reset the input device just
+        beyond the position of the character that was returned last. It
+        returns 0 on success, -1 on failure. The default implementation (not
+        using a buffer) is to return 0, indicating successful syncing. This
+        member is used to ensure that any characters that are still buffered
+        are written to the device or to put unconsumed characters back to the
+        device when the <code>streambuf</code> object ceases to exist.</blockquote>
+   </ul>
+<p>
+<a name="l292"></a>
+<h4>14.8.1.4: Deriving classes from `streambuf'</h4>
+            When classes are derived from <code>streambuf</code> at least <code>underflow</code> should
+be overridden by classes intending to read information from devices, and
+<code>overflow</code> should be overridden by classes intending to write information to
+devices. Several examples of classes derived from <code>streambuf</code> are provided
+in chapter <a href="cplusplus24.html#CONCRETE">24</a>.
+<p>
+<code>Fstream</code> class type objects use a combined input/output buffer. This is
+a result from that <code>istream</code> and <code>ostream</code> being virtually derived from
+<code>ios</code>, which class contains the <code>streambuf</code>. To construct a class
+supporting both input and output using separate buffers, the <code>streambuf</code>
+itself may define two buffers. When <code>seekoff</code> is called for reading, a
+<code>mode</code> parameter can be set to <code>ios::in</code>, otherwise to <code>ios::out</code>. Thus
+the derived class knows whether it should access the <code>read</code> buffer or the
+<code>write</code> buffer. Of course, <code>underflow</code> and <code>overflow</code> do not have to
+inspect the mode flag as they by implication know on which buffer they should
+operate.
+<p>
+<a name="FILEBUF"></a><a name="l293"></a>
+<h3>14.8.2: The class `filebuf'</h3>
+    The <code>class</code> <a name="an1925"></a><code>filebuf</code> is a specialization of <code>streambuf</code> used by the
+file <a name="an1926"></a><code>stream</code> classes. Before using a <code>filebuf</code> the header file
+<a name="an1927"></a><code>&lt;fstream&gt;</code> must be included.
+<p>
+In addition to the (public) members that are available through the <code>class
+streambuf</code>, <code>filebuf</code> offers the following (public) members:
+    <ul>
+    <li><a name="an1928"></a><code>filebuf()</code>:<blockquote><code>Filebuf</code> offers a public constructor. It initializes
+        a plain <code>filebuf</code> object that is not yet connected to a stream.</blockquote>
+    <li><a name="an1929"></a><code>bool is_open()</code>:<blockquote><code>True</code> is returned if the <code>filebuf</code> is actually connected to an
+        open file, <code>false</code> otherwise. See the <code>open</code> member, below.</blockquote>
+    <li><a name="an1930"></a><code>filebuf *open(char const *name, ios::openmode mode)</code>:<blockquote>Associates the <code>filebuf</code> object with a file
+        whose name is provided. The file is opened according to the provided
+        <a name="an1931"></a><code>openmode</code>.</blockquote>
+    <li><a name="an1932"></a><code>filebuf *close()</code>:<blockquote>Closes the association between the <code>filebuf</code>
+        object and its file. The association is automatically closed when the
+        <code>filebuf</code> object ceases to exist.</blockquote>
+    </ul>
+<p>
+<a name="POLYMORPHEXCEPTION"></a><a name="l294"></a>
+<h2>14.9: A polymorphic exception class</h2>
+Earlier in the <strong>C++</strong> Annotations (section <a href="cplusplus10.html#EMPTYTHROW">10.3.1</a>) we hinted at the
+possibility of designing a class <code>Exception</code> whose <code>process</code> member
+would behave differently, depending on the kind of exception that was
+thrown. Now that we've introduced <a name="an1933"></a>polymorphism we can further develop this
+example.
+<p>
+It probably does not come as a surprise that our class <code>Exception</code> should be
+a polymorphic base class from which special exception handling classes can be
+derived. In section <a href="cplusplus10.html#EMPTYTHROW">10.3.1</a> a member <code>severity</code> was used offering
+functionality that may be replaced by members of the <code>Exception</code> base class.
+<p>
+The base class <code>Exception</code> may be  designed as follows:
+        <pre>
+    #ifndef INCLUDED_EXCEPTION_H_
+    #define INCLUDED_EXCEPTION_H_
+    #include &lt;iostream&gt;
+    #include &lt;string&gt;
+
+    class Exception
+    {
+        std::string d_reason;
+
+        public:
+            Exception(std::string const &amp;reason);
+            virtual ~Exception();
+
+            std::ostream &amp;insertInto(std::ostream &amp;out) const;
+            void handle() const;
+
+        private:
+            virtual void action() const;
+    };
+
+    inline void Exception::action() const
+    {
+        throw;
+    }
+    inline Exception::Exception(std::string const &amp;reason)
+    :
+        d_reason(reason)
+    {}
+    inline void Exception::handle() const
+    {
+        action();
+    }
+    inline std::ostream &amp;Exception::insertInto(std::ostream &amp;out) const
+    {
+        return out &lt;&lt; d_reason;
+    }
+
+    inline std::ostream &amp;operator&lt;&lt;(std::ostream &amp;out, Exception const &amp;e)
+    {
+        return e.insertInto(out);
+    }
+
+    #endif
+</pre>
+<p>
+Objects of this class may be inserted into <code>ostream</code>s but the core
+element of this class is the virtual member function <code>action</code>, by default
+rethrowing an exception.
+<p>
+A derived class <code>Warning</code> simply prefixes the thrown warning text by the
+text <code>Warning:</code>, but a derived class <code>Fatal</code> overrides
+<code>Exception::action</code> by calling <a name="an1934"></a><code>std::terminate</code>, forcefully
+terminating the program.
+<p>
+Here are the classes <code>Warning</code> and <code>Fatal</code>
+        <pre>
+    #ifndef WARNINGEXCEPTION_H_
+    #define WARNINGEXCEPTION_H_
+
+    #include "exception.h"
+
+    class Warning: public Exception
+    {
+        public:
+            Warning(std::string const &amp;reason)
+            :
+                Exception("Warning: " + reason)
+            {}
+    };
+    #endif
+</pre>
+<p>
+<pre>
+    #ifndef FATAL_H_
+    #define FATAL_H_
+
+    #include "exception.h"
+
+    class Fatal: public Exception
+    {
+        public:
+            Fatal(std::string  const &amp;reason);
+        private:
+            virtual void action() const;
+    };
+
+    inline Fatal::Fatal(std::string  const &amp;reason)
+    :
+        Exception(reason)
+    {}
+
+    inline void Fatal::action() const
+    {
+        std::cout &lt;&lt; "Fatal::action() terminates" &lt;&lt; '\n';
+        std::terminate();
+    }
+
+    #endif
+</pre>
+<p>
+When the example program is started without arguments it throws a
+<code>Fatal</code> exception, otherwise it throws a <code>Warning</code> exception. Of
+course, additional exception types could also easily be defined. To make the
+example compilable the <code>Exception</code> destructor is defined above <code>main</code>. The
+default destructor cannot be used, as it is a virtual destructor. In practice
+the destructor should be defined in its own little source file:
+        <pre>
+    #include "warning.h"
+    #include "fatal.h"
+
+    Exception::~Exception()
+    {}
+
+    using namespace std;
+
+    int main(int argc, char **argv)
+    try
+    {
+        try
+        {
+            if (argc == 1)
+                throw Fatal("Missing Argument") ;
+            else
+                throw Warning("the argument is ignored");
+        }
+        catch (Exception const &amp;e)
+        {
+            cout &lt;&lt; e &lt;&lt; '\n';
+            e.handle();
+        }
+    }
+    catch(...)
+    {
+        cout &lt;&lt; "caught rethrown exception\n";
+    }
+</pre>
+<p>
+<a name="howpolymorphism"></a><a name="l295"></a>
+<h2>14.10: How polymorphism is implemented</h2>
+This section briefly describes how <a name="an1935"></a> polymorphism is
+implemented in <strong>C++</strong>.  It is not necessary to understand how polymorphism is
+implemented if you just want to <em>use</em> polymorphism. However, we think it's
+nice to know how polymorphism is possible. Also, knowing how polymorphism is
+implemented clarifies why there is a (small) penalty to using polymorphism in
+terms of memory usage and efficiency.
+<p>
+The fundamental idea behind polymorphism is that the compiler does not know
+which function to call at compile-time. The appropriate function is
+selected at run-time. That means that the address of the function must be
+available somewhere, to be looked up prior to the actual call. This
+`somewhere' place must be accessible to the object in question. So when a
+<code>Vehicle *vp</code> points to a <code>Truck</code> object, then <code>vp-&gt;mass()</code> calls
+<code>Truck</code>'s member function. the address of this function is obtained through
+the actual object to which <code>vp</code> points.
+<p>
+Polymorphism is commonly implemented as follows: an object containing virtual
+member functions also contains, usually as its first data member a
+ <a name="an1936"></a>hidden data member, pointing to an array containing the addresses of the
+class's virtual member functions. The hidden data member is usually called the
+<a name="an1937"></a><em>vpointer</em>, the array of virtual member function addresses the <a name="an1938"></a><em>vtable</em>.
+<p>
+The class's vtable is shared by all objects of that class.  The overhead of
+polymorphism in terms of <a name="an1939"></a>memory consumption is therefore:
+    <ul>
+    <li> one vpointer data member per object pointing to:
+    <li> one vtable per class.
+    </ul>
+    Consequently, a statement like <code>vp-&gt;mass</code> first inspects the hidden
+data member of the object pointed to by <code>vp</code>. In the case of the vehicle
+classification system, this data member points to a table containing two
+addresses: one pointer to the function <code>mass</code> and one pointer to the
+function <code>setMass</code> (three pointers if the class also defines (as it
+should) a virtual destructor). The actually called function is determined from
+this table.
+<p>
+The internal organization of the objects having virtual functions is
+illustrated in figures Figure <a href="cplusplus14.html#ImplementationFigure">18</a> and Figure <a href="cplusplus14.html#CaumonFigure">19</a>
+(originals provided by <a href="mailto:Guillaume.Caumon@ensg.inpl-nancy.fr">Guillaume Caumon</a>).
+<p>
+<a name="ImplementationFigure"></a><p><figure><img src="polymorphism/implementation.gif" alt="Figure 18 is shown here."/><br>
+<figcaption>Figure 18: Internal organization objects when virtual functions are defined.</figcaption>
+</figure></p>
+
+<p>
+<a name="CaumonFigure"></a><p><figure><img src="polymorphism/caumon.gif" alt="Figure 19 is shown here."/><br>
+<figcaption>Figure 19: Complementary figure, provided by Guillaume Caumon</figcaption>
+</figure></p>
+
+<p>
+As shown by figures Figure <a href="cplusplus14.html#ImplementationFigure">18</a> and Figure <a href="cplusplus14.html#CaumonFigure">19</a>,
+objects potentially using virtual member functions must have one (hidden) data
+member to address a table of function pointers. The objects of the classes
+<code>Vehicle</code> and <code>Car</code> both address the same table. The class <code>Truck</code>,
+however, overrides <code>mass</code>. Consequently, <code>Truck</code> needs its own vtable.
+<p>
+A small complication arises when a class is derived from multiple base
+classes, each defining virtual functions. Consider the following example:
+        <pre>
+    class Base1
+    {
+        public:
+            virtual ~Base1();
+            void fun1();        // calls vOne and vTwo
+        private:
+            virtual void vOne();
+            virtual void vTwo();
+    };
+    class Base2
+    {
+        public:
+            virtual ~Base2();
+            void fun2();        // calls vThree
+        private:
+            virtual void vThree();
+    };
+    class Derived: public Base1, public Base2
+    {
+        public:
+            virtual ~Derived();
+        private:
+            virtual ~vOne();
+            virtual ~vThree();
+    };
+</pre>
+ In the example <code>Derived</code> is multiply derived from <code>Base1</code> and <code>Base2</code>,
+each supporting virtual functions. Because of this, <code>Derived</code> also has
+virtual functions, and so <code>Derived</code> has a <code>vtable</code> allowing a base class
+pointer or reference to access the proper virtual member.
+<p>
+When <code>Derived::fun1</code> is called (or a <code>Base1</code> pointer pointing to <code>fun1</code>
+calls <code>fun1</code>) then <code>fun1</code> calls <code>Derived::vOne</code> and
+<code>Base1::vTwo</code>. Likewise, when <code>Derived::fun2</code> is called
+<code>Derived::vThree</code> is called.
+<p>
+The complication
+ <a name="an1940"></a><a name="an1941"></a> occurs
+with <code>Derived</code>'s vtable. When <code>fun1</code> is called its class type determines
+the vtable to use and hence which virtual member to call. So when <code>vOne</code> is
+called from <code>fun1</code>, it is presumably the second entry in <code>Derived</code>'s
+vtable, as it must match the second entry in <code>Base1</code>'s vtable. However, when
+<code>fun2</code> calls <code>vThree</code> it apparently is also the second entry in
+<code>Derived</code>'s vtable as it must match the second entry in <code>Base2</code>'s vtable.
+<p>
+Of course this cannot be realized by a single vtable. Therefore, when multiple
+inheritance is used (each base class defining virtual members) another
+approach is followed to determine which virtual function to call. In this
+situation (cf. figure Figure <a href="cplusplus14.html#MultiVtableFig">20</a>) the class <code>Derived</code> receives
+<em>two</em> <code>vtable</code>s, one for each of its base classes and each <code>Derived</code>
+class object harbors <em>two</em> hidden vpointers, each one pointing to its
+corresponding vtable.
+<p>
+<a name="MultiVtableFig"></a><p><figure><img src="polymorphism/multivtable.gif" alt="Figure 20 is shown here."/><br>
+<figcaption>Figure 20: Vtables and vpointers with multiple base classes</figcaption>
+</figure></p>
+
+<p>
+Since base class pointers, base class references, or base class interface
+members unambiguously refer to one of the base classes the compiler can
+determine which vpointer to use.
+<p>
+The following therefore holds true for classes multiply derived from base
+classes offering virtual member functions:
+    <ul>
+    <li> the derived class defines a vtable for each of its base classes
+offering virtual members;
+    <li> Each derived class object contains as many hidden vpointers as it has
+vtables.
+    <li> Each of a derived class object's vpointers points to a unique vtable
+and the vpointer to use is determined by the class type of the base class
+pointer, the base class reference, or the base class interface function that
+is used.
+    </ul>
+<p>
+<a name="VTABLE"></a><a name="l296"></a>
+<h2>14.11: Undefined reference to vtable ...</h2>
+Occasionaly, the linker generates an error like the following:
+ <a name="an1942"></a> <a name="an1943"></a>
+        <pre>
+    In function `Derived::Derived()':
+        : undefined reference to `vtable for Derived'
+</pre>
+    This error is generated when a virtual function's implementation is
+missing in a derived class, but the function is mentioned in the derived
+class's interface.
+<p>
+Such a situation is easily encountered:
+    <ul>
+    <li> Construct a (complete) base class defining a virtual member function;
+    <li> Construct a Derived class mentioning the virtual function in its
+        interface;
+    <li> The Derived class's virtual function is not implemented. Of course,
+the compiler doesn't know that the derived class's function is not implemented
+and will, when asked, generate code to create a derived class object;
+    <li> Eventually, the linker is unable to find the derived class's virtual
+member function. Therefore, it is unable to construct the derived class's
+vtable;
+    <li> The linker complains with the message:
+    <pre>
+undefined reference to `vtable for Derived'
+</pre>
+    </ul>
+    Here is an example producing the error:
+        <pre>
+    class Base
+    {
+        virtual void member();
+    };
+    inline void Base::member()
+    {}
+    class Derived: public Base
+    {
+        virtual void member();      // only declared
+    };
+    int main()
+    {
+        Derived d;  // Will compile, since all members were declared.
+                    // Linking will fail, since we don't have the
+                    // implementation of Derived::member()
+    }
+</pre>
+<p>
+It's of course easy to correct the error: implement the derived class's
+missing virtual member function.
+<p>
+Virtual functions should <em>never</em> be implemented inline. Since the vtable
+contains the addresses of the class's virtual functions, these functions must
+have addresses and so they must have been compiled as real (out-of-line)
+functions. By defining virtual functions inline you run the risk that the
+compiler simply overlooks those functions as they may very well never be
+explicitly called (but only polymorphically, from a base class pointer or
+reference). As a result their addresses may never enter their class's vtables
+(and even the vtable itself might remain undefined), causing linkage problems
+or resulting in programs showing unexpected behavior. All these kinds of
+problems are simply avoided: <em>never</em> define virtual members inline (see also
+section <a href="cplusplus07.html#NOTINLINE">7.9.2.1</a>).
+<p>
+<a name="VIRTCONS"></a><a name="l297"></a>
+<h2>14.12: Virtual constructors</h2>
+In section <a href="cplusplus14.html#VIRTDES">14.2</a> we learned that <strong>C++</strong> supports <em>virtual
+destructors</em>. Like many other object oriented languages (e.g., <strong>Java</strong>),
+however, the notion of a <a name="an1944"></a><em>virtual constructor</em> is not supported. Not having
+virtual constructors becomes a liability when only base class references or
+pointers are available, and a copy of a derived class object is
+required. <em>Gamma et al.</em> (1995) <a name="an1945"></a> discuss the
+ <a name="an1946"></a><em>Prototype design pattern</em> <a name="an1947"></a> to deal with this
+situation.
+<p>
+According to the <em>Prototype Design Pattern</em> each derived class is given
+the responsibility of implementing a member function returning a pointer to a
+copy of the object for which the member is called. The usual name for this
+function is <code>clone</code>. Separating the user interface from the reimplementation
+interface <code>clone</code> is made part of the interface and <code>newCopy</code> is defined
+in the reimplementation interface. A base class supporting `cloning' defines a
+virtual destructor, <code>clone</code>, returning <code>newCopy</code>'s return value and the
+<em>virtual copy constructor</em>, a pure virtual function, having the prototype
+<code>virtual Base *newCopy() const = 0</code>. As <code>newCopy</code> is a pure virtual
+function all derived classes must now implement their own `virtual
+constructor'.
+<p>
+This setup suffices in most situations where we have a pointer or
+reference to a base class, but it fails when used with abstract
+containers. We can't create a <code>vector&lt;Base&gt;</code>, with <code>Base</code> featuring the
+pure virtual <code>copy</code> member in its interface, as <code>Base</code> is called to
+initialize new elements of such a vector. This is impossible as <code>newCopy</code> is a
+pure virtual function, so a <code>Base</code> object can't be constructed.
+<p>
+The intuitive solution, providing <code>newCopy</code> with a default
+implementation, defining it as an ordinary virtual function, fails too as the
+container calls <code>Base(Base const &amp;other)</code>, which would have to call
+<code>newCopy</code> to copy <code>other</code>.  At this point it is unclear what to do with
+that copy, as the new <code>Base</code> object already exists, and contains no <code>Base</code>
+pointer or reference data member to assign <code>newCopy</code>'s return value to.
+<p>
+Alternatively (and preferred) the original <code>Base</code> class (defined as an
+<a name="an1948"></a>abstract base class) is kept as-is and a wrapper class <code>Clonable</code> is used
+to manage the <code>Base</code> class pointers returned by <code>newCopy</code>. In chapter
+<a href="cplusplus17.html#NESTEDCLASSES">17</a> ways to merge <code>Base</code> and <code>Clonable</code> into one class are
+discussed, but for now we'll define <code>Base</code> and <code>Clonable</code> as separate
+classes.
+<p>
+The class <code>Clonable</code> is a very standard class. It contains a pointer member
+so it needs a copy constructor, destructor, and overloaded assignment
+operator. It's given at least one non-standard member: <code>Base &amp;base() const</code>,
+returning a reference to the derived object to which <code>Clonable</code>'s <code>Base *</code>
+data member refers. It is also provided with an additional constructor to
+initialize its <code>Base *</code> data member.
+<p>
+Any non-abstract class derived from <code>Base</code> must implement <code>Base
+*newCopy()</code>, returning a pointer to a newly created (allocated) copy of the
+object for which <code>newCopy</code> is called.
+<p>
+Once we have defined a derived class (e.g., <code>Derived1</code>), we can put our
+<code>Clonable</code> and <code>Base</code> facilities to good use.  In the next example we see
+<code>main</code> defining a <code>vector&lt;Clonable&gt;</code>. An anonymous <code>Derived1</code>
+object is then inserted into the vector using the following steps:
+    <ul>
+    <li> A new anonymous <code>Derived1</code> object is created;
+    <li> It initializes a <code>Clonable</code> using <code>Clonable(Base *bp)</code>;
+    <li> The just created <code>Clonable</code> object is inserted into the vector,
+using <code>Clonable</code>'s move constructor. There are only temporary <code>Derived</code>
+and <code>Clonable</code> objects at this point, so no copy construction is required.
+    </ul>
+    In this sequence, only the <code>Clonable</code> object containing the <code>Derived1
+*</code> is used. No additional copies need to be made (or destroyed).
+<p>
+Next, the <code>base</code> member is used in combination with <code>typeid</code> to show
+the actual type of the <code>Base &amp;</code> object: a <code>Derived1</code> object.
+<p>
+<code>Main</code> then contains the interesting definition <code>vector&lt;Clonable&gt;
+v2(bv)</code>. Here a copy of <code>bv</code> is created. This copy construction observes
+the actual types of the <code>Base</code> references, making sure that the appropriate
+types appear in the vector's copy.
+<p>
+At the end of the program, we have created two <code>Derived1</code> objects, which
+are correctly deleted by the vector's destructors. Here is the full program,
+illustrating the `virtual constructor' concept&nbsp;(
+   Jesse van den Kieboom created an alternative implementation of a class
+    <code>Clonable</code>, implemented as a <a href="cplusplus22.html#TEMPCLASS">class template</a>. His
+    implementation is found <a href="contrib/classtemplates/">here</a>.):
+        <pre>
+    #include &lt;iostream&gt;
+    #include &lt;vector&gt;
+    #include &lt;algorithm&gt;
+    #include &lt;typeinfo&gt;
+
+// Base and its inline member:
+    class Base
+    {
+        public:
+            virtual ~Base();
+            Base *clone() const;
+        private:
+            virtual Base *newCopy() const = 0;
+    };
+    inline Base *Base::clone() const
+    {
+        return newCopy();
+    }
+
+// Clonable and its inline members:
+    class Clonable
+    {
+        Base *d_bp;
+
+        public:
+            Clonable();
+            explicit Clonable(Base *base);
+            ~Clonable();
+            Clonable(Clonable const &amp;other);
+            Clonable(Clonable &amp;&amp;tmp);
+            Clonable &amp;operator=(Clonable const &amp;other);
+            Clonable &amp;operator=(Clonable &amp;&amp;tmp);
+
+            Base &amp;base() const;
+    };
+    inline Clonable::Clonable()
+    :
+        d_bp(0)
+    {}
+    inline Clonable::Clonable(Base *bp)
+    :
+        d_bp(bp)
+    {}
+    inline Clonable::Clonable(Clonable const &amp;other)
+    :
+        d_bp(other.d_bp-&gt;clone())
+    {}
+    inline Clonable::Clonable(Clonable &amp;&amp;tmp)
+    :
+        d_bp(tmp.d_bp)
+    {
+        tmp.d_bp = 0;
+    }
+    inline Clonable::~Clonable()
+    {
+        delete d_bp;
+    }
+    inline Base &amp;Clonable::base() const
+    {
+        return *d_bp;
+    }
+
+// Derived and its inline member:
+    class Derived1: public Base
+    {
+        public:
+            ~Derived1();
+        private:
+            virtual Base *newCopy() const;
+    };
+    inline Base *Derived1::newCopy() const
+    {
+        return new Derived1(*this);
+    }
+
+// Members not implemented inline:
+    Base::~Base()
+    {}
+    Clonable &amp;Clonable::operator=(Clonable const &amp;other)
+    {
+        Clonable tmp(other);
+        std::swap(d_bp, tmp.d_bp);
+        return *this;
+    }
+    Clonable &amp;Clonable::operator=(Clonable &amp;&amp;tmp)
+    {
+        std::swap(d_bp, tmp.d_bp);
+        return *this;
+    }
+    Derived1::~Derived1()
+    {
+        std::cout &lt;&lt; "~Derived1() called\n";
+    }
+
+// The main function:
+    using namespace std;
+
+    int main()
+    {
+        vector&lt;Clonable&gt; bv;
+
+        bv.push_back(Clonable(new Derived1()));
+        cout &lt;&lt; "bv[0].name: " &lt;&lt; typeid(bv[0].base()).name() &lt;&lt; '\n';
+
+        vector&lt;Clonable&gt; v2(bv);
+        cout &lt;&lt; "v2[0].name: " &lt;&lt; typeid(v2[0].base()).name() &lt;&lt; '\n';
+    }
+    /*
+        Output:
+            bv[0].name: 8Derived1
+            v2[0].name: 8Derived1
+            ~Derived1() called
+            ~Derived1() called
+    */
+</pre>
+<p>
+
+<hr>
+<ul>
+    <li> <a href="cplusplus.html">Table of Contents</a>
+    <li> <a href="cplusplus13.html">Previous Chapter</a>
+    <li> <a href="cplusplus15.html">Next Chapter</a>
+</ul>
+<hr>
+</body>
+</html>

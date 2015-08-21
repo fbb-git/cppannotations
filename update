@@ -1,0 +1,42 @@
+#!/bin/bash
+
+_project_=cppannotations
+_product_=annotations
+
+echo -n "Need to (re)create ${_project_}'s wip files for gh-pages [y/n] ? "
+read yesno
+
+if [ "$yesno" == "y" ] ; then
+    git co master
+
+    cd ${_product_}		    # check
+    ./build man
+    ./build docs
+
+    ./build github
+    ./build distclean
+    cd ..    
+    git co gh-pages
+fi
+
+cp -r ../wip/changelog.txt ../wip/${_product_}man.html .
+rm -r cppannotations
+unzip ../wip/zips/cplusplus.html.zip
+
+yodl2html index.yo || exit 1
+
+echo "Running 'git st': no files or ignorable files should be shown"
+git st
+
+echo -n "ci change to index.html etc., push the result and co master [y/n] ? "
+read yesno
+
+if [ "$yesno" == "y" ] ; then
+    RELEASE=`head -n1 ../wip/version.yo | 
+		sed 's/SUBST(DOCVERSION)(\(.*\))/\1/'`
+    git ci -am "updated index.html for gh-pages, release $RELEASE"
+    git push
+    git co master
+fi
+
+

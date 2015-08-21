@@ -1,0 +1,4420 @@
+<!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<title> <div style="text-align: center">C++ Annotations Version 10.3.0</div> </title>
+<style type="text/css">
+    figure {text-align: center;}
+    img {vertical-align: center;}
+</style>
+</head>
+<body >
+<hr>
+<ul>
+    <li> <a href="cplusplus.html">Table of Contents</a>
+    <li> <a href="cplusplus23.html">Previous Chapter</a>
+</ul>
+<hr>
+<a name="CONCRETE"></a><a name="l620"></a>
+<h1>Chapter 24: Concrete Examples</h1>
+
+<blockquote>
+    <em>
+        Don't hesitate to send in feedback: send an e-mail if you like the
+        C++ Annotations; if you think that important material was omitted;
+        if you find errors or typos in the text or the code examples;
+        or if you just feel like e-mailing. Send your e-mail to
+        <a href="mailto:f.b.brokken@rug.nl">Frank B. Brokken</a>.
+<p>
+<strong>Please</strong> state the document version you're referring to, as found in
+        the title (in this document: 10.3.0) and please state chapter and
+        paragraph name or number you're referring to.
+<p>
+All received mail is processed conscientiously, and received
+        suggestions for improvements are usually processed by the
+        time a new version of the Annotations is released. Except for the
+        incidental case I will normally not acknowledge the receipt of
+        suggestions for improvements. Please don't interpret this as me not
+        appreciating your efforts.
+    </em>
+</blockquote>
+<p>
+In this chapter concrete examples of <strong>C++</strong> programs, classes and templates
+are presented.  Topics covered by the <strong>C++</strong> Annotations such as virtual
+functions, <code>static</code> members, etc. are illustrated in this chapter. The
+examples roughly follow the organization of earlier chapters.
+<p>
+As an additional topic, not just providing examples of <strong>C++</strong> the subjects of
+<a name="an3205"></a>scanner and <a name="an3206"></a>parser generators are covered. We show how these tools may
+be used in <strong>C++</strong> programs. These additional examples assume a certain
+familiarity with the concepts underlying these tools, like grammars,
+parse-trees and
+        <a name="an3207"></a>
+        <a name="an3208"></a>
+    parse-tree decoration. Once the input for a program exceeds a certain
+level of complexity, it's attractive to use scanner- and parser-generators to
+create the code doing the actual input processing. One of the
+<a href="cplusplus24.html#BisonAndFlex">examples</a> in this chapter describes the usage of these
+tools in a <strong>C++</strong> environment.
+<p>
+<a name="FDSTREAMBUFFER"></a><a name="l621"></a>
+<h2>24.1: Using file descriptors with `streambuf' classes</h2>
+<p>
+<a name="OFDNBUF"></a><a name="l622"></a>
+<h3>24.1.1: Classes for output operations</h3>
+        Reading and writing from and to <a name="an3209"></a><em>file descriptors</em> are not part of the
+<strong>C++</strong> standard. But on most operating systems file descriptors <em>are</em>
+available and can be considered a <a name="an3210"></a>device. It seems natural to use the class
+<a name="an3211"></a><code>std::streambuf</code> as the starting point for constructing classes
+interfacing such file descriptor devices.
+<p>
+Below we'll construct classes that can be used to write to a device given
+its file descriptor. The devices may be files, but they could also be <a name="an3212"></a>pipes
+or <a name="an3213"></a>sockets. Section <a href="cplusplus24.html#STRBUF">24.1.2</a> covers reading from such devices; section
+<a href="cplusplus24.html#REDIRECTION">24.2.3</a> reconsiders redirection, discussed earlier in section
+<a href="cplusplus06.html#REDIR">6.6.2</a>.
+<p>
+Using the <code>streambuf</code> class as a base class it is relatively easy to
+design classes for output operations. The only member function that <em>must</em>
+be overridden is the (virtual) member
+ <a name="an3214"></a>
+    <code>int streambuf::overflow(int c)</code>. This member's responsibility is to
+write characters to the device. If <code>fd</code> is an output file descriptor and if
+output should not be buffered then the member <code>overflow()</code> can simply be
+implemented as:
+        <pre>
+    class UnbufferedFD: public std::streambuf
+    {
+        public:
+            virtual int overflow(int c);
+            ...
+    };
+
+    int UnbufferedFD::overflow(int c)
+    {
+        if (c != EOF)
+        {
+            if (write(d_fd, &amp;c, 1) != 1)
+                return EOF;
+        }
+        return c;
+    }
+</pre>
+    The argument received by <code>overflow</code> is either written to the file
+descriptor (and returned from <code>overflow</code>), or <code>EOF</code> is returned.
+<p>
+This simple function does not use output buffering. For various reasons,
+using a buffer is usually a good idea (see also the next section).
+<p>
+When output buffering is used, the <code>overflow</code> member is a bit more
+complex as it is only called when the buffer is full. Once the buffer is full,
+we <em>first</em> have to flush the buffer. Flushing the buffer is the
+responsibility of the (virtual) function <a name="an3215"></a><code>streambuf::sync</code>.  Since
+<code>sync</code> is a virtual function, classes derived from <code>streambuf</code> may
+redefine <code>sync</code> to flush a buffer <code>streambuf</code> itself doesn't know about.
+<p>
+Overriding <code>sync</code> and using it in <code>overflow</code> is not all that has to be
+done. When the object of the class defining the buffer reaches the end of its
+lifetime the buffer may be only partially full. In that situation the buffer
+must also be flushed. This is easily done by simply calling <code>sync</code> from the
+class's destructor.
+<p>
+Now that we've considered the consequences of using an output buffer,
+we're almost ready to design our derived class. Several more features
+are added as well, though:
+    <ul>
+    <li> First, we should allow the user of the class to specify the size of
+the output buffer.
+    <li> Second, it should be possible to construct an object of our class
+before the file descriptor is actually known. Later, in section <a href="cplusplus24.html#FORK">24.2</a>
+we'll encounter a situation where this feature is actually used.
+    </ul>
+    To save some space in the <strong>C++</strong> Annotations, the successful completion of the
+functions designed here is not checked in the example code. In `real life'
+implementations these checks should of course not be omitted.  Our class
+<code>OFdnStreambuf</code> has the following characteristics:
+    <ul>
+    <li> Its member functions use low-level functions operating on file
+descriptors. So apart from <code>streambuf</code> the <a name="an3216"></a><code>&lt;unistd.h&gt;</code> header file must
+have been read by the compiler before its member functions can be compiled.
+    <li> The class is derived from <code>std::streambuf</code>.
+    <li> It defines three data members. These data members keep track of,
+respectively, the size of the buffer, the file descriptor, and the buffer
+itself. Here is the full class interface
+        <pre>
+    class OFdnStreambuf: public std::streambuf
+    {
+        size_t d_bufsize;
+        int     d_fd;
+        char    *d_buffer;
+
+        public:
+            OFdnStreambuf();
+            OFdnStreambuf(int fd, size_t bufsize = 1);
+            virtual ~OFdnStreambuf();
+            void open(int fd, size_t bufsize = 1);
+        private:
+            virtual int sync();
+            virtual int overflow(int c);
+    };
+</pre>
+<p>
+<li> Its default constructor merely initializes the buffer to 0. Slightly
+more interesting is its constructor expecting a file descriptor and a buffer
+size. This constructor passes its arguments on to the class's <code>open</code>
+member (see below). Here are the constructors:
+        <pre>
+    inline OFdnStreambuf::OFdnStreambuf()
+    :
+        d_bufsize(0),
+        d_buffer(0)
+    {}
+    inline OFdnStreambuf::OFdnStreambuf(int fd, size_t bufsize)
+    {
+        open(fd, bufsize);
+    }
+</pre>
+<p>
+<li> The destructor calls <code>sync</code>, flushing any characters stored in the
+output buffer to the device. In implementations not using a buffer the
+destructor can be given a default implementation:
+        <pre>
+    inline OFdnStreambuf::~OFdnStreambuf()
+    {
+        if (d_buffer)
+        {
+            sync();
+            delete[] d_buffer;
+        }
+    }
+</pre>
+<p>
+This implementation does not close the device. It is left as an exercise
+to the reader to change this class in such a way that the device is optionally
+closed (or optionally remains open). This approach was adopted by, e.g., the
+        <a href="http://bobcat.sourceforge.net">Bobcat library</a>.
+        <a name="an3217"></a><a name="an3218"></a> See also section
+<a href="cplusplus24.html#IFDNBUF">24.1.2.2</a>.
+    <li> The <a name="an3219"></a><code>open</code> member initializes the buffer.  Using
+<a name="an3220"></a><code>streambuf::setp</code>, the begin and end points of the buffer are
+defined. This is used by the <code>streambuf</code> base class to initialize
+<a name="an3221"></a><code>streambuf::pbase</code>, <a name="an3222"></a><code>streambuf::pptr</code>, and
+<a name="an3223"></a><code>streambuf::epptr</code>:
+        <pre>
+    inline void OFdnStreambuf::open(int fd, size_t bufsize)
+    {
+        d_fd = fd;
+        d_bufsize = bufsize == 0 ? 1 : bufsize;
+
+        d_buffer = new char[d_bufsize];
+        setp(d_buffer, d_buffer + d_bufsize);
+    }
+</pre>
+<p>
+<li> The member <a name="an3224"></a><code>sync</code> flushes the as yet unflushed contents of the
+buffer to the device. After the flush the buffer is reinitialized using
+<code>setp</code>. After successfully flushing the buffer <code>sync</code> returns 0:
+        <pre>
+    inline int OFdnStreambuf::sync()
+    {
+        if (pptr() &gt; pbase())
+        {
+            write(d_fd, d_buffer, pptr() - pbase());
+            setp(d_buffer, d_buffer + d_bufsize);
+        }
+        return 0;
+    }
+</pre>
+<p>
+<li> The member <a name="an3225"></a><code>streambuf::overflow</code> is also
+overridden. Since this member is called from the <code>streambuf</code> base class when
+the buffer is full it should first call <code>sync</code> to flush the buffer to the
+device. Next it should write the character <code>c</code> to the (now empty)
+buffer. The character <code>c</code> should be written using <code>pptr</code> and
+<a name="an3226"></a><code>streambuf::pbump</code>.  Entering a character into the buffer should be
+implemented using available <code>streambuf</code> member functions, rather than `by
+hand' as doing so might invalidate <code>streambuf</code>'s internal bookkeeping. Here
+is <code>overflow</code>'s implementation:
+        <pre>
+    inline int OFdnStreambuf::overflow(int c)
+    {
+        sync();
+        if (c != EOF)
+        {
+            *pptr() = c;
+            pbump(1);
+        }
+        return c;
+    }
+</pre>
+<p>
+</ul>
+    The next program uses the <code>OFfdStreambuf</code> class to copy its standard
+input to file descriptor <a name="an3227"></a><code>STDOUT_FILENO</code>, which is the symbolic name of the
+file descriptor used for the standard output:
+        <pre>
+    #include &lt;string&gt;
+    #include &lt;iostream&gt;
+    #include &lt;istream&gt;
+    #include "fdout.h"
+    using namespace std;
+
+    int main(int argc, char **argv)
+    {
+        OFdnStreambuf   fds(STDOUT_FILENO, 500);
+        ostream         os(&amp;fds);
+
+        switch (argc)
+        {
+            case 1:
+                for (string  s; getline(cin, s); )
+                    os &lt;&lt; s &lt;&lt; '\n';
+                os &lt;&lt; "COPIED cin LINE BY LINE\n";
+            break;
+
+            case 2:
+                cin &gt;&gt; os.rdbuf();      // Alternatively, use:  cin &gt;&gt; &amp;fds;
+                os &lt;&lt; "COPIED cin BY EXTRACTING TO os.rdbuf()\n";
+            break;
+
+            case 3:
+                os &lt;&lt; cin.rdbuf();
+                os &lt;&lt; "COPIED cin BY INSERTING cin.rdbuf() into os\n";
+            break;
+        }
+    }
+</pre>
+<p>
+<a name="STRBUF"></a><a name="l623"></a>
+<h3>24.1.2: Classes for input operations</h3>
+        When classes for input operation are derived from <a name="an3228"></a><code>std::streambuf</code>, they
+should be provided with an input buffer of at least one character. The
+one-character input buffer allows for the use of the member functions
+<code>istream::putback</code> or <code>istream::ungetc</code>.  Strictly speaking it is not
+necessary to implement a buffer in classes derived from <code>streambuf</code>. But
+using buffers in these classes is strongly advised. Their implementation is
+very simple and straightforward and the applicability of such classes is
+greatly improved. Therefore, all our classes derived from the class
+<code>streambuf</code> define a buffer of <em>at least</em> one character.
+<p>
+<a name="IFDBUF"></a><a name="l624"></a>
+<h4>24.1.2.1: Using a one-character buffer</h4>
+            When deriving a class (e.g., <a name="an3229"></a><code>IFdStreambuf</code>) from <code>streambuf</code> using a
+buffer of one character, at least its member
+ <a name="an3230"></a>
+    <code>streambuf::underflow</code> should be overridden, as this member eventually
+receives all requests for input. The member
+ <a name="an3231"></a>
+    <code>streambuf::setg</code> is used to inform the <code>streambuf</code> base class of the
+size and location of the input buffer, so that it is able to set up its input
+buffer pointers accordingly. This ensures that <a name="an3232"></a>
+<code>streambuf::eback</code>, <a name="an3233"></a> <code>streambuf::gptr</code>, and <a name="an3234"></a>
+<code>streambuf::egptr</code> return correct values.
+<p>
+The class <code>IFdStreambuf</code> is designed like this:
+    <ul>
+    <li> Its member functions use low-level functions operating on file
+descriptors. Therefore, in addition to <code>streambuf</code>, the <a name="an3235"></a><code>&lt;unistd.h&gt;</code>
+header file must have been read by the compiler before its member functions
+can be compiled.
+    <li> Like most classes designed for input operations, this class is derived
+from <a name="an3236"></a><code>std::streambuf</code> as well.
+    <li> The class defines two data members, one of them a fixed-sized one
+character buffer. The data members are defined as <a name="an3237"></a><code>protected</code> data members
+so that derived classes (e.g., see section <a href="cplusplus24.html#IFDSEEK">24.1.2.3</a>) can access them. Here
+is the full class interface:
+        <pre>
+    class IFdStreambuf: public std::streambuf
+    {
+        protected:
+            int     d_fd;
+            char    d_buffer[1];
+        public:
+            IFdStreambuf(int fd);
+        private:
+            int underflow();
+    };
+</pre>
+<p>
+<li> The constructor initializes the buffer. However, the initialization
+sets <a name="an3238"></a><code>gptr</code>'s return value equal to <a name="an3239"></a><code>egptr</code>'s return value. This
+implies that the buffer is empty so <code>underflow</code> is immediately called
+to fill the buffer:
+        <pre>
+    inline IFdStreambuf::IFdStreambuf(int fd)
+    :
+        d_fd(fd)
+    {
+        setg(d_buffer, d_buffer + 1, d_buffer + 1);
+    }
+</pre>
+<p>
+<li> Finally <code>underflow</code> is overridden. The buffer is refilled by
+reading from the file descriptor. If this fails (for whatever reason),
+<code>EOF</code> is returned. More sophisticated implementations could act more
+intelligently here, of course. If the buffer could be refilled, <a name="an3240"></a><code>setg</code> is
+called to set up <code>streambuf</code>'s buffer pointers correctly:
+        <pre>
+    inline int IFdStreambuf::underflow()
+    {
+        if (read(d_fd, d_buffer, 1) &lt;= 0)
+            return EOF;
+
+        setg(d_buffer, d_buffer, d_buffer + 1);
+        return *gptr();
+    }
+</pre>
+<p>
+</ul>
+    The following <code>main</code> function shows how <code>IFdStreambuf</code> can be used:
+        <pre>
+    int main()
+    {
+        IFdStreambuf fds(STDIN_FILENO);
+        istream      is(&amp;fds);
+
+        cout &lt;&lt; is.rdbuf();
+    }
+</pre>
+<p>
+<a name="IFDNBUF"></a><a name="l625"></a>
+<h4>24.1.2.2: Using an n-character buffer</h4>
+            How complex would things get if we decided to use a buffer of
+substantial size? Not that complex. The following class allows us to specify
+the size of a buffer, but apart from that it is basically the same class as
+<code>IFdStreambuf</code> developed in the previous section. To make things a bit more
+interesting, in the class <a name="an3241"></a><code>IFdNStreambuf</code> developed here, the member
+<a name="an3242"></a><code>streambuf::xsgetn</code> is also overridden, to optimize reading a
+series of characters. Also a default constructor is provided that can be used
+in combination with the <code>open</code> member to construct an <code>istream</code> object
+before the file descriptor becomes available. In that case, once the
+descriptor becomes available, the <code>open</code> member can be used to initiate
+the object's buffer. Later, in section <a href="cplusplus24.html#FORK">24.2</a>, we'll encounter such a
+situation.
+<p>
+To save some space, the success of various calls was not checked. In `real
+life' implementations, these checks should of course not be omitted. The
+class <code>IFdNStreambuf</code> has the following characteristics:
+    <ul>
+    <li> Its member functions use low-level functions operating on file
+descriptors. So apart from <code>streambuf</code> the <a name="an3243"></a><code>&lt;unistd.h&gt;</code> header file must
+have been read by the compiler before its member functions can be compiled.
+    <li> As usual, it is derived from <a name="an3244"></a><code>std::streambuf</code>.
+    <li> Like the class <code>IFdStreambuf</code> (section <a href="cplusplus24.html#IFDBUF">24.1.2.1</a>), its data
+members are protected. Since the buffer's size is configurable, this size is
+kept in a dedicated data member, <code>d_bufsize</code>:
+            <pre>
+    class IFdNStreambuf: public std::streambuf
+    {
+        protected:
+            int         d_fd;
+            size_t      d_bufsize;
+            char*       d_buffer;
+        public:
+            IFdNStreambuf();
+            IFdNStreambuf(int fd, size_t bufsize = 1);
+            virtual ~IFdNStreambuf();
+            void open(int fd, size_t bufsize = 1);
+        private:
+            virtual int underflow();
+            virtual std::streamsize xsgetn(char *dest, std::streamsize n);
+    };
+</pre>
+<p>
+<li> The default constructor does not allocate a buffer. It can be used
+to construct an object before the file descriptor becomes known. A second
+constructor simply passes its arguments to <code>open</code>. <code>Open</code> will then
+initialize the object so that it can actually be used:
+            <pre>
+    inline IFdNStreambuf::IFdNStreambuf()
+    :
+        d_bufsize(0),
+        d_buffer(0)
+    {}
+    inline IFdNStreambuf::IFdNStreambuf(int fd, size_t bufsize)
+    {
+        open(fd, bufsize);
+    }
+</pre>
+<p>
+<li> Once the object has been initialized by <code>open</code>, its destructor will
+both delete the object's buffer and use the file descriptor to close the
+device:
+            <pre>
+    IFdNStreambuf::~IFdNStreambuf()
+    {
+        if (d_bufsize)
+        {
+            close(d_fd);
+            delete[] d_buffer;
+        }
+    }
+</pre>
+<p>
+Even though the device is closed in the above implementation this may not
+always be desirable. In cases where the open file descriptor is already
+available the intention may be to use that descriptor repeatedly, each time
+using a newly constructed <code>IFdNStreambuf</code> object. It is left as an exercise
+to the reader to change this class in such a way that the device may
+optionally be closed. This approach was followed in, e.g., the
+        <a href="http://bobcat.sourceforge.net">Bobcat library</a>.
+        <a name="an3245"></a><a name="an3246"></a>
+    <li> The <code>open</code> member simply allocates the object's buffer. It is
+assumed that the calling program has already opened the device. Once the
+buffer has been allocated, the base class member <a name="an3247"></a><code>setg</code> is used to ensure
+that <a name="an3248"></a> <code>streambuf::eback</code> <a name="an3249"></a> <code>streambuf::gptr</code> and <a name="an3250"></a>
+<code>streambuf::egptr</code> return correct values:
+            <pre>
+    void IFdNStreambuf::open(int fd, size_t bufsize)
+    {
+        d_fd = fd;
+        d_bufsize = bufsize;
+        d_buffer = new char[d_bufsize];
+        setg(d_buffer, d_buffer + d_bufsize, d_buffer + d_bufsize);
+    }
+</pre>
+<p>
+<li> The overridden member <code>underflow</code> is implemented almost
+identically to <code>IFdStreambuf</code>'s (section <a href="cplusplus24.html#IFDBUF">24.1.2.1</a>) member. The only
+difference is that the current class supports buffers of larger
+sizes. Therefore, more characters (up to <code>d_bufsize</code>) may be read from the
+device at once:
+            <pre>
+    int IFdNStreambuf::underflow()
+    {
+        if (gptr() &lt; egptr())
+            return *gptr();
+
+        int nread = read(d_fd, d_buffer, d_bufsize);
+
+        if (nread &lt;= 0)
+            return EOF;
+
+        setg(d_buffer, d_buffer, d_buffer + nread);
+        return *gptr();
+    }
+</pre>
+<p>
+<li> Finally <a name="an3251"></a><code>xsgetn</code> is overridden. In a loop, <code>n</code> is reduced until
+0, at which point the function terminates. Alternatively, the member returns
+if <code>underflow</code> fails to obtain more characters. This member optimizes the
+reading of series of characters. Instead of calling <a name="an3252"></a>
+<code>streambuf::sbumpc</code> <code>n</code> times, a block of <code>avail</code> characters is copied
+to the destination, using <a name="an3253"></a><code>streambuf::gbump</code> to consume <code>avail</code>
+characters from the buffer using one function call:
+            <pre>
+    std::streamsize IFdNStreambuf::xsgetn(char *dest, std::streamsize n)
+    {
+        int nread = 0;
+
+        while (n)
+        {
+            if (!in_avail())
+            {
+                if (underflow() == EOF)
+                    break;
+            }
+
+            int avail = in_avail();
+
+            if (avail &gt; n)
+                avail = n;
+
+            memcpy(dest + nread, gptr(), avail);
+            gbump(avail);
+
+            nread += avail;
+            n -= avail;
+        }
+
+        return nread;
+    }
+</pre>
+<p>
+</ul>
+    The member function <a name="an3254"></a><code>xsgetn</code> is called by <a name="an3255"></a><code>streambuf::sgetn</code>,
+which is a <code>streambuf</code> member. Here is an example illustrating the use of
+this member function with an <code>IFdNStreambuf</code> object:
+        <pre>
+    #include &lt;unistd.h&gt;
+    #include &lt;iostream&gt;
+    #include &lt;istream&gt;
+    #include "ifdnbuf.h"
+    using namespace std;
+
+    int main()
+    {
+                                    // internally: 30 char buffer
+        IFdNStreambuf fds(STDIN_FILENO, 30);
+
+        char buf[80];               // main() reads blocks of 80
+                                    // chars
+        while (true)
+        {
+            size_t n = fds.sgetn(buf, 80);
+            if (n == 0)
+                break;
+            cout.write(buf, n);
+        }
+    }
+</pre>
+<p>
+<a name="IFDSEEK"></a><a name="l626"></a>
+<h4>24.1.2.3: Seeking positions in `streambuf' objects</h4>
+            When devices support <em>seek operations</em>, classes derived from
+<a name="an3256"></a> <code>std::streambuf</code> should override the members <a name="an3257"></a>
+<code>streambuf::seekoff</code> and <a name="an3258"></a><code>streambuf::seekpos</code>. The class
+<a name="an3259"></a><code>IFdSeek</code>, developed in this section, can be used to read information from
+devices supporting seek operations. The class <code>IFdSeek</code> was derived from
+<code>IFdStreambuf</code>, so it uses a character buffer of just one character. The
+facilities to perform seek operations, which are added to our new class
+<code>IFdSeek</code>, ensure that the input buffer is reset when a seek operation is
+requested. The class could also be derived from the class
+<code>IFdNStreambuf</code>. In that case the arguments to reset the input buffer
+must be adapted so that its second and third parameters point beyond the
+available input buffer. Let's have a look at the characteristics of
+<code>IFdSeek</code>:
+    <ul>
+    <li> As mentioned, <code>IFdSeek</code> is derived from <code>IFdStreambuf</code>. Like the
+latter class, <code>IFdSeek</code>'s member functions use facilities declared in
+<code>unistd.h</code>. So, the header file <a name="an3260"></a><code>&lt;unistd.h&gt;</code> must have been read by the
+compiler before it can compile the class's members functions.  To reduce the
+amount of typing when specifying types and constants from <code>streambuf</code> and
+<a name="an3261"></a><code>std::ios</code>, several <code>typedef</code>s are defined by the class.  These
+typedefs refer to types that are defined in the header file <a name="an3262"></a><code>&lt;ios&gt;</code>, which
+must therefore also be included before the compiler can compile <code>IFdSeek</code>'s
+class interface:
+        <pre>
+    class IFdSeek: public IFdStreambuf
+    {
+        typedef std::streambuf::pos_type        pos_type;
+        typedef std::streambuf::off_type        off_type;
+        typedef std::ios::seekdir               seekdir;
+        typedef std::ios::openmode              openmode;
+
+        public:
+            IFdSeek(int fd);
+        private:
+            pos_type seekoff(off_type offset, seekdir dir, openmode);
+            pos_type seekpos(pos_type offset, openmode mode);
+    };
+</pre>
+<p>
+<li> The class has a very basic interface. Its (only)
+constructor expects the device's <a name="an3263"></a>file descriptor. It has no special tasks
+to perform and just calls its <a name="an3264"></a>base class constructor:
+        <pre>
+    inline IFdSeek::IFdSeek(int fd)
+    :
+        IFdStreambuf(fd)
+    {}
+</pre>
+<p>
+<li> The member <a name="an3265"></a><code>seek_off</code> is responsible for performing the actual
+seek operations. It calls <a name="an3266"></a><code>lseek</code> to seek a new position in a device whose
+file descriptor is known. If seeking succeeds, <a name="an3267"></a><code>setg</code> is called to define
+an already empty buffer, so that the base class's <code>underflow</code> member
+refills the buffer at the next input request.
+        <pre>
+    IFdSeek::pos_type IFdSeek::seekoff(off_type off, seekdir dir, openmode)
+    {
+        pos_type pos =
+            lseek
+            (
+                d_fd, off,
+                (dir ==  std::ios::beg) ? SEEK_SET :
+                (dir ==  std::ios::cur) ? SEEK_CUR :
+                                          SEEK_END
+            );
+
+        if (pos &lt; 0)
+            return -1;
+
+        setg(d_buffer, d_buffer + 1, d_buffer + 1);
+        return pos;
+    }
+</pre>
+<p>
+<li> Finally,  the companion function <a name="an3268"></a><code>seekpos</code> is overridden as well:
+it is actually defined as a call to <code>seekoff</code>:
+        <pre>
+    inline IFdSeek::pos_type IFdSeek::seekpos(pos_type off, openmode mode)
+    {
+        return seekoff(off, std::ios::beg, mode);
+    }
+</pre>
+<p>
+</ul>
+    Here is an example of a program using the class <code>IFdSeek</code>. If
+this program is given its own source file using input redirection then
+seeking is supported (and with the exception of the first line, every other
+line is shown twice):
+        <pre>
+    #include "fdinseek.h"
+    #include &lt;string&gt;
+    #include &lt;iostream&gt;
+    #include &lt;istream&gt;
+    #include &lt;iomanip&gt;
+    using namespace std;
+
+    int main()
+    {
+        IFdSeek fds(0);
+        istream is(&amp;fds);
+        string  s;
+
+        while (true)
+        {
+            if (!getline(is, s))
+                break;
+
+            streampos pos = is.tellg();
+
+            cout &lt;&lt; setw(5) &lt;&lt; pos &lt;&lt; ": `" &lt;&lt; s &lt;&lt; "'\n";
+
+            if (!getline(is, s))
+                break;
+
+            streampos pos2 = is.tellg();
+
+            cout &lt;&lt; setw(5) &lt;&lt; pos2 &lt;&lt; ": `" &lt;&lt; s &lt;&lt; "'\n";
+
+            if (!is.seekg(pos))
+            {
+                cout &lt;&lt; "Seek failed\n";
+                break;
+            }
+        }
+    }
+</pre>
+<p>
+<a name="l627"></a>
+<h4>24.1.2.4: Multiple `unget' calls in `streambuf' objects</h4>
+        <code>Streambuf</code> classes and classes derived from <a name="an3269"></a><code>streambuf</code> should support
+<em>at least</em> ungetting the last read character. Special care must be taken
+when <em>series</em> of <a name="an3270"></a><code>unget</code> calls must be supported. In this section the
+construction of a class supporting a configurable number of <code>istream::unget</code>
+or <a name="an3271"></a><code>istream::putback</code> calls is discussed.
+<p>
+Support for multiple (say `<code>n</code>') <code>unget</code> calls is implemented by
+reserving an initial section of the input buffer, which is gradually filled up
+to contain the last <code>n</code> characters read. The class is implemented as
+follows:
+    <ul>
+    <li> Once again, the class is derived from <code>std::streambuf</code>. It
+defines several data members, allowing the class to perform the bookkeeping
+required to maintain an unget-buffer of a configurable size:
+        <pre>
+    class FdUnget: public std::streambuf
+    {
+        int     d_fd;
+        size_t  d_bufsize;
+        size_t  d_reserved;
+        char   *d_buffer;
+        char   *d_base;
+        public:
+            FdUnget(int fd, size_t bufsz, size_t unget);
+            virtual ~FdUnget();
+        private:
+            int underflow();
+    };
+</pre>
+<p>
+<li> The class's constructor expects a <a name="an3272"></a>file descriptor, a buffer size
+and the number of characters that can be ungot or pushed back as its
+arguments. This number  determines the size of a <em>reserved</em> area,
+defined as the first <code>d_reserved</code> bytes of the class's input buffer.
+        <ul>
+        <li> The input buffer will always be at least one byte larger than
+<code>d_reserved</code>. So, a certain number of bytes may be read. Once <code>d_reserved</code>
+bytes have been read at most <code>d_reserved</code> bytes can be ungot.
+        <li> Next, the starting point for reading operations is configured. It
+is called <code>d_base</code>, pointing to a location <code>d_reserved</code> bytes beyond the
+location represented by <code>d_buffer</code>. This is always the location where buffer
+refills start.
+        <li> Now that the buffer has been constructed, we're ready to define
+<code>streambuf</code>'s buffer pointers using <code>setg</code>. As no characters have been
+read yet, all pointers are set to point to <code>d_base</code>. If <code>unget</code> is
+called at this point, no characters are available, and <code>unget</code>
+(correctly) fails.
+        <li> Eventually, the refill buffer's size is determined as the
+number of allocated bytes minus the size of the reserved area.
+        </ul>
+        Here is the class's constructor:
+            <pre>
+    FdUnget::FdUnget(int fd, size_t bufsz, size_t unget)
+    :
+        d_fd(fd),
+        d_reserved(unget)
+    {
+        size_t allocate =
+                bufsz &gt; d_reserved ?
+                    bufsz
+                :
+                    d_reserved + 1;
+
+        d_buffer = new char[allocate];
+
+        d_base = d_buffer + d_reserved;
+        setg(d_base, d_base, d_base);
+
+        d_bufsize = allocate - d_reserved;
+    }
+</pre>
+<p>
+<li> The class's destructor simply returns the memory allocated for the
+buffer to the common pool:
+            <pre>
+    inline FdUnget::~FdUnget()
+    {
+        delete[] d_buffer;
+    }
+</pre>
+<p>
+<li> Finally,  <code>underflow</code> is overridden as follows:
+        <ul>
+        <li> First <code>underflow</code> determines the number of characters that
+could potentially be ungot. If that number of characters are ungot, the input
+buffer is exhausted. So this value may be any value between 0 (the initial
+state) or the input buffer's size (when the reserved area has been filled up
+completely, and all current characters in the remaining section of the buffer
+have also been read);
+        <li> Next the number of bytes to move into the reserved area is
+computed. This number is at most <code>d_reserved</code>, but it is set equal to the
+actual number of characters that can be ungot if this value is smaller;
+        <li> Now that the number of characters to move into the reserved area
+is known, this number of characters is moved from the input buffer's end to
+the area immediately before <code>d_base</code>;
+        <li> Then the buffer is refilled. This all is standard, but notice
+that reading starts from <code>d_base</code> and not from <code>d_buffer</code>;
+        <li> Finally, <code>streambuf</code>'s read buffer pointers are set up.
+                <a name="an3273"></a>
+            <code>Eback</code> is set to <code>move</code> locations before <code>d_base</code>, thus
+defining the guaranteed unget-area,
+            <a name="an3274"></a><code>gptr</code> is set to <code>d_base</code>, since that's the location of the
+first read character after a refill, and
+            <a name="an3275"></a><code>egptr</code> is set just beyond the location of the last character
+read into the buffer.
+        </ul>
+        Here is <code>underflow</code>'s implementation:
+            <pre>
+    int FdUnget::underflow()
+    {
+        size_t ungetsize = gptr() - eback();
+        size_t move = std::min(ungetsize, d_reserved);
+
+        memcpy(d_base - move, egptr() - move, move);
+
+        int nread = read(d_fd, d_base, d_bufsize);
+        if (nread &lt;= 0)       // none read -&gt; return EOF
+            return EOF;
+
+        setg(d_base - move, d_base, d_base + nread);
+
+        return *gptr();
+    }
+</pre>
+<p>
+</ul>
+<p>
+<strong>An example using FdUnget</strong>
+<p>
+The next example program illustrates the use of the class <code>FdUnget</code>. It
+reads at most 10 characters from the standard input, stopping at
+<code>EOF</code>. A guaranteed unget-buffer of 2 characters is defined in a buffer
+holding 3 characters. Just before reading a character, the program tries to
+unget at most 6 characters. This is, of course, not possible; but the program
+nicely ungets as many characters as possible, considering the actual
+number of characters read:
+        <pre>
+    #include "fdunget.h"
+    #include &lt;string&gt;
+    #include &lt;iostream&gt;
+    #include &lt;istream&gt;
+    using namespace std;
+
+    int main()
+    {
+        FdUnget fds(0, 3, 2);
+        istream is(&amp;fds);
+        char    c;
+
+        for (int idx = 0; idx &lt; 10; ++idx)
+        {
+            cout &lt;&lt; "after reading " &lt;&lt; idx &lt;&lt; " characters:\n";
+            for (int ug = 0; ug &lt;= 6; ++ug)
+            {
+                if (!is.unget())
+                {
+                    cout
+                    &lt;&lt; "\tunget failed at attempt " &lt;&lt; (ug + 1) &lt;&lt; "\n"
+                    &lt;&lt; "\trereading: '";
+
+                    is.clear();
+                    while (ug--)
+                    {
+                        is.get(c);
+                        cout &lt;&lt; c;
+                    }
+                    cout &lt;&lt; "'\n";
+                    break;
+                }
+            }
+
+            if (!is.get(c))
+            {
+                cout &lt;&lt; " reached\n";
+                break;
+            }
+            cout &lt;&lt; "Next character: " &lt;&lt; c &lt;&lt; '\n';
+        }
+    }
+    /*
+        Generated output after 'echo abcde | program':
+
+        after reading 0 characters:
+                unget failed at attempt 1
+                rereading: ''
+        Next character: a
+        after reading 1 characters:
+                unget failed at attempt 2
+                rereading: 'a'
+        Next character: b
+        after reading 2 characters:
+                unget failed at attempt 3
+                rereading: 'ab'
+        Next character: c
+        after reading 3 characters:
+                unget failed at attempt 4
+                rereading: 'abc'
+        Next character: d
+        after reading 4 characters:
+                unget failed at attempt 4
+                rereading: 'bcd'
+        Next character: e
+        after reading 5 characters:
+                unget failed at attempt 4
+                rereading: 'cde'
+        Next character:
+
+        after reading 6 characters:
+                unget failed at attempt 4
+                rereading: 'de
+        '
+         reached
+    */
+</pre>
+<p>
+<a name="l628"></a>
+<h3>24.1.3: Fixed-sized field extraction from istream objects</h3>
+    Usually when extracting information from <code>istream</code> objects <code>operator</code>&gt;&gt;, the
+standard extraction operator is perfectly suited for the task as in most
+cases the extracted fields are white-space (or otherwise clearly) separated
+from each other. But this does not hold true in all situations. For example,
+when a web-form is posted to some processing script or program, the receiving
+program may receive the form field's values as <em>url-encoded</em>
+characters: letters and digits are sent unaltered, blanks are sent as <code>+</code>
+characters, and all other characters start with <code>%</code> followed by the
+character's
+    <a name="an3276"></a>ascii-value represented by its two digit hexadecimal value.
+<p>
+When decoding url-encoded information, simple hexadecimal extraction won't
+work, as  that extracts as many hexadecimal characters as available,
+instead of just two. Since the letters <code>a-f`</code> and <code>0-9</code> are legal
+hexadecimal characters, a text like <code>My name is `Ed'</code>, url-encoded as
+        <pre>
+    My+name+is+%60Ed%27
+</pre>
+    results in the extraction of the hexadecimal values <code>60ed</code> and <code>27</code>,
+instead of <code>60</code> and <code>27</code>. The name <code>Ed</code> disappears from view, which is
+clearly not what we want.
+<p>
+In this case, having seen the <code>%</code>, we could extract 2 characters, put
+them in an <a name="an3277"></a><code>istringstream</code> object, and extract the hexadecimal value from
+the <code>istringstream</code> object. A bit cumbersome, but doable. Other approaches
+are possible as well.
+<p>
+The class <a name="an3278"></a><code>Fistream</code> for <em>fixed-sized field istream</em> defines
+an <code>istream</code> class supporting both fixed-sized field extractions and
+blank-delimited extractions (as well as unformatted <code>read</code> calls). The
+class may be initialized as a <a name="an3279"></a><em>wrapper</em> around an existing <code>istream</code>, or
+it can be initialized using the name of an existing file. The class is derived
+from <code>istream</code>, allowing all extractions and operations supported by
+<code>istream</code>s in general. <code>Fistream</code> defines the following data members:
+    <ul>
+    <li><code>d_filebuf</code>: a filebuffer used when <code>Fistream</code> reads its information
+        from a named (existing) file. Since the filebuffer is only needed in
+        that case, and since it must be allocated dynamically, it is defined
+        as a <code>unique_ptr&lt;filebuf&gt;</code> object.
+    <li><code>d_streambuf</code>: a pointer to <code>Fistream</code>'s <code>streambuf</code>. It points
+        to <code>d_filebuf</code> when <code>Fistream</code> opens a file by name. When an
+        existing <code>istream</code> is used to construct an <code>Fistream</code>, it
+        points to the existing <code>istream</code>'s <code>streambuf</code>.
+    <li><code>d_iss</code>: an <code>istringstream</code> object used for the fixed field
+        extractions.
+    <li><code>d_width</code>: a <code>size_t</code> indicating the width of the field to
+        extract. If 0 no fixed field extractions is used, but
+        information is extracted from the <code>istream</code> base class object
+        using standard extractions.
+    </ul>
+    Here is the initial section of <code>Fistream</code>'s class interface:
+        <pre>
+    class Fistream: public std::istream
+    {
+        std::unique_ptr&lt;std::filebuf&gt; d_filebuf;
+        std::streambuf *d_streambuf;
+        std::istringstream d_iss;
+        size_t d_width;
+</pre>
+<p>
+As stated, <code>Fistream</code> objects can be constructed from either a
+filename or an existing <code>istream</code> object. The class interface therefore
+declares two constructors:
+        <pre>
+            Fistream(std::istream &amp;stream);
+            Fistream(char const *name,
+                std::ios::openmode mode = std::ios::in);
+</pre>
+<p>
+When an <code>Fistream</code> object is constructed using an existing <code>istream</code>
+object, the <code>Fistream</code>'s <code>istream</code> part simply uses the <code>stream</code>'s
+<code>streambuf</code> object:
+        <pre>
+Fistream::Fistream(istream &amp;stream)
+:
+    istream(stream.rdbuf()),
+    d_streambuf(rdbuf()),
+    d_width(0)
+{}
+</pre>
+<p>
+When an <code>fstream</code> object is constructed using a filename, the
+<code>istream</code> base initializer is given a new <code>filebuf</code> object to be used as
+its <code>streambuf</code>. Since the class's data members are not initialized before
+the class's base class has been constructed, <code>d_filebuf</code> can only be
+initialized thereafter. By then, the <code>filebuf</code> is only available as
+<code>rdbuf</code>, returning a <code>streambuf</code>. However, as it is actually a
+<code>filebuf</code>, a <code>static_cast</code> is used to cast the <code>streambuf</code> pointer
+returned by <code>rdbuf</code> to <code>a filebuf *</code>, so <code>d_filebuf</code> can be initialized:
+        <pre>
+Fistream::Fistream(char const *name, ios::openmode mode)
+:
+    istream(new filebuf()),
+    d_filebuf(static_cast&lt;filebuf *&gt;(rdbuf())),
+    d_streambuf(d_filebuf.get()),
+    d_width(0)
+{
+    d_filebuf-&gt;open(name, mode);
+}
+</pre>
+<p>
+<a name="l629"></a>
+<h4>24.1.3.1: Member functions and example</h4>
+            There is only one additional public member: <code>setField(field const
+&amp;)</code>. This member defines the size of the next field to extract. Its
+parameter is a reference to a <code>field</code> class, a <em>manipulator class</em>
+defining the width of the next field.
+<p>
+Since a <code>field &amp;</code> is mentioned in <code>Fistream</code>'s interface, <code>field</code>
+must be declared before <code>Fistream</code>'s interface starts. The class <code>field</code>
+itself is simple and declares <code>Fistream</code> as its friend. It has two data
+members: <code>d_width</code> specifies the width of the next field, and <code>d_newWidth</code>
+which is set to <code>true</code> if <code>d_width</code>'s value should actually be used. If
+<code>d_newWidth</code> is false, <code>Fistream</code> returns to its standard extraction
+mode. The class <code>field</code> has two constructors: a default
+constructor, setting <code>d_newWidth</code> to <code>false</code>, and a second constructor
+expecting the width of the next field to extract as its value. Here is the
+class <code>field</code>:
+        <pre>
+    class field
+    {
+        friend class Fistream;
+        size_t d_width;
+        bool     d_newWidth;
+
+        public:
+            field(size_t width);
+            field();
+    };
+
+    inline field::field(size_t width)
+    :
+        d_width(width),
+        d_newWidth(true)
+    {}
+
+    inline field::field()
+    :
+        d_newWidth(false)
+    {}
+</pre>
+<p>
+Since <code>field</code> declares <code>Fistream</code> as its friend, <code>setField</code> may
+inspect <code>field</code>'s members directly.
+<p>
+Time to return to <code>setField</code>. This function expects a reference to a
+<code>field</code> object, initialized in one of three different ways:
+    <ul>
+    <li><code>field()</code>: When <code>setField</code>'s argument is a <code>field</code> object
+        constructed by its default constructor the next extraction will use
+        the same fieldwidth as the previous extraction.
+    <li><code>field(0)</code>: When this <code>field</code> object is used as <code>setField</code>'s
+        argument, fixed-sized field extraction stops, and the <code>Fistream</code>
+        acts like any standard <code>istream</code> object again.
+    <li><code>field(x)</code>: When the <code>field</code> object itself is initialized by a
+        non-zero size_t value <code>x</code>, then the next field width is <code>x</code>
+        characters wide. The preparation of such a field is left to
+        <code>setBuffer</code>, <code>Fistream</code>'s only private member.
+    </ul>
+    Here is <code>setField</code>'s implementation:
+        <pre>
+std::istream &amp;Fistream::setField(field const &amp;params)
+{
+    if (params.d_newWidth)                  // new field size requested
+        d_width = params.d_width;           // set new width
+
+    if (!d_width)                           // no width?
+        rdbuf(d_streambuf);                 // return to the old buffer
+    else
+        setBuffer();                        // define the extraction buffer
+
+    return *this;
+}
+</pre>
+<p>
+The private member <code>setBuffer</code> defines a buffer of <code>d_width + 1</code>
+characters and uses <code>read</code> to fill the buffer with <code>d_width</code>
+characters. The buffer is an NTBS. This buffer is used to initialize the
+<code>d_iss</code> member. <code>Fistream</code>'s <code>rdbuf</code> member is used to extract the
+<code>d_str</code>'s data via the <code>Fistream</code> object itself:
+        <pre>
+void Fistream::setBuffer()
+{
+    char *buffer = new char[d_width + 1];
+
+    rdbuf(d_streambuf);                         // use istream's buffer to
+    buffer[read(buffer, d_width).gcount()] = 0; // read d_width chars,
+                                                // terminated by a 0-byte
+    d_iss.str(buffer);
+    delete[] buffer;
+
+    rdbuf(d_iss.rdbuf());                       // switch buffers
+}
+</pre>
+<p>
+Although <code>setField</code> could be used to configure <code>Fistream</code> to use or
+not to use fixed-sized field extraction, using manipulators is probably
+preferable. To allow <code>field</code> objects to be used as manipulators an
+overloaded extraction operator was defined. This extraction operator accepts
+<code>istream &amp;</code> and a <code>field const &amp;</code> objects. Using this extraction
+operator, statements like
+        <pre>
+fis &gt;&gt; field(2) &gt;&gt; x &gt;&gt; field(0);
+</pre>
+    are possible (assuming <code>fis</code> is a <code>Fistream</code> object). Here is the
+overloaded <code>operator</code>&gt;&gt;, as well as its declaration:
+        <pre>
+istream &amp;std::operator&gt;&gt;(istream &amp;str, field const &amp;params)
+{
+    return static_cast&lt;Fistream *&gt;(&amp;str)-&gt;setField(params);
+}
+</pre>
+<p>
+Declaration:
+        <pre>
+namespace std
+{
+    istream &amp;operator&gt;&gt;(istream &amp;str, FBB::field const &amp;params);
+}
+</pre>
+<p>
+Finally, an example. The following program uses a <code>Fistream</code> object to
+url-decode url-encoded information appearing at its standard input:
+        <pre>
+    int main()
+    {
+        Fistream fis(cin);
+
+        fis &gt;&gt; hex;
+        while (true)
+        {
+            size_t x;
+            switch (x = fis.get())
+            {
+                case '\n':
+                    cout &lt;&lt; '\n';
+                break;
+                case '+':
+                    cout &lt;&lt; ' ';
+                break;
+                case '%':
+                    fis &gt;&gt; field(2) &gt;&gt; x &gt;&gt; field(0);
+                // FALLING THROUGH
+                default:
+                    cout &lt;&lt; static_cast&lt;char&gt;(x);
+                break;
+                case EOF:
+                return 0;
+            }
+        }
+    }
+    /*
+        Generated output after:
+            echo My+name+is+%60Ed%27 | a.out
+
+        My name is `Ed'
+    */
+</pre>
+<p>
+<a name="FORK"></a><a name="l630"></a>
+<h2>24.2: The `fork' system call</h2>
+From the <strong>C</strong> programming language the <a name="an3280"></a><code>fork</code> system call is well
+known. When a program needs to start a new process, <a name="an3281"></a><code>system</code> can be used.
+The function <code>system</code> requires the program to wait for the
+        <a name="an3282"></a><em>child process</em>
+    to terminate. The more general way to spawn subprocesses is to use
+<code>fork</code>.
+<p>
+In this section we investigate how <strong>C++</strong> can be used to wrap classes around
+a complex system call like <code>fork</code>. Much of what follows in this section
+directly applies to the Unix operating system, and the discussion therefore
+focuses on that operating system. Other systems usually provide
+comparable facilities. What follows is closely related to the
+ <em>Template Design Pattern</em><a name="an3283"></a> (cf. <em>Gamma et al.</em> (1995)
+    <a name="an3284"></a> <a name="an3285"></a>Design Patterns, Addison-Wesley)
+<p>
+When <code>fork</code> is called, the current program is duplicated in memory, thus
+creating a new process. Following this duplication both processes continue
+their execution just below the <code>fork</code> system call. The two processes may
+inspect <code>fork</code>'s return value: the return value in the
+original process (called the <a name="an3286"></a><em>parent process</em>) differs from the return
+value in the newly created process (called the <a name="an3287"></a><em>child process</em>):
+    <ul>
+    <li> In the <em>parent process</em> <code>fork</code> returns the <a name="an3288"></a><em>process ID</em> of the
+(child) process that was created by the <code>fork</code> system call. This is a
+positive integer value.
+    <li> In the <em>child process</em> <code>fork</code> returns 0.
+    <li> If <code>fork</code> fails, -1 is returned.
+    </ul>
+<p>
+<a name="l631"></a>
+<h3>24.2.1: A basic Fork class</h3>
+    
+    A basic <code>Fork</code> class should hide all bookkeeping details of a system
+call like <code>fork</code> from its users. The class <code>Fork</code> developed here does
+just that. The class itself only ensures the proper execution of the <code>fork</code>
+system call. Normally, <code>fork</code> is called to start a child process, usually
+boiling down to the execution of a separate process. This child process may
+expect input at its standard input stream and/or may generate output to its
+standard output and/or standard error streams. <code>Fork</code> does not know all
+this, and does not have to know what the child process will do. <code>Fork</code>
+objects should be able to start their child processes.
+<p>
+<code>Fork</code>'s constructor cannot know what actions its child
+process should perform. Similarly, it cannot know what actions the parent
+process should perform. For these kind of  situations, the
+        <a name="an3289"></a><em>template method design pattern</em>
+        <a name="an3290"></a>
+    was developed. According to Gamma c.s., the <em>template method design
+pattern</em>
+    <blockquote>
+    ``Define(s) the skeleton of an algorithm in an operation, deferring some
+    steps to subclasses. [The] Template Method (design pattern) lets
+    subclasses redefine certain steps of an algorithm, without changing
+    the algorithm's structure.''
+    </blockquote>
+<p>
+This design pattern allows us to define an <a name="an3291"></a><em>abstract base class</em>
+        <a name="an3292"></a>
+    already providing the essential steps related to the <code>fork</code> system call,
+deferring the implementation of other parts of the <code>fork</code> system call to
+subclasses.
+<p>
+The <code>Fork</code> abstract base class has the following characteristics:
+    <ul>
+    <li> It defines a data member <code>d_pid</code>. In the parent process this data
+member contains the child's <a name="an3293"></a><em>process id</em> and in the child process it has
+the value 0. Its public interface declares only two members:
+    <ul>
+    <li> a <a name="an3294"></a><code>fork</code> member function, responsible for the actual forking (i.e.,
+        it creates the (new) child process);
+    <li> a <code>virtual</code> destructor <code>~Fork</code> (having an empty body).
+    </ul>
+    Here is <code>Fork</code>'s interface:
+            <pre>
+    class Fork
+    {
+        int d_pid;
+
+        public:
+            virtual ~Fork();
+            void fork();
+
+        protected:
+            int pid() const;
+            int waitForChild();                 // returns the status
+
+        private:
+            virtual void childRedirections();
+            virtual void parentRedirections();
+
+            virtual void childProcess() = 0;    // pure virtual members
+            virtual void parentProcess() = 0;
+    };
+</pre>
+<p>
+<li> All other non-virtual member functions are declared in the class's
+<code>protected</code> section and can thus <em>only</em> be used by derived classes. They
+are:
+        <ul>
+        <li><code>pid()</code>: The member function <code>pid</code> allows derived classes to
+            access the system <code>fork</code>'s return value:
+                <pre>
+    inline int Fork::pid() const
+    {
+        return d_pid;
+    }
+</pre>
+<p>
+<li><code>waitForChild()</code>: The member <code>int waitForChild</code> can be called by
+            parent processes to wait for the completion of their child
+            processes (as discussed below). This member is declared in the
+            class interface. Its implementation is:
+                <pre>
+    #include "fork.ih"
+
+    int Fork::waitForChild()
+    {
+        int status;
+
+        waitpid(d_pid, &amp;status, 0);
+
+        return WEXITSTATUS(status);
+    }
+</pre>
+<p>
+This simple implementation returns the child's <a name="an3295"></a><em>exit status</em> to
+            the parent. The called system function <a name="an3296"></a><code>waitpid</code> <em>blocks</em>
+            until the child terminates.
+        </ul>
+    <li> When <code>fork</code> system calls are used,
+            <em>parent processes</em> <a name="an3297"></a>
+        and
+            <em>child processes</em> <a name="an3298"></a>
+        must always be distinguished. The main distinction between these
+        processes is that <code>d_pid</code> becomes the child's process-id in the
+        parent process, while <code>d_pid</code> becomes 0 in the child process
+        itself. Since these two processes must always be distinguished (and
+        present), their implementation by classes derived from <code>Fork</code> is
+        enforced by <code>Fork</code>'s interface: the members <code>childProcess</code>,
+        defining the child process' actions and <code>parentProcess</code>, defining
+        the parent process' actions were defined as pure virtual functions.
+<p>
+<li> communication between parent- and child processes
+        may use standard streams or other facilities, like <em>pipes</em>
+        (cf. section <a href="cplusplus24.html#PIPE">24.2.5</a>). To facilitate this inter-process
+        communication, derived classes <em>may</em> implement:
+        <ul>
+        <li><code>childRedirections()</code>: this member should be overridden by derived
+            classes if any standard stream (<code>cin, cout,</code>) or <code>cerr</code> must
+            be redirected in the <em>child</em> process (cf. section
+            <a href="cplusplus24.html#REDIRECTION">24.2.3</a>). By default it has an empty implementation;
+        <li><code>parentRedirections()</code>: this member should be overridden by derived
+            classes if any standard stream (<code>cin, cout,</code>) or <code>cerr</code> must
+            be redirected in the <em>parent</em> process. By default it has an
+            empty implementation.
+        </ul>
+    Redirection of the standard streams is necessary if parent and
+child processes must communicate with each other via the standard streams.
+Here are their default definitions. Since these functions are virtual
+functions they should not be implemented inline, but in their own source file:
+            <pre>
+    void Fork::childRedirections()
+    {}
+    void Fork::parentRedirections()
+    {}
+</pre>
+<p>
+</ul>
+<p>
+<a name="l632"></a>
+<h3>24.2.2: Parents and Children</h3>
+        The member function <code>fork</code> calls the system function <code>fork</code>
+(Caution: since the system function <code>fork</code> is called by a member
+function having the same name, the <code>::</code> scope resolution operator must be
+used to prevent a recursive call of the member function itself).
+The function <code>::fork</code>'s  return value determines whether <code>parentProcess</code>
+or  <code>childProcess</code> is called. Maybe redirection is
+necessary. <code>Fork::fork</code>'s implementation calls <code>childRedirections</code>
+just before calling <code>childProcess</code>, and <code>parentRedirections</code> just
+before calling <code>parentProcess</code>:
+        <pre>
+    #include "fork.ih"
+
+    void Fork::fork()
+    {
+        if ((d_pid = ::fork()) &lt; 0)
+            throw "Fork::fork() failed";
+
+        if (d_pid == 0)                 // childprocess has pid == 0
+        {
+            childRedirections();
+            childProcess();
+            exit(1);                    // we shouldn't come here:
+        }                               // childProcess() should exit
+
+        parentRedirections();
+        parentProcess();
+    }
+</pre>
+<p>
+In <code>fork.cc</code> the class's <a name="an3299"></a><em>internal header file</em> <code>fork.ih</code> is
+included. This header file takes care of the inclusion of the necessary system
+header files, as well as the inclusion of <code>fork.h</code> itself. Its
+implementation is:
+        <pre>
+    #include "fork.h"
+    #include &lt;cstdlib&gt;
+    #include &lt;unistd.h&gt;
+    #include &lt;sys/types.h&gt;
+    #include &lt;sys/wait.h&gt;
+</pre>
+<p>
+Child processes should not return: once they have completed their tasks,
+they should terminate. This happens automatically when the child process
+performs a call to a member of the <a name="an3300"></a><code>exec...</code> family, but if the child
+itself remains active, then it must make sure that it terminates properly. A
+child process normally uses <a name="an3301"></a><code>exit</code> to terminate itself, but note that
+<code>exit</code> prevents the activation of destructors of objects
+        <a name="an3302"></a>
+        <a name="an3303"></a>
+    defined at the same or more superficial nesting levels than the level at
+which <code>exit</code> is called. Destructors of globally defined objects <em>are</em>
+activated when <code>exit</code> is used. When using <code>exit</code> to terminate
+<code>childProcess</code>, it should either itself call a support member function
+defining all nested objects it needs, or it should define all its objects in a
+compound statement (e.g., using a <code>throw</code> block) calling <code>exit</code> beyond
+the compound statement.
+<p>
+Parent processes should normally wait for their children to complete.
+Terminating child processes inform their parents that they are about to
+terminate by sending a <a name="an3304"></a><em>signal</em> that should be caught by their parents.  If
+child processes terminate and their parent processes do not catch those
+signals then such child processes remain visible as so-called <a name="an3305"></a><em>zombie</em>
+processes.
+<p>
+If parent processes must wait for their children to complete, they may
+call the member <code>waitForChild</code>. This member returns the exit status of a
+child process to its parent.
+<p>
+There exists a situation where the <em>child</em> process <em>continues</em> to
+live, but the <em>parent</em> dies. This is a fairly natural event: parents tend to
+die before their children do. In our context (i.e. <strong>C++</strong>), this is called a
+<a name="an3306"></a><em>daemon</em> program. In a daemon the parent process dies and the child program
+continues to run as a child of the basic <a name="an3307"></a><code>init</code> process. Again, when the
+child eventually dies a signal is sent to its `step-parent' <a name="an3308"></a><code>init</code>. This
+does not create a zombie as <code>init</code> catches the termination signals of all
+its (step-) children.  The construction of a daemon process is very simple,
+given the availability of the class <code>Fork</code> (cf. section <a href="cplusplus24.html#DAEMON">24.2.4</a>).
+<p>
+<a name="REDIRECTION"></a><a name="l633"></a>
+<h3>24.2.3: Redirection revisited</h3>
+        Earlier, in section <a href="cplusplus06.html#REDIR">6.6.2</a> streams were <a name="an3309"></a> redirected
+using the <a name="an3310"></a><code>ios::rdbuf</code> member function. By assigning the
+<code>streambuf</code> of a stream to another stream, both stream objects access the
+same <code>streambuf</code>, thus implementing redirection at the level of the
+programming language itself.
+<p>
+This may be fine within the context of a <strong>C++</strong> program, but once we
+leave that context the redirection terminates.  The operating system does not
+know about <code>streambuf</code> objects. This situation is encountered, e.g., when a
+program uses a <a name="an3311"></a><code>system</code> call to start a subprogram. The example program at
+the end of this section uses <strong>C++</strong> redirection to redirect the information
+inserted into <a name="an3312"></a><code>cout</code> to a file, and then calls
+        <pre>
+    system("echo hello world")
+</pre>
+    to echo a well-known line of text. Since <code>echo</code> writes its information
+to the standard output, this would be the program's redirected file if the
+operating system would recognize <strong>C++</strong>'s redirection.
+<p>
+But redirection doesn't happen. Instead, <code>hello world</code> still appears at
+the program's standard output and the redirected file is left untouched.  To
+write <code>hello world</code> to the redirected file redirection must be realized at
+the operating system level.  Some operating systems (e.g., <a name="an3313"></a>Unix and
+friends) provide system calls like <a name="an3314"></a><code>dup</code> and <a name="an3315"></a><code>dup2</code> to accomplish
+this. Examples of the use of these system calls are given in section
+<a href="cplusplus24.html#PIPE">24.2.5</a>.
+<p>
+Here is the example of the <em>failing redirection</em> at the system level
+following  <strong>C++</strong> redirection using <code>streambuf</code> redirection:
+        <pre>
+    #include &lt;iostream&gt;
+    #include &lt;fstream&gt;
+    #include &lt;cstdlib&gt;
+    using namespace std;
+
+    int main()
+    {
+        ofstream of("outfile");
+
+        streambuf *buf = cout.rdbuf(of.rdbuf());
+        cout &lt;&lt; "To the of stream\n";
+        system("echo hello world");
+        cout &lt;&lt; "To the of stream\n";
+        cout.rdbuf(buf);
+    }
+    /*
+        Generated output: on the file `outfile'
+
+        To the of stream
+        To the of stream
+
+        On standard output:
+
+        hello world
+    */
+</pre>
+<p>
+<a name="DAEMON"></a><a name="l634"></a>
+<h3>24.2.4: The `Daemon' program</h3>
+        Applications exist in which the only purpose of <a name="an3316"></a><code>fork</code> is to start a
+child process. The parent process terminates immediately after spawning the
+child process. If this happens, the child process continues to run as a child
+process of <a name="an3317"></a><code>init</code>, the always running first process on <a name="an3318"></a>Unix systems. Such
+a process is often called a <a name="an3319"></a><em>daemon</em>, running as a <a name="an3320"></a>background process.
+<p>
+Although the next example can easily be constructed as a plain <strong>C</strong>
+program, it was included in the <strong>C++</strong> Annotations because it is so closely
+related to the current discussion of the <code>Fork</code> class. I thought about
+adding a <code>daemon</code> member to that class, but eventually decided against it
+because the construction of a daemon program is very simple and requires no
+features other than those currently offered by the class <code>Fork</code>.  Here is an
+example illustrating the construction of such a daemon program. Its child
+process doesn't do <a name="an3321"></a><code>exit</code> but <code>throw 0</code> which is caught by the <code>catch</code>
+clause of the child's <code>main</code> function. Doing this ensures that any objects
+defined by the child process are properly destroyed:
+        <pre>
+    #include &lt;iostream&gt;
+    #include &lt;unistd.h&gt;
+    #include "fork.h"
+
+    class Daemon: public Fork
+    {
+        virtual void parentProcess()        // the parent does nothing.
+        {}
+        virtual void childProcess()         // actions by the child
+        {
+            sleep(3);
+                                            // just a message...
+            std::cout &lt;&lt; "Hello from the child process\n";
+            throw 0;                        // The child process ends
+        }
+    };
+
+    int main()
+    try
+    {
+        Daemon().fork();
+    }
+    catch(...)
+    {}
+
+    /*
+        Generated output:
+    The next command prompt, then after 3 seconds:
+    Hello from the child process
+    */
+</pre>
+<p>
+<a name="PIPE"></a><a name="l635"></a>
+<h3>24.2.5: The class `Pipe'</h3>
+        Redirection at the system level requires the use of <a name="an3322"></a><em>file descriptors</em>,
+created by the <a name="an3323"></a><code>pipe</code> system call. When two processes want to communicate
+using such file descriptors, the following happens:
+    <ul>
+    <li> The process constructs two <em>associated file descriptors</em> using the
+<code>pipe</code> system call. One of the file descriptors is used for writing, the
+other file descriptor is used for reading.
+    <li> Forking takes place (i.e., the system <code>fork</code> function is called),
+duplicating the file descriptors. Now we have four file descriptors as
+the child process and the parent process both have their own copies of the two
+file descriptors created by <code>pipe</code>.
+    <li> One process (say, the parent process) uses the file descriptors
+for <em>reading</em>. It should close its file descriptor intended for <em>writing</em>.
+    <li> The other process (say, the child process) uses the file descriptors
+for <em>writing</em>. It should therefore close its file descriptor intended for
+<em>reading</em>.
+    <li> All information written by the child process to the file
+descriptor intended for writing, can now be read by the parent process from
+the corresponding file descriptor intended for reading, thus establishing a
+communication channel between the child and the parent process.
+    </ul>
+    Though basically simple, errors may easily creep in. Functions of file
+descriptors available to the two processes (child or parent) may easily get
+mixed up. To prevent bookkeeping errors, the bookkeeping may be properly set
+up once, to be hidden thereafter inside a class like the <code>Pipe</code> class
+developed here. Let's have a look at its characteristics (before using
+functions like <code>pipe</code> and <code>dup</code> the compiler must have read the
+<a name="an3324"></a><code>&lt;unistd.h&gt;</code> header file):
+    <ul>
+    <li> The <code>pipe</code> system call expects a pointer to two <code>int</code> values,
+representing, respectively, the file descriptor used for reading and the file
+descriptor used for writing. To avoid confusion, the class <code>Pipe</code> defines an
+<code>enum</code> having values associating the indices of the array of 2-<code>int</code>s with
+symbolic constants. The two file descriptors themselves are stored in a data
+member <code>d_fd</code>. Here is the initial section of the class's interface:
+        <pre>
+    class Pipe
+    {
+        enum    RW { READ, WRITE };
+        int     d_fd[2];
+</pre>
+<p>
+<li> The class only needs a default constructor. This constructor
+calls <code>pipe</code> to create  a set of associated file descriptors used for
+accessing both ends of a pipe:
+        <pre>
+    Pipe::Pipe()
+    {
+        if (pipe(d_fd))
+            throw "Pipe::Pipe(): pipe() failed";
+    }
+</pre>
+<p>
+<li> The members <code>readOnly</code> and <code>readFrom</code> are used to configure the
+pipe's reading end. The latter function is used when using redirection. It is
+provided with an alternate file descriptor to be used for  reading from the
+pipe. Usually this alternate file descriptor is <a name="an3325"></a><code>STDIN_FILENO</code>, allowing
+<code>cin</code> to extract information from the pipe.  The former function is merely
+used to configure the reading end of the pipe. It closes the matching writing
+end and returns a file descriptor that can be used to read from the pipe:
+        <pre>
+    int Pipe::readOnly()
+    {
+        close(d_fd[WRITE]);
+        return d_fd[READ];
+    }
+    void Pipe::readFrom(int fd)
+    {
+        readOnly();
+
+        redirect(d_fd[READ], fd);
+        close(d_fd[READ]);
+    }
+</pre>
+<p>
+<li> <code>writeOnly</code> and two <code>writtenBy</code> members are available to
+configure the writing end of a pipe. The former function is only used to
+configure the writing end of the pipe. It closes the reading end, and
+returns a file descriptor that can be used for writing to the pipe:
+        <pre>
+    int Pipe::writeOnly()
+    {
+        close(d_fd[READ]);
+        return d_fd[WRITE];
+    }
+    void Pipe::writtenBy(int fd)
+    {
+        writtenBy(&amp;fd, 1);
+    }
+    void Pipe::writtenBy(int const *fd, size_t n)
+    {
+        writeOnly();
+
+        for (size_t idx = 0; idx &lt; n; idx++)
+            redirect(d_fd[WRITE], fd[idx]);
+
+        close(d_fd[WRITE]);
+    }
+</pre>
+<p>
+For the latter member two overloaded versions are available:
+        <ul>
+        <li><code>writtenBy(int fd)</code> is used to configure <em>single</em>
+redirection, so that a specific file descriptor (usually <a name="an3326"></a><code>STDOUT_FILENO</code>
+or <a name="an3327"></a><code>STDERR_FILENO</code>) can be used to write to the pipe;
+        <li><code>(writtenBy(int const *fd, size_t n))</code> may be used
+to configure <em>multiple</em> redirection, providing an array argument containing
+file descriptors. Information written to any of these file descriptors is
+actually written to the pipe.
+        </ul>
+    <li> The class has one private data member, <code>redirect</code>, used to set up
+redirection through the <a name="an3328"></a><code>dup2</code> system call. This function expects two file
+descriptors. The first file descriptor represents a file descriptor that can
+be used to access the device's information; the second file descriptor is an
+alternate file descriptor that may also be used to access the device's
+information. Here is <code>redirect</code>'s implementation:
+        <pre>
+    void Pipe::redirect(int d_fd, int alternateFd)
+    {
+        if (dup2(d_fd, alternateFd) &lt; 0)
+            throw "Pipe: redirection failed";
+    }
+</pre>
+<p>
+</ul>
+    Now that redirection can be configured easily using one or more <code>Pipe</code>
+objects, we'll use <code>Fork</code> and <code>Pipe</code> in various example programs.
+<p>
+<a name="l636"></a>
+<h3>24.2.6: The class `ParentSlurp'</h3>
+        The class <a name="an3329"></a><code>ParentSlurp</code>, derived from <code>Fork</code>, starts a child process
+executing a stand-alone program (like <code>/bin/ls</code>). The (standard) output of
+the executed program is not shown on the screen but is read by the parent
+process.
+<p>
+For demonstration purposes the parent process writes the lines it
+receives to its standard output stream, prepending linenumbers to the
+lines. It is attractive to redirect the parent's standard <em>input</em> stream to
+allow the parent to read the <em>output</em> from the child process using its
+<code>std::cin</code> <em>input</em> stream. Therefore, the only pipe in the program is used
+as an <em>input</em> pipe for the parent, and an <em>output</em> pipe for the child.
+<p>
+The class <code>ParentSlurp</code> has the following characteristics:
+    <ul>
+    <li> It is derived from <code>Fork</code>. Before starting <code>ParentSlurp</code>'s class
+interface, the compiler must have read <code>fork.h</code> and <code>pipe.h</code>. The class
+only uses one data member, a <code>Pipe</code> object <code>d_pipe</code>.
+    <li> As <code>Pipe</code>'s constructor already defines a pipe, and as <code>d_pipe</code>
+is automatically initialized by <code>ParentSlurp</code>'s default constructor, which
+is implicitly provided, all additional members only exist for
+<code>ParentSlurp</code>'s own benefit so they can be defined in the class's (implicit)
+<code>private</code> section. Here is the class's interface:
+        <pre>
+    class ParentSlurp: public Fork
+    {
+        Pipe    d_pipe;
+
+        virtual void childRedirections();
+        virtual void parentRedirections();
+        virtual void childProcess();
+        virtual void parentProcess();
+    };
+</pre>
+<p>
+<li> The <code>childRedirections</code> member configures the writing end of the
+pipe. So, all information written to the child's standard output stream ends
+up in the pipe. The big advantage of this is that no additional streams are
+needed to write to a file descriptor:
+        <pre>
+    inline void ParentSlurp::childRedirections()
+    {
+        d_pipe.writtenBy(STDOUT_FILENO);
+    }
+</pre>
+<p>
+<li> The <code>parentRedirections</code> member, configures the reading end of
+the pipe. It does so by connecting the reading end of the pipe to the parent's
+standard input file descriptor (<code>STDIN_FILENO</code>). This allows the parent to
+perform extractions from <code>cin</code>, not requiring any additional streams for
+reading.
+        <pre>
+    inline void ParentSlurp::parentRedirections()
+    {
+        d_pipe.readFrom(STDIN_FILENO);
+    }
+</pre>
+<p>
+<li> The <code>childProcess</code> member only needs to concentrate on its own
+actions. As it only needs to execute a program (writing information to its
+standard output), the member can consist of  one single statement:
+        <pre>
+    inline void ParentSlurp::childProcess()
+    {
+        execl("/bin/ls", "/bin/ls", 0);
+    }
+</pre>
+<p>
+<li> The <code>parentProcess</code> member simply `slurps' the information
+appearing at its standard input. Doing so, it actually reads the child's
+output. It copies the received lines to its standard output stream prefixing
+line numbers to them:
+        <pre>
+    void ParentSlurp::parentProcess()
+    {
+        std::string     line;
+        size_t    nr = 1;
+
+        while (getline(std::cin, line))
+            std::cout &lt;&lt; nr++ &lt;&lt; ": " &lt;&lt; line &lt;&lt; '\n';
+
+        waitForChild();
+    }
+</pre>
+<p>
+</ul>
+    The following program simply constructs a <code>ParentSlurp</code> object, and
+calls its <code>fork()</code> member. Its output consists of a numbered list of files
+in the directory where the program is started.  Note that the program also
+needs the <code>fork.o, pipe.o</code> and <code>waitforchild.o</code> object files (see
+earlier sources):
+        <pre>
+    int main()
+    {
+        ParentSlurp().fork();
+    }
+    /*
+        Generated Output (example only, actually obtained output may differ):
+
+        1: a.out
+        2: bitand.h
+        3: bitfunctional
+        4: bitnot.h
+        5: daemon.cc
+        6: fdinseek.cc
+        7: fdinseek.h
+        ...
+    */
+</pre>
+<p>
+<a name="l637"></a>
+<h3>24.2.7: Communicating with multiple children</h3>
+        The next step up the ladder is the construction of a child-process
+monitor. Here, the parent process is responsible for all its child processes,
+but it also must read their standard output. The user enters information at
+the standard input of the parent process. A simple <a name="an3330"></a><em>command language</em> is
+used for this:
+    <ul>
+    <li><code>start</code>: this start a new child process. The parent returns the child's
+ID (a number) to the user. The ID is thereupon be used to identify a
+particular child process
+    <li><code>&lt;nr&gt; text</code> sends ``<code>text</code>'' to the child process having ID
+<code>&lt;nr&gt;</code>;
+    <li><code>stop &lt;nr&gt;</code> terminates the child process having ID <code>&lt;nr&gt;</code>;
+    <li><code>exit</code> terminates the parent as well as all its child processes.
+    </ul>
+    If a child process hasn't received text for some time it will complain by
+sending a message to the parent-process. Those messages are simply transmitted
+to the user by copying them to the standard output stream.
+<p>
+A problem with programs like our monitor is that they allow
+        <a name="an3331"></a><em>asynchronous input</em> from multiple sources. Input may appear at the
+standard input as well as at the input-sides of pipes. Also, multiple output
+channels are used. To handle situations like these, the <a name="an3332"></a><code>select</code> system
+call was developed.
+<p>
+<a name="l638"></a>
+<h4>24.2.7.1: The class `Selector': interface</h4>
+            The <a name="an3333"></a><code>select</code> system call was developed to handle asynchronous
+        <a name="an3334"></a><a name="an3335"></a><em>I/O multiplexing</em>.
+    The <code>select</code> system call is used to handle, e.g., input appearing
+simultaneously at a set of file descriptors.
+<p>
+The <code>select</code> function is rather complex, and its full discussion is
+beyond the <strong>C++</strong> Annotations' scope.  By encapsulating <code>select</code> in a <code>class
+Selector</code>, hiding its details and offering an intuitively attractive
+interface, its use is simplified. The <code>Selector</code> class has these
+features:
+    <ul>
+    <li> Efficiency. As most of <code>Select</code>'s members are very small,
+most members can be implemented  inline. The class requires quite a few data
+members. Most of these data members belong to types that require some system
+headers to be included first:
+        <pre>
+    #include &lt;limits.h&gt;
+    #include &lt;unistd.h&gt;
+    #include &lt;sys/time.h&gt;
+    #include &lt;sys/types.h&gt;
+</pre>
+<p>
+<li> The class interface can now be defined. The data type <code>fd_set</code> is a
+type designed to be used by <code>select</code> and variables of this type contain the
+set of file descriptors on which <code>select</code> may sense some
+activity. Furthermore, <code>select</code> allows us to fire an
+        <a name="an3336"></a><em>asynchronous alarm</em>. To set the alarm time, the class <code>Selector</code>
+defines a <a name="an3337"></a><code>timeval</code> data member. Other members are used for internal
+bookkeeping purposes. Here is the class <code>Selector</code>'s interface:
+        <pre>
+    class Selector
+    {
+        fd_set          d_read;
+        fd_set          d_write;
+        fd_set          d_except;
+        fd_set          d_ret_read;
+        fd_set          d_ret_write;
+        fd_set          d_ret_except;
+        timeval         d_alarm;
+        int             d_max;
+        int             d_ret;
+        int             d_readidx;
+        int             d_writeidx;
+        int             d_exceptidx;
+
+        public:
+            Selector();
+
+            int exceptFd();
+            int nReady();
+            int readFd();
+            int wait();
+            int writeFd();
+            void addExceptFd(int fd);
+            void addReadFd(int fd);
+            void addWriteFd(int fd);
+            void noAlarm();
+            void rmExceptFd(int fd);
+            void rmReadFd(int fd);
+            void rmWriteFd(int fd);
+            void setAlarm(int sec, int usec = 0);
+
+        private:
+            int checkSet(int *index, fd_set &amp;set);
+            void addFd(fd_set *set, int fd);
+    };
+</pre>
+<p>
+</ul>
+<p>
+<a name="l639"></a>
+<h4>24.2.7.2: The class `Selector': implementation</h4>
+            Selector's member functions serve the following tasks:
+    <ul>
+    <li><a name="an3338"></a><code>Selector()</code>: the (default) constructor. It
+clears the read, write, and execute <code>fd_set</code> variables, and switches off the
+alarm. Except for <code>d_max</code>, the remaining data members do not require
+specific initializations:
+        <pre>
+    Selector::Selector()
+    {
+        FD_ZERO(&amp;d_read);
+        FD_ZERO(&amp;d_write);
+        FD_ZERO(&amp;d_except);
+        noAlarm();
+        d_max = 0;
+    }
+</pre>
+<p>
+<li><a name="an3339"></a><code>int wait()</code>: this member <em>blocks</em> until the <em>alarm</em> times
+out or until activity is sensed at any of the file descriptors monitored by
+the <code>Selector</code> object. It throws an exception when the <code>select</code> system
+call itself fails:
+        <pre>
+    int Selector::wait()
+    {
+        timeval t = d_alarm;
+
+        d_ret_read = d_read;
+        d_ret_write = d_write;
+        d_ret_except = d_except;
+
+        d_readidx = 0;
+        d_writeidx = 0;
+        d_exceptidx = 0;
+
+        d_ret = select(d_max, &amp;d_ret_read, &amp;d_ret_write, &amp;d_ret_except,
+                       t.tv_sec == -1 &amp;&amp; t.tv_usec == -1 ? 0 : &amp;t);
+
+        if (d_ret &lt; 0)
+            throw "Selector::wait()/select() failed";
+
+        return d_ret;
+    }
+</pre>
+<p>
+<li><a name="an3340"></a><code>int nReady</code>: this member function's return value is only
+defined when <code>wait</code> has returned. In that case it returns 0 for an
+alarm-timeout, -1 if <code>select</code> failed, and otherwise the number of file
+descriptors on which activity was sensed:
+        <pre>
+    inline int Selector::nReady()
+    {
+        return d_ret;
+    }
+</pre>
+<p>
+<li><a name="an3341"></a><code>int readFd()</code>: this member function's return
+value is also only defined after <code>wait</code> has returned. Its return value is
+-1 if no (more) input file descriptors are available. Otherwise the next file
+descriptor available for reading is returned:
+        <pre>
+    inline int Selector::readFd()
+    {
+        return checkSet(&amp;d_readidx, d_ret_read);
+    }
+</pre>
+<p>
+<li><a name="an3342"></a><code>int writeFd()</code>: operating analogously to <code>readFd</code>, it
+returns the next file descriptor to which output is written.  It uses
+<code>d_writeidx</code> and <code>d_ret_read</code> and is implemented analogously to
+<code>readFd</code>;
+    <li><a name="an3343"></a><code>int exceptFd()</code>: operating analogously to <code>readFd</code>, it
+returns the next exception file descriptor on which activity was sensed.  It
+uses <code>d_except_idx</code> and <code>d_ret_except</code> and is implemented analogously to
+<code>readFd</code>;
+    <li><a name="an3344"></a><code>void setAlarm(int sec, int usec = 0)</code>: this member
+activates <code>Select</code>'s alarm facility. At least the number of seconds to wait
+for the alarm to go off must be specified. It simply assigns values to
+<code>d_alarm</code>'s fields. At the next <code>Select::wait</code> call, the alarm fires
+(i.e., <code>wait</code> returns with return value 0) once the configured
+alarm-interval has passed:
+        <pre>
+    inline void Selector::setAlarm(int sec, int usec)
+    {
+        d_alarm.tv_sec  = sec;
+        d_alarm.tv_usec = usec;
+    }
+</pre>
+<p>
+<li><a name="an3345"></a><code>void noAlarm()</code>: this member switches off the alarm, by
+simply setting the alarm interval to a very long period:
+        <pre>
+    inline void Selector::noAlarm()
+    {
+        setAlarm(-1, -1);
+    }
+</pre>
+<p>
+<li><a name="an3346"></a><code>void addReadFd(int fd)</code>: this member adds a
+file descriptor to the set of input file descriptors monitored by the
+<code>Selector</code> object. The member function <code>wait</code> returns once input is
+available at the indicated file descriptor:
+        <pre>
+    inline void Selector::addReadFd(int fd)
+    {
+        addFd(&amp;d_read, fd);
+    }
+</pre>
+<p>
+<li><a name="an3347"></a><code>void addWriteFd(int fd)</code>: this member adds a file
+descriptor to the set of output file descriptors monitored by the <code>Selector</code>
+object. The member function <code>wait</code> returns once output is available at
+the indicated file descriptor. Using <code>d_write</code>, it is implemented
+analogously to <code>addReadFd</code>;
+    <li><a name="an3348"></a><code>void addExceptFd(int fd)</code>: this member adds a file
+descriptor to the set of exception file descriptors to be monitored by the
+<code>Selector</code> object.  The member function <code>wait</code> returns once activity
+is sensed at the indicated file descriptor. Using <code>d_except</code>, it is
+implemented analogously to <code>addReadFd</code>;
+    <li><a name="an3349"></a><code>void rmReadFd(int fd)</code>: this member removes a file
+descriptor from the set of input file descriptors monitored by the
+<code>Selector</code> object:
+        <pre>
+    inline void Selector::rmReadFd(int fd)
+    {
+        FD_CLR(fd, &amp;d_read);
+    }
+</pre>
+<p>
+<li><a name="an3350"></a><code>void rmWriteFd(int fd)</code>: this member removes a file
+descriptor from the set of output file descriptors monitored by the
+<code>Selector</code> object.  Using <code>d_write</code>, it is implemented analogously to
+<code>rmReadFd</code>;
+    <li><a name="an3351"></a><code>void rmExceptFd(int fd)</code>: this member removes a file
+descriptor from the set of exception file descriptors to be monitored by the
+<code>Selector</code> object.  Using <code>d_except</code>, it is implemented analogously to
+<code>rmReadFd</code>;
+    </ul>
+    The class's remaining (two) members are support members, and should not be
+used by non-member functions. Therefore, they are declared in the class's
+<code>private</code> section:
+    <ul>
+    <li> The member <code>addFd</code> adds a file descriptor to a <code>fd_set</code>:
+        <pre>
+    void Selector::addFd(fd_set *set, int fd)
+    {
+        FD_SET(fd, set);
+        if (fd &gt;= d_max)
+            d_max = fd + 1;
+    }
+</pre>
+<p>
+<li> The member <code>checkSet</code> tests whether a file descriptor (<code>*index</code>)
+is found in a <code>fd_set</code>:
+        <pre>
+    int Selector::checkSet(int *index, fd_set &amp;set)
+    {
+        int &amp;idx = *index;
+
+        while (idx &lt; d_max &amp;&amp; !FD_ISSET(idx, &amp;set))
+            ++idx;
+
+        return idx == d_max ? -1 : idx++;
+    }
+</pre>
+<p>
+</ul>
+<p>
+<a name="MONITOR"></a><a name="l640"></a>
+<h4>24.2.7.3: The class `Monitor': interface</h4>
+            The <code>monitor</code> program uses a <code>Monitor</code> object doing most of the
+work. The class <code>Monitor</code>'s public interface only offers a default
+constructor and one member, <code>run</code>, to perform its tasks.  All other member
+functions are located in the class's <code>private</code> section.
+<p>
+<code>Monitor</code> defines the <code>private</code> enum <code>Commands</code>, symbolically
+listing the various commands its input language supports, as well as several
+data members.  Among the data members are a <code>Selector</code> object and a <code>map</code>
+using child order numbers as its keys and pointer to <code>Child</code> objects (see
+section <a href="cplusplus24.html#CHILD">24.2.7.7</a>) as its values. Furthermore, <code>Monitor</code> has a static array
+member <code>s_handler[]</code>, storing pointers to member functions handling user
+commands.
+<p>
+A destructor should be implemented as well, but its implementation is left
+as an exercise to the reader. Here is <code>Monitor</code>'s interface, including the
+interface of the nested class <code>Find</code> that is used to create a function
+object:
+        <pre>
+    class Monitor
+    {
+        enum Commands
+        {
+            UNKNOWN,
+            START,
+            EXIT,
+            STOP,
+            TEXT,
+            sizeofCommands
+        };
+
+        typedef std::map&lt;int, std::shared_ptr&lt;Child&gt;&gt; MapIntChild;
+
+        friend class Find;
+        class Find
+        {
+            int     d_nr;
+            public:
+                Find(int nr);
+                bool operator()(MapIntChild::value_type &amp;vt) const;
+        };
+
+        Selector    d_selector;
+        int         d_nr;
+        MapIntChild d_child;
+
+        static void (Monitor::*s_handler[])(int, std::string const &amp;);
+        static int s_initialize;
+
+        public:
+            enum Done
+            {};
+
+            Monitor();
+            void run();
+
+        private:
+            static void killChild(MapIntChild::value_type it);
+            static int initialize();
+
+            Commands    next(int *value, std::string *line);
+            void    processInput();
+            void    processChild(int fd);
+
+            void    createNewChild(int, std::string const &amp;);
+            void    exiting(int = 0, std::string const &amp;msg = std::string());
+            void    sendChild(int value, std::string const &amp;line);
+            void    stopChild(int value, std::string const &amp;);
+            void    unknown(int, std::string const &amp;);
+    };
+</pre>
+<p>
+Since there's only one non-class type data member, the class's constructor
+is a very simple function which could be implemented inline:
+        <pre>
+    inline Monitor::Monitor()
+    :
+        d_nr(0)
+    {}
+</pre>
+<p>
+<a name="l641"></a>
+<h4>24.2.7.4: The class `Monitor': s_handler</h4>
+        The array
+<code>s_handler</code>, storing pointers to functions needs to be initialized as
+well. This can be accomplished in several ways:
+    <ul>
+    <li> Since the <code>Commands</code> enumeration only specifies a fairly limited
+set of commands, compile-time initialization could be considered:
+        <pre>
+    void (Monitor::*Monitor::s_handler[])(int, string const &amp;)  =
+    {
+        &amp;Monitor::unknown,              // order follows enum Command's
+        &amp;Monitor::createNewChild,       // elements
+        &amp;Monitor::exiting,
+        &amp;Monitor::stopChild,
+        &amp;Monitor::sendChild,
+    };
+</pre>
+<p>
+The advantage of this is that it's simple, not requiring any run-time
+effort. The disadvantage is of course relatively complex maintenance. If for
+some reason <code>Commands</code> is modified, <code>s_handler</code> must be modified as
+well. In cases like these, compile-time initialization often is
+asking for trouble. There is a simple alternative though.
+    <li> Looking at <code>Monitor</code>'s interface we see a static data member
+<code>s_initialize</code> and a static member function <code>initialize</code>. The static
+member function handles the initialization of the <code>s_handler</code> array. It
+explicitly assigns the array's elements and any modification in ordering of
+<code>enum Commands</code>' values is automatically accounted for by recompiling
+<code>initialize</code>:
+        <pre>
+    void (Monitor::*Monitor::s_handler[sizeofCommands])(int, string const &amp;);
+
+    int Monitor::initialize()
+    {
+        s_handler[UNKNOWN] =    &amp;Monitor::unknown;
+        s_handler[START] =      &amp;Monitor::createNewChild;
+        s_handler[EXIT] =       &amp;Monitor::exiting;
+        s_handler[STOP] =       &amp;Monitor::stopChild;
+        s_handler[TEXT] =       &amp;Monitor::sendChild;
+        return 0;
+    }
+</pre>
+<p>
+The member <code>initialize</code> is a static member and so it can be
+called to initialize <code>s_initialize</code>, a static <code>int</code> variable. The
+initialization is enforced by placing the initialization statement in the
+source file of a function that is known to be executed. It could be <code>main</code>,
+but if we're <code>Monitor</code>'s maintainers and only have control over the library
+containing <code>Monitor</code>'s code then that's not an option. In those cases the
+source file containing the destructor is a <em>very</em> good candidate. If a class
+has only one constructor and it's <em>not</em> defined inline then the
+constructor's source file is a good candidate as well. In <code>Monitor</code>'s
+current implementation the initialization statement is put in <code>run</code>'s source
+file, reasoning that <code>s_handler</code> is only needed when <code>run</code> is used.
+    </ul>
+<p>
+<a name="l642"></a>
+<h4>24.2.7.5: The class `Monitor': the member `run'</h4>
+            <code>Monitor</code>'s core activities are performed by <code>run</code>. It
+performs the following tasks:
+    <ul>
+    <li> Initially, the <code>Monitor</code> object only monitors its standard
+input. The set of input file descriptors to which <code>d_selector</code> listens
+is initialized to <code>STDIN_FILENO</code>.
+    <li> Then, in a loop  <code>d_selector</code>'s <code>wait</code> function is called.
+If input on <code>cin</code> is available, it is processed by <code>processInput</code>.
+Otherwise, the input has arrived from a child process. Information sent by
+children is processed by <code>processChild</code>.
+    <li> To prevent <a name="an3352"></a><em>zombie</em><em>s</em>, the child processes must catch <em>their</em>
+children's termination signals. This is discussed below.
+<p>
+As noted by Ben Simons (<code>ben at mrxfx dot com</code>) <code>Monitor</code> must not catch
+the termination signals.  Instead, the process spawning child processes has
+that responsibility (the underlying principle being that a parent process is
+responsible for its child processes; a child process, in turn, is responsible
+for its own child processes).
+    <li> As stated, <code>run</code>'s source file also defines and initializes
+<code>s_initialize</code> to ensure the proper initialization of the <code>s_handler</code>
+array.
+    </ul>
+    Here is <code>run</code>'s implementation and <code>s_initialize</code>'s definition:
+        <pre>
+    #include "monitor.ih"
+
+    int Monitor::s_initialize = Monitor::initialize();
+
+    void Monitor::run()
+    {
+        d_selector.addReadFd(STDIN_FILENO);
+
+        while (true)
+        {
+            cout &lt;&lt; "? " &lt;&lt; flush;
+            try
+            {
+                d_selector.wait();
+
+                int fd;
+                while ((fd = d_selector.readFd()) != -1)
+                {
+                    if (fd == STDIN_FILENO)
+                        processInput();
+                    else
+                        processChild(fd);
+                }
+                cout &lt;&lt; "NEXT ...\n";
+            }
+            catch (char const *msg)
+            {
+                exiting(1, msg);
+            }
+        }
+    }
+</pre>
+<p>
+The member function <code>processInput</code> reads the commands entered by the
+user using the program's standard input stream. The member itself is rather
+simple. It calls <code>next</code> to obtain the next command entered by the user, and
+then calls the corresponding function using the matching element of the
+<code>s_handler[]</code> array. Here are the members <code>processInput</code> and <code>next</code>:
+        <pre>
+    void Monitor::processInput()
+    {
+        string line;
+        int    value;
+        Commands cmd = next(&amp;value, &amp;line);
+        (this-&gt;*s_handler[cmd])(value, line);
+    }
+</pre>
+<p>
+<pre>
+    Monitor::Commands Monitor::next(int *value, string *line)
+    {
+        if (!getline(cin, *line))
+            exiting(1, "Monitor::next(): reading cin failed");
+
+        if (*line == "start")
+            return START;
+
+        if (*line == "exit" || *line == "quit")
+        {
+            *value = 0;
+            return EXIT;
+        }
+
+        if (line-&gt;find("stop") == 0)
+        {
+            istringstream istr(line-&gt;substr(4));
+            istr &gt;&gt; *value;
+            return !istr ? UNKNOWN : STOP;
+        }
+
+        istringstream istr(line-&gt;c_str());
+        istr &gt;&gt; *value;
+        if (istr)
+        {
+            getline(istr, *line);
+            return TEXT;
+        }
+
+        return UNKNOWN;
+    }
+</pre>
+<p>
+All other input sensed by <code>d_select</code> is created by child
+processes. Because <code>d_select</code>'s <code>readFd</code> member returns the corresponding
+input file descriptor, this descriptor can be passed to
+<code>processChild</code>. Using a <a name="an3353"></a><code>IFdStreambuf</code> (see section <a href="cplusplus24.html#IFDBUF">24.1.2.1</a>), its
+information is read from an input stream. The communication protocol used here
+is rather basic. For every line of input sent to a child, the child replies by
+sending back exactly one line of text. This line is then read by
+<code>processChild</code>:
+        <pre>
+    void Monitor::processChild(int fd)
+    {
+        IFdStreambuf ifdbuf(fd);
+        istream istr(&amp;ifdbuf);
+        string line;
+
+        getline(istr, line);
+        cout &lt;&lt; d_child[fd]-&gt;pid() &lt;&lt; ": " &lt;&lt; line &lt;&lt; '\n';
+    }
+</pre>
+<p>
+The construction <code>d_child[fd]-&gt;pid()</code> used in the above source deserves
+some special attention. <code>Monitor</code> defines the data member <code>map&lt;int,
+shared_ptr&lt;Child&gt;&gt; d_child</code>.  This map contains the child's order number
+as its key, and a (shared) pointer to the <code>Child</code> object as its value. A
+shared pointer is used here, rather than a <code>Child</code> object, since we want to
+use the facilities offered by the map, but don't want to copy a <code>Child</code>
+object time and again.
+<p>
+<a name="l643"></a>
+<h4>24.2.7.6: The class `Monitor': example</h4>
+            Now that <code>run</code>'s implementation has been covered, we'll concentrate on
+the various commands users might enter:
+    <ul>
+    <li> When the <code>start</code> command is issued, a new child process is started.
+A new element is added to <code>d_child</code> by the member <code>createNewChild</code>.  Next,
+the <code>Child</code> object should start its activities, but the <code>Monitor</code> object
+can not wait for the child process to complete its activities, as there is no
+well-defined endpoint in the near future, and the user probably wants to be
+able to enter more commands. Therefore, the <code>Child</code> process must run as a
+<a name="an3354"></a><em>daemon</em>. So the forked process terminates immediately, but its own child
+process continues to run (in the background). Consequently,
+<code>createNewChild</code> calls the child's <code>fork</code> member. Although it is the
+child's <code>fork</code> function that is called, it is still the monitor program
+wherein that <code>fork</code> function is called. So, the <em>monitor</em> program is
+duplicated by <code>fork</code>. Execution then continues:
+    <ul>
+    <li> At the <code>Child</code>'s <code>parentProcess</code> in its parent process;
+    <li> At the <code>Child</code>'s <code>childProcess</code> in its child process
+    </ul>
+    As the <code>Child</code>'s <code>parentProcess</code> is an empty function, returning
+immediately, the <code>Child</code>'s parent process effectively continues immediately
+below <code>createNewChild</code>'s <code>cp-&gt;fork()</code> statement.  As the child process
+never returns (see section <a href="cplusplus24.html#CHILD">24.2.7.7</a>), the code below <code>cp-&gt;fork()</code> is never
+executed by the <code>Child</code>'s child process. This is exactly as it should be.
+<p>
+In the parent process, <code>createNewChild</code>'s remaining code simply
+adds the file descriptor that's available for reading information from the
+child to the set of input file descriptors monitored by <code>d_select</code>, and
+uses <code>d_child</code> to  establish the association between that
+file descriptor and the  <code>Child</code> object's address:
+        <pre>
+    void Monitor::createNewChild(int, string const &amp;)
+    {
+        Child *cp = new Child(++d_nr);
+
+        cp-&gt;fork();
+
+        int fd = cp-&gt;readFd();
+
+        d_selector.addReadFd(fd);
+        d_child[fd].reset(cp);
+
+        cerr &lt;&lt; "Child " &lt;&lt; d_nr &lt;&lt; " started\n";
+    }
+</pre>
+<p>
+<li> Direct communication with the child is required for the <code>stop &lt;nr&gt;</code>
+and <code>&lt;nr&gt; text</code> commands. The former command terminates child process
+<code>&lt;nr&gt;</code>, by calling <code>stopChild</code>. This function locates the child process
+having the order number using an anonymous object of the class <code>Find</code>,
+nested inside <code>Monitor</code>. The class <code>Find</code> simply compares the
+provided <code>nr</code> with the children's order number returned by their <code>nr</code>
+members:
+        <pre>
+    inline Monitor::Find::Find(int nr)
+    :
+        d_nr(nr)
+    {}
+    inline bool Monitor::Find::operator()(MapIntChild::value_type &amp;vt) const
+    {
+        return d_nr == vt.second-&gt;nr();
+    }
+</pre>
+<p>
+If the child process having order number <code>nr</code> was found, its file
+descriptor is removed from <code>d_selector</code>'s set of input file
+descriptors. Then the child process itself is terminated by the static member
+<code>killChild</code>. The member <code>killChild</code> is declared as a <em>static</em> member
+function, as it is used as function argument of the <code>for_each</code> generic
+algorithm by <code>exiting</code> (see below). Here is <code>killChild</code>'s
+implementation:
+        <pre>
+    void Monitor::killChild(MapIntChild::value_type it)
+    {
+        if (kill(it.second-&gt;pid(), SIGTERM))
+            cerr &lt;&lt; "Couldn't kill process " &lt;&lt; it.second-&gt;pid() &lt;&lt; '\n';
+
+        // reap defunct child process
+        int status = 0;
+        while( waitpid( it.second-&gt;pid(), &amp;status, WNOHANG) &gt; -1)
+            ;
+    }
+</pre>
+<p>
+Having terminated the specified child process, the corresponding <code>Child</code>
+object is destroyed and its pointer is removed from <code>d_child</code>:
+        <pre>
+    void Monitor::stopChild(int nr, string const &amp;)
+    {
+        auto it = find_if(d_child.begin(), d_child.end(), Find(nr));
+
+        if (it == d_child.end())
+            cerr &lt;&lt; "No child number " &lt;&lt; nr &lt;&lt; '\n';
+        else
+        {
+            d_selector.rmReadFd(it-&gt;second-&gt;readFd());
+            d_child.erase(it);
+        }
+    }
+</pre>
+<p>
+<li> The command <code>&lt;nr&gt; text</code> sends <code>text</code> to child process <code>nr</code>
+using the member function <code>sendChild</code>. This function also uses a <code>Find</code>
+object to locate the child-process having order number <code>nr</code>, and simply
+inserts the text into the writing end of a pipe connected to that child
+process:
+        <pre>
+    void Monitor::sendChild(int nr, string const &amp;line)
+    {
+        auto it = find_if(d_child.begin(), d_child.end(), Find(nr));
+
+        if (it == d_child.end())
+            cerr &lt;&lt; "No child number " &lt;&lt; nr &lt;&lt; '\n';
+        else
+        {
+            OFdnStreambuf ofdn(it-&gt;second-&gt;writeFd());
+            ostream out(&amp;ofdn);
+
+            out &lt;&lt; line &lt;&lt; '\n';
+        }
+    }
+</pre>
+<p>
+<li> When users enter <code>exit</code> or <code>quit</code> the member <code>exiting</code> is
+called.  It terminates all child processes using the <a name="an3355"></a><code>for_each</code> generic
+algorithm (see section <a href="cplusplus19.html#FOREACH">19.1.17</a>) to visit all elements of
+<code>d_child</code>. Then the program itself ends:
+        <pre>
+    void Monitor::exiting(int value, string const &amp;msg)
+    {
+        for_each(d_child.begin(), d_child.end(), killChild);
+        if (msg.length())
+            cerr &lt;&lt; msg &lt;&lt; '\n';
+        throw value;
+    }
+</pre>
+<p>
+</ul>
+    The program's <code>main</code> function is simple and needs no further comment:
+        <pre>
+    int main()
+    try
+    {
+        Monitor().run();
+    }
+    catch (int exitValue)
+    {
+        return exitValue;
+    }
+</pre>
+<p>
+<a name="CHILD"></a><a name="l644"></a>
+<h4>24.2.7.7: The class `Child'</h4>
+            When the <code>Monitor</code> object starts a child process, it creates an object
+of the class <code>Child</code>. The <code>Child</code> class is derived from the class
+<code>Fork</code>, allowing it to operate as a <a name="an3356"></a><em>daemon</em> (as discussed in the
+previous section). Since <code>Child</code> is a daemon class, we know that its parent
+process must be defined as an empty function.  Its <code>childProcess</code> member
+has a non-empty implementation. Here are the characteristics of the class
+<code>Child</code>:
+    <ul>
+    <li> The <code>Child</code> class has two <code>Pipe</code> data members, to handle
+communications between its own child- and parent processes. As these pipes are
+used by the <code>Child</code>'s child process, their names refer to the child
+process. The child process reads from <code>d_in</code>, and writes to <code>d_out</code>. Here
+is the interface of the class <code>Child</code>:
+        <pre>
+    class Child: public Fork
+    {
+        Pipe                d_in;
+        Pipe                d_out;
+
+        int         d_parentReadFd;
+        int         d_parentWriteFd;
+        int         d_nr;
+
+        public:
+            Child(int nr);
+            virtual ~Child();
+            int readFd() const;
+            int writeFd() const;
+            int pid() const;
+            int nr() const;
+        private:
+            virtual void childRedirections();
+            virtual void parentRedirections();
+            virtual void childProcess();
+            virtual void parentProcess();
+    };
+</pre>
+<p>
+<li> The <code>Child</code>'s constructor simply stores its argument, a
+child-process order number, in its own <code>d_nr</code> data member:
+        <pre>
+    inline Child::Child(int nr)
+    :
+        d_nr(nr)
+    {}
+</pre>
+<p>
+<li> The <code>Child</code>'s child process obtains commands from its standard
+input stream and writes its output to its standard output stream. Since the
+actual communication channels are pipes, redirections must be used. The
+<code>childRedirections</code> member looks like this:
+        <pre>
+    void Child::childRedirections()
+    {
+        d_in.readFrom(STDIN_FILENO);
+        d_out.writtenBy(STDOUT_FILENO);
+    }
+</pre>
+<p>
+<li> Although the parent process performs no actions, it must configure
+some redirections. Realizing that the names of the pipes indicate their
+functions in the child process. So the parent <em>writes</em> to <code>d_in</code> and
+<em>reads</em> from <code>d_out</code>. Here is <code>parentRedirections</code>:
+        <pre>
+    void Child::parentRedirections()
+    {
+        d_parentReadFd = d_out.readOnly();
+        d_parentWriteFd = d_in.writeOnly();
+    }
+</pre>
+<p>
+<li> The <code>Child</code> object exists until it is destroyed by the
+<code>Monitor</code>'s <code>stopChild</code> member. By allowing its creator, the <code>Monitor</code>
+object, to access the parent-side ends of the pipes, the <code>Monitor</code> object
+can communicate with the <code>Child</code>'s child process via those pipe-ends. The
+members <code>readFd</code> and <code>writeFd</code> allow the <code>Monitor</code> object to access
+these pipe-ends:
+        <pre>
+    inline int Child::readFd() const
+    {
+        return d_parentReadFd;
+    }
+    inline int Child::writeFd() const
+    {
+        return d_parentWriteFd;
+    }
+</pre>
+<p>
+<li> The <code>Child</code> object's child process performs two tasks:
+        <ul>
+        <li> It must reply to information appearing at its standard input
+stream;
+        <li> If no information has appeared within a certain time frame (the
+implementations uses an interval of five seconds), then a message is written
+to its standard output stream.
+        </ul>
+        To implement this behavior, <code>childProcess</code> defines a local
+<code>Selector</code> object, adding <code>STDIN_FILENO</code> to its set of monitored input
+file descriptors.
+<p>
+Then, in an endless loop, <code>childProcess</code> waits for <code>selector.wait()</code>
+to return. When the alarm goes off it sends a message to its standard output
+(hence, into the writing pipe). Otherwise, it echoes the messages appearing
+at its standard input to its standard output. Here is the <code>childProcess</code>
+member:
+        <pre>
+    void Child::childProcess()
+    {
+        Selector    selector;
+        size_t    message = 0;
+
+        selector.addReadFd(STDIN_FILENO);
+        selector.setAlarm(5);
+
+        while (true)
+        {
+            try
+            {
+                if (!selector.wait())       // timeout
+                    cout &lt;&lt; "Child " &lt;&lt; d_nr &lt;&lt; ": standing by\n";
+                else
+                {
+                    string  line;
+                    getline(cin, line);
+                    cout &lt;&lt; "Child " &lt;&lt; d_nr &lt;&lt; ":" &lt;&lt; ++message &lt;&lt; ": " &lt;&lt;
+                                                        line &lt;&lt; '\n';
+                }
+            }
+            catch (...)
+            {
+                    cout &lt;&lt; "Child " &lt;&lt; d_nr &lt;&lt; ":" &lt;&lt; ++message &lt;&lt; ": " &lt;&lt;
+                                "select() failed" &lt;&lt; '\n';
+            }
+        }
+        exit(0);
+    }
+</pre>
+<p>
+<li> Two accessors are defined allowing the <code>Monitor</code> object to obtain
+the <code>Child</code>'s process ID and its order number:
+        <pre>
+    inline int Child::pid() const
+    {
+        return Fork::pid();
+    }
+    inline int Child::nr() const
+    {
+        return d_nr;
+    }
+</pre>
+<p>
+<li> A <code>Child</code> process terminates when the user enters a <code>stop</code>
+command. When an existing child process number was entered, the corresponding
+<code>Child</code> object is removed from <code>Monitor</code>'s <code>d_child</code> map. As a result,
+its destructor is called. <code>Child</code>'s destructor calls <code>kill</code> to terminate
+its child, and then waits for the child to terminate. Once its child has
+terminated, the destructor has completed its work and returns, thus completing
+the erasure from <code>d_child</code>. The current implementation fails if the child
+process doesn't react to the <code>SIGTERM</code> signal. In this demonstration program
+this does not happen. In `real life' more elaborate killing-procedures may be
+required (e.g., using <code>SIGKILL</code> in addition to <code>SIGTERM</code>). As discussed in
+section <a href="cplusplus10.html#CONSEXCEPTIONS">10.12</a> it <em>is</em> important to ensure the proper
+destruction. Here is the <code>Child</code>'s destructor:
+        <pre>
+    Child::~Child()
+    {
+        if (pid())
+        {
+            cout &lt;&lt; "Killing process " &lt;&lt; pid() &lt;&lt; "\n";
+            kill(pid(), SIGTERM);
+            int status;
+            wait(&amp;status);
+        }
+    }
+</pre>
+<p>
+</ul>
+<p>
+<a name="BITFUN"></a><a name="l645"></a>
+<h2>24.3: Function objects performing bitwise operations</h2>
+    In section <a href="cplusplus18.html#PREDEFINED">18.1</a> several <a name="an3357"></a>predefined function objects
+were introduced. Predefined function objects performing
+    <a name="an3358"></a>arithmetic operations, <a name="an3359"></a>relational operations, and
+    <a name="an3360"></a>logical operations exist, corresponding to a multitude of
+    <a name="an3361"></a> binary- and <a name="an3362"></a> unary operators.
+<p>
+Some operators appear to be missing: there appear to be no predefined
+function objects corresponding to <a name="an3363"></a>bitwise operations. However, their
+construction is, given the available predefined function objects, not
+difficult. The following examples show a <a name="an3364"></a>class template implementing a
+function object calling the <a name="an3365"></a>bitwise and (<a name="an3366"></a><code>operator&amp;</code>), and a template
+class implementing a function object calling the <a name="an3367"></a>unary not
+(<a name="an3368"></a><code>operator~</code>). It is left to the reader to construct similar function
+objects for other operators.
+<p>
+Here is the implementation of a function object calling the <a name="an3369"></a>bitwise
+<code>operator&amp;</code>:
+        <pre>
+    #include &lt;functional&gt;
+
+    template &lt;typename _Tp&gt;
+    struct bitAnd: public std::binary_function&lt;_Tp, _Tp, _Tp&gt;
+    {
+        _Tp operator()(_Tp const &amp;__x, _Tp const &amp;__y) const
+        {
+            return __x &amp; __y;
+        }
+    };
+</pre>
+<p>
+Here is the implementation of a function object calling <code>operator~()</code>:
+        <pre>
+    #include &lt;functional&gt;
+
+    template &lt;typename _Tp&gt;
+    struct bit_not: public std::unary_function&lt;_Tp, _Tp&gt;
+    {
+        _Tp operator()(_Tp const &amp;__x) const
+        {
+            return ~__x;
+        }
+    };
+</pre>
+<p>
+These and other missing predefined function objects are also implemented
+in the file <a name="an3370"></a><code>bitfunctional</code>, which is found in the <code>cplusplus.yo.zip</code>
+archive. These classes are derived from existing class templates (e.g.,
+ <a name="an3371"></a><code>std::binary_function</code> and
+ <a name="an3372"></a><code>std::unary_function</code>). These base classes
+ <a name="an3373"></a><a name="an3374"></a> define several types which
+are expected (used) by various generic algorithms as defined in the STL
+(cf. chapter <a href="cplusplus19.html#GENERIC">19</a>), thus following the advice offered in, e.g., the
+<strong>C++</strong> header file <a name="an3375"></a><code>bits/stl_function.h</code>:
+        <pre>
+   *  The standard functors are derived from structs named unary_function
+   *  and binary_function.  These two classes contain nothing but typedefs,
+   *  to aid in generic (template) programming.  If you write your own
+   *  functors, you might consider doing the same.
+</pre>
+<p>
+Here is an example using <code>bit_and</code>, removing all odd numbers from a
+vector of <code>int</code> values:
+        <pre>
+    #include &lt;iostream&gt;
+    #include &lt;algorithm&gt;
+    #include &lt;vector&gt;
+    #include &lt;iterator&gt;
+    #include "bitand.h"
+    using namespace std;
+
+    int main()
+    {
+        vector&lt;int&gt; vi;
+
+        for (int idx = 0; idx &lt; 10; ++idx)
+            vi.push_back(idx);
+
+        copy
+        (
+            vi.begin(),
+            remove_if(vi.begin(), vi.end(), bind2nd(bitAnd&lt;int&gt;(), 1)),
+            ostream_iterator&lt;int&gt;(cout, " ")
+        );
+        cout &lt;&lt; '\n';
+    }
+    /*
+        Generated output:
+
+        0 2 4 6 8
+    */
+</pre>
+<p>
+<a name="l646"></a>
+<h2>24.4: Adding binary operators to classes</h2>
+As we've seen in section <a href="cplusplus11.html#OVERLOADBINARY">11.6</a> binary operators expecting
+<code>const &amp;</code> arguments can be implemented in move-aware classes using a
+move-aware binary operator, using a rvalue reference for its first
+argument. This latter function can in turn be implemented using the binary
+assignment member. The following examples illustrated this approach for a
+fictitious class <code>Binary</code>:
+        <pre>
+    class Binary
+    {
+        public:
+            Binary();
+            Binary(int value);
+                        // copy and move constructors are available by default, or
+                        // they can be explicitly declared and implemented.
+
+            Binary &amp;operator+=(Binary const &amp;other);    // see the text
+    };
+
+    inline Binary operator+(Binary &amp;&amp;lhs, Binary const &amp;rhs)
+    {
+        return std::move(lhs += rhs);   // avoids copy construction
+    }
+
+    inline Binary operator+(Binary const &amp;lhs, Binary const &amp;rhs)
+    {
+        Binary tmp(lhs);
+        return std::move(tmp) + rhs;
+    }
+</pre>
+<p>
+Therefore, the implementations of the binary operators eventually depend on
+the availability of the binary assignment operator.
+<p>
+Since template functions are not instantiated before their actually used we
+can mention a non-existing function in a template that is never
+instantiated. If such a function would actually be called then the compiler
+would generated an error message, complaining about the missing function.
+<p>
+This allows us to implement all binary operators, movable and non-movable, as
+templates. It is then only possible to call the binary operators
+for which a matching binary assignment exists. The template functions
+implementing the above addition binary operators look like this:
+        <pre>
+    #ifndef INCLUDED_BINOPS_H_
+    #define INCLUDED_BINOPS_H_
+
+    #include &lt;utility&gt;
+
+    template &lt;typename Type&gt;
+    Type operator+(Type &amp;&amp;lhs, Type const &amp;rhs)
+    {
+        return lhs += rhs;
+    }
+
+    template &lt;typename Type&gt;
+    Type operator+(Type const &amp;lhs, Type const &amp;rhs)
+    {
+        Type tmp(lhs);
+        return operator+(std::move(tmp), rhs);
+    }
+
+    #endif
+</pre>
+<p>
+<em>Caveat</em>: when defining these function templates ensure that the binary
+operator specifying an rvalue reference as its first parameter is defined
+before the binary operator specifying a const lrvalue reference as its first
+parameter, or programs using these templates fail due to infinite
+recursion.
+<p>
+The function templates for the other binary operators can easily be added to
+these addition operators. After collecting them in a file <code>binops.h</code> include
+this file in, e.g., your class header file to add the binary operators to your
+class.
+<p>
+Interestingly, classes <em>not</em> implementing move constructors can still use
+these templates, as the move constructor itself is never called by the
+implementations of the binary operator (and its call is usually optimized away
+by copy elision). The following program (using modified function templates
+containing output statements) behaves identically whether or not the move
+constructor is defined:
+        <pre>
+#include &lt;iostream&gt;
+using namespace std;
+
+template &lt;typename Class&gt;
+Class operator+(Class &amp;&amp;lhs, Class const &amp;rhs)
+{
+    cout &lt;&lt; "operator+(Class &amp;&amp;lhs, Class const &amp;rhs)\n";
+
+    return lhs += rhs;
+}
+
+template &lt;typename Class&gt;
+Class operator+(Class const &amp;lhs, Class const &amp;rhs)
+{
+    cout &lt;&lt; "operator+(Class const &amp;, Class const &amp;)\n";
+
+    Class tmp(lhs);
+    return operator+(std::move(tmp), rhs);
+}
+
+template &lt;typename Class&gt;
+Class operator-(Class &amp;&amp;lhs, Class const &amp;rhs)
+{
+    return lhs -= rhs;
+}
+
+template &lt;typename Class&gt;
+Class operator-(Class const &amp;lhs, Class const &amp;rhs)
+{
+    Class tmp(lhs);
+    return operator-(std::move(tmp), rhs);
+}
+
+class Class
+{
+    public:
+        Class() = default;
+        Class(Class const &amp;other) = default;
+        Class(int)
+        {}
+        Class(Class &amp;&amp;tmp)
+        {
+            cout &lt;&lt; "Move constructor\n";
+        }
+        Class &amp;operator+=(Class const &amp;rhs)
+        {
+            cout &lt;&lt; "operator+=\n";
+        }
+};
+
+Class factory()
+{
+    return Class();
+}
+
+int main()
+{
+    Class lhs;
+    Class rhs;
+    Class result;
+
+    result = lhs + rhs;
+    result = factory() + rhs;
+
+//    result = lhs - rhs;   // this won't compile as operator-= hasn't been
+                            // defined
+}
+</pre>
+<p>
+<a name="l647"></a>
+<h3>24.4.1: Binary operators allowing promotions</h3>
+    The function templates introduced in the previous section do not support
+promotions. E.g., a statement like
+        <pre>
+  result = rhs + 2;
+</pre>
+    generates a compilation error as promotions are not recognized by
+the template argument deduction algoritm. Currently, the above statement needs
+to be rewritten to have it accepted by the compiler:
+        <pre>
+  result = rhs + Class(2);
+</pre>
+<p>
+If promotions are welcome, how can we change the arithmetic operator
+function templates so that promotions are performed? With promotions the
+arguments of the operator functions may be of any type, at least one of them
+must be of the class type offering the matching compound assignment
+operator. But when designing the function template we can't say which of the
+two operands has that class type. So we have to specify two template
+types parameters for the two parameters of the operator functions. The
+function template must therefore start with something  like this:
+        <pre>
+    template &lt;typename LHS, typename RHS&gt;
+    ReturnType operator+(LHS const &amp;lhs, RHS const &amp;rhs)
+</pre>
+    At this point we can't yet specify <code>ReturnType</code>. It is <code>LHS</code> if
+<code>RHS</code> can be promoted to or is equal to <code>LHS</code>, it is be <code>RHS</code> if <code>LHS</code>
+is promoted to <code>RHS</code>.
+<p>
+To determine whether <code>RHS</code> can be promoted to <code>LHS</code> we now design a
+simple template meta programming class <code>LpromotesR</code> using two template type
+parameters, defining the value <code>true</code> (1) if the second (right hand) type
+can be promoted to the first (left-hand) type, and defining the value
+<code>false</code> (0) if not. Here we use the same principle seen before in section
+<a href="cplusplus23.html#TYPECONV">23.8.3</a>, <a href="cplusplus23.html#TYPECONV">type convertibility</a>:
+        <pre>
+    template &lt;typename L, typename R&gt;
+    class LpromotesR
+    {
+        struct Char2
+        {
+            char array[2];
+        };
+        static R const &amp;makeR();
+        static char test(L const &amp;);
+        static Char2 test(...);
+
+        public:
+            LpromotesR() = delete;
+            enum { yes = sizeof(test(makeR())) == sizeof(char) };
+    };
+</pre>
+    In <code>class LpromotesR</code> the function <code>test(L const &amp;)</code> is selected if
+<code>R</code> can be promoted to <code>L</code>, and <code>test(...)</code> is selected if not. The
+different sizes of the return types of these two <code>test</code> functions allows the
+compiler to assign 1 or 0 to the class's <code>enum</code> value <code>yes</code>. The value
+<code>yes</code> (correctly) is 0 for <code>R</code> types mentioned in constructors declared
+with the <code>explicit</code> keyword, and it (correctly) is 1 if <code>L</code> and <code>R</code>
+happen to be the same types.
+<p>
+Now that we can determine whether a type can be promoted to another type,
+it is possible to select either <code>LHS</code> or <code>RHS</code> as the function template's
+return type. If <code>RHS</code> can be promoted to <code>LHS</code> use <code>LHS</code> as the
+function template's return type, otherwise use RHS.
+<p>
+Of course there is a third possibility: the <code>LHS</code> and <code>RHS</code> types
+cannot be used by each other's constructors. In that case, unless there is
+another constructor lying around somewhere handling that situation, the
+compiler generates an error like:
+        <pre>
+    no match for 'operator+' in '...'
+</pre>
+<p>
+Back to promotable types. We are now able to determine which type can be
+promoted, using <code>LpromotesR</code>. This yields a value that can be used as
+selector in the <code>IfElse</code> template meta programming class template,
+introduced earlier (cf. section <a href="cplusplus23.html#IFELSE">23.2.2.2</a>).
+<p>
+Now that we can select either <code>LHS</code> or <code>RHS</code> as the operator template
+function's return type, we're able to construct our arithmetic operator
+function template supporting promotions:
+        <pre>
+    template &lt;typename LHS, typename RHS&gt;
+        typename FBB::IfElse&lt;FBB::LpromotesR&lt;LHS, RHS&gt;::yes, LHS, RHS&gt;::type
+        operator&lt;&lt;(LHS const &amp;lhs, RHS const &amp;rhs)
+    {
+        typedef typename FBB::IfElse&lt;
+                                FBB::LpromotesR&lt; LHS, RHS &gt;::yes, LHS, RHS
+                            &gt;::type Type;
+        Type tmp(lhs);
+        return std::move(tmp) &lt;&lt; type(rhs);
+    }
+</pre>
+    The function's return type is <code>IfElse</code>'s <code>type</code>, selected as either
+<code>LHS</code> (if <code>RHS</code> can be  promoted to <code>LHS</code>) or <code>RHS</code>. The same trick is
+used in the function's body to determine <code>tmp</code>'s type.
+<p>
+Now promotions are possible. The function template defining an rvalue
+reference parameter remains as-is. Together they allow the compiler to make
+the following decisions (using <code>Class</code> as the intended class name, <code>Type</code>
+as a type that is promotable to <code>Class</code>, and <code>@</code> as the generic indication
+of the used operator). Unless otherwise specified the function template
+defining the parameter list <code>(LHS const &amp;lhs, RHS const &amp;rhs)</code> is used:
+        <pre>
+    Class obj;
+    Type value;
+
+    obj @ obj           // no promotions
+    obj @ Class()       // same
+
+    obj @ value;        // value is promoted to Class
+    Class() @ value;    // same
+
+    value @ obj;        // same
+    value @ Class();    // same
+
+    Class() @ obj;      // calls operator@(Class &amp;&amp;, Class const &amp;)
+    Class() @ Class();  // same
+</pre>
+<p>
+<a name="RANGER"></a><a name="l648"></a>
+<h2>24.5: Range-based for-loops and pointer-ranges</h2>
+The standard <a name="an3376"></a>range-based for-loop requires for its range-specificiation an
+array, an initializer list, or an iterator range as offered by, e.g.,
+containers (through their <code>begin</code> and <code>end</code> members).
+<p>
+Ranges defined by a  pointer pair or by a subrange defined by iterator
+expressions cannot currently be used in combination with range-based
+for-loops.
+<p>
+The <a name="an3377"></a><code>Ranger</code> class template developed in this section defines ranges that
+can be used with range-based for-loops.  <code>Ranger</code> extends the applicability
+of range-based for-loops by turning pointer pairs,, an initial pointer or
+iterator and a pointer count, or a pair of iterators into a range that can be
+used by range-based for-loops. The <code>Ranger</code> class template can also be used
+to process a pair of reverse iterators, normally not supported by range-based
+for-loops.
+<p>
+The <code>Ranger</code> class template requires but one template type parameter:
+<code>Iterator</code>, representing an iterator or pointer type reaching the data when
+dereferenced. In practical applications users don't have to specify
+<code>Ranger</code>'s template type. The function template <code>ranger</code> deduces the
+required <code>Iterator</code> type and returns the appropriate <code>Ranger</code> object.
+<p>
+The <code>ranger</code> function template can be used in various ways:
+    <ul>
+    <li><code>Ranger&lt;Iterator&gt; ranger(Iterator const &amp;begin, Iterator const &amp;end)</code>
+        this function template returns a <code>Ranger</code> object for the (sub)range
+        defined by two (reverse) iterators. Its definition is:
+        <pre>
+template &lt;typename Iter&gt;
+Ranger&lt;Iter&gt; ranger(Iter &amp;&amp;begin, Iter &amp;&amp;end)
+{
+    return Ranger&lt;Iter&gt;(begin, end);
+}
+</pre>
+    <li><code>Ranger&lt;Iterator&gt; ranger(Iterator const &amp;begin, size_t count)</code>
+        this function template returns a <code>Ranger</code> object for the (sub)range
+        defined by the (reverse) iterator range <code>begin</code> and <code>begin +
+        count</code>.
+        Its definition is:
+    <pre>
+template &lt;typename Data&gt;
+Ranger&lt;Data *&gt; ranger(Data *begin, Data *end)
+{
+    return Ranger&lt;Data *&gt;(begin, end);
+}
+</pre>
+    <li><code>Ranger&lt;Data&gt; ranger(Data *begin, Data *end)</code>
+        this function template returns a <code>Ranger</code> object for the (sub)range
+        defined by the two pointers <code>begin</code> and <code>end</code>.
+        Its definition is:
+    <pre>
+template &lt;typename Iter&gt;
+Ranger&lt;Iter&gt; ranger(Iter &amp;&amp;begin, size_t count)
+{
+    return Ranger&lt;Iter&gt;(begin, begin + count);
+}
+</pre>
+    <li><code>Ranger&lt;Data&gt; ranger(Data *begin, size_t count)</code>
+        this function template returns a <code>Ranger</code> object for the (sub)range
+        defined by the two pointers <code>begin</code> and <code>begin + count</code>.
+        Its definition is:
+    <pre>
+template &lt;typename Data&gt;
+Ranger&lt;Data *&gt; ranger(Data *begin, size_t count)
+{
+    return Ranger&lt;Data *&gt;(begin, begin + count);
+}
+</pre>
+    </ul>
+<p>
+The <code>Ranger</code> class template itself offers a constructor expecting two
+<code>Iterator const &amp;</code> parameters, where <code>Iterator</code> is <code>Ranger</code>'s template
+type parameter. Although named 'Iterator' it can also be a pointer to some
+data type (e.g., <code>std::string *</code>).
+<p>
+The class only needs two members, <code>begin</code> and <code>end</code>, since these are the
+only members called by range-based for-loops. These members can be <code>const</code>
+members, returning <code>Iterator const</code> references. This also is the required
+return type if <code>Iterator</code> itself was a pointer type (like <code>int *</code>). Since
+a `<code>Iterator const &amp;</code>' does not imply that the dereferenced <code>Iterator</code> is
+immutable, the data to which the iterator returned by <code>begin()</code> can actually
+be modified, if <code>Iterator</code> unless <code>Iterator</code> is a <code>Type const *</code> or a
+<code>const_iterator</code> type.
+<p>
+If reverse iterators are passed to <code>Ranger</code>'s constructor (the reversed
+begin iterator should be passed as <code>Ranger</code> constructor's first argument,
+the reversed end iterator as its second argument), then <code>Ranger</code>'s <code>begin</code>
+and <code>end</code> members return <em>reverse iterators</em>. Since the intended use of
+<code>Ranger</code> objects is to define a range for range-base for-loops, members like
+<code>rbegin</code> and <code>rend</code> were omitted from <code>Ranger</code>'s interface.
+<p>
+Here is <code>Ranger</code>'s implementation (using in-class implementations for
+brevity):
+        <pre>
+    template &lt;typename Iter&gt;
+    class Ranger
+    {
+        Iter d_begin;
+        Iter d_end;
+
+        public:
+            Ranger(Iter const &amp;begin, Iter const &amp;end)
+            :
+                d_begin(begin),
+                d_end(end)
+            {}
+
+            Iter const &amp;begin() const
+            {
+                return d_begin;
+            }
+
+            Iter const &amp;end() const
+            {
+                return d_end;
+            }
+    };
+</pre>
+    Using <code>ranger</code> is easy. Here is an example of a program displaying a
+program's command-line arguments using a range-based for-loop:
+        <pre>
+    // insert all required declarations here
+
+    int main(int argc, char **argv)
+    {
+        for (auto ptr: ranger(argv, argc))
+            cout &lt;&lt; ptr &lt;&lt; '\n';
+    }
+</pre>
+<p>
+<a name="PROXY"></a><a name="l649"></a>
+<h2>24.6: Distinguishing lvalues from rvalues with operator[]()</h2>
+    A problem with <a name="an3378"></a><code>operator[]</code> is that it can't distinguish between its
+    <a name="an3379"></a><a name="an3380"></a>
+ use as an <em>lvalue</em> and as an <em>rvalue</em>. It is a familiar misconception to
+think that
+        <pre>
+    Type const &amp;operator[](size_t index) const
+</pre>
+ is used as <em>rvalue</em> (as the object isn't modified), and
+    that
+        <pre>
+    Type &amp;operator[](size_t index)
+</pre>
+ is used as <em>lvalue</em> (as the returned value can be modified).
+<p>
+The compiler, however, distinguishes between the two operators only by the
+<code>const</code>-status of the object for which <code>operator[]</code> is called. With
+<code>const</code> objects the former operator is called, with non-<code>const</code> objects
+the latter is always used. It is always used, irrespective of it being used as
+lvalue or rvalue.
+<p>
+Being able to distinguish between lvalues and rvalues can be very
+useful. Consider the situation where a class supporting <code>operator[]</code> stores
+data of a type that is very hard to copy. With data like that reference
+counting (e.g., using <code>shared_ptr</code>s) is probably used to prevent needless
+copying.
+<p>
+As long as <code>operator[]</code> is used as rvalue there's no need to copy the data,
+but the information <em>must</em> be copied if it is used as lvalue.
+<p>
+The <a name="an3381"></a><em>Proxy Design Pattern</em> (cf. <a name="an3382"></a><em>Gamma et al.</em> (1995)) can
+be used to distinguish between lvalues and rvalues. With the Proxy Design
+Pattern an object of another class (the Proxy class) is used to act as a
+<em>stand in</em> for the `real thing'. The proxy class offers functionality that
+cannot be offered by the data themselves, like distinguishing between its use
+as lvalue or rvalue. A proxy class can be used in many situations where access
+to the real data cannot or should not be directly provided. In this regard
+<em>iterator</em> types are examples of proxy classes as they create a layer
+between the real data and the software using the data. Proxy classes could
+also dereference pointers in a class storing its data by pointers.
+<p>
+In this section we concentrate on the distinction between using <code>operator[]</code>
+as lvalue and rvalue. Let's assume we have a class <code>Lines</code> storing lines
+from a file. Its constructor expects the name of a stream from which the
+lines are read and it offers a non-const <code>operator[]</code> that can be used as
+lvalue or rvalue (the <code>const</code> version of <code>operator[]</code> is omitted as it
+causes no confusion because it is always used as rvalue):
+        <pre>
+    class Lines
+    {
+        std::vector&lt;std::string&gt; d_line;
+
+        public:
+            Lines(std::istream &amp;in);
+            std::string &amp;operator[](size_t idx);
+    };
+</pre>
+<p>
+To distinguish between lvalues and rvalues we must find distinguishing
+characteristics of lvalues and rvalues that we can exploit. Such
+distinguishing characteristics are <code>operator=</code> (which is always used as
+lvalue) and the conversion operator (which is always used as rvalue). Rather
+than having <code>operator[]</code> return a <code>string &amp;</code> we can let it return a
+<code>Proxy</code> object that is able to distinguish between its use as lvalue
+and rvalue.
+<p>
+The class <code>Proxy</code> thus needs <code>operator=(string const &amp;other)</code> (acting as
+lvalue) and <code>operator std::string const &amp;() const</code> (acting as rvalue). Do we
+need more operators? The <code>std::string</code> class also offers <code>operator+=</code>, so
+we should probably implement that operator as well. Plain characters can also
+be assigned to <code>string</code> objects (even using their numeric values). As
+<code>string</code> objects cannot be <em>constructed</em> from plain characters
+<em>promotion</em> cannot be used with <code>operator=(string const &amp;other)</code> if the
+right-hand side argument is a character. Implementing <code>operator=(char
+value)</code> could therefore also be considered. These additional operators are
+left out of the current implementation but `real life' proxy classes should
+consider implementing these additional operators as well. Another subtlety is
+  <a name="an3383"></a>
+that <code>Proxy</code>'s <code>operator std::string const &amp;() const</code> is not used
+when using <code>ostream</code>'s insertion operator or <code>istream</code>'s extraction
+operator as these operators are implemented as templates not recognizing our
+<code>Proxy</code> class type. So when stream insertion and extraction is required (it
+probably is) then <code>Proxy</code> must be given its own overloaded insertion and
+extraction operator. Here is an implementation of the overloaded insertion
+operator inserting the object for which <code>Proxy</code> is a stand-in:
+        <pre>
+inline std::ostream &amp;operator&lt;&lt;(std::ostream &amp;out, Lines::Proxy const &amp;proxy)
+{
+    return out &lt;&lt; static_cast&lt;std::string const &amp;&gt;(proxy);
+}
+</pre>
+<p>
+There's no need for any code (except <code>Lines</code>) to create or copy <code>Proxy</code>
+objects. <code>Proxy</code>'s constructor should therefore be made private, and
+<code>Proxy</code> can declare <code>Lines</code> to be its friend. In fact, <code>Proxy</code> is
+intimately related to <code>Lines</code> and can be defined as a nested class. In the
+revised <code>Lines</code> class <code>operator[]</code> no longer returns a <code>string</code> but
+instead a <code>Proxy</code> is returned. Here is the revised <code>Lines</code> class,
+including its nested <code>Proxy</code> class:
+        <pre>
+    class Lines
+    {
+        std::vector&lt;std::string&gt; d_line;
+
+        public:
+            class Proxy;
+            Proxy operator[](size_t idx);
+            class Proxy
+            {
+                friend Proxy Lines::operator[](size_t idx);
+                std::string &amp;d_str;
+                Proxy(std::string &amp;str);
+                public:
+                    std::string &amp;operator=(std::string const &amp;rhs);
+                    operator std::string const &amp;() const;
+            };
+            Lines(std::istream &amp;in);
+    };
+</pre>
+<p>
+<code>Proxy</code>'s members are very lightweight and can usually be implemented
+inline:
+        <pre>
+    inline Lines::Proxy::Proxy(std::string &amp;str)
+    :
+        d_str(str)
+    {}
+    inline std::string &amp;Lines::Proxy::operator=(std::string const &amp;rhs)
+    {
+        return d_str = rhs;
+    }
+    inline Lines::Proxy::operator std::string const &amp;() const
+    {
+        return d_str;
+    }
+</pre>
+<p>
+The member <code>Lines::operator[]</code> can also be implemented inline: it merely
+returns a <code>Proxy</code> object initialized with the <code>string</code> associated with
+index <code>idx</code>.
+<p>
+Now that the class <code>Proxy</code> has been developed it can be used in a
+program. Here is an example using the <code>Proxy</code> object as lvalue or rvalue. On
+the surface <code>Lines</code> objects won't behave differently from <code>Lines</code> objects
+using the original implementation, but by adding an identifying <code>cout</code>
+statement to <code>Proxy</code>'s members it can be shown that <code>operator[]</code> behaves
+differently when used as lvalue or as rvalue:
+        <pre>
+    int main()
+    {
+        ifstream in("lines.cc");
+        Lines lines(in);
+
+        string s = lines[0];        // rvalue use
+        lines[0] = s;               // lvalue use
+        cout &lt;&lt; lines[0] &lt;&lt; '\n';   // rvalue use
+        lines[0] = "hello world";   // lvalue use
+        cout &lt;&lt; lines[0] &lt;&lt; '\n';   // rvalue use
+    }
+</pre>
+<p>
+<a name="CONCRETEITER"></a><a name="l650"></a>
+<h2>24.7: Implementing a `reverse_iterator'</h2>
+In section <a href="cplusplus22.html#RANDOMIT">22.14.1</a> the construction of iterators and
+reverse iteraters was discussed. In that section the iterator was constructed
+as an inner class in a class derived from a vector of pointers to strings.
+<p>
+An object of this nested iterator class handles the dereferencing of the
+pointers stored in the vector. This allowed us to sort the <em>strings</em>
+pointed to by the vector's elements rather than the <em>pointers</em>.
+<p>
+A drawback of this is that the class implementing the iterator is closely
+tied to the derived class as the iterator class was implemented as a nested
+class. What if we would like to provide any class derived from a container
+class storing pointers with an iterator handling pointer-dereferencing?
+<p>
+In this section a variant of the earlier (nested class) approach is
+discussed. Here the iterator class is defined as a class template,
+    <a name="an3384"></a>
+    not only parameterizing the data type to which the container's elements
+point but also the container's iterator type itself. Once again, we
+concentrate on developing a <a name="an3385"></a><em>RandomIterator</em> as it is the most complex
+iterator type.
+<p>
+Our class is named <code>RandomPtrIterator</code>, indicating that it is a random
+iterator operating on pointer values. The class template defines three
+template type parameters:
+    <ul>
+    <li> The first parameter specifies the derived class type
+(<code>Class</code>). Like before, <code>RandomPtrIterator</code>'s
+constructor is private. Therefore <code>friend</code> declarations are needed to
+allow client classes to construct <code>RandomPtrIterators</code>.  However, a
+<code>friend class Class</code> cannot be used as template parameter types cannot be
+    <a name="an3386"></a>
+used in <code>friend class ...</code> declarations. But this is a minor problem as not
+every member of the client class needs to construct iterators. In fact, only
+<code>Class</code>'s <code>begin</code> and <code>end</code> members must construct
+iterators. Using the template's first parameter, friend declarations can be
+specified for the client's <code>begin</code> and <code>end</code> members.
+    <li> The second template parameter parameterizes the container's iterator
+type (<code>BaseIterator</code>);
+    <li> The third template parameter indicates the data type to which the
+pointers point (<code>Type</code>).
+    </ul>
+    <code>RandomPtrIterator</code> has one private data member, a
+<code>BaseIterator</code>. Here is the class interface and the constructor's
+implementation:
+        <pre>
+    #include &lt;iterator&gt;
+
+    template &lt;typename Class, typename BaseIterator, typename Type&gt;
+    class RandomPtrIterator:
+          public std::iterator&lt;std::random_access_iterator_tag, Type&gt;
+    {
+        friend RandomPtrIterator&lt;Class, BaseIterator, Type&gt; Class::begin();
+        friend RandomPtrIterator&lt;Class, BaseIterator, Type&gt; Class::end();
+
+        BaseIterator d_current;
+
+        RandomPtrIterator(BaseIterator const &amp;current);
+
+        public:
+            bool operator!=(RandomPtrIterator const &amp;other) const;
+            int operator-(RandomPtrIterator const &amp;rhs) const;
+            RandomPtrIterator operator+(int step) const;
+            Type &amp;operator*() const;
+            bool operator&lt;(RandomPtrIterator const &amp;other) const;
+            RandomPtrIterator &amp;operator--();
+            RandomPtrIterator operator--(int);
+            RandomPtrIterator &amp;operator++();
+            RandomPtrIterator operator++(int);
+            bool operator==(RandomPtrIterator const &amp;other) const;
+            RandomPtrIterator operator-(int step) const;
+            RandomPtrIterator &amp;operator-=(int step);
+            RandomPtrIterator &amp;operator+=(int step);
+            Type *operator-&gt;() const;
+    };
+
+    template &lt;typename Class, typename BaseIterator, typename Type&gt;
+    RandomPtrIterator&lt;Class, BaseIterator, Type&gt;::RandomPtrIterator(
+                                    BaseIterator const &amp;current)
+    :
+        d_current(current)
+    {}
+</pre>
+<p>
+Looking at its <code>friend</code> declarations, we see that the members <code>begin</code>
+and <code>end</code> of a class <code>Class</code>, returning a <code>RandomPtrIterator</code> object for
+the types <code>Class, BaseIterator</code> and <code>Type</code> are granted access to
+<code>RandomPtrIterator</code>'s private constructor.  That is exactly what we
+want. The <code>Class</code>'s <code>begin</code> and <code>end</code> members are declared as <em>bound
+friends</em>.
+<p>
+All <code>RandomPtrIterator</code>'s remaining members are public. Since
+<code>RandomPtrIterator</code> is just a generalization of the nested class
+<code>iterator</code> developed in section <a href="cplusplus22.html#RANDOMIT">22.14.1</a>, re-implementing the required
+member functions is easy and only requires us to change <code>iterator</code> into
+<code>RandomPtrIterator</code> and to change <code>std::string</code> into <code>Type</code>. For
+example, <code>operator&lt;</code>, defined in the class <code>iterator</code> as
+        <pre>
+inline bool StringPtr::iterator::operator&lt;(iterator const &amp;other) const
+{
+    return d_current &lt; other.d_current;
+}
+</pre>
+<p>
+is now implemented as:
+        <pre>
+    template &lt;typename Class, typename BaseIterator, typename Type&gt;
+    bool RandomPtrIterator&lt;Class, BaseIterator, Type&gt;::operator&lt;(
+                                    RandomPtrIterator const &amp;other) const
+    {
+        return **d_current &lt; **other.d_current;
+    }
+</pre>
+<p>
+Some additional examples: <code>operator*</code>, defined in the class
+<code>iterator</code> as
+        <pre>
+inline std::string &amp;StringPtr::iterator::operator*() const
+{
+    return **d_current;
+}
+</pre>
+<p>
+is now implemented as:
+        <pre>
+    template &lt;typename Class, typename BaseIterator, typename Type&gt;
+    Type &amp;RandomPtrIterator&lt;Class, BaseIterator, Type&gt;::operator*() const
+    {
+        return **d_current;
+    }
+</pre>
+<p>
+The pre- and postfix increment operators are now implemented as:
+        <pre>
+    template &lt;typename Class, typename BaseIterator, typename Type&gt;
+    RandomPtrIterator&lt;Class, BaseIterator, Type&gt;
+    &amp;RandomPtrIterator&lt;Class, BaseIterator, Type&gt;::operator++()
+    {
+        ++d_current;
+        return *this;
+    }
+    template &lt;typename Class, typename BaseIterator, typename Type&gt;
+    RandomPtrIterator&lt;Class, BaseIterator, Type&gt;
+    RandomPtrIterator&lt;Class, BaseIterator, Type&gt;::operator++(int)
+    {
+        return RandomPtrIterator(d_current++);
+    }
+</pre>
+<p>
+Remaining members can be implemented accordingly, their actual
+implementations are left as exercises to the reader (or can be obtained from
+the <code>cplusplus.yo.zip</code> archive, of course).
+<p>
+Re-implementing the class <code>StringPtr</code> developed in section <a href="cplusplus22.html#RANDOMIT">22.14.1</a>
+is not difficult either. Apart from including the header file defining the
+class template <code>RandomPtrIterator</code>, it only requires a single modification.
+Its <code>iterator</code> typedef must now be associated with a
+<code>RandomPtrIterator</code>. Here is the full class interface and the class's inline
+member definitions:
+        <pre>
+    #ifndef INCLUDED_STRINGPTR_H_
+    #define INCLUDED_STRINGPTR_H_
+
+    #include &lt;vector&gt;
+    #include &lt;string&gt;
+    #include "iterator.h"
+
+    class StringPtr: public std::vector&lt;std::string *&gt;
+    {
+        public:
+            typedef RandomPtrIterator
+                    &lt;
+                        StringPtr,
+                        std::vector&lt;std::string *&gt;::iterator,
+                        std::string
+                    &gt;
+                        iterator;
+
+            typedef std::reverse_iterator&lt;iterator&gt; reverse_iterator;
+
+            iterator begin();
+            iterator end();
+            reverse_iterator rbegin();
+            reverse_iterator rend();
+    };
+
+    inline StringPtr::iterator StringPtr::begin()
+    {
+        return iterator(this-&gt;std::vector&lt;std::string *&gt;::begin() );
+    }
+    inline StringPtr::iterator StringPtr::end()
+    {
+        return iterator(this-&gt;std::vector&lt;std::string *&gt;::end());
+    }
+    inline StringPtr::reverse_iterator StringPtr::rbegin()
+    {
+        return reverse_iterator(end());
+    }
+    inline StringPtr::reverse_iterator StringPtr::rend()
+    {
+        return reverse_iterator(begin());
+    }
+    #endif
+</pre>
+<p>
+Including <code>StringPtr</code>'s modified header file into the program given in
+section <a href="cplusplus22.html#REVERSEIT">22.14.2</a> results in a program behaving identically to its
+earlier version. In this case <code>StringPtr::begin</code> and <code>StringPtr::end</code>
+return iterator objects constructed from a template definition.
+<p>
+<a name="BisonAndFlex"></a><a name="l651"></a>
+<h2>24.8: Using `bisonc++' and `flexc++'</h2>
+    The example discussed below digs into the peculiarities of using
+<a name="an3387"></a>parser- and <a name="an3388"></a>scanner generators generating <strong>C++</strong> sources. Once the
+input for a program exceeds a certain level of complexity, it becomes
+attractive to use scanner- and parser-generators generating the code which
+does the actual input recognition.
+<p>
+The examples in this and subsequent sections assume that the reader knows how
+to use the
+    <a name="an3389"></a>scanner generator <a name="an3390"></a><code>flex</code> and the <a name="an3391"></a>parser generator <a name="an3392"></a><code>bison</code>. Both
+<code>bison</code> and <code>flex</code> are well documented elsewhere. The original
+predecessors of <code>bison</code> and <code>flex</code>, called <a name="an3393"></a><code>yacc</code> and <a name="an3394"></a><code>lex</code> are
+described in several books, e.g. in
+    <a name="an3395"></a>
+ O'Reilly's book <a href="http://www.oreilly.com/catalog/lex">`lex &amp; yacc'</a>.
+<p>
+Scanner- and parser generators are also available as free software. Both
+<code>bison</code> and <code>flex</code> are usually part of software distributions or they can
+be obtained from
+    <a name="an3396"></a>
+    <a target=_top href="ftp://prep.ai.mit.edu/pub/non-gnu">ftp://prep.ai.mit.edu/pub/non-gnu</a>. <code>Flex</code> creates a <code>C++</code> class
+when <a name="an3397"></a><code>%option c++</code> is specified.
+<p>
+For parser generators the program <a name="an3398"></a><code>bison</code> is available. In the early 90's
+<em>Alain Coetmeur</em> (<a href="mailto:coetmeur@icdc.fr">coetmeur@icdc.fr</a>) created a
+<strong>C++</strong> variant (<a name="an3399"></a><code>bison++</code>) creating a parser class. Although the
+<code>bison++</code> program produces code that can be used in <strong>C++</strong> programs it also
+shows many characteristics that are more suggestive of a <strong>C</strong> context than a
+<strong>C++</strong> context. In January 2005 I rewrote parts of Alain's <code>bison++</code>
+program, resulting in the original version of the program
+        <a name="an3400"></a>
+    <strong>bisonc++</strong>. Then, in May 2005 a complete rewrite of the <code>bisonc++</code>
+parser generator was completed (version number 0.98). Current versions of
+<code>bisonc++</code> can be downloaded from
+    <a target=_top href="http://bisoncpp.sourceforge.net/">http://bisoncpp.sourceforge.net/</a>, where it is available as source
+archive and as binary (i386) <a href="http://www.debian.org">Debian</a> package
+(including <code>bisonc++</code>'s documentation).
+<p>
+<code>Bisonc++</code> creates a cleaner parser class than <code>bison++</code>. In particular,
+it derives the parser class from a base-class, containing the parser's token-
+and type-definitions as well as all member functions which should not be
+(re)defined by the programmer. As a result of this approach, the generated
+parser class is very small, declaring only members that are actually defined
+by the programmer (as well as some other members, generated by <code>bisonc++</code>
+itself, implementing the parser's <a name="an3401"></a><code>parse()</code> member). One member that is
+<em>not</em> implemented by default is <code>lex</code>, producing the next lexical
+token. When the directive <code>%scanner</code> (see section <a href="cplusplus24.html#BISONDEF">24.8.2.1</a>) is used,
+<code>bisonc++</code> produces a standard implementation for this member; otherwise it
+must be implemented by the programmer.
+<p>
+In early 2012 the program
+    <a name="an3402"></a>
+    <strong>flexc++</strong> <a target=_top href="http://flexcpp.org/">http://flexcpp.org/</a> reached its initial release. Like
+<code>bisonc++</code> it is part of the <a href="http://www.debian.org">Debian linux
+distribution</a>.
+<p>
+Jean-Paul van Oosten (<a href="mailto:j.p.van.oosten@rug.nl"><em>j.p.van.oosten@rug.nl</em></a>) and Richard Berendsen
+(<a href="mailto:richardberendsen@xs4all.nl"><em>richardberendsen@xs4all.nl</em></a>) started the <code>flexc++</code> project in 2008
+and the final program was completed by Jean-Paul and me between 2010 and 2012.
+<p>
+These sections of the <strong>C++</strong> Annotations focus on <code>bisonc++</code> as our
+ <a name="an3403"></a><em>parser generator</em> and <code>flexc++</code> as our lexical scanner
+generator. Previous releases of the <strong>C++</strong> Annotations were using <code>flex</code> as the
+scanner generator.
+<p>
+Using <code>flex++</code> and <code>bisonc++</code> <code>class</code>-based scanners and parsers are
+generated. The advantage of this approach is that the interface to the scanner
+and the parser tends to become cleaner than without using <code>class</code>
+interfaces. Furthermore, classes allow us to get rid of most if not all global
+variables, making it easy to use multiple parsers in one program.
+<p>
+Below two example programs are developed. The first example only uses
+<code>flexc++</code>. The generated scanner monitors the production of a file from
+several parts. That example focuses on the lexical scanner and on switching
+files while churning through the information. The second example uses both
+<code>flexc++</code> and <code>bisonc++</code> to generate a scanner and a parser transforming
+standard arithmetic expressions to their postfix notations, commonly used in
+code generated by compilers and in <code>HP</code>-calculators.  In the second example
+the emphasis is mainly on <code>bisonc++</code> and on composing a scanner object
+inside a generated parser.
+<p>
+<a name="Flexcpp"></a><a name="l652"></a>
+<h3>24.8.1: Using `flexc++' to create a scanner</h3>
+    The lexical scanner developed in this section is used to monitor the
+production of a file from several subfiles. The setup is as follows: the
+input-language defines <code>#include</code> directives, followed by a text
+string specifying the file (path) which should be included at the location of
+the <code>#include</code>.
+<p>
+In order to avoid complexities irrelevant to the current example, the format
+of the <code>#include</code> statement is restricted to the form <code>#include
+&lt;filepath&gt;</code>.  The file specified between the pointed brackets should be
+available at the location indicated by <code>filepath</code>. If the file is not
+available, the program terminates after issuing an error message.
+<p>
+The program is started with one or two filename arguments. If the program is
+started with just one filename argument, the output is written to the
+standard output stream <code>cout</code>. Otherwise, the output is written to
+the stream whose name is given as the program's second argument.
+<p>
+The program defines a maximum <a name="an3404"></a>nesting depth. Once this maximum is exceeded,
+the program terminates after issuing an error message. In that case, the
+filename stack indicating where which file was included is printed.
+<p>
+An additional feature of the program is that (standard <strong>C++</strong>) comment-lines
+are ignored. Include-directives in comment-lines are also ignored.
+<p>
+The program is created in five major steps:
+    <ul>
+    <li> First, the file <code>lexer</code> is constructed, containing the
+input-language specifications.
+    <li> From the specifications in <code>lexer</code> the requirements for the
+<code>class Scanner</code> evolve. The <code>Scanner</code> class derives from the base class
+<a name="an3405"></a><code>ScannerBase</code> generated by <a name="an3406"></a><code>flexc++</code>.
+    <li> Next, <code>main</code> is constructed. A <code>Scanner</code> object is created
+inspecting the command-line arguments. If successful, the scanner's member
+<code>lex</code> is called to produce the program's output.
+    <li> Now that  the global setup of the program has been specified,
+the member functions of the various classes are implemented.
+    <li> Finally, the program is compiled and linked.
+    </ul>
+<p>
+<a name="l653"></a>
+<h4>24.8.1.1: The derived class `Scanner'</h4>
+            The function matching the <a name="an3407"></a>regular expression rules (<code>lex</code>) is a
+member of the class <a name="an3408"></a><code>Scanner</code>. Since <code>Scanner</code> is derived from
+<code>ScannerBase</code>, it has access to all of <code>ScannerBase</code>'s protected members
+that execute the lexical scanner's regular expression matching algorithm.
+<p>
+Looking at the regular expressions themselves, notice that we need rules
+to recognize comment, <a name="an3409"></a><code>#include</code> directives, and all remaining characters.
+This all is fairly standard practice. When an <code>#include</code> directive is
+sensed, the directive is parsed by the scanner. This too is common
+practice. Our lexical scanner performs the following tasks:
+    <ul>
+    <li> As usual, <a name="an3410"></a>preprocessor directives are not
+analyzed by a parser, but by the lexical scanner;
+    <li> The scanner uses a <a name="an3411"></a>mini scanner to extract the filename from the
+directive, throwing a exception if this fails;
+    <li> If the filename could be extracted, processing switches to the next
+stream, controlling for a maximum nesting depth.
+    <li> Once the end of the current file has been reached processing
+automatically returns to the previous file, restoring the previous file name
+an line number. The scanner returns 0 if all files have been processed.
+    </ul>
+<p>
+<a name="l654"></a>
+<h4>24.8.1.2: The lexical scanner specification file</h4>
+            The <a name="an3412"></a>lexical scanner specification file is organized comparably to the
+one used for <code>flex</code> in <strong>C</strong> contexts. However, in <strong>C++</strong> contexts,
+<code>flexc++</code> creates a class <code>Scanner</code>, rather than just a scanner function.
+<p>
+Flexc++'s specification file consists of two sections:
+    <ul>
+    <li> The specification file's first section is <code>flexc++</code>'s
+        <a name="an3413"></a><em>symbol area</em>, used to define symbols, like a <a name="an3414"></a>mini scanner, or
+<a name="an3415"></a><em>options</em>. The following options are suggested:
+        <ul>
+        <li> <a name="an3416"></a><code>%debug</code>: includes <em>debugging</em>
+            <a name="an3417"></a>
+        code into the code generated by <code>flexc++</code>. Calling the member
+function
+            <a name="an3418"></a>
+            <a name="an3419"></a>
+    <code>setDebug(true)</code> activates this debugging code at run-time. When
+activated, information about the matching process is written to the
+standard output stream. The execution of debug code is suppressed after
+calling the member function <code>setDebug(false)</code>.
+        <li> <a name="an3420"></a><code>%filenames</code>: defines the base-name of the class header files
+generated by <code>flexc++</code>. By default the class name (itself using the default
+<code>Scanner</code>) is used.
+        </ul>
+    Here is the specification files' symbol area:
+            <pre>
+%filenames scanner
+%debug
+%max-depth 3
+
+%x      comment
+%x      include
+</pre>
+<p>
+<li> The specification file's second section is a <em>rules section</em> in
+which the regular expressions and their associated actions are defined.
+    In the example developed here,  the lexer should
+copy information from the standard input stream (<code>std::cin</code>) to the
+standard output stream (<code>std::cout</code>). For this  the predefined macro
+<a name="an3421"></a><code>ECHO</code> can be used.  Here are the rules:
+            <pre>
+%%
+    // The comment-rules: comment is ignored.
+//.*                    // ignore eoln comment
+"/*"                    begin(StartCondition__::comment);
+&lt;comment&gt;{
+    .|\n                // ignore all characters in std C comment
+    "*/"                begin(StartCondition__::INITIAL);
+}
+
+    // File switching: #include &lt;filepath&gt;
+#include[ \t]+"&lt;"      begin(StartCondition__::include);
+&lt;include&gt;{
+    [^ \t&gt;]+            d_nextSource = matched();
+    "&gt;"[ \t]*\n         switchSource();
+    .|\n                throw runtime_error("Invalid include statement");
+}
+
+    // The default rule: echo anything else to std::cout
+.|\n                    echo();
+</pre>
+<p>
+</ul>
+<p>
+<a name="l655"></a>
+<h4>24.8.1.3: Implementing `Scanner'</h4>
+            The <code>class Scanner</code> is generated once by <a name="an3422"></a><strong>flexc++</strong>. This class has
+access to several members defined by its base class <code>ScannerBase</code>. Some of
+these members have public access rights and can be used by code external to
+the class <code>Scanner</code>. These members are extensively documented in the
+<strong>flexc++</strong>(1) man-page, and the reader is referred to this man-page for
+further information.
+<p>
+Our scanner performs the following tasks:
+    <ul>
+    <li> it matches regular expressions, ignoring comment, and writing the
+matched text to the standard output stream;
+    <li> it switches to other files, and returns to the previous file once a
+file has completely been processed, ending the lexical scan once the end of
+the first input file has been reached.
+    </ul>
+<p>
+The <code>#include</code> statements in the input allow the scanner to distill the
+name of the file where the scanning process must continue. This file name is
+stored in a local variable <code>d_nextSource</code> and a member <code>stackSource</code>
+handles the switch to the next source. Nothing else is required. Pushing and
+popping input files is handled by the scanner's members <code>pushStream</code> and
+<code>popStream</code>, provided by <code>flexc++</code>. <code>Scanner</code>'s interface, therefore,
+only needs one additional function declaration: <code>switchSource</code>.
+<p>
+Switching streams is handled as follows: once the scanner has extracted a
+filename from an <code>#include</code> directive, a switch to another file is realized
+by <code>switchSource</code>.  This member calls <code>pushStream</code>, defined by
+<code>flexc++</code>, to stack the current input stream and to switch to the stream
+whose name is stored in <code>d_nextSource</code>. This also ends the <code>include</code>
+mini-scanner, so to return the scanner to its default scanning mode
+<code>begin(StartCondition__::INITIAL)</code> is called. Here is its source:
+        <pre>
+#include "scanner.ih"
+
+void Scanner::switchSource()
+{
+    pushStream(d_nextSource);
+    begin(StartCondition__::INITIAL);
+}
+</pre>
+<p>
+The member <code>pushStream</code>, defined by <code>flexc++</code>, handles all necessary
+checks, throwing an exception if the file could not be opened or if too many
+files are stacked.
+<p>
+The member performing the lexical scan is defined by <code>flexc++</code> in
+<code>Scanner::lex</code>, and this member can be called by code to process the tokens
+returned by the scanner.
+<p>
+<a name="l656"></a>
+<h4>24.8.1.4: Using a `Scanner' object</h4>
+            The program using our <code>Scanner</code> is very simple. It expects a filename
+indicating where to start the scanning process.
+<p>
+The program first checks the number of arguments. If at least one argument was
+given, then that argument is passed to <code>Scanner</code>'s constructor, together
+with a second argument <code>"-"</code>, indicating that the output should go to the
+standard output stream.
+<p>
+If the program receives more than one argument debug output, extensively
+documenting the lexical scanner's actions, is written to the standard output
+stream as well.
+<p>
+Next the <code>Scanner</code>'s <code>lex</code> member is called. If anything fails, a
+<code>std::exception</code> is thrown, which is caught by <code>main</code>'s try-block's catch
+clause. Here is the program's source:
+        <pre>
+#include "lexer.ih"
+
+int main(int argc, char **argv)
+try
+{
+    if (argc == 1)
+    {
+        cerr &lt;&lt; "Filename argument required\n";
+        return 1;
+    }
+
+    Scanner scanner(argv[1], "-");
+
+    scanner.setDebug(argc &gt; 2);
+
+    return scanner.lex();
+}
+catch (exception const &amp;exc)
+{
+    cerr &lt;&lt; exc.what() &lt;&lt; '\n';
+    return 1;
+}
+</pre>
+<p>
+<a name="BUILDFLEX"></a><a name="l657"></a>
+<h4>24.8.1.5: Building the program</h4>
+            The final program is constructed in two steps. These steps are given for a
+<a name="an3423"></a>Unix system, on which <a name="an3424"></a><code>flexc++</code> and the <a name="an3425"></a>Gnu <strong>C++</strong> compiler <a name="an3426"></a><code>g++</code>
+have been installed:
+    <ul>
+    <li> First, the lexical scanner's source is created using <code>flexc++</code>. For
+this the following command can be given:
+        <pre>
+    flexc++ lexer
+</pre>
+    <li> Next, all sources are compiled and linked:
+        <pre>
+    g++ --std=c++14 -Wall *.cc
+</pre>
+     </ul>
+    <code>Flexc++</code> can be downloaded from
+    <a name="an3427"></a>
+    <a target=_top href="http://flexcpp.sf.net/">http://flexcpp.sf.net/</a>, and requires the <a name="an3428"></a><code>bobcat</code> library, which
+can be downloaded from
+    <a name="an3429"></a>
+    <a target=_top href="http://bobcat.sf.net/">http://bobcat.sf.net/</a>.
+<p>
+<a name="BISONFLEX"></a><a name="l658"></a>
+<h3>24.8.2: Using `bisonc++' and `flexc++'</h3>
+    Once an <a name="an3430"></a>input language exceeds a certain level of complexity, a <a name="an3431"></a><em>parser</em>
+is often used to control the complexity of the language. In this case, a
+<a name="an3432"></a><em>parser generator</em> can be used to generate the code verifying the input's
+grammatical correctness.  The lexical scanner (preferably composed into the
+parser) provides chunks of the input, called <a name="an3433"></a><em>tokens</em>. The parser
+then processes the series of tokens generated by the lexical scanner.
+<p>
+Starting point when developing programs that use both parsers and scanners is
+the <a name="an3434"></a>grammar. The grammar defines a <em>set of tokens</em> that can be returned
+by the lexical scanner (called the <a name="an3435"></a><em>scanner</em> below).
+<p>
+Finally, auxiliary code is provided to `fill in the blanks': the <a name="an3436"></a>actions
+performed by the parser and by the scanner are not normally specified
+literally in the grammar rules or lexical regular expressions, but
+should be implemented in <em>member functions</em>, called from  the parser's
+rules or which are associated with the scanner's regular expressions.
+<p>
+In the previous section we've seen an example of a <strong>C++</strong> class generated by
+<a name="an3437"></a><code>flexc++</code>. In the current section we concentrate on the parser. The parser
+can be generated from a grammar specification file, processed by the program
+<a name="an3438"></a><code>bisonc++</code>. The grammar specification file required by <code>bisonc++</code> is
+similar to the file processed by <a name="an3439"></a><code>bison</code> (or <a name="an3440"></a><code>bison++</code>, <code>bisonc++</code>'s
+predecessor, written in the early nineties by
+    <a name="an3441"></a> <em>Alain Coetmeur</em>).
+<p>
+In this section a program is developed converting <em>infix expressions</em>,
+where binary operators are written between their operands, to <em>postfix
+expressions</em>, where operators are written behind their operands. Also, the
+unary operator <code>-</code> is converted from its prefix notation to a postfix form.
+The unary <code>+</code> operator is ignored as it requires no further actions. In
+essence our little calculator is a micro compiler, transforming numeric
+expressions into assembly-like instructions.
+<p>
+Our calculator recognizes a rather basic set of operators:
+multiplication, addition, parentheses, and the unary minus. We'll
+distinguish real numbers from integers, to illustrate a subtlety in
+bison-like grammar specifications. That's all. The purpose of this section is,
+after all, to illustrate the construction of a <strong>C++</strong> program that uses both
+a parser and a lexical scanner, rather than to construct a full-fledged
+calculator.
+<p>
+In the coming sections we'll develop the grammar specification for
+<code>bisonc++</code>. Then, the regular expressions for the scanner are
+specified. Following that, the final program is constructed.
+<p>
+<a name="l659"></a>
+<h4>24.8.2.1: The `bisonc++' specification file</h4>
+        The <a name="an3442"></a>grammar specification file required by <a name="an3443"></a><code>bisonc++</code> is comparable to
+the specification file required by <a name="an3444"></a><code>bison</code>. Differences are related to the
+class nature of the resulting parser. Our calculator distinguishes real
+numbers from integers, and supports a basic set of arithmetic operators.
+<p>
+<code>Bisonc++</code> should be used as follows:
+    <ul>
+    <li> As usual, a grammar is  defined. With <code>bisonc++</code> this is no
+        different, and <code>bisonc++</code> grammar definitions are for all practical
+        purposes identical to <code>bison</code>'s grammar definitions.
+    <li> Having specified the grammar and (usually) some declarations
+        <code>bisonc++</code> can generate files defining the parser class and
+        the implementation of the member function <code>parse</code>.
+    <li> All class members (except those that are required for the proper
+        functioning of the member <code>parse</code>) must be
+        separately implemented.  Of course, they should also be
+        declared in the parser class's header.  At the very least the member
+        <a name="an3445"></a><code>lex</code> must be implemented. This member is called by <code>parse</code> to
+        obtain the next available token.  However, <code>bisonc++</code> offers a
+        facility providing a standard implementation of the function
+        <code>lex</code>. The member function
+            <a name="an3446"></a><code>error(char const *msg)</code>
+       is given a simple default implementation that may be modified by the
+        programmer. The member function <code>error</code> is called when <code>parse</code>
+        detects (syntactic) errors.
+    <li> The parser can now be used in a program. A very simple example would
+        be:
+    <pre>
+int main()
+{
+    Parser parser;
+    return parser.parse();
+}
+</pre>
+    </ul>
+<p>
+The <code>bisonc++</code> <a name="an3447"></a> specification file has two
+sections:
+    <ul>
+    <li> The <em>declaration section</em>. In this section bison's tokens, and the
+        priority rules for the operators are declared. However, <code>bisonc++</code>
+        also supports several new declarations.  These new declarations are
+        important and are discussed below.
+    <li> The <em>rules section</em>. The <a name="an3448"></a>grammatical rules define the
+        grammar. This section is identical to the one required by <code>bison</code>,
+        albeit that some members that were available in <code>bison</code> and
+        <code>bison++</code> are obsolete in <code>bisonc++</code>, while other members can be
+        used in a wider context.  For example, <strong>ACCEPT</strong> and <strong>ABORT</strong> can be
+        called from any member called from the parser's action blocks to
+        terminate the parsing process.
+    </ul>
+ Readers familiar with <code>bison</code> may note that there is no
+    <a name="an3449"></a><em>header section</em> anymore. Header sections are used by bison to provide
+for the necessary declarations allowing the compiler to compile the <strong>C</strong>
+function generated by <code>bison</code>. In <strong>C++</strong> declarations are part of or
+already used by class definitions. Therefore, a parser generator generating a
+<strong>C++</strong> class and some of its member functions does not require a header
+section anymore.
+<p>
+<a name="BISONDEF"></a>
+        <h5>The declaration section</h5><br>
+            The <a name="an3450"></a>declaration section contains several sets of declarations, among
+which definitions of all the tokens used in the grammar and the priorities and
+associativities of the mathematical operators. Moreover, several new and
+important specifications can be used here as well. Those relevant to our
+current example and only available in <code>bisonc++</code> are discussed here. The
+reader is referred to <code>bisonc++</code>'s man-page for a full description.
+    <ul>
+    <li> <a name="an3451"></a><strong>%baseclass-preinclude</strong> <code>header</code><br>
+          Use <code>header</code> as the pathname to the file pre-included in the
+           parser's base-class header.  This declaration is useful in
+           situations where the base class header file refers to types which
+           might not yet be known. E.g., with <a name="an3452"></a><code>%union</code> a <code>std::string *</code>
+           field might be used. Since the class <code>std::string</code> might not yet
+           be known to the compiler once it processes the base class header
+           file we need a way to inform the compiler about these classes and
+           types. The suggested procedure is to use a pre-include header file
+           declaring the required types. By default <code>header</code> is
+           surrounded by double quotes (using, e.g., <code>#include "header"</code>).
+           When the argument is surrounded by angle brackets <code>#include
+           &lt;header&gt;</code> is included. In the latter case, quotes might be
+           required to escape interpretation by the shell (e.g., using <code>-H
+           '&lt;header&gt;'</code>).
+    <li> <a name="an3453"></a><strong>%filenames</strong> <code>header</code> <br>
+           Defines the generic name of all generated files, unless overridden
+            by specific names. By default the generated files use the
+           class-name as the generic file name.
+    <li> <a name="an3454"></a><strong>%scanner</strong> <code>header</code><br>
+           Use <code>header</code> as the pathname to the file pre-included in the
+            parser's class header. This file should define a class
+            <code>Scanner</code>, offering a member <code>int lex()</code> producing the next
+            token from the input stream to be analyzed by the parser generated
+            by <code>bisonc++</code>. When this option is used the parser's member
+            <code>int lex()</code> is predefined as (assuming the default parser class
+            name <code>Parser</code> is used):
+            <pre>
+inline int Parser::lex()
+{
+    return d_scanner.lex();
+}
+</pre>
+           and an object <code>Scanner d_scanner</code> is composed into the
+            parser. The <code>d_scanner</code> object is constructed by its
+            default constructor. If another constructor is required, the
+            parser class may be provided with an appropriate (overloaded)
+            parser constructor after having constructed the default parser
+            class header file using <code>bisonc++</code>.  By default <code>header</code> is
+            surrounded by double quotes (using, e.g., <code>#include
+            "header"</code>).  When the argument is surrounded by angle brackets
+            <code>#include &lt;header&gt;</code> is included.
+    <li> <a name="an3455"></a><strong>%stype</strong> <code>typename</code> <br>
+           The type of the semantic value of tokens.  The specification
+            <code>typename</code> should be the name of an unstructured type (e.g.,
+            <code>size_t</code>). By default it is <code>int</code>. See <code>YYSTYPE</code> in
+            <code>bison</code>.  It should not be used if a <code>%union</code> specification is
+            used.  Within the parser class, this type may be used as
+            <code>STYPE</code>.
+    <li> <a name="an3456"></a><strong>%union</strong> <code>union-definition</code> <br>
+           Acts identically to the <code>bison</code> declaration.  As with <code>bison</code>
+            this generates a union for the parser's semantic type.  The union
+            type is named <code>STYPE</code>. If no <code>%union</code> is declared, a simple
+            stack-type may be defined using the <code>%stype</code> declaration. If no
+            <code>%stype</code> declaration is used, the default stacktype (<code>int</code>) is
+            used.
+    </ul>
+    An example of a <code>%union</code> declaration is:
+        <pre>
+    %union
+    {
+        int     i;
+        double  d;
+    };
+</pre>
+    In pre-C++11 code a <a name="an3457"></a>union cannot contain objects as its fields, as
+constructors cannot be called when a union is created.  This means that
+    <a name="an3458"></a> a <code>string</code> cannot be a member of the
+union. A <code>string *</code>, however, <em>is</em> a possible union member.  It might also
+be possible to use <em>unrestricted unions</em> (cf. section <a href="cplusplus12.html#UNIONS">12.6</a>), having
+class type objects as fields.
+<p>
+As an aside: the scanner does not have to know about such a union. It
+can simply pass its scanned text to the parser through its <a name="an3459"></a><code>matched</code> member
+function. For example using a statement like
+        <pre>
+    $$.i = A2x(d_scanner.matched());
+</pre>
+    matched text is converted to a value of an appropriate type.
+<p>
+Tokens and non-terminals can be associated with union fields. This is
+strongly advised, as it prevents type mismatches, since the compiler may then
+check for type correctness. At the same time, the bison specific
+variables <code>$$</code>, <code>$1</code>, <code>$2</code>, etc. may be used, rather than the full field
+specification (like <code>$$.i</code>).  A non-terminal or a token may be associated
+with a union field using the
+    <code>&lt;fieldname&gt;</code> specification. E.g.,
+        <pre>
+    %token &lt;i&gt; INT          // token association (deprecated, see below)
+           &lt;d&gt; DOUBLE
+    %type  &lt;i&gt; intExpr      // non-terminal association
+</pre>
+    In the example developed here, both the tokens and the non-terminals can
+be associated with a union field. However, as noted before, the scanner does
+not have to know about all this. In our opinion, it is cleaner to let the
+scanner do just one thing: scan texts. The <em>parser</em>, knowing what the input
+is all about, may then convert strings like <code>"123"</code> to an integer
+value. Consequently, the association of a union field and a token is
+discouraged. Below, while describing the grammar's rules, this is further
+illustrated.
+<p>
+In the <code>%union</code> discussion the <a name="an3460"></a><code>%token</code> and <a name="an3461"></a><code>%type</code> specifications
+should be noted. They are used to specify the tokens (terminal symbols) that
+can be returned by the scanner, and to specify the return types of
+non-terminals.  Apart from <code>%token</code> the token declarators <a name="an3462"></a><code>%left</code>,
+<a name="an3463"></a><code>%right</code>, and <a name="an3464"></a><code>%nonassoc</code> can be used to specify the associativity of
+operators. The tokens mentioned at these indicators are interpreted as tokens
+indicating operators, associating in the indicated direction. The precedence
+of operators is defined by their order: the first specification has the lowest
+priority. To overrule a certain precedence in a certain context <a name="an3465"></a><code>%prec</code> can
+be used. As all this is standard <code>bisonc++</code> practice, it isn't further
+elaborated here. The documentation provided with <code>bisonc++</code>'s distribution
+should be consulted for further reference.
+<p>
+Here is the specification of the calculator's declaration section:
+        <pre>
+%filenames parser
+%scanner ../scanner/scanner.h
+
+%union {
+    int i;
+    double d;
+};
+
+%token  INT DOUBLE
+
+%type   &lt;i&gt; intExpr
+%type   &lt;d&gt; doubleExpr
+
+%left   '+'
+%left   '*'
+%right  UnaryMinus
+</pre>
+<p>
+In the declaration section <code>%type</code> specifiers are used, associating the
+<code>intExpr</code> rule's value (see the next section) to the <code>i</code>-field of the
+semantic-value union, and associating <code>doubleExpr</code>'s value to the
+<code>d</code>-field. This approach, admittedly, is rather complex, as expression rules
+must be included for each of the supported union types. Alternatives are
+definitely possible, and involve the use of <em>polymorphic semantic
+values</em>, covered in detail in the 
+    <a href="http://bisoncpp.sourceforge.net/">Bisonc++ user guide</a>.
+<p>
+
+        <h5>The grammar rules</h5><br>
+            The rules and actions of the grammar are specified as usual. The grammar
+for our little calculator is given below. There are quite a few rules, but
+they illustrate various features offered by <code>bisonc++</code>. In particular, note
+that no action block requires more than a single line of code. This keeps the
+grammar simple, and therefore enhances its readability and
+understandability. Even the rule defining the parser's proper termination (the
+empty line in the <code>line</code> rule) uses a single member function called
+<code>done</code>. The implementation of that function is simple, but it is worth while
+noting that it calls <strong>Parser::ACCEPT</strong>, showing that <strong>ACCEPT</strong> can be called
+indirectly from a production rule's action block. Here are the grammar's
+production rules:
+        <pre>
+    lines:
+        lines
+        line
+    |
+        line
+    ;
+
+    line:
+        intExpr
+        '\n'
+        {
+            display($1);
+        }
+    |
+        doubleExpr
+        '\n'
+        {
+            display($1);
+        }
+    |
+        '\n'
+        {
+            done();
+        }
+    |
+        error
+        '\n'
+        {
+            reset();
+        }
+    ;
+
+    intExpr:
+        intExpr '*' intExpr
+        {
+            $$ = exec('*', $1, $3);
+        }
+    |
+        intExpr '+' intExpr
+        {
+            $$ = exec('+', $1, $3);
+        }
+    |
+        '(' intExpr ')'
+        {
+
+            $$ = $2;
+        }
+    |
+        '-' intExpr         %prec UnaryMinus
+        {
+            $$ = neg($2);
+        }
+    |
+        INT
+        {
+            $$ = convert&lt;int&gt;();
+        }
+    ;
+
+    doubleExpr:
+        doubleExpr '*' doubleExpr
+        {
+            $$ = exec('*', $1, $3);
+        }
+    |
+        doubleExpr '*' intExpr
+        {
+            $$ = exec('*', $1, d($3));
+        }
+    |
+        intExpr '*' doubleExpr
+        {
+            $$ = exec('*', d($1), $3);
+        }
+    |
+        doubleExpr '+' doubleExpr
+        {
+            $$ = exec('+', $1, $3);
+        }
+    |
+        doubleExpr '+' intExpr
+        {
+            $$ = exec('+', $1, d($3));
+        }
+    |
+        intExpr '+' doubleExpr
+        {
+            $$ = exec('+', d($1), $3);
+        }
+    |
+        '(' doubleExpr ')'
+        {
+            $$ = $2;
+        }
+    |
+        '-' doubleExpr         %prec UnaryMinus
+        {
+
+            $$ = neg($2);
+        }
+    |
+        DOUBLE
+        {
+            $$ = convert&lt;double&gt;();
+        }
+    ;
+</pre>
+<p>
+This grammar is used to implement a simple calculator in which integer and
+real values can be negated, added, and multiplied and in which standard
+priority rules can be overruled by parentheses. The grammar shows the use of
+typed nonterminal symbols: <code>doubleExpr</code> is linked to real (double) values,
+<code>intExpr</code> is linked to integer values. Precedence and type association is
+defined in the parser's definition section.
+<p>
+
+        <h5>The Parser's header file</h5><br>
+        Several class members called from the grammar are defined as member
+templates. <code>Bisonc++</code> generates multiple files, among which the file
+defining the parser's class. Functions called from the production rule's
+action blocks are usually member functions of the parser. These member
+functions must be declared and defined. Once <code>bisonc++</code> has generated the
+header file defining the parser's class, that header file isn't automatically
+rewritten, allowing the programmer to add new members to the parser class
+whenever required. Here is `<code>parser.h</code>' as used in our little calculator:
+        <pre>
+#ifndef Parser_h_included
+#define Parser_h_included
+
+#include &lt;iostream&gt;
+#include &lt;sstream&gt;
+#include &lt;bobcat/a2x&gt;
+
+#include "parserbase.h"
+#include "../scanner/scanner.h"
+
+#undef Parser
+class Parser: public ParserBase
+{
+    std::ostringstream d_rpn;
+    // $insert scannerobject
+    Scanner d_scanner;
+
+    public:
+        int parse();
+
+    private:
+        template &lt;typename Type&gt;
+        Type exec(char c, Type left, Type right);
+
+        template &lt;typename Type&gt;
+        Type neg(Type op);
+
+        template &lt;typename Type&gt;
+        Type convert();
+
+        void display(int x);
+        void display(double x);
+        void done() const;
+        void reset();
+        void error(char const *msg);
+        int lex();
+        void print();
+
+        static double d(int i);
+
+    // support functions for parse():
+
+        void executeAction(int d_ruleNr);
+        void errorRecovery();
+        int lookup(bool recovery);
+        void nextToken();
+        void print__();
+};
+
+inline double Parser::d(int i)
+{
+    return i;
+}
+
+template &lt;typename Type&gt;
+Type Parser::exec(char c, Type left, Type right)
+{
+    d_rpn &lt;&lt; " " &lt;&lt; c &lt;&lt; " ";
+    return c == '*' ? left * right : left + right;
+}
+
+template &lt;typename Type&gt;
+Type Parser::neg(Type op)
+{
+    d_rpn &lt;&lt; " n ";
+    return -op;
+}
+
+template &lt;typename Type&gt;
+Type Parser::convert()
+{
+    Type ret = FBB::A2x(d_scanner.matched());
+    d_rpn &lt;&lt; " " &lt;&lt; ret &lt;&lt; " ";
+    return ret;
+}
+
+inline void Parser::error(char const *msg)
+{
+    std::cerr &lt;&lt; msg &lt;&lt; '\n';
+}
+
+inline int Parser::lex()
+{
+    return d_scanner.lex();
+}
+
+inline void Parser::print()
+{}
+
+#endif
+</pre>
+<p>
+<a name="l660"></a>
+<h4>24.8.2.2: The `flexc++' specification file</h4>
+            The flex-specification file used by the calculator is simple: blanks are
+ignored, single characters are returned, and numeric values are returned as
+either <code>Parser::INT</code> or <code>Parser::DOUBLE</code> tokens.
+<p>
+The <code>flexc++</code> directive <code>%interactive</code> is provided since the
+calculator is a program actively interacting with its human user.
+<p>
+Here is the complete <code>flexc++</code> specification file:
+        <pre>
+%interactive
+%filenames scanner
+
+%%
+
+[ \t]                       // ignored
+
+[0-9]+                      return Parser::INT;
+
+"."[0-9]*                   |
+[0-9]+("."[0-9]*)?          return Parser::DOUBLE;
+
+.|\n                        return matched()[0];
+</pre>
+<p>
+<a name="l661"></a>
+<h4>24.8.2.3: Building the program</h4>
+        The calculator is built using <code>bisonc++</code> and <code>flexc++</code>.  Here is the
+implentation of the calculator's <code>main</code> function:
+        <pre>
+#include "parser/parser.h"
+
+using namespace std;
+
+int main()
+{
+    Parser parser;
+
+    cout &lt;&lt; "Enter (nested) expressions containing ints, doubles, *, + and "
+            "unary -\n"
+            "operators. Enter an empty line to stop.\n";
+
+    return parser.parse();
+}
+</pre>
+<p>
+The parser's files <code>parse.cc</code> and <code>parserbase.h</code> are generated by the
+command:
+        <pre>
+    bisonc++ grammar
+</pre>
+    The file <code>parser.h</code> is created only once, to allow the developer to add
+members to the <code>Parser</code> class occe the need for them arises.
+<p>
+The program <a name="an3466"></a><code>flexc++</code> is used to create a lexical scanner:
+        <pre>
+    flexc++ lexer
+</pre>
+<p>
+On <a name="an3467"></a>Unix systems a command like
+        <pre>
+    g++ --std=c++14 -Wall -o calc *.cc -lbobcat -s
+</pre>
+    can be used to compile and link the source of the main program and the
+sources produced by the scanner and parser generators. The example uses the
+<code>A2x</code> class, which is part of the <a name="an3468"></a><code>bobcat</code> library (cf. section
+<a href="cplusplus24.html#BUILDFLEX">24.8.1.5</a>) (the bobcat library is available on systems offering either
+<code>bisonc++</code> or <code>flexc++</code>). <code>Bisonc++</code> can be downloaded from
+<p>
+<a name="an3469"></a>
+    <a target=_top href="http://bisoncpp.sourceforge.net/">http://bisoncpp.sourceforge.net/</a>.
+<p>
+
+<hr>
+<ul>
+    <li> <a href="cplusplus.html">Table of Contents</a>
+    <li> <a href="cplusplus23.html">Previous Chapter</a>
+</ul>
+<hr>
+</body>
+</html>

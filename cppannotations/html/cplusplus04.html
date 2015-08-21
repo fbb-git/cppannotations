@@ -1,0 +1,723 @@
+<!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<title> <div style="text-align: center">C++ Annotations Version 10.3.0</div> </title>
+<style type="text/css">
+    figure {text-align: center;}
+    img {vertical-align: center;}
+</style>
+</head>
+<body >
+<hr>
+<ul>
+    <li> <a href="cplusplus.html">Table of Contents</a>
+    <li> <a href="cplusplus03.html">Previous Chapter</a>
+    <li> <a href="cplusplus05.html">Next Chapter</a>
+</ul>
+<hr>
+<a name="NAMESPACE"></a><a name="l61"></a>
+<h1>Chapter 4: Namespaces</h1>
+
+
+<blockquote>
+    <em>
+        Don't hesitate to send in feedback: send an e-mail if you like the
+        C++ Annotations; if you think that important material was omitted;
+        if you find errors or typos in the text or the code examples;
+        or if you just feel like e-mailing. Send your e-mail to
+        <a href="mailto:f.b.brokken@rug.nl">Frank B. Brokken</a>.
+<p>
+<strong>Please</strong> state the document version you're referring to, as found in
+        the title (in this document: 10.3.0) and please state chapter and
+        paragraph name or number you're referring to.
+<p>
+All received mail is processed conscientiously, and received
+        suggestions for improvements are usually processed by the
+        time a new version of the Annotations is released. Except for the
+        incidental case I will normally not acknowledge the receipt of
+        suggestions for improvements. Please don't interpret this as me not
+        appreciating your efforts.
+    </em>
+</blockquote>
+<p>
+<a name="Namespaces"></a><a name="l62"></a>
+<h2>4.1: Namespaces</h2>
+Imagine a math teacher who wants to develop an interactive math program. For
+this program functions like <code>cos, sin, tan</code> etc. are to be used
+accepting arguments in degrees rather than arguments in
+radians. Unfortunately, the function name <code>cos</code> is already in use, and that
+function accepts radians as its arguments, rather than degrees.
+<p>
+Problems like these are usually solved by defining another name, e.g., the
+function name <code>cosDegrees</code> is defined. <strong>C++</strong> offers an alternative
+solution through <a name="an272"></a><em>namespaces</em>. Namespaces can be considered as
+areas or regions in the code in which identifiers may be defined. Identifiers
+defined in a namespace normally won't conflict with names already defined
+elsewhere (i.e., outside of their namespaces). So, a function <code>cos</code>
+(expecting angles in degrees) could be defined in a namespace
+<code>Degrees</code>. When calling <code>cos</code> from within <code>Degrees</code> you would call the
+<code>cos</code> function expecting degrees, rather than the standard <code>cos</code> function
+expecting radians.
+<p>
+Now that the <a name="an273"></a>ANSI/ISO standard has been implemented to a large degree in
+recent compilers, the use of namespaces is more strictly enforced than in
+previous versions of compilers. This affects the setup of
+<a name="an274"></a><code>class</code> <a name="an275"></a>header files. At this point in the Annotations this cannot be
+discussed in detail, but in section <a href="cplusplus07.html#NAMESPACEHDR">7.12.1</a> the construction of
+header files using entities from namespaces is discussed.
+<p>
+<a name="l63"></a>
+<h3>4.1.1: Defining namespaces</h3>
+    Namespaces are defined according to the following syntax:
+        <pre>
+    namespace identifier
+    {
+        // declared or defined entities
+        // (declarative region)
+    }
+</pre>
+    The identifier used when defining a namespace is a standard <strong>C++</strong>
+identifier.
+<p>
+Within the <a name="an276"></a><em>declarative region</em>, introduced in the above code example,
+functions, variables, structs, classes and even (nested) namespaces can be
+defined or declared. Namespaces cannot be defined within a function
+body. However, it is possible to define a namespace using multiple
+<em>namespace</em> declarations. Namespaces are `<em>open</em>' meaning that
+a namespace <code>CppAnnotations</code> could be defined in a file <code>file1.cc</code> and
+also in a file <code>file2.cc</code>. Entities defined in the <code>CppAnnotations</code>
+namespace of files <code>file1.cc</code> and <code>file2.cc</code> are then united in one
+<code>CppAnnotations</code> namespace region. For example:
+        <pre>
+    // in file1.cc
+    namespace CppAnnotations
+    {
+        double cos(double argInDegrees)
+        {
+            ...
+        }
+    }
+
+    // in file2.cc
+    namespace CppAnnotations
+    {
+        double sin(double argInDegrees)
+        {
+            ...
+        }
+    }
+</pre>
+    Both <code>sin</code> and <code>cos</code> are now defined in the same
+<code>CppAnnotations</code> namespace.
+<p>
+Namespace entities can be defined outside of their namespaces. This
+topic is discussed in section <a href="cplusplus04.html#OUTSIDE">4.1.4.1</a>.
+<p>
+<a name="l64"></a>
+<h4>4.1.1.1: Declaring entities in namespaces</h4>
+            Instead of <em>defining</em> entities in a namespace, entities may also be
+<em>declared</em> in a namespace. This allows us to put all the
+    <a name="an277"></a> declarations in a header file that can
+thereupon be included in sources using the entities defined in the
+namespace. Such a header file could contain, e.g.,
+        <pre>
+    namespace CppAnnotations
+    {
+        double cos(double degrees);
+        double sin(double degrees);
+    }
+</pre>
+<p>
+<a name="l65"></a>
+<h4>4.1.1.2: A closed namespace</h4>
+        Namespaces can be defined without a name. Such an <a name="an278"></a>
+anonymous namespace restricts the visibility of the defined entities to the
+source file defining the anonymous namespace.
+<p>
+Entities defined in the anonymous namespace are comparable to <strong>C</strong>'s
+<a name="an279"></a><code>static</code> functions and variables. In <strong>C++</strong> the <code>static</code> keyword can
+still be used, but its preferred use is in <code>class</code> definitions (see
+chapter <a href="cplusplus07.html#Classes">7</a>). In situations where in <strong>C</strong> static variables or
+functions would have been used the  anonymous namespace should be used in
+<strong>C++</strong>.
+<p>
+The anonymous namespace is a <a name="an280"></a> closed namespace: it is not
+possible to add entities to the same anonymous namespace using different
+source files.
+<p>
+<a name="l66"></a>
+<h3>4.1.2: Referring to entities</h3>
+    Given a namespace and its entities, the <a name="an281"></a>scope resolution operator can be
+used to refer to its entities. For example, the function <code>cos()</code>
+defined in the <code>CppAnnotations</code> namespace may be used as follows:
+        <pre>
+    // assume CppAnnotations namespace is declared in the
+    // following header file:
+    #include &lt;cppannotations&gt;
+
+    int main()
+    {
+        cout &lt;&lt; "The cosine of 60 degrees is: " &lt;&lt;
+                CppAnnotations::cos(60) &lt;&lt; '\n';
+    }
+</pre>
+    This is a rather cumbersome way to refer to the <code>cos()</code> function in the
+<code>CppAnnotations</code> namespace, especially so if the function is frequently
+used. In cases like these an <em>abbreviated</em> form can be
+used after specifying a <a name="an282"></a><em>using declaration</em>. Following
+        <pre>
+    using CppAnnotations::cos;  // note: no function prototype,
+                                // just the name of the entity
+                                // is required.
+</pre>
+    calling <code>cos</code> results in a call of the <code>cos</code> function defined in the
+<code>CppAnnotations</code> namespace. This implies that the standard <code>cos</code>
+function, accepting radians, is not automatically called anymore. To call that
+latter <code>cos</code> function the plain
+scope resolution operator should be used:
+        <pre>
+    int main()
+    {
+        using CppAnnotations::cos;
+        ...
+        cout &lt;&lt; cos(60)         // calls CppAnnotations::cos()
+            &lt;&lt; ::cos(1.5)       // call the standard cos() function
+            &lt;&lt; '\n';
+    }
+</pre>
+    A <code>using</code> declaration can have restricted scope. It can be used inside a
+block. The <code>using</code> declaration prevents the definition of entities having
+the same name as the one used in the <code>using</code> declaration. It is not possible
+to specify a <code>using</code> declaration for a variable <code>value</code> in some namespace,
+and to define (or declare) an identically named object in a block also
+containing a <code>using</code> declaration. Example:
+        <pre>
+    int main()
+    {
+        using CppAnnotations::value;
+        ...
+        cout &lt;&lt; value &lt;&lt; '\n';  // uses CppAnnotations::value
+        int value;              // error: value already declared.
+    }
+</pre>
+<p>
+<a name="l67"></a>
+<h4>4.1.2.1: The `using' directive</h4>
+        A generalized alternative to the <code>using</code> declaration is the
+<a name="an283"></a><em>using directive</em>:
+        <pre>
+    using namespace CppAnnotations;
+</pre>
+    Following this directive, <em>all</em> entities defined in the
+<code>CppAnnotations</code> namespace are used as if they were declared by <code>using</code>
+declarations.
+<p>
+While the <code>using</code> directive is a quick way to
+ <a name="an284"></a> import all the names of a namespace (assuming
+the namespace has previously been declared or defined), it is at the same time
+a somewhat dirty way to do so, as it is less clear what entity is actually
+used in a particular block of code.
+<p>
+If, e.g., <code>cos</code> is defined in the <code>CppAnnotations</code> namespace,
+<code>CppAnnotations::cos</code> is going to be used when <code>cos</code> is called. However,
+if <code>cos</code> is <em>not</em> defined in the <code>CppAnnotations</code> namespace, the
+standard <code>cos</code> function will be used. The <code>using</code> directive does not
+document as clearly as the <code>using</code> declaration what entity will actually be
+used. Therefore use caution when applying the <code>using</code> directive.
+<p>
+<a name="l68"></a>
+<h4>4.1.2.2: `Koenig lookup'</h4>
+        If <a name="an285"></a><em>Koenig lookup</em> were called the `Koenig principle', it could have been
+the title of a new <a name="an286"></a>Ludlum novel. However, it is not. Instead it refers to
+a <strong>C++</strong> technicality.
+<p>
+`Koenig lookup' refers to the fact that if a function is called without
+specifying its namespace, then the namespaces of its argument types are used
+to determine the function's namespace. If the namespace in which the argument
+types are defined contains such a function, then that function is used. This
+procedure is called the `Koenig lookup'.
+<p>
+As an illustration consider the next example. The function
+<code>FBB::fun(FBB::Value v)</code> is defined in the <code>FBB</code> namespace. It
+can be called without explicitly mentioning its namespace:
+        <pre>
+    #include &lt;iostream&gt;
+
+    namespace FBB
+    {
+        enum Value        // defines FBB::Value
+        {
+            FIRST
+        };
+
+        void fun(Value x)
+        {
+            std::cout &lt;&lt; "fun called for " &lt;&lt; x &lt;&lt; '\n';
+        }
+    }
+
+    int main()
+    {
+        fun(FBB::FIRST);    // Koenig lookup: no namespace
+                            // for fun() specified
+    }
+    /*
+        generated output:
+    fun called for 0
+    */
+</pre>
+<p>
+The compiler is rather smart when handling namespaces. If <code>Value</code> in the
+<code>namespace FBB</code> would have been defined as <code>typedef int Value</code> then
+<code>FBB::Value</code> would be recognized as <code>int</code>, thus causing the Koenig lookup
+to fail.
+<p>
+As another example, consider the next program. Here two namespaces are
+involved, each defining their own <code>fun</code> function. There is no
+ambiguity, since the argument defines the namespace and <code>FBB::fun</code> is
+called:
+        <pre>
+    #include &lt;iostream&gt;
+
+    namespace FBB
+    {
+        enum Value        // defines FBB::Value
+        {
+            FIRST
+        };
+
+        void fun(Value x)
+        {
+            std::cout &lt;&lt; "FBB::fun() called for " &lt;&lt; x &lt;&lt; '\n';
+        }
+    }
+
+    namespace ES
+    {
+        void fun(FBB::Value x)
+        {
+            std::cout &lt;&lt; "ES::fun() called for " &lt;&lt; x &lt;&lt; '\n';
+        }
+    }
+
+    int main()
+    {
+        fun(FBB::FIRST);    // No ambiguity: argument determines
+                            // the namespace
+    }
+    /*
+        generated output:
+    FBB::fun() called for 0
+    */
+</pre>
+<p>
+Here is an example in which there <em>is</em> an ambiguity: <code>fun</code> has two
+arguments, one from each namespace. The ambiguity must be resolved by the
+programmer:
+        <pre>
+    #include &lt;iostream&gt;
+
+    namespace ES
+    {
+        enum Value        // defines ES::Value
+        {
+            FIRST
+        };
+    }
+
+    namespace FBB
+    {
+        enum Value        // defines FBB::Value
+        {
+            FIRST
+        };
+
+        void fun(Value x, ES::Value y)
+        {
+            std::cout &lt;&lt; "FBB::fun() called\n";
+        }
+    }
+
+    namespace ES
+    {
+        void fun(FBB::Value x, Value y)
+        {
+            std::cout &lt;&lt; "ES::fun() called\n";
+        }
+    }
+
+    int main()
+    {
+        //  fun(FBB::FIRST, ES::FIRST); ambiguity: resolved by
+        //                              explicitly mentioning
+        //                              the namespace
+        ES::fun(FBB::FIRST, ES::FIRST);
+    }
+    /*
+        generated output:
+    ES::fun() called
+    */
+</pre>
+<p>
+An interesting subtlety with namespaces is that definitions in one
+namespace may break the code defined in another namespace. It shows that
+namespaces may affect each other and that namespaces may backfire if we're not
+aware of their peculiarities. Consider the following example:
+        <pre>
+    namespace FBB
+    {
+        struct Value
+        {};
+
+        void fun(int x);
+        void gun(Value x);
+    }
+
+    namespace ES
+    {
+        void fun(int x)
+        {
+            fun(x);
+        }
+        void gun(FBB::Value x)
+        {
+            gun(x);
+        }
+    }
+</pre>
+<p>
+Whatever happens, the programmer'd better not use any of the <code>ES::fun</code>
+functions since it results in infinite recursion. However, that's not the
+point. The point is that the programmer won't even be given the opportunity to
+call <code>ES::fun</code> since the compilation fails.
+<p>
+Compilation fails for <code>gun</code> but not for <code>fun</code>. But why is that so? Why
+is <code>ES::fun</code> flawlessly compiling while <code>ES::gun</code> isn't? In <code>ES::fun</code>
+<code>fun(x)</code> is called. As <code>x</code>'s type is not defined in a namespace the Koenig
+lookup does not apply and <code>fun</code> calls itself with infinite recursion.
+<p>
+With <code>ES::gun</code> the argument is defined in the <code>FBB</code>
+namespace. Consequently, the <code>FBB::gun</code> function is a possible candidate to
+be called. But <code>ES::gun</code> itself also is possible as <code>ES::gun</code>'s prototype
+perfectly matches the call <code>gun(x)</code>.
+<p>
+Now consider the situation where <code>FBB::gun</code> has not yet been
+declared. Then there is of course no ambiguity. The programmer responsible for
+the <code>ES</code> namespace is resting happily. Some time after that the programmer
+who's maintaining the <code>FBB</code> namespace decides it may be nice to add a
+function <code>gun(Value x)</code> to the <code>FBB</code> namespace. Now suddenly the code in
+the namespace <code>ES</code> breaks because of an addition in a completely other
+namespace (<code>FBB</code>). Namespaces clearly are not completely independent of each
+other and we should be aware of subtleties like the above. Later in the
+<strong>C++</strong> Annotations (chapter <a href="cplusplus11.html#OVERLOADING">11</a>) we'll return to this issue.
+<p>
+<a name="l69"></a>
+<h3>4.1.3: The standard namespace</h3>
+    The <code>std</code> namespace is reserved by <strong>C++</strong>. The standard defines many
+entities that are part of the runtime available software (e.g., <code>cout, cin,
+cerr</code>); the templates defined in the <em>Standard Template Library</em> (cf.
+chapter <a href="cplusplus18.html#STL">18</a>); and the <em>Generic Algorithms</em> (cf. chapter <a href="cplusplus19.html#GENERIC">19</a>)
+are defined in the <code>std</code> namespace.
+<p>
+Regarding the discussion in the previous section, <code>using</code>
+declarations may be used when referring to entities in the <code>std</code> namespace.
+For example, to use the <code>std::cout</code>
+stream, the code may declare this object as follows:
+        <pre>
+    #include &lt;iostream&gt;
+    using std::cout;
+</pre>
+    Often, however, the identifiers defined in the <code>std</code> namespace can all
+be accepted without much thought. Because of that, one frequently encounters a
+<code>using</code> directive, allowing the programmer to omit a namespace prefix when
+referring to any of the entities defined in the namespace specified with the
+<code>using</code> directive. Instead of specifying  <code>using</code> declarations the
+following <code>using</code> directive is frequently encountered:
+construction like
+        <pre>
+    #include &lt;iostream&gt;
+    using namespace std;
+</pre>
+    Should a <code>using</code> directive, rather than <code>using</code> declarations be used?
+As a <a name="an287"></a>rule of thumb one might decide to stick to <code>using</code> declarations, up
+to the point where the list becomes impractically long, at which point a
+<code>using</code> directive could be considered.
+<p>
+Two <a name="an288"></a> restrictions apply to <code>using</code> directives and
+declarations:
+    <ul>
+    <li> Programmers should not declare or define anything inside the
+<code>namespace std</code>. This is <em>not</em> compiler enforced but is imposed upon user
+code by the standard;
+    <li> <code>Using</code> declarations and directives should not be imposed upon
+code written by third parties. In practice this means that <code>using</code>
+directives and declarations should be banned from header files and should only
+be used in source files (cf. section <a href="cplusplus07.html#NAMESPACEHDR">7.12.1</a>).
+    </ul>
+<p>
+<a name="PLACEHOLDERS"></a><a name="l70"></a>
+<h4>4.1.3.1: The std::placeholders namespace</h4>
+        This section contains quite a few forward references. It merely introduces the
+<a name="an289"></a><em>placeholders</em> namespace, which is nested under the <code>std</code> namespace; this
+section can be skipped without loss of continuity.
+<p>
+Before using the namespace <code>std::placeholders</code> the <a name="an290"></a><code>&lt;functional&gt;</code> header
+file must be included.
+<p>
+Further down the <strong>C++</strong> Annotations we will encounter <em>function objects</em> (section
+<a href="cplusplus11.html#FUNOBJ">11.10</a>), which are `objects' that can be used as functions. Such function
+objects (also called <em>functors</em>) are extensively used in the <em>Standard
+Template Library</em> (STL, chapter <a href="cplusplus18.html#STL">18</a>). The STL offers a function
+(<code>bind</code>, see section <a href="cplusplus18.html#BIND">18.1.4.1</a>), returning a function adaptor in which a
+function is called which may or may not already have received its
+arguments. If not, then <em>placeholders</em> for arguments must be used,
+for which actual arguments must be specified once the functor that is returned
+by <code>bind</code> is called. 
+<p>
+Such placeholders have predefined names: <code>_1, _2, _3,</code> etc. These
+placeholders are defined in the <code>std::placeholders</code> namespace. Several
+illustrations of the use of these placeholders are found in section <a href="cplusplus18.html#BIND">18.1.4.1</a>.
+<p>
+<a name="l71"></a>
+<h3>4.1.4: Nesting namespaces and namespace aliasing</h3>
+    Namespaces can be nested. Here is an example:
+        <pre>
+    namespace CppAnnotations
+    {
+        int value;
+        namespace Virtual
+        {
+            void *pointer;
+        }
+    }
+</pre>
+    The variable <code>value</code> is defined in the <code>CppAnnotations</code>
+namespace. Within the <code>CppAnnotations</code> namespace another namespace
+(<code>Virtual</code>) is nested. Within that latter namespace the variable
+<code>pointer</code> is defined. To refer to these
+variable the following options are available:
+    <ul>
+    <li> The <a name="an291"></a><em>fully qualified names</em> can be used. A
+        fully qualified name of an entity is a list of all the namespaces that
+        are encountered until reaching the definition of the entity. The
+        namespaces and entity are glued together by the scope resolution
+        operator:
+   <pre>
+int main()
+{
+    CppAnnotations::value = 0;
+    CppAnnotations::Virtual::pointer = 0;
+}
+</pre>
+<p>
+<li> A <code>using namespace CppAnnotations</code> directive can be provided. Now
+        <code>value</code> can be used without any prefix, but <code>pointer</code> must be used
+        with the <code>Virtual::</code> prefix:
+   <pre>
+using namespace CppAnnotations;
+
+int main()
+{
+    value = 0;
+    Virtual::pointer = 0;
+}
+</pre>
+    <li> A <code>using namespace</code> directive for the full namespace chain can be
+        used. Now <code>value</code> needs its <code>CppAnnotations</code> prefix again, but
+        <code>pointer</code> doesn't require a prefix anymore:
+   <pre>
+using namespace CppAnnotations::Virtual;
+
+int main()
+{
+    CppAnnotations::value = 0;
+    pointer = 0;
+}
+</pre>
+    <li> When using two separate <code>using namespace</code> directives none of the
+        namespace prefixes are required anymore:
+   <pre>
+using namespace CppAnnotations;
+using namespace Virtual;
+
+int main()
+{
+    value = 0;
+    pointer = 0;
+}
+</pre>
+    <li> The same can be accomplished (i.e., no namespace prefixes) for
+        specific variables by providing specific <code>using</code> declarations:
+   <pre>
+using CppAnnotations::value;
+using CppAnnotations::Virtual::pointer;
+
+int main()
+{
+    value = 0;
+    pointer = 0;
+}
+</pre>
+    <li> A combination of <code>using namespace</code> directives and <code>using</code>
+        declarations can also be used. E.g., a <code>using namespace</code> directive
+        can be used for the <code>CppAnnotations::Virtual</code> namespace, and a
+        <code>using</code> declaration can be used for the <code>CppAnnotations::value</code>
+        variable:
+   <pre>
+using namespace CppAnnotations::Virtual;
+using CppAnnotations::value;
+
+int main()
+{
+    pointer = 0;
+}
+</pre>
+    </ul>
+<p>
+Following a <code>using namespace</code> directive all entities of that namespace
+can be used without any further prefix. If a single <code>using namespace</code>
+directive is used to refer to a nested namespace, then all entities of that
+nested namespace can be used without any further prefix. However, the entities
+defined in the more shallow namespace(s) still need the shallow namespace's
+name(s). Only after providing specific <code>using namespace</code> directives or
+<code>using</code> declarations namespace qualifications can be omitted.
+<p>
+When fully qualified names are preferred but a long name like
+        <pre>
+    CppAnnotations::Virtual::pointer
+</pre>
+    is considered too long, a <a name="an292"></a><em>namespace alias</em> may be used:
+        <pre>
+    namespace CV = CppAnnotations::Virtual;
+</pre>
+    This defines <code>CV</code> as an <em>alias</em> for the full name. The
+variable <code>pointer</code> may now be accessed using:
+        <pre>
+    CV::pointer = 0;
+</pre>
+    A namespace alias can also be used in a <code>using namespace</code> directive or
+<code>using</code> declaration:
+        <pre>
+    namespace CV = CppAnnotations::Virtual;
+    using namespace CV;
+</pre>
+<p>
+<a name="OUTSIDE"></a><a name="l72"></a>
+<h4>4.1.4.1: Defining entities outside of their namespaces</h4>
+        It is not strictly necessary to <a name="an293"></a>define members of namespaces inside a
+namespace region. But before an entity is defined <em>outside</em> of a namespace
+it must have been declared <em>inside</em> its namespace.
+<p>
+To define an entity outside of its namespace its name must be <em>fully
+qualified</em> by prefixing the member by its namespaces. The definition may be
+provided at the global level or at intermediate levels in the case of nested
+namespaces. This allows us to define an entity belonging to namespace <code>A::B</code>
+within the region of namespace <code>A</code>.
+<p>
+Assume the type <code>int INT8[8]</code> is defined in the <code>CppAnnotations::Virtual</code>
+namespace. Furthermore assume that it is our intent to define a function
+<code>squares</code>, inside the namespace <br>
+ <code>CppAnnotations::Virtual</code> returning a
+pointer to <code>CppAnnotations::Virtual::INT8</code>.
+<p>
+Having defined the prerequisites within the <code>CppAnnotations::</code><code>Virtual</code>
+namespace, our function could be defined as follows (cf. chapter <a href="cplusplus09.html#MEMORY">9</a>
+for coverage of the memory allocation operator <code>new[]</code>):
+        <pre>
+    namespace CppAnnotations
+    {
+        namespace Virtual
+        {
+            void *pointer;
+
+            typedef int INT8[8];
+
+            INT8 *squares()
+            {
+                INT8 *ip = new INT8[1];
+
+                for (size_t idx = 0; idx != sizeof(INT8) / sizeof(int); ++idx)
+                    (*ip)[idx] = (idx + 1) * (idx + 1);
+
+                return ip;
+            }
+        }
+    }
+</pre>
+    The function <code>squares</code> defines an array of one <code>INT8</code> vector, and
+returns its address after initializing the vector by the squares of the first
+eight natural numbers.
+<p>
+Now the function <code>squares</code> can be defined outside of the
+<code>CppAnnotations::</code><code>Virtual</code> namespace:
+        <pre>
+    namespace CppAnnotations
+    {
+        namespace Virtual
+        {
+            void *pointer;
+
+            typedef int INT8[8];
+
+            INT8 *squares();
+        }
+    }
+
+    CppAnnotations::Virtual::INT8 *CppAnnotations::Virtual::squares()
+    {
+        INT8 *ip = new INT8[1];
+
+        for (size_t idx = 0; idx != sizeof(INT8) / sizeof(int); ++idx)
+            (*ip)[idx] = (idx + 1) * (idx + 1);
+
+        return ip;
+    }
+</pre>
+    In the above code fragment note the following:
+    <ul>
+    <li><code>squares</code> is declared inside of the <code>CppAnnotations::Virtual</code>
+namespace.
+    <li><code></code> The definition outside of the namespace region requires us to use
+the fully qualified name of the function <em>and</em> of its return type.
+    <li><code></code> <em>Inside</em> the body of the function <code>squares</code> we are within the
+<code>CppAnnotations::</code><code>Virtual</code> namespace, so inside the function fully
+qualified names (e.g., for <code>INT8</code>) are not required any more.
+    </ul>
+<p>
+Finally, note that the function could also have been defined in the
+<code>CppAnnotations</code> region. In that case the <code>Virtual</code> namespace would have
+been required when defining <code>squares()</code> and when specifying its return type,
+while the internals of the function would remain the same:
+        <pre>
+    namespace CppAnnotations
+    {
+        namespace Virtual
+        {
+            void *pointer;
+
+            typedef int INT8[8];
+
+            INT8 *squares();
+        }
+
+        Virtual::INT8 *Virtual::squares()
+        {
+            INT8 *ip = new INT8[1];
+
+            for (size_t idx = 0; idx != sizeof(INT8) / sizeof(int); ++idx)
+                (*ip)[idx] = (idx + 1) * (idx + 1);
+
+            return ip;
+        }
+    }
+</pre>
+<p>
+
+<hr>
+<ul>
+    <li> <a href="cplusplus.html">Table of Contents</a>
+    <li> <a href="cplusplus03.html">Previous Chapter</a>
+    <li> <a href="cplusplus05.html">Next Chapter</a>
+</ul>
+<hr>
+</body>
+</html>

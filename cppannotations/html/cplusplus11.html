@@ -1,0 +1,2166 @@
+<!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<title> <div style="text-align: center">C++ Annotations Version 10.3.0</div> </title>
+<style type="text/css">
+    figure {text-align: center;}
+    img {vertical-align: center;}
+</style>
+</head>
+<body >
+<hr>
+<ul>
+    <li> <a href="cplusplus.html">Table of Contents</a>
+    <li> <a href="cplusplus10.html">Previous Chapter</a>
+    <li> <a href="cplusplus12.html">Next Chapter</a>
+</ul>
+<hr>
+<a name="OVERLOADING"></a><a name="l200"></a>
+<h1>Chapter 11: More Operator Overloading</h1>
+
+<blockquote>
+    <em>
+        Don't hesitate to send in feedback: send an e-mail if you like the
+        C++ Annotations; if you think that important material was omitted;
+        if you find errors or typos in the text or the code examples;
+        or if you just feel like e-mailing. Send your e-mail to
+        <a href="mailto:f.b.brokken@rug.nl">Frank B. Brokken</a>.
+<p>
+<strong>Please</strong> state the document version you're referring to, as found in
+        the title (in this document: 10.3.0) and please state chapter and
+        paragraph name or number you're referring to.
+<p>
+All received mail is processed conscientiously, and received
+        suggestions for improvements are usually processed by the
+        time a new version of the Annotations is released. Except for the
+        incidental case I will normally not acknowledge the receipt of
+        suggestions for improvements. Please don't interpret this as me not
+        appreciating your efforts.
+    </em>
+</blockquote>
+<p>
+Having covered the overloaded assignment operator in chapter <a href="cplusplus09.html#MEMORY">9</a>, and
+having shown several examples of other overloaded operators as well (i.e., the
+insertion and extraction operators in chapters <a href="cplusplus03.html#FirstImpression">3</a> and
+<a href="cplusplus06.html#IOStreams">6</a>), we now take a look at <a name="an1066"></a>operator overloading in general.
+<p>
+<a name="OPERATORINDEX"></a><a name="l201"></a>
+<h2>11.1: Overloading `operator[]()'</h2>
+As our next example of operator overloading, we introduce a class <code>IntArray</code>
+encapsulating an array of <code>int</code>s. Indexing the array elements is possible
+using the standard array index operator <code>[]</code>, but additionally checks for
+ <a name="an1067"></a>array bounds overflow are performed. Furthermore, the
+ <a name="an1068"></a>index operator (<a name="an1069"></a><code>operator[]</code>) is interesting in that it can be used  in
+expressions as both <a name="an1070"></a>lvalue and as <a name="an1071"></a>rvalue.
+<p>
+Here is an example showing the basic use of the class:
+        <pre>
+    int main()
+    {
+        IntArray x(20);                 // 20 ints
+
+        for (int i = 0; i &lt; 20; i++)
+            x[i] = i * 2;               // assign the elements
+
+        for (int i = 0; i &lt;= 20; i++)   // produces boundary overflow
+            cout &lt;&lt; "At index " &lt;&lt; i &lt;&lt; ": value is " &lt;&lt; x[i] &lt;&lt; '\n';
+    }
+</pre>
+<p>
+First, the constructor is used to create an object containing 20
+<code>int</code>s. The elements stored in the object can be assigned or retrieved. The
+first <code>for</code>-loop assigns values to the elements using the index operator,
+the second <code>for</code>-loop retrieves the values but also results in a
+run-time error once the non-existing value <code>x[20]</code> is addressed. The
+<code>IntArray</code> class interface is:
+        <pre>
+    #include &lt;cstddef&gt;
+
+    class IntArray
+    {
+        int     *d_data;
+        size_t d_size;
+
+         public:
+            IntArray(size_t size = 1);
+            IntArray(IntArray const &amp;other);
+            ~IntArray();
+            IntArray const &amp;operator=(IntArray const &amp;other);
+
+                                                // overloaded index operators:
+            int &amp;operator[](size_t index);                // first
+            int const &amp;operator[](size_t index) const;    // second
+
+            void swap(IntArray &amp;other);         // trivial
+
+        private:
+            void boundary(size_t index) const;
+            int &amp;operatorIndex(size_t index) const;
+    };
+</pre>
+<p>
+This class has the following characteristics:
+    <ul>
+    <li> One of its constructors has a <code>size_t</code> parameter having a
+default argument value, specifying the number of <code>int</code> elements in the
+object.
+    <li> The class internally uses a pointer to reach allocated memory.
+Hence, the necessary tools are provided: a copy constructor, an overloaded
+assignment operator and a destructor.
+    <li> Note that there are two overloaded index operators. Why are there
+two?
+<p>
+The first overloaded index operator allows us to reach and modify the
+elements of non-constant <code>IntArray</code> objects.  This overloaded operator's
+prototype is a function returning <em>a reference</em> to an <code>int</code>. This allows
+us to use expressions like <code>x[10]</code> as rvalues <em>or</em> lvalues.
+<p>
+With non-const <code>IntArray</code> objects <code>operator[]</code> can therefore be used
+to retrieve and to assign values.  The return value of the non-const
+<code>operator[]</code> member is <em>not</em> an <code>int const &amp;</code>, but an <code>int &amp;</code>. In this
+situation we don't use <code>const</code>, as we must be able to modify the element we
+want to access when the operator is used as lvalue.
+<p>
+This whole scheme fails if there's nothing to assign. Consider the
+situation where we have an <code>IntArray const stable(5)</code>. Such an object is an
+immutable <em>const</em> object. The compiler detects this and refuses to compile
+this object definition if only the non-const <code>operator[]</code> is
+available. Hence the second overloaded index operator is added to the class's
+interface. Here the return value is an <code>int const &amp;</code>, rather than an <code>int
+&amp;</code>, and the member function itself is a <code>const</code> member function. This second
+form of the overloaded index operator is only used with <code>const</code> objects. It
+is used for value <em>retrieval</em> instead of value assignment. That, of course,
+is precisely what we want when using <code>const</code> objects. In this situation
+members are overloaded only by their <code>const</code> attribute. This form of
+function overloading was introduced earlier in the <strong>C++</strong> Annotations (sections
+<a href="cplusplus02.html#FunctionOverloading">2.5.4</a> and <a href="cplusplus07.html#ConstFunctions">7.7</a>).
+<p>
+Since <code>IntArray</code> stores values of a primitive type <code>IntArray</code>'s
+<code>operator[] const</code> could also have defined a value return type.  However,
+with objects one usually doesn't want the extra copying that's implied with
+value return types. In those cases <code>const &amp;</code> return values are preferred for
+<code>const</code> member functions. So, in the <code>IntArray</code> class an <code>int</code> return
+value could have been used as well, resulting in the following prototype:
+        <pre>
+    int IntArray::operator[](size_t index) const;
+</pre>
+    <li> As there is only one pointer data member, the destruction of the
+memory allocated by the object is a simple <code>delete[] data</code>.
+    </ul>
+    Now, the implementation of the members (omitting the trivial
+implementation of <code>swap</code>, cf. chapter <a href="cplusplus09.html#MEMORY">9</a>) are:
+        <pre>
+    #include "intarray.ih"
+
+    IntArray::IntArray(size_t size)
+    :
+        d_size(size)
+    {
+        if (d_size &lt; 1)
+            throw string("IntArray: size of array must be &gt;= 1");
+
+        d_data = new int[d_size];
+    }
+
+    IntArray::IntArray(IntArray const &amp;other)
+    :
+        d_size(other.d_size),
+        d_data(new int[d_size])
+    {
+        memcpy(d_data, other.d_data, d_size * sizeof(int));
+    }
+
+    IntArray::~IntArray()
+    {
+        delete[] d_data;
+    }
+
+    IntArray const &amp;IntArray::operator=(IntArray const &amp;other)
+    {
+        IntArray tmp(other);
+        swap(tmp);
+        return *this;
+    }
+
+    int &amp;IntArray::operatorIndex(size_t index) const
+    {
+        boundary(index);
+        return d_data[index];
+    }
+
+    int &amp;IntArray::operator[](size_t index)
+    {
+        return operatorIndex(index);
+    }
+
+    int const &amp;IntArray::operator[](size_t index) const
+    {
+        return operatorIndex(index);
+    }
+
+    void IntArray::boundary(size_t index) const
+    {
+        if (index &lt; d_size)
+            return;
+        ostringstream out;
+        out  &lt;&lt; "IntArray: boundary overflow, index = " &lt;&lt;
+                index &lt;&lt; ", should be &lt; " &lt;&lt; d_size &lt;&lt; '\n';
+        throw out.str();
+    }
+</pre>
+<p>
+Note how the <code>operator[]</code> members were implemented: as non-const members
+may call const member functions and as the implementation of the <code>const</code>
+member function is identical to the non-const member function's implementation
+both <code>operator[]</code> members could be defined inline using an auxiliary
+function <code>int &amp;operatorIndex(size_t index) const</code>.  A <code>const</code> member
+function may return a non-const reference (or pointer) return value, referring
+to one of the data members of its object. Of course, this is a potentially
+dangerous backdoor that may break data hiding. However, the members in the
+public interface prevent this breach and so the two public <code>operator[]</code>
+members may themselves safely call the same <code>int &amp;operatorIndex() const</code>
+member, that defines a
+ <a name="an1072"></a><em>private backdoor</em>.
+<p>
+<a name="EXTRACTORS"></a><a name="l202"></a>
+<h2>11.2: Overloading the insertion and extraction operators</h2>
+    Classes may be adapted in such a way that their objects may be inserted
+into and extracted from, respectively, a <code>std::ostream</code> and
+<code>std::istream</code>.
+<p>
+The class <code>std::ostream</code> defines insertion operators for primitive
+types, such as <code>int</code>, <code>char *</code>, etc.. In this section we learn how to
+extend the existing functionality of classes (in particular <code>std::istream</code>
+and <code>std::ostream</code>) in such a way that they can be used also in combination
+with classes developed much later in history.
+<p>
+In particular we will show how the
+ <a name="an1073"></a>insertion operator can be overloaded allowing the insertion of any type of
+object, say <code>Person</code> (see chapter <a href="cplusplus09.html#MEMORY">9</a>), into an <code>ostream</code>. Having
+defined such an overloaded operator we're able to use the following code:
+        <pre>
+    Person kr("Kernighan and Ritchie", "unknown", "unknown");
+
+    cout &lt;&lt; "Name, address and phone number of Person kr:\n" &lt;&lt; kr &lt;&lt; '\n';
+</pre>
+    The statement <code>cout</code> &lt;&lt; <code>kr</code> uses <code>operator</code>&lt;&lt;.  This member
+function has two operands: an <code>ostream &amp;</code> and a <code>Person &amp;</code>. The required
+action is defined in an overloaded <a name="an1074"></a><em>free function</em> <code>operator</code>&lt;&lt; expecting two
+arguments:
+        <pre>
+                                // declared in `person.h'
+    std::ostream &amp;operator&lt;&lt;(std::ostream &amp;out, Person const &amp;person);
+
+                                // defined in some source file
+    ostream &amp;operator&lt;&lt;(ostream &amp;out, Person const &amp;person)
+    {
+        return
+            out &lt;&lt;
+                "Name:    " &lt;&lt; person.name() &lt;&lt; ", "
+                "Address: " &lt;&lt; person.address() &lt;&lt; ", "
+                "Phone:   " &lt;&lt; person.phone();
+    }
+</pre>
+    The free function <code>operator</code>&lt;&lt; has the following noteworthy characteristics:
+    <ul>
+    <li> The function returns a reference to an <code>ostream</code> object,
+to enable `chaining' of the insertion operator.
+    <li> The two operands of <code>operator</code>&lt;&lt; are passed to the free function as its
+arguments. In the example, the parameter <code>out</code> was initialized by <code>cout</code>,
+the parameter <code>person</code> by <code>kr</code>.
+    </ul>
+<p>
+In order to overload the <em>extraction</em> operator for, e.g., the <code>Person</code>
+class, members are needed modifying the class's private data members. Such
+ <a name="an1075"></a><em>modifiers</em> are normally offered by the class interface. For
+the <code>Person</code> class these members could be the following:
+        <pre>
+    void setName(char const *name);
+    void setAddress(char const *address);
+    void setPhone(char const *phone);
+</pre>
+    These members may easily be implemented: the memory
+pointed to by the corresponding data member must be deleted, and the data
+member should point to a copy of the text pointed to by the parameter. E.g.,
+        <pre>
+    void Person::setAddress(char const *address)
+    {
+        delete[] d_address;
+        d_address = strdupnew(address);
+    }
+</pre>
+    A more elaborate function should check the reasonableness of the new
+address (<code>address</code> also shouldn't be a 0-pointer). This
+however, is not further pursued here. Instead, let's have a look at the final
+ <a name="an1076"></a><a name="an1077"></a><code>operator</code>&gt;&gt;. A simple implementation is:
+        <pre>
+    istream &amp;operator&gt;&gt;(istream &amp;in, Person &amp;person)
+    {
+        string name;
+        string address;
+        string phone;
+
+        if (in &gt;&gt; name &gt;&gt; address &gt;&gt; phone)    // extract three strings
+        {
+            person.setName(name.c_str());
+            person.setAddress(address.c_str());
+            person.setPhone(phone.c_str());
+        }
+        return in;
+    }
+</pre>
+    Note the stepwise approach that is followed here. First, the required
+information is extracted using available extraction operators. Then, if that
+succeeds, <em>modifiers</em> are used to modify the data members of the object to
+be extracted. Finally, the stream object itself is returned as a reference.
+<p>
+<a name="ConversionOperators"></a><a name="l203"></a>
+<h2>11.3: Conversion operators</h2>
+    A class may be constructed around a built-in type. E.g., a class
+<code>String</code>, constructed around the <a name="an1078"></a><code>char *</code> type. Such a class may define
+all kinds of operations, like assignments. Take a look at the following class
+interface, designed after the <code>string</code> class:
+        <pre>
+    class String
+    {
+        char *d_string;
+
+        public:
+            String();
+            String(char const *arg);
+            ~String();
+            String(String const &amp;other);
+            String const &amp;operator=(String const &amp;rvalue);
+            String const &amp;operator=(char const *rvalue);
+    };
+</pre>
+    Objects of this class can be initialized from a <code>char const *</code>, and also
+from a <code>String</code> itself. There is an overloaded assignment operator, allowing
+the assignment from a <code>String</code> object and from a <code>char const
+*</code>&nbsp;(Note that the assignment from a <code>char const *</code> also allows the
+null-pointer. An assignment like <code>stringObject = 0</code> is perfectly in order.).
+<p>
+Usually, in classes that are less directly linked to their data than this
+<code>String</code> class, there will be an <a name="an1079"></a><em>accessor member function</em>,
+like a member <code>char const *String::c_str() const</code>. However, the need to use
+this latter member doesn't appeal to our intuition when an array of <code>String</code>
+objects is defined by, e.g., a class <code>StringArray</code>. If this latter class
+provides the <a name="an1080"></a><code>operator[]</code> to access individual <code>String</code> members, it would
+most likely offer at least the following class interface:
+        <pre>
+    class StringArray
+    {
+        String *d_store;
+        size_t d_n;
+
+        public:
+            StringArray(size_t size);
+            StringArray(StringArray const &amp;other);
+            StringArray const &amp;operator=(StringArray const &amp;rvalue);
+            ~StringArray();
+
+            String &amp;operator[](size_t index);
+    };
+</pre>
+    This interface allows us to assign <code>String</code> elements to each other:
+        <pre>
+    StringArray sa(10);
+
+    sa[4] = sa[3];  // String to String assignment
+</pre>
+    But it is also possible to assign a <code>char const *</code> to an element of
+<code>sa</code>:
+        <pre>
+    sa[3] = "hello world";
+</pre>
+    Here, the following steps are taken:
+    <ul>
+    <li> First, <code>sa[3]</code> is evaluated. This results in a <code>String</code> reference.
+    <li> Next, the <code>String</code> class is inspected for an overloaded assignment,
+        expecting a <code>char const *</code> to its right-hand side. This operator is
+        found, and the string object <code>sa[3]</code> receives its new value.
+    </ul>
+    Now we try to do it the other way around: how to <em>access</em> the
+<code>char const *</code> that's stored in <code>sa[3]</code>? The following attempt fails:
+        <pre>
+    char const *cp = sa[3];
+</pre>
+    It fails since we would need an overloaded assignment operator for the
+'class <code>char const *</code>'. Unfortunately, there isn't such a class, and
+therefore we can't build that overloaded assignment operator (see also section
+<a href="cplusplus11.html#OverloadableOperators">11.13</a>). Furthermore, <em>casting</em> won't work as the
+compiler doesn't know how to cast a <code>String</code> to a <code>char const *</code>.  How
+to proceed?
+<p>
+One possibility is to define an accessor member function <code>c_str()</code>:
+        <pre>
+    char const *cp = sa[3].c_str()
+</pre>
+    This compiles fine but looks clumsy.... A far better approach would be to
+use a <a name="an1081"></a><em>conversion operator</em>.
+<p>
+A <em>conversion operator</em> is a kind of overloaded operator, but this time
+the overloading is used to cast the object to another type.
+In class interfaces, the general form of a
+conversion operator is:
+        <pre>
+    operator &lt;type&gt;() const;
+</pre>
+    Conversion operators usually are <code>const</code> member functions: they are
+automatically called when their objects are used as <em>rvalues</em> in expressions
+having a <code>type</code> <em>lvalue</em>.  Using a conversion operator a <code>String</code>
+object may be interpreted as a <code>char const *</code> rvalue, allowing us to perform
+the above assignment.
+<p>
+Conversion operators are somewhat dangerous. The conversion is automatically
+performed by the compiler and unless its use is perfectly transparent it may
+confuse those who read code in which conversion operators are used. E.g.,
+novice <strong>C++</strong> programmers are frequently confused by statements like `<code>if
+(cin) ...</code>'.
+<p>
+As a <a name="an1082"></a>rule of thumb: classes should define at most one conversion
+operator. Multiple conversion operators may be defined but frequently result
+in ambiguous code. E.g., if a class defines <code>operator bool() const</code> and
+<code>operator int() const</code> then passing an object of this class to a function
+expecting a <code>size_t</code> argument results in an ambiguity as an <code>int</code> and a
+<code>bool</code> may both be used to initialize a <code>size_t</code>.
+<p>
+In the current example, the class <code>String</code> could define the following
+conversion operator for <code>char const *</code>:
+        <pre>
+    String::operator char const *() const
+    {
+        return d_string;
+    }
+</pre>
+    Notes:
+    <ul>
+    <li> Conversion operators do not define return types. The conversion
+operator returns a value of the type specified beyond the <code>operator</code>
+keyword.
+    <li> In certain situations (e.g., when a <code>String</code> argument is passed to
+a function specifying an <a name="an1083"></a>ellipsis parameter) the compiler needs a hand to
+disambiguate our intentions. A <code>static_cast</code> solves the problem.
+    <li> With <em>template functions</em> conversion operators may not work
+immediately as expected. For example, when defining a conversion operator
+<code>X::operator std::string const() const</code> then <code>cout &lt;&lt; X()</code> won't
+compile. The reason for this is explained in section <a href="cplusplus21.html#SPECIALIZING">21.9</a>, but a
+shortcut allowing the conversion operator to work is to define the following
+overloaded <code>operator&lt;&lt;</code> function:
+    <pre>
+std::ostream &amp;operator&lt;&lt;(std::ostream &amp;out, std::string const &amp;str)
+{
+    return out.write(str.data(), str.length());
+}
+</pre>
+    </ul>
+    Conversion operators are also used when objects of classes defining
+conversion operators are inserted into streams. Realize that the right hand
+sides of insertion operators are function parameters that are initialized by
+the operator's right hand side arguments. The rules are simple:
+    <ul>
+    <li> If a class <code>X</code> defining a conversion operator also defines an
+insertion operator accepting an <code>X</code> object the insertion operator is used;
+    <li> Otherwise, if the type returned by the conversion operator is
+insertable then the conversion operator is used;
+    <li> Otherwise, a compilation error results. Note that this happens if the
+type returned by the conversion operator itself defines a conversion operator
+to a type that may be inserted into a stream.
+    </ul>
+    In the following example an object of class <code>Insertable</code> is directly
+inserted; an object of the class <code>Convertor</code> uses the conversion operator;
+an object of the class <code>Error</code> cannot be inserted since it does not define
+an insertion operator and the type returned by its conversion operator cannot
+be inserted either (<code>Text</code> <em>does</em> define an <code>operator int() const</code>, but
+the fact that a <code>Text</code> itself cannot be inserted causes the error):
+        <pre>
+    #include &lt;iostream&gt;
+    #include &lt;string&gt;
+    using namespace std;
+
+    struct Insertable
+    {
+        operator int() const
+        {
+            cout &lt;&lt; "op int()\n";
+        }
+    };
+    ostream &amp;operator&lt;&lt;(ostream &amp;out, Insertable const &amp;ins)
+    {
+        return out &lt;&lt; "insertion operator";
+    }
+    struct Convertor
+    {
+        operator Insertable() const
+        {
+            return Insertable();
+        }
+    };
+    struct Text
+    {
+        operator int() const
+        {
+            return 1;
+        }
+    };
+    struct Error
+    {
+        operator Text() const
+        {
+            return Text();
+        }
+    };
+
+    int main()
+    {
+        Insertable insertable;
+        cout &lt;&lt; insertable &lt;&lt; '\n';
+        Convertor convertor;
+        cout &lt;&lt; convertor &lt;&lt; '\n';
+        Error error;
+        cout &lt;&lt; error &lt;&lt; '\n';
+    }
+</pre>
+<p>
+Some final remarks regarding conversion operators:
+    <ul>
+    <li> A conversion operator should be a `natural extension' of the
+facilities of the object. For example, the stream classes define <code>operator
+bool()</code>, allowing constructions like <code>if (cin)</code>.
+    <li> A conversion operator should return an <em>rvalue</em>. It should do so to
+enforce data-hiding and because it is the intended use of the conversion
+operator. Defining a conversion operator as an <em>lvalue</em> (e.g., defining an
+<code>operator int &amp;()</code> conversion operator) opens up a back door, and the
+operator can only be used as <em>lvalue</em> when explicitly called (as in:
+<code>x.operator int&amp;() = 5</code>). Don't use it.
+    <li> Conversion operators should be defined as <code>const</code> member functions
+as they don't modify their object's data members.
+    <li> Conversion operators returning composed objects should return const
+references to these objects whenever possible to avoid calling the composed
+object's copy constructor.
+    </ul>
+<p>
+<a name="EXPLICIT"></a><a name="l204"></a>
+<h2>11.4: The keyword `explicit'</h2>
+    Conversions are not only performed by conversion operators, but also by
+constructors accepting one argument (i.e., constructors having one or multiple
+parameters, specifying default argument values for all parameters or for all
+but the first parameter).
+<p>
+Assume a data base class <code>DataBase</code> is defined in which <code>Person</code>
+objects can be stored. It defines a <code>Person *d_data</code> pointer, and so it
+offers a copy constructor and an overloaded assignment operator.
+<p>
+In addition to the copy constructor <code>DataBase</code> offers a default
+constructor and several additional constructors:
+    <ul>
+    <li><code>DataBase(Person const &amp;)</code>: the <code>DataBase</code> initially contains a
+single <code>Person</code> object;
+    <li><code>DataBase(istream &amp;in)</code>: the data about multiple persons are read from
+<code>in</code>.
+    <li><code>DataBase(size_t count, istream &amp;in = cin)</code>: the data of <code>count</code>
+persons are read from <code>in</code>, by default the standard input stream.
+    </ul>
+<p>
+The above constructors all are perfectly reasonable. But they also allow
+the compiler to compile the following code without producing any warning at
+all:
+        <pre>
+    DataBase db;
+    DataBase db2;
+    Person person;
+
+    db2 = db;           // 1
+    db2 = person;       // 2
+    db2 = 10;           // 3
+    db2 = cin;          // 4
+</pre>
+    Statement 1 is perfectly reasonable: <code>db</code> is used to redefine
+<code>db2</code>. Statement 2 might be understandable since we designed <code>DataBase</code> to
+contain <code>Person</code> objects. Nevertheless, we might question the logic that's
+used here as a <code>Person</code> is not some kind of <code>DataBase</code>. The logic becomes
+even more opaque when looking at statements 3 and 4. Statement 3 in effect
+waits for the data of 10 persons to appear at the standard input
+stream. Nothing like that is suggested by <code>db2 = 10</code>.
+<p>
+All four statements are the result of implicit
+ <a name="an1084"></a>promotions. Since constructors accepting, respectively a <code>Person</code>, an
+<code>istream</code>, and a <code>size_t</code> and an <code>istream</code> have been defined for
+<code>DataBase</code> and since the assignment operator expects a <code>DataBase</code>
+right-hand side (rhs) argument the compiler first converts the rhs arguments
+to anonymous <code>DataBase</code> objects which are then assigned to <code>db2</code>.
+<p>
+It is good practice to prevent implicit promotions by using the
+ <a name="an1085"></a><code>explicit</code> modifier when declaring a constructor. Constructors using the
+<code>explicit</code> modifier can only be used to construct objects
+explicitly. Statements 2-4 would not have compiled if the constructors
+expecting one argument would have been declared using <code>explicit</code>. E.g.,
+        <pre>
+    explicit DataBase(Person const &amp;person);
+    explicit DataBase(size_t count, std:istream &amp;in);
+</pre>
+<p>
+Having declared all constructors accepting one argument as <code>explicit</code>
+the above assignments would have required the explicit specification of
+the appropriate constructors, thus clarifying the programmer's intent:
+        <pre>
+    DataBase db;
+    DataBase db2;
+    Person person;
+
+    db2 = db;               // 1
+    db2 = DataBase(person); // 2
+    db2 = DataBase(10);     // 3
+    db2 = DataBase(cin);    // 4
+</pre>
+    As a <a name="an1086"></a>rule of thumb prefix one argument constructors with the
+<code>explicit</code> keyword unless implicit promotions are perfectly natural
+(<code>string</code>'s <code>char const *</code> accepting constructor is a case in point).
+<p>
+<a name="l205"></a>
+<h3>11.4.1: Explicit conversion operators</h3>
+    In addition to explicit constructors, <strong>C++</strong> supports
+ <a name="an1087"></a><a name="an1088"></a>
+<em>explicit conversion operators</em>.
+<p>
+For example, a class might define <code>operator bool() const</code> returning <code>true</code>
+if an object of that class is in a usable state and <code>false</code> if not.
+Since the type <code>bool</code> is an arithmetic type this could result in unexpected
+or unintended behavior. Consider:
+        <pre>
+    class StreamHandler
+    {
+        public:
+            operator bool() const;      // true: object is fit for use
+            ...
+    };
+
+    int fun(StreamHandler &amp;sh)
+    {
+        int sx;
+
+        if (sh)                         // intended use of operator bool()
+            ... use sh as usual; also use `sx'
+
+        process(sh);                    // typo: `sx' was intended
+    }
+</pre>
+    In this example <code>process</code> unintentionally receives the value returned by
+<code>operator bool</code> using the implicit conversion from <code>bool</code> to <code>int</code>.
+<p>
+With <code>explicit</code> conversion operators implicit conversions like the one shown
+in the example are prevented and such conversion operators can only be used
+in situations where the converted type is explicitly required. E.g., in the
+condition sections of <code>if</code> or repetition statements where a <code>bool</code> value
+is expected. In such cases an <code>explicit operator bool()</code> conversion operator
+would automatically be used.
+<p>
+<a name="OVERLOADINCR"></a><a name="l206"></a>
+<h2>11.5: Overloading the increment and decrement operators</h2>
+Overloading the <a name="an1089"></a>increment operator <a name="an1090"></a>(<code>operator++</code>) and
+    <a name="an1091"></a>decrement operator <a name="an1092"></a>(<code>operator</code>--) introduces a small
+problem: there are two versions of each operator, as they may be used as
+<em>postfix operator</em> (e.g., <code>x++</code>) or as <em>prefix operator</em> (e.g.,
+<code>++x</code>).
+<p>
+Used as <em>postfix</em> operator, the value's object is returned as an
+<a name="an1093"></a><em>rvalue</em>, temporary const object and the post-incremented variable itself
+disappears from view. Used as <em>prefix</em> operator, the variable is
+incremented, and its value is returned as <a name="an1094"></a><em>lvalue</em> and it may be altered
+again by modifying the prefix operator's return value. Whereas these
+characteristics are not <em>required</em> when the operator is overloaded, it is
+strongly advised to implement these characteristics in any overloaded
+increment or decrement operator.
+<p>
+Suppose we define a <a name="an1095"></a><em>wrapper class</em> around the <code>size_t</code> value
+type. Such a class could offer the following (partially shown) interface:
+        <pre>
+    class Unsigned
+    {
+        size_t d_value;
+
+        public:
+            Unsigned();
+            explicit Unsigned(size_t init);
+
+            Unsigned &amp;operator++();
+    }
+</pre>
+    The class's last member declares the <em>prefix</em> overloaded increment
+operator. The returned <em>lvalue</em> is <code>Unsigned &amp;</code>. The member is easily
+implemented:
+        <pre>
+    Unsigned &amp;Unsigned::operator++()
+    {
+        ++d_value;
+        return *this;
+    }
+</pre>
+<p>
+To define the <em>postfix</em> operator, an overloaded version of the operator
+is defined, expecting a (dummy) <code>int</code> argument. This might be considered a
+<a name="an1096"></a><em>kludge</em>, or an acceptable application of function overloading. Whatever
+your opinion in this matter, the following can be concluded:
+    <ul>
+    <li> Overloaded increment and decrement operators <em>without parameters</em>
+are <em>prefix</em> operators, and should return <em>references</em> to the current
+object.
+    <li> Overloaded increment and decrement operators <em>having an int
+parameter</em> are <em>postfix</em> operators, and should return a value which
+is a copy of the object at the point where its postfix operator is used.
+    </ul>
+    The postfix increment operator is declared as follows in the class
+<code>Unsigned</code>'s interface:
+        <pre>
+    Unsigned operator++(int);
+</pre>
+    It may be implemented as follows:
+        <pre>
+    Unsigned Unsigned::operator++(int)
+    {
+        Unsigned tmp(*this);
+        ++d_value;
+        return tmp;
+    }
+</pre>
+    Note that the operator's parameter is not used. It is only part of the
+implementation to <em>disambiguate</em> the prefix- and postfix operators in
+implementations and declarations.
+<p>
+In the above example the statement incrementing the current object offers
+the <em>nothrow</em> guarantee as it only involves an operation on a
+primitive type. If the initial copy construction throws then the original
+object is not modified, if the return statement throws the object has safely
+been modified. But incrementing an object could itself throw exceptions. How
+to implement the increment operators in that case? Once again, <code>swap</code> is our
+friend. Here are the pre- and postfix operators offering the strong guarantee
+when the member <code>increment</code> performing the increment operation may throw:
+        <pre>
+    Unsigned &amp;Unsigned::operator++()
+    {
+        Unsigned tmp(*this);
+        tmp.increment();
+        swap(tmp);
+        return *this;
+    }
+    Unsigned Unsigned::operator++(int)
+    {
+        Unsigned tmp(*this);
+        tmp.increment();
+        swap(tmp);
+        return tmp;
+    }
+</pre>
+    The postfix increment operator first creates a copy of the current
+object. That copy is incremented and then swapped with the current object. If
+<code>increment</code> throws the current object remains unaltered; the swap operation
+ensures that the original object is returned and the current object becomes
+the incremented object.
+<p>
+When calling the increment or decrement operator using its full member
+function name then any <code>int</code> argument passed to the function results in
+calling the postfix operator. Omitting the argument results in calling the
+prefix operator. Example:
+        <pre>
+    Unsigned uns(13);
+
+    uns.operator++();     // prefix-incrementing uns
+    uns.operator++(0);    // postfix-incrementing uns
+</pre>
+<p>
+<a name="OVERLOADBINARY"></a><a name="l207"></a>
+<h2>11.6: Overloading binary operators</h2>
+    In various classes overloading binary operators (like <a name="an1097"></a><code>operator+</code>) can
+be a very natural extension of the class's functionality. For example, the
+<code>std::string</code> class has various overloaded forms of <code>operator+</code>.
+<p>
+Most binary operators come in two flavors: the plain binary operator (like
+the <code>+</code> operator) and the compound assignment variant (like the <code>+=</code>
+operator). Whereas the plain binary operators return values,
+the compound assignment operators return a reference to the
+object to which the operator was applied. For example, with <code>std::string</code>
+objects the following code (annotations below the example) may be used:
+        <pre>
+    std::string s1;
+    std::string s2;
+    std::string s3;
+
+    s1 = s2 += s3;                  // 1
+    (s2 += s3) + " postfix";        // 2
+    s1 = "prefix " + s3;            // 3
+    "prefix " + s3 + "postfix";     // 4
+</pre>
+<p>
+<ul>
+    <li> at <code>// 1</code> the contents of <code>s3</code> is added to <code>s2</code>. Next, <code>s2</code>
+is returned, and its new contents are assigned to <code>s1</code>. Note that <code>+=</code>
+returns <code>s2</code> itself.
+    <li> at <code>// 2</code> the contents of <code>s3</code> is also added to <code>s2</code>, but as
+<code>+=</code> returns <code>s2</code> itself, it's possible to add some more to <code>s2</code>
+    <li> at <code>// 3</code> the <code>+</code> operator returns a <code>std::string</code> containing
+the concatenation of the text <code>prefix</code> and the contents of <code>s3</code>. This
+string returned by the <code>+</code> operator is thereupon assigned to <code>s1</code>.
+    <li> at <code>// 4</code> the <code>+</code> operator is applied twice. The effect is:
+        <ol>
+        <li> The first <code>+</code> returns a <code>std::string</code> containing
+the concatenation of the text <code>prefix</code> and the contents of <code>s3</code>.
+        <li> The second <code>+</code> operator takes this returned string as its left
+hand value, and returns a string containing the concatenated text of its left
+and right hand operands.
+        <li> The string returned by the second <code>+</code> operator represents the
+value of the expression.
+        </ol>
+    </ul>
+<p>
+Consider the following code, in which a class <code>Binary</code> supports
+an overloaded <code>operator+</code>:
+        <pre>
+    class Binary
+    {
+        public:
+            Binary();
+            Binary(int value);
+            Binary operator+(Binary const &amp;rvalue);
+    };
+
+    int main()
+    {
+        Binary b1;
+        Binary b2(5);
+
+        b1 = b2 + 3;            // 1
+        b1 = 3 + b2;            // 2
+    }
+</pre>
+<p>
+Compilation of this little program fails for statement <code>// 2</code>, with the
+compiler reporting an error like:
+        <pre>
+    error: no match for 'operator+' in '3 + b2'
+</pre>
+    Why is statement <code>// 1</code> compiled correctly whereas statement <code>// 2</code>
+won't compile?
+<p>
+In order to understand this remember <em>promotions</em>. As we have seen in
+section <a href="cplusplus11.html#EXPLICIT">11.4</a>, constructors expecting a single argument may be
+implicitly activated when an argument of an appropriate type is
+provided. We've encountered this repeatedly with <code>std::string</code> objects,
+where an NTBS may be used to initialize a <code>std::string</code> object.
+<p>
+Analogously, in statement <code>// 1</code>, the <code>+</code> operator is called for the
+<code>b2</code> object. This operator expects another <code>Binary</code> object as its right
+hand operand. However, an <code>int</code> is provided. As a constructor
+<code>Binary(int)</code> exists, the <code>int</code> value is first promoted to a <code>Binary</code>
+object. Next, this <code>Binary</code> object is passed as argument to the
+<code>operator+</code> member.
+<p>
+In statement <code>// 2</code> no promotions are available: here the <code>+</code> operator
+is applied to an lvalue that is an <code>int</code>. An <code>int</code> is a primitive type and
+primitive types have no concept of `constructors', `member functions' or
+`promotions'.
+<p>
+How, then, are promotions of left-hand operands implemented in statements
+like <code>"prefix " + s3</code>? Since promotions are applied to function arguments,
+we must make sure that both operands of binary operators are arguments. This
+implies that plain binary operators supporting promotions for
+either their left-hand side operand or right-hand side operand should be
+declared as
+        <a name="an1098"></a><a name="an1099"></a><em>free operators</em>,
+    also called <em>free functions</em>.
+<p>
+Functions like the plain binary operators conceptually belong to the class
+for which they implement the binary operator. Consequently they should be
+declared in the class's header file. We cover their implementations
+shortly, but here is our first revision of the declaration of the class
+<code>Binary</code>, declaring an overloaded <code>+</code> operator as a free function:
+        <pre>
+    class Binary
+    {
+        public:
+            Binary();
+            Binary(int value);
+    };
+
+    Binary operator+(Binary const &amp;lhs, Binary const &amp;rhs);
+</pre>
+<p>
+By defining binary operators as free functions, the following promotions
+are possible:
+    <ul>
+    <li> If the left-hand operand is of the intended class type, the right
+hand argument is promoted whenever possible;
+    <li> If the right-hand operand is of the intended class type, the left
+hand argument is promoted whenever possible;
+    <li> No promotions occur when none of the operands are of the intended
+class type;
+    <li> An ambiguity occurs when promotions to different classes are possible
+for the two operands. For example:
+        <pre>
+    class A;
+
+    class B
+    {
+        public:
+            B(A const &amp;a);
+    };
+
+    class A
+    {
+        public:
+            A();
+            A(B const &amp;b);
+    };
+
+    A operator+(A const &amp;a, B const &amp;b);
+    B operator+(B const &amp;b, A const &amp;a);
+
+    int main()
+    {
+        A a;
+
+        a + a;
+    };
+</pre>
+<p>
+Here, both overloaded <code>+</code> operators are possible when compiling
+the statement <code>a + a</code>. The ambiguity must be solved by explicitly promoting
+one of the arguments, e.g., <code>a + B(a)</code> allows the compiler to resolve
+the ambiguity to the first overloaded <code>+</code> operator.
+    </ul>
+<p>
+The next step is to implement the corresponding overloaded binary
+assignment operator, having the form <code>@=</code>, with <code>@</code> being a binary
+operator. As this operator <em>always</em> has a left-hand operand which is an
+object of its own class, it is implemented as a true member
+function. Furthermore, the compound assignment operator should return a
+reference to the object to which the binary operation applies, as the
+object might be modified in the same statement. E.g.,
+    <code>(s2 += s3) + " postfix"</code>. Here is our second revision of the class
+<code>Binary</code>, showing both the declaration of the plain binary operator and the
+corresponding compound assignment operator:
+        <pre>
+    class Binary
+    {
+        public:
+            Binary();
+            Binary(int value);
+
+            Binary &amp;operator+=(Binary const &amp;rhs);
+    };
+
+    Binary operator+(Binary const &amp;lhs, Binary const &amp;rhs);
+</pre>
+<p>
+How should the compound addition assignment operator be implemented?  When
+implementing the compound assignment operator the strong guarantee should
+again be kept in mind. Use a temporary object and swap if the <code>add</code> member
+might throw. Example:
+        <pre>
+    Binary &amp;operator+=(Binary const &amp;other)
+    {
+        Binary tmp(*this);
+        tmp.add(other);     // this may throw
+        swap(tmp);
+        return *this;
+    }
+</pre>
+<p>
+It's easy to implement the plain binary operator for classes offering
+the matching compound assignment operator: the <code>lhs</code> argument is
+copied into a <code>Binary tmp</code> to which the <code>rhs</code> operand is added. Then
+<code>tmp</code> is returned. The copy construction and two statements could be
+contracted into one single return statement, but then compilers usually aren't
+able to apply copy elision in this case. But
+copy elision <em>is</em> usually used when the steps are taken separately:
+        <pre>
+    class Binary
+    {
+        public:
+            Binary();
+            Binary(int value);
+
+            Binary &amp;operator+=(Binary const &amp;other);
+    };
+
+    Binary operator+(Binary const &amp;lhs, Binary const &amp;rhs)
+    {
+        Binary tmp(lhs);
+        tmp += rhs;
+        return tmp;
+    }
+</pre>
+<p>
+But wait! Remember the design principle for move-aware classes that was
+given in section <a href="cplusplus09.html#MOVEPRINCIPLE">9.7.8</a>? When implementing binary operators we're
+doing exactly that what was mentioned in that design principle. A temporay
+object is constructed and the compound assignment operation is applied to the
+temporary object.
+<p>
+If the class <code>Binary</code> is a move-aware class then we can add a move-aware
+binary operator to our class at very little cost. The actual work is performed
+by the compound addition assignment operator, as described. However, this
+operator is called from the move-aware binary operator having prototype
+        <pre>
+    Binary operator+(Binary &amp;&amp;ltmp, Binary const &amp;rhs);
+</pre>
+    The traditional binary operator's implementation now simply consists of
+two steps:
+        <ul>
+        <li> A copy of the left-hand side operand is made using the class's
+copy constructor;
+        <li> The move-aware binary operator is called, passing it the
+anonymized copy as its left-hand side operand and returning its result as the
+binary operator's result.
+        </ul>
+<p>
+Here is the declaration and implementation of the traditional and
+move-aware compound addition assignment operator of the class <code>Binary</code> for
+<code>operator+</code>:
+<p>
+<pre>
+    class Binary
+    {
+        public:
+            Binary();
+            Binary(int value);
+                        // copy and move constructors are available by default, or
+                        // they can be explicitly declared and implemented.
+
+            Binary &amp;operator+=(Binary const &amp;other);    // see the text
+    };
+
+    inline Binary operator+(Binary &amp;&amp;lhs, Binary const &amp;rhs)
+    {
+        return std::move(lhs += rhs);   // avoids copy construction
+    }
+
+    inline Binary operator+(Binary const &amp;lhs, Binary const &amp;rhs)
+    {
+        Binary tmp(lhs);
+        return std::move(tmp) + rhs;
+    }
+</pre>
+<p>
+<a name="OVERLOADNEW"></a><a name="l208"></a>
+<h2>11.7: Overloading `operator new(size_t)'</h2>
+When <a name="an1100"></a><code>operator new</code><a name="an1101"></a> is overloaded, it must define a <a name="an1102"></a><code>void *</code> return
+type, and its first parameter must be of type <a name="an1103"></a><code>size_t</code>. The default
+<code>operator new</code> defines only one parameter, but overloaded versions may
+define multiple parameters. The first one is not explicitly specified but is
+deducted from the size of objects of the class for which <code>operator new</code>
+is overloaded. In this section overloading <code>operator new</code> is discussed.
+Overloading <a name="an1104"></a><code>new[]</code> is discussed in section <a href="cplusplus11.html#NEWDELETEARRAY">11.9</a>.
+<p>
+It is possible to define multiple versions of the <code>operator new</code>, as long as
+each version defines its own unique set of arguments. When overloaded
+<code>operator new</code> members must dynamically allocate memory they can do so using
+the global <code>operator new</code>, applying the scope resolution operator
+<code>::</code>. In the next example the overloaded <code>operator new</code> of the class
+<code>String</code> initializes the substrate of dynamically allocated <code>String</code>
+objects to 0-bytes:
+        <pre>
+    #include &lt;cstddef&gt;
+    #include &lt;iosfwd&gt;
+
+    class String
+    {
+        std::string *d_data;
+
+        public:
+            void *operator new(size_t size)
+            {
+                return memset(::operator new(size), 0, size);
+            }
+            bool empty() const
+            {
+                return d_data == 0;
+            }
+    };
+</pre>
+    The above <code>operator new</code> is used in the following program, illustrating
+that even though <code>String</code>'s default constructor does nothing the object's
+data are initialized to zeroes:
+        <pre>
+    #include "string.h"
+    #include &lt;iostream&gt;
+    using namespace std;
+
+    int main()
+    {
+        String *sp = new String;
+
+        cout &lt;&lt; boolalpha &lt;&lt; sp-&gt;empty() &lt;&lt; '\n';   // shows: true
+    }
+</pre>
+    At <code>new String</code> the following took place:
+    <ul>
+    <li> First, <code>String::operator new</code> was called, allocating and
+initializing a block of memory, the size of a <code>String</code> object.
+    <li> Next, a pointer to this block of memory was passed to the
+        (default) <code>String</code> constructor. Since no constructor was defined,
+        the constructor itself didn't do anything at all.
+    </ul>
+    As <code>String::operator new</code> initialized the allocated memory to zero bytes
+the allocated <code>String</code> object's <code>d_data</code> member had already been
+initialized to a 0-pointer by the time it started to exist.
+<p>
+All member functions (including constructors and destructors) we've
+encountered so far define a (hidden) pointer to the object on which they
+should operate. This hidden pointer becomes the function's <a name="an1105"></a><code>this</code> pointer.
+<p>
+In the next example of <em>pseudo</em> <strong>C++</strong> <em>code</em>, the pointer is explicitly
+shown to illustrate what's happening when <code>operator new</code> is used. In the
+first part a <code>String</code> object <code>str</code> is directly defined, in the second
+part of the example the (overloaded) <code>operator new</code> is used:
+        <pre>
+    String::String(String *const this);     // real prototype of the default
+                                            // constructor
+
+    String *sp = new String;                // This statement is implemented
+                                            // as follows:
+
+        String *sp = static_cast&lt;String *&gt;(            // allocation
+                        String::operator new(sizeof(String))
+                     );
+        String::String(sp);                                 // initialization
+</pre>
+    In the above fragment the member functions were treated as
+ <em>object-less</em> member functions of the class <code>String</code>. Such members are
+called <em>static member functions</em> (cf. chapter <a href="cplusplus08.html#StaticDataFun">8</a>). Actually,
+<code>operator new</code> <em>is</em> such a static member function. Since it has no
+<code>this</code> pointer it cannot reach data members of the object for which it is
+expected to make memory available. It can only allocate and initialize the
+allocated memory, but cannot reach the object's data members by name as there
+is as yet no data object layout defined.
+<p>
+Following the allocation, the memory is passed (as the <code>this</code> pointer)
+to the constructor for further processing.
+<p>
+<code>Operator new</code> can have multiple parameters. The first parameter is
+initialized as an implicit argument and is always a <code>size_t</code>
+parameter. Additional overloaded operators may define additional
+parameters. An interesting additional <code>operator new</code> is the
+    <a name="an1106"></a><a name="an1107"></a><em>placement new</em> operator. With the placement new
+operator a block of memory has already been set aside and one of the class's
+constructors is used to initialize that memory. Overloading placement new
+requires an <code>operator new</code> having two parameters: <code>size_t</code> and <code>char *</code>,
+pointing to the memory that was already available. The <code>size_t</code>
+parameter is implicitly initialized, but the remaining parameters must
+explicitly be initialized using arguments to <code>operator new</code>. Hence we reach
+the familiar syntactical form of the placement new operator in use:
+        <pre>
+    char buffer[sizeof(String)];        // predefined memory
+    String *sp = new(buffer) String;    // placement new call
+</pre>
+    The declaration of the placement new operator in our class <code>String</code>
+looks like this:
+        <pre>
+    void *operator new(size_t size, char *memory);
+</pre>
+    It could be implemented like this (also initializing the <code>String</code>'s
+memory to 0-bytes):
+        <pre>
+    void *String::operator new(size_t size, char *memory)
+    {
+        return memset(memory, 0, size);
+    }
+</pre>
+    Any other overloaded version of <code>operator new</code> could also be
+defined. Here is an example showing the use and definition of an overloaded
+<code>operator new</code> storing the object's address immediately in an existing array
+of pointers to <code>String</code> objects (assuming the array is large enough):
+        <pre>
+        // use:
+    String *next(String **pointers, size_t *idx)
+    {
+        return new(pointers, (*idx)++) String;
+    }
+
+        // implementation:
+    void *String::operator new(size_t size, String **pointers, size_t idx)
+    {
+        return pointers[idx] = ::operator new(size);
+    }
+</pre>
+<p>
+<a name="OVERLOADDELETE"></a><a name="l209"></a>
+<h2>11.8: Overloading `operator delete(void *)'</h2>
+The <a name="an1108"></a><code>delete</code> operator may also be overloaded. In fact it's good practice to
+overload <a name="an1109"></a><code>operator delete</code> whenever <code>operator new</code> is also overloaded.
+<p>
+<code>Operator delete</code> must define a <a name="an1110"></a><code>void *</code> parameter.  A second overloaded
+version defining a second parameter of type <code>size_t</code> is related to
+overloading <code>operator new[]</code> and is discussed in section
+<a href="cplusplus11.html#NEWDELETEARRAY">11.9</a>.
+<p>
+Overloaded <code>operator delete</code> members return <code>void</code>.
+<p>
+The `home-made' <code>operator delete</code> is called when deleting a dynamically
+allocated object after executing the destructor of the associated
+class. So, the statement
+        <pre>
+    delete ptr;
+</pre>
+    with <code>ptr</code> being a pointer to an object of the class <code>String</code> for
+which the operator <code>delete</code> was overloaded, is a shorthand for the following
+statements:
+        <pre>
+    ptr-&gt;~String(); // call the class's destructor
+
+                    // and do things with the memory pointed to by ptr
+    String::operator delete(ptr);
+</pre>
+    The overloaded <code>operator delete</code> may do whatever it wants to do with the
+memory pointed to by <code>ptr</code>. It could, e.g., simply delete it. If that would
+be the preferred thing to do, then the default
+<code>delete</code> operator can be called using the <a name="an1111"></a><code>::</code>
+ <a name="an1112"></a>scope resolution operator. For example:
+        <pre>
+    void String::operator delete(void *ptr)
+    {
+        // any operation considered necessary, then, maybe:
+        ::delete ptr;
+    }
+</pre>
+    To declare the above overloaded <code>operator delete</code> simply add the
+following line to the class's interface:
+        <pre>
+    void operator delete(void *ptr);
+</pre>
+    Like <code>operator new operator delete</code> is a static member function
+(see also chapter <a href="cplusplus08.html#StaticDataFun">8</a>).
+<p>
+<a name="NEWDELETEARRAY"></a><a name="l210"></a>
+<h2>11.9: Operators `new[]' and `delete[]'</h2>
+In sections <a href="cplusplus09.html#NEWARRAY">9.1.1</a>, <a href="cplusplus09.html#DELETEARRAY">9.1.2</a> and <a href="cplusplus09.html#DELETEPTRS">9.2.1</a>
+    <code>operator new[]</code> and <code>operator delete[]</code> were introduced.  Like
+<code>operator new</code> and <code>operator delete</code> the
+operators <code>new[]</code> and <code>delete[]</code> may be overloaded.
+<p>
+As it is possible to overload <code>new[]</code> and <code>delete[]</code> as well as
+<code>operator new</code> and <code>operator delete</code>, one should be careful in selecting
+the appropriate set of operators. The following <a name="an1113"></a>rule of thumb should always
+be applied:
+    <blockquote>If <code>new</code> is used to <a name="an1114"></a>allocate memory, <code>delete</code> should be used
+        to <a name="an1115"></a>deallocate memory. If <code>new[]</code> is used to allocate memory,
+        <code>delete[]</code> should be used to deallocate memory.</blockquote>
+<p>
+By default these operators act as follows:
+    <ul>
+    <li><code>operator new</code> is used to allocate a single object or
+        primitive value. With an object, the object's constructor is
+called.
+    <li><code>operator delete</code> is used to return the memory allocated by <code>operator
+new</code>. Again, with class-type objects, the class's destructor is
+called.
+    <li><code>operator new[]</code> is used to allocate a series of primitive values or
+objects. If a series of objects is allocated, the class's default constructor
+is called to initialize each object individually.
+    <li><code>operator delete[]</code> is used to delete the memory previously allocated
+by <code>new[]</code>. <em>If</em> objects were previously allocated, then the destructor
+is called for each individual object. Be careful, though, when pointers to
+objects were allocated. If <a name="an1116"></a>
+ <em>pointers to objects</em> were allocated the destructors of the objects to
+which the allocated pointers point won't automatically be called. A pointer is
+a primitive type and so no further action is taken when it is returned to the
+common pool.
+    </ul>
+<p>
+<a name="l211"></a>
+<h3>11.9.1: Overloading `new[]'</h3>
+        To overload <a name="an1117"></a><code>operator new[]</code> in a class (e.g., in the class
+<code>String</code>) add the following line to the class's interface:
+        <pre>
+    void *operator new[](size_t size);
+</pre>
+    The member's <code>size</code> parameter is implicitly provided and is initialized
+by <strong>C++</strong>'s run-time system to the amount of memory that must be allocated.
+Like the simple one-object <code>operator new</code> it
+should return a <a name="an1118"></a><code>void *</code>. The number of objects that must be initialized can
+easily be computed from <code>size / sizeof(String)</code> (and of course replacing
+<code>String</code> by the appropriate class name when overloading <code>operator new[]</code>
+for another class). The overloaded <code>new[]</code> member may allocate raw memory
+using e.g., the default <code>operator new[]</code> or the default <code>operator new</code>:
+        <pre>
+    void *operator new[](size_t size)
+    {
+        return ::operator new[](size);
+        // alternatively:
+        // return ::operator new(size);
+    }
+</pre>
+    Before returning the allocated memory the overloaded <code>operator new[]</code>
+has a chance to do something special. It could, e.g., initialize the memory to
+zero-bytes.
+<p>
+Once the overloaded <code>operator new[]</code> has been defined, it is
+automatically used in statements like:
+        <pre>
+    String *op = new String[12];
+</pre>
+    Like <code>operator new</code> additional overloads of <code>operator new[]</code> may be
+defined. One opportunity for an <code>operator new[]</code> overload is overloading
+ <a name="an1119"></a><em>placement new</em> specifically for arrays of objects. This operator is
+available by default but becomes  unavailable once at least one overloaded
+<code>operator new[]</code> is defined. Implementing placement <code>new</code> is not
+difficult. Here is an example, initializing the available memory to 0-bytes
+before returning:
+        <pre>
+    void *String::operator new[](size_t size, char *memory)
+    {
+        return memset(memory, 0, size);
+    }
+</pre>
+    To use this overloaded operator, the second parameter must again be
+provided, as in:
+        <pre>
+    char buffer[12 * sizeof(String)];
+    String *sp = new(buffer) String[12];
+</pre>
+<p>
+<a name="l212"></a>
+<h3>11.9.2: Overloading `delete[]'</h3>
+    To overload <a name="an1120"></a><code>operator delete[]</code> in a class <code>String</code> add the following line
+to the class's interface:
+        <pre>
+    void operator delete[](void *memory);
+</pre>
+    Its parameter is initialized to the address of a block of memory
+previously allocated by <code>String::new[]</code>.
+<p>
+There are some subtleties to be aware of when implementing
+<code>operator delete[]</code>. Although the addresses returned by <code>new</code> and
+<code>new[]</code> point to the allocated object(s), there is an additional <code>size_t</code>
+value available immediately before the address returned by <code>new</code> and
+<code>new[]</code>. This <code>size_t</code> value is part of the allocated block and contains
+the actual size of the block. This of course does not hold true for the
+ <a name="an1121"></a>placement <code>new</code> operator.
+<p>
+When a class defines a destructor the <code>size_t</code> value preceding the
+address returned by <code>new[]</code> does not contain the size of the allocated
+block, but the <em>number</em> of objects specified when calling
+<code>new[]</code>. Normally that is of no interest, but when overloading <code>operator
+delete[]</code> it might become a useful piece of information. In those cases
+<code>operator delete[]</code> does <em>not</em> receive the address returned by <code>new[]</code>
+but rather the address of the initial <code>size_t</code> value. Whether this is at all
+useful is not clear. By the time <code>delete[]</code>'s code is executed all objects
+have already been destroyed, so <code>operator delete[]</code> is only to determine how
+many objects were destroyed but the objects themselves cannot be used anymore.
+<p>
+Here is an example showing this behavior of <code>operator delete[]</code> for a
+minimal <code>Demo</code> class:
+        <pre>
+    struct Demo
+    {
+        size_t idx;
+        Demo()
+        {
+            cout &lt;&lt; "default cons\n";
+        }
+        ~Demo()
+        {
+            cout &lt;&lt; "destructor\n";
+        }
+        void *operator new[](size_t size)
+        {
+            return ::operator new(size);
+        }
+        void operator delete[](void *vp)
+        {
+            cout &lt;&lt; "delete[] for: " &lt;&lt; vp &lt;&lt; '\n';
+            ::operator delete[](vp);
+        }
+    };
+
+    int main()
+    {
+        Demo *xp;
+        cout &lt;&lt; ((int *)(xp = new Demo[3]))[-1] &lt;&lt; '\n';
+        cout &lt;&lt; xp &lt;&lt; '\n';
+        cout &lt;&lt; "==================\n";
+        delete[] xp;
+    }
+    // This program displays (your 0x?????? addresses might differ, but
+    // the difference between the two should be sizeof(size_t)):
+    //  default cons
+    //  default cons
+    //  default cons
+    //  3
+    //  0x8bdd00c
+    //  ==================
+    //  destructor
+    //  destructor
+    //  destructor
+    //  delete[] for: 0x8bdd008
+</pre>
+    Having overloaded <code>operator delete[]</code> for a class <code>String</code>, it will be
+used automatically in statements like:
+        <pre>
+        delete[] new String[5];
+</pre>
+<p>
+Operator <code>delete[]</code> may also be overloaded using an additional
+<code>size_t</code> parameter:
+        <pre>
+    void operator delete[](void *p, size_t size);
+</pre>
+    Here <code>size</code> is automatically initialized to the size (in bytes) of the
+block of memory to which <code>void *p</code> points. If this form is defined, then
+<code>void operator[](void *)</code> should <em>not</em> be defined, to avoid ambiguities.
+An example of this latter form of <code>operator delete[]</code> is:
+        <pre>
+    void String::operator delete[](void *p, size_t size)
+    {
+        cout &lt;&lt; "deleting " &lt;&lt; size &lt;&lt; " bytes\n";
+        ::operator delete[](ptr);
+    }
+</pre>
+<p>
+Additional overloads of <code>operator delete[]</code> may be defined, but to use
+them they must explicitly be called as static member functions (cf. chapter
+<a href="cplusplus08.html#StaticDataFun">8</a>). Example:
+        <pre>
+        // declaration:
+    void String::operator delete[](void *p, ostream &amp;out);
+        // usage:
+    String *xp = new String[3];
+    String::operator delete[](xp, cout);
+</pre>
+<p>
+<a name="l213"></a>
+<h3>11.9.3: C++14: the `operator delete(void *, size_t)' family</h3>
+    As we've seen classes may overload their <code>operator delete</code> and <code>operator
+delete[]</code> members. 
+<p>
+The <a name="an1122"></a>C++14 standard also supports overloading the global <code>void operator
+delete(void *, size_t size)</code> and <code>void operator delete[](void *, size_t
+size)</code> functions.
+<p>
+When a global <a name="an1123"></a>sized deallocation function is defined, it is automatically
+used instead of the default, non-sized deallocation function. The performance
+of programs may improve if a sized deallocation function is available (cf. 
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3663.html">http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3663.html</a>).
+<p>
+<a name="l214"></a>
+<h3>11.9.4: `new[]', `delete[]' and exceptions</h3>
+    When an exception is thrown while executing a <code>new[]</code> expression, what will
+happen? In this section we'll show that <code>new[]</code> is
+ <a name="an1124"></a><a name="an1125"></a> exception safe even when
+only some of the objects were properly constructed.
+<p>
+To begin, <code>new[]</code> might throw while trying to allocate the required
+memory. In this case a <a name="an1126"></a><code>bad_alloc</code> is thrown and we don't leak as nothing
+was allocated.
+<p>
+Having allocated the required memory the class's default constructor is going
+to be used for each of the objects in turn. At some point a constructor might
+throw. What happens next is defined by the <strong>C++</strong> standard: the destructors
+of the already constructed objects are called and the memory allocated for
+the objects themselves is returned to the common pool. Assuming that the
+failing constructor offers the basic guarantee <code>new[]</code> is therefore
+exception safe even if a constructor may throw.
+<p>
+The following example illustrates this behavior. A request to allocate and
+initialize five objects is made, but after constructing two objects
+construction fails by throwing an exception. The output shows that the
+destructors of properly constructed objects are called and that the allocated
+<em>substrate memory</em> is properly returned:
+    <pre>
+    #include &lt;iostream&gt;
+    using namespace std;
+
+    static size_t count = 0;
+
+    class X
+    {
+        int x;
+
+        public:
+            X()
+            {
+                if (count == 2)
+                    throw 1;
+                cout &lt;&lt; "Object " &lt;&lt; ++count &lt;&lt; '\n';
+            }
+            ~X()
+            {
+                cout &lt;&lt; "Destroyed " &lt;&lt; this &lt;&lt; "\n";
+            }
+            void *operator new[](size_t size)
+            {
+                cout &lt;&lt; "Allocating objects: " &lt;&lt; size &lt;&lt; " bytes\n";
+                return ::operator new(size);
+            }
+            void operator delete[](void *mem)
+            {
+                cout &lt;&lt; "Deleting memory at " &lt;&lt; mem &lt;&lt; ", containing: " &lt;&lt;
+                    *static_cast&lt;int *&gt;(mem) &lt;&lt; "\n";
+                ::operator delete(mem);
+            }
+    };
+
+    int main()
+    try
+    {
+        X *xp = new X[5];
+        cout &lt;&lt; "Memory at " &lt;&lt; xp &lt;&lt; '\n';
+        delete[] xp;
+    }
+    catch (...)
+    {
+        cout &lt;&lt; "Caught exception.\n";
+    }
+    // Output from this program (your 0x??? addresses might differ)
+    //  Allocating objects: 24 bytes
+    //  Object 1
+    //  Object 2
+    //  Destroyed 0x8428010
+    //  Destroyed 0x842800c
+    //  Deleting memory at 0x8428008, containing: 5
+    //  Caught exception.
+</pre>
+<p>
+<a name="FUNOBJ"></a><a name="l215"></a>
+<h2>11.10: Function Objects</h2>
+<em>Function Objects</em> are created by overloading the
+ <a name="an1127"></a><em>function call operator</em> <a name="an1128"></a><code>operator()</code>. By defining the function call
+operator an object masquerades as a function, hence the term
+        <a name="an1129"></a> <em>function objects</em>.
+    Function objects are also known as
+        <a name="an1130"></a><em>functors</em>.
+<p>
+Function objects are important when using
+    <a href="cplusplus19.html#GENERIC"><em>generic algorithms</em></a>. The use of function objects is
+preferred over alternatives like
+ <a name="an1131"></a> pointers to functions. The fact that they are
+important in the context of generic algorithms leaves us with a didactic
+dilemma. At this point in the <strong>C++</strong> Annotations it would have been nice if generic
+algorithms would already have been covered, but for the discussion of the
+generic algorithms knowledge of function objects is required. This
+bootstrapping problem is solved in a well known way: by ignoring the
+dependency for the time being, for now concentrating on the function object
+concept.
+<p>
+Function objects are objects for which <code>operator()</code> has been
+defined. Function objects are not just used in combination with generic
+algorithms, but also as a (preferred) alternative to pointers to
+functions.
+<p>
+Function objects are frequently used to implement
+ <a name="an1132"></a><em>predicate</em> functions.  Predicate functions return boolean values.
+Predicate functions and predicate function objects are commonly referred to as
+`predicates'. Predicates are frequently used by generic algorithms such as the
+<a href="cplusplus19.html#COUNTIF">count_if</a> generic algorithm, covered in chapter <a href="cplusplus19.html#GENERIC">19</a>,
+returning the number of times its function object has returned <code>true</code>. In
+the <em>standard template library</em> two kinds of predicates are used: <em>unary
+predicates</em> receive one argument, <em>binary predicates</em> receive two arguments.
+<p>
+Assume we have a class <code>Person</code> and an array of <code>Person</code> objects. Further
+assume that the array is not sorted. A well known procedure for finding a
+particular <code>Person</code> object in the array is to use the function <a name="an1133"></a>
+<a name="an1134"></a><code>lsearch</code>, which performs a <a name="an1135"></a><em>lineair search</em> in an array. Example:
+        <pre>
+    Person &amp;target = targetPerson();    // determine the person to find
+    Person *pArray;
+    size_t n = fillPerson(&amp;pArray);
+
+    cout &lt;&lt; "The target person is";
+
+    if (!lsearch(&amp;target, pArray, &amp;n, sizeof(Person), compareFunction))
+        cout &lt;&lt; " not";
+    cout &lt;&lt; "found\n";
+</pre>
+    The function <code>targetPerson</code> determines the person we're looking for, and
+<code>fillPerson</code> is called to fill the array.  Then <code>lsearch</code> is used to
+locate the target person.
+<p>
+The comparison function must be available, as its address is one of the
+arguments of <code>lsearch</code>. It must be a real function having an address. If it
+is defined inline then the compiler has no choice but to ignore that request
+as inline functions don't have addresses. <code>CompareFunction</code> could be
+implemented like this:
+        <pre>
+    int compareFunction(void const *p1, void const *p2)
+    {
+        return *static_cast&lt;Person const *&gt;(p1)     // lsearch wants 0
+                !=                                  // for equal objects
+                *static_cast&lt;Person const *&gt;(p2);
+    }
+</pre>
+    This, of course, assumes that the <a name="an1136"></a><code>operator!=</code> has been overloaded in
+the class <code>Person</code>. But overloading <code>operator!=</code> is no big deal, so
+let's assume that that operator is actually available.
+<p>
+On average <code>n / 2</code> times <em>at least</em> the
+following actions take place:
+    <ol>
+    <li> The two arguments of the compare function are pushed on the stack;
+    <li> The value of the final parameter of <code>lsearch</code> is determined,
+producing <code>compareFunction</code>'s address;
+    <li> The compare function is called;
+    <li> Then, inside the compare function the address of the right-hand
+argument of the 
+        <code>Person::operator!=</code> argument is pushed on the stack;
+    <li> <code>Person::operator!=</code> is evaluated;
+    <li> The argument of the <code>Person::operator!=</code> function is popped off
+the stack;
+    <li> The two arguments of the compare function are popped off the stack.
+    </ol>
+    Using function objects results in a different picture. Assume we have
+constructed a function <code>PersonSearch</code>, having the following prototype (this,
+however, is not the preferred approach. Normally a generic algorithm is
+preferred over a home-made function. But for now we focus on <code>PersonSearch</code>
+to illustrate the use and implementation of a function object):
+        <pre>
+    Person const *PersonSearch(Person *base, size_t nmemb,
+                               Person const &amp;target);
+</pre>
+    This function can be used as follows:
+        <pre>
+    Person &amp;target = targetPerson();
+    Person *pArray;
+    size_t n = fillPerson(&amp;pArray);
+
+    cout &lt;&lt; "The target person is";
+
+    if (!PersonSearch(pArray, n, target))
+        cout &lt;&lt; " not";
+
+    cout &lt;&lt; "found\n";
+</pre>
+    So far, not much has been changed. We've replaced the call to <code>lsearch</code>
+with a call to another function: <code>PersonSearch</code>.  Now look at
+<code>PersonSearch</code> itself:
+        <pre>
+    Person const *PersonSearch(Person *base, size_t nmemb,
+                                Person const &amp;target)
+    {
+        for (int idx = 0; idx &lt; nmemb; ++idx)
+            if (target(base[idx]))
+                return base + idx;
+        return 0;
+    }
+</pre>
+    <code>PersonSearch</code> implements a plain <a name="an1137"></a>linear search. However, in the
+for-loop we see <code>target(base[idx])</code>. Here <code>target</code> is used as a
+<em>function object</em>. Its implementation is simple:
+        <pre>
+    bool Person::operator()(Person const &amp;other) const
+    {
+        return *this == other;
+    }
+</pre>
+    Note the somewhat <a name="an1138"></a>peculiar syntax: <a name="an1139"></a><code>operator()</code>. The first set of
+parentheses define the operator that is overloaded: the function call
+operator. The second set of parentheses define the parameters that are
+required for this overloaded operator. In the class header file this
+overloaded operator is declared as:
+        <pre>
+    bool operator()(Person const &amp;other) const;
+</pre>
+    Clearly <code>Person::operator()</code> is a simple function. It contains but one
+statement, and we could consider defining it <a name="an1140"></a>inline. Assuming we do,
+then this is what happens when <code>operator()</code> is called:
+    <ol>
+    <li> The address of the right-hand argument of the
+        <code>Person::operator==</code> argument is pushed on the stack;
+    <li> The <code>operator==</code> function is evaluated (which probably also is a
+<em>semantic</em> improvement over calling <code>operator!=</code> when looking for an
+object <em>equal to</em> a specified target object);
+    <li> The argument of <code>Person::operator==</code> argument is popped off the
+        stack.
+    </ol>
+    Due to the fact that <code>operator()</code> is an inline function, it is not
+actually called. Instead <code>operator==</code> is called immediately. Moreover, the
+required <a name="an1141"></a>stack operations are fairly modest.
+<p>
+Function objects may truly be defined inline.  Functions that are called
+indirectly (i.e., using pointers to functions) can never be defined inline as
+their addresses must be known.  Therefore, even if the function object needs
+to do very little work it is defined as an ordinary function if it is going to
+be called through pointers. The overhead of performing the indirect call may
+annihilate the advantage of the flexibility of calling functions
+indirectly. In these cases using inline function objects can result in an
+increase of a program's efficiency.
+<p>
+An added benefit of function objects is that they may access the private data
+of their objects. In a search algorithm where a compare function is used (as
+with <code>lsearch</code>) the target and array elements are passed to the compare
+function using pointers, involving extra stack handling. Using function
+objects, the target person doesn't vary within a single search
+task. Therefore, the target person could be passed to the function object's
+class constructor. This is in fact what happens in the expression
+<code>target(base[idx])</code> receiving as its only argument the subsequent elements
+of the array to search.
+<p>
+<a name="MANIPCONSTRUCTION"></a><a name="l216"></a>
+<h3>11.10.1: Constructing manipulators</h3>
+    In chapter <a href="cplusplus06.html#IOStreams">6</a> we saw constructions like <code>cout</code> &lt;&lt; <code>hex</code>
+&lt;&lt; <code>13</code> &lt;&lt; to display the value 13 in hexadecimal format. One
+may wonder by what magic the <code>hex</code> <a name="an1142"></a>manipulator accomplishes this. In this
+section the construction of manipulators like <code>hex</code> is covered.
+<p>
+Actually the construction of a manipulator is rather simple. To start, a
+definition of the manipulator is needed. Let's assume we want to create a
+manipulator <code>w10</code> which sets the <a name="an1143"></a>field width of the next field to be
+written by the <code>ostream</code> object to 10. This manipulator is constructed as a
+function. The <code>w10</code> function needs to know about the <code>ostream</code> object
+in which the width must be set. By providing the function with an <code>ostream
+&amp;</code> parameter, it obtains this knowledge. Now that the function knows about the
+<code>ostream</code> object we're referring to, it can set the width in that object.
+<p>
+Next, it must be possible to use the manipulator in an insertion
+sequence. This implies that the <a name="an1144"></a>return value of the manipulator must be
+a <a name="an1145"></a>reference to an <a name="an1146"></a><code>ostream</code> object also.
+<p>
+From the above considerations we're now able to construct our <code>w10</code>
+function:
+        <pre>
+    #include &lt;ostream&gt;
+    #include &lt;iomanip&gt;
+
+    std::ostream &amp;w10(std::ostream &amp;str)
+    {
+        return str &lt;&lt; std::setw(10);
+    }
+</pre>
+<p>
+The <code>w10</code> function can of course be used in a `stand alone' mode, but it
+can also be used as a manipulator. E.g.,
+    <pre>
+        #include &lt;iostream&gt;
+        #include &lt;iomanip&gt;
+
+        using namespace std;
+
+        extern ostream &amp;w10(ostream &amp;str);
+
+        int main()
+        {
+            w10(cout) &lt;&lt; 3 &lt;&lt; " ships sailed to America\n";
+            cout &lt;&lt; "And " &lt;&lt; w10 &lt;&lt; 3 &lt;&lt; " more ships sailed too.\n";
+        }
+</pre>
+<p>
+The <code>w10</code> function can be used as a manipulator because the <code>class
+ostream</code> has an overloaded <code>operator</code>&lt;&lt; accepting a <a name="an1147"></a>pointer to a function
+expecting an <code>ostream &amp;</code> and returning an <code>ostream &amp;</code>. Its definition is:
+        <pre>
+    ostream&amp; operator&lt;&lt;(ostream &amp;(*func)(ostream &amp;str))
+    {
+        return (*func)(*this);
+    }
+</pre>
+    In addition to the above overloaded <code>operator</code>&lt;&lt; another one is defined
+        <pre>
+    ios_base &amp;operator&lt;&lt;(ios_base &amp;(*func)(ios_base &amp;base))
+    {
+        (*func)(*this);
+        return *this;
+    }
+</pre>
+    This latter function is used when inserting, e.g., <code>hex</code> or
+<code>internal</code>.
+<p>
+The above procedure does not work for manipulators requiring arguments.
+It is of course possible to overload <code>operator</code>&lt;&lt; to accept an <code>ostream</code>
+reference and the address of a function expecting an <code>ostream &amp;</code> and, e.g.,
+an <code>int</code>, but while the address of such a function may be specified with the
+&lt;&lt;-operator, the arguments itself cannot be specified. So, one wonders
+how the following construction has been implemented:
+        <pre>
+    cout &lt;&lt; setprecision(3)
+</pre>
+    In this case the manipulator is defined as a <a name="an1148"></a>macro. Macro's, however,
+are the realm of the <a name="an1149"></a>preprocessor, and may easily suffer from unwelcome
+side-effects. In <strong>C++</strong> programs they should be avoided whenever
+possible. The following section introduces a way to implement manipulators
+requiring arguments without resorting to macros, but using
+ <a name="an1150"></a> anonymous objects.
+<p>
+<a name="l217"></a>
+<h4>11.10.1.1: Manipulators requiring arguments</h4>
+        Manipulators taking arguments are implemented as <a name="an1151"></a> macros: they are
+handled by the <a name="an1152"></a>preprocessor, and are not available beyond the preprocessing
+stage.  The problem appears to be that you can't call a function in an
+insertion sequence: when using multiple <code>operator</code>&lt;&lt; operators in one statement
+the compiler calls the functions, saves their return values, and then
+uses their return values in the insertion sequence. That invalidates the
+ordering of the arguments passed to your &lt;&lt;-operators.
+<p>
+So, one might consider constructing another overloaded <code>operator</code>&lt;&lt; accepting
+the address of a function receiving not just the <a name="an1153"></a><code>ostream</code> reference, but a
+series of other arguments as well. But this creates the problem that it isn't
+clear how the function should receive its arguments: you can't just call it
+since that takes us back to the above-mentioned problem.  Merely passing its
+address is fine, but then no arguments can be passed to the function.
+<p>
+There exists a solution, based on the use of <a name="an1154"></a> anonymous
+objects:
+    <ul>
+    <li> First, a class is constructed, e.g. <code>Align</code>, whose
+<a name="an1155"></a>constructor expects multiple arguments. In our example representing,
+respectively, the field width and the alignment.
+    <li> Furthermore, we define the function:
+        <pre>
+    ostream &amp;operator&lt;&lt;(ostream &amp;ostr, Align const &amp;align)
+</pre>
+        so we can insert an <code>Align</code> object into the ostream.
+    </ul>
+    Here is an example of a little program using such a <em>home-made</em>
+manipulator expecting multiple arguments:
+        <pre>
+    #include &lt;iostream&gt;
+    #include &lt;iomanip&gt;
+
+    class Align
+    {
+        unsigned d_width;
+        std::ios::fmtflags d_alignment;
+
+        public:
+            Align(unsigned width, std::ios::fmtflags alignment);
+            std::ostream &amp;operator()(std::ostream &amp;ostr) const;
+    };
+
+        Align::Align(unsigned width, std::ios::fmtflags alignment)
+        :
+            d_width(width),
+            d_alignment(alignment)
+        {}
+
+        std::ostream &amp;Align::operator()(std::ostream &amp;ostr) const
+        {
+            ostr.setf(d_alignment, std::ios::adjustfield);
+            return ostr &lt;&lt; std::setw(d_width);
+        }
+
+    std::ostream &amp;operator&lt;&lt;(std::ostream &amp;ostr, Align const &amp;align)
+    {
+        return align(ostr);
+    }
+
+    using namespace std;
+
+    int main()
+    {
+        cout
+            &lt;&lt; "`" &lt;&lt; Align(5, ios::left) &lt;&lt; "hi" &lt;&lt; "'"
+            &lt;&lt; "`" &lt;&lt; Align(10, ios::right) &lt;&lt; "there" &lt;&lt; "'\n";
+    }
+
+    /*
+        Generated output:
+
+        `hi   '`     there'
+    */
+</pre>
+<p>
+Note that in order to insert an anonymous <code>Align</code> object into the
+<code>ostream</code>, the <code>operator</code>&lt;&lt; function <em>must</em> define a <code>Align const &amp;</code>
+parameter (note the <code>const</code> modifier).
+<p>
+<a name="EnumOverload"></a><a name="l218"></a>
+<h2>11.11: The case of [io]fstream::open()</h2>
+Earlier, in section <a href="cplusplus06.html#OUTPUTMODES">6.4.2.1</a>, it was noted that the
+<code>[io]fstream::open</code> members expect an <code>ios::openmode</code> value as their
+final argument. E.g., to open an <code>fstream</code> object for writing you could do
+as follows:
+        <pre>
+    fstream out;
+    out.open("/tmp/out", ios::out);
+</pre>
+    Combinations are also possible. To open an <code>fstream</code> object for
+<em>both</em> reading and writing the following stanza is often seen:
+        <pre>
+    fstream out;
+    out.open("/tmp/out", ios::in | ios::out);
+</pre>
+<p>
+When trying to combine enum values using a `home made' <code>enum</code> we may run
+into problems. Consider the following:
+        <pre>
+    enum Permission
+    {
+        READ =      1 &lt;&lt; 0,
+        WRITE =     1 &lt;&lt; 1,
+        EXECUTE =   1 &lt;&lt; 2
+    };
+
+    void setPermission(Permission permission);
+
+    int main()
+    {
+        setPermission(READ | WRITE);
+    }
+</pre>
+    When offering this little program to the compiler it replies with an
+error message like this:
+    <div style="text-align: center"><code>invalid conversion from 'int' to 'Permission'</code></div>
+<p>
+The question is of course: why is it OK to combine <code>ios::openmode</code>
+values passing these combined values to the stream's <code>open</code> member, but
+not OK to combine <code>Permission</code> values.
+<p>
+<a name="an1156"></a>
+    Combining enum values using arithmetic operators results in <code>int</code>-typed
+values. <em>Conceptually</em> this never was our intention. Conceptually it can be
+considered correct to combine enum values if the resulting value conceptually
+makes sense as a value that is still within the original enumeration
+domain. Note that after adding a value <code>READWRITE = READ | WRITE</code> to the
+above <code>enum</code> we're still not allowed to specify <code>READ | WRITE</code> as an
+argument to <code>setPermission</code>.
+<p>
+To answer the question about combining enumeration values and yet stay
+within the enumeration's domain we turn to operator overloading. Up to this
+point operator overloading has been applied to class types. Free functions
+like <code>operator&lt;&lt;</code> have been overloaded, and those overloads are conceptually
+within the domain of their class.
+<p>
+As <strong>C++</strong> is a strongly typed language realize that defining an <code>enum</code> is
+really something beyond the mere association of <code>int</code>-values with symbolic
+names. An enumeration type is really a type of its own, and as with any type
+its operators can be overloaded. When writing <code>READ | WRITE</code> the compiler
+performs the default conversion from enum values to <code>int</code> values and
+applies the operator to <code>ints</code>. It does so when it has no alternative.
+<p>
+But it is also possible to overload the enum type's operators. Thus we may
+ensure that we'll remain within the enum's domain even though the resulting
+value wasn't defined by the enum. The advantage of type-safety and conceptual
+clarity is considered to outweigh the somewhat peculiar introduction of values
+hitherto not defined by the enum.
+<p>
+Here is an example of such an overloaded operator:
+        <pre>
+    Permission operator|(Permission left, Permission right)
+    {
+        return static_cast&lt;Permission&gt;(static_cast&lt;int&gt;(left) | right);
+    }
+</pre>
+    Other operators can easily and analogously be constructed.
+<p>
+Operators like the above were defined for the  <code>ios::openmode</code>
+enumeration type, allowing us to specify <code>ios::in | ios::out</code> as argument to
+<code>open</code> while specifying the corresponding parameter as <code>ios::openmode</code>
+as well. Clearly, operator overloading can be used in many situations, not
+necessarily only involving class-types.
+<p>
+<a name="UDLITERALS"></a><a name="l219"></a>
+<h2>11.12: User-defined literals</h2>
+In addition to the well-known literals, like numerical constants (with or
+without suffixes), character constants and string (textual) literals, <strong>C++</strong>
+also supports
+    <a name="an1157"></a><em>user-defined literals</em>, also known as <a name="an1158"></a><em>extensible literals</em>. 
+<p>
+A user-defined literal is defined by a function (see also section <a href="cplusplus23.html#UDL">23.3</a>)
+that must be defined at namespace scope. Such a function is called a
+        <a name="an1159"></a>literal operator.
+    A literal operator cannot be a class member function.  The names of a
+literal operator must start with an
+    <a name="an1160"></a> underscore, and a literal operator is
+used (called) by <em>suffixing</em> its name (including the underscore) to the
+argument that must be passed to it . Assuming <code>_NM2km</code> (nautical mile to km)
+is the name of a literal operator, then it could be called as <code>100_NM2km</code>,
+producing, e.g., the value 185.2.
+<p>
+Using <code>Type</code> to represent the return type of the literal operator
+its generic declaration looks like this:
+        <pre>
+    Type operator "" _identifier(parameter-list);
+</pre>
+    The blank space trailing the empty string is required. The parameter lists
+of literal operators can be:
+    <ul>
+    <li><code>unsigned long long int</code>. It is used as, e.g., <code>123_identifier</code>. The
+        argument to this literal operator can be decimal constants,
+        binary constants (initial <a name="an1161"></a>0b), octal constants (initial 0) and
+        hexadecimal constants (initial 0x);
+    <li><code>long double</code>. It is used as, e.g., <code>12.25_NM2km</code>;
+    <li><code>char const *text</code>. The <code>text</code> argument is an NTBS. It is
+        used as, e.g., <code>1234_pental</code>. The argument must <em>not</em> be given
+        double quotes, and must represent a numeric constant, as also expected
+        by literal operators defining  <code>unsigned long long int</code>
+        parameters.
+    <li><code>char const *text, size_t len</code>. Here, the compiler determines <code>len</code>
+        as if it had called <code>strlen(text)</code>. It is used as, e.g.,
+        <code>"hello"_nVowels</code>;
+    <li><code>wchar_t const *text, size_t len</code>, same as the previous one, but
+        accepting a string of <code>wchar_t</code> characters. It is used as, e.g.,
+        <code>L"1234"_charSum</code>;
+    <li><code>char16_t const *text, size_t len</code>, same as the previous one, but
+        accepting a string of <code>char16_t</code> characters. It is used as, e.g.,
+        <code>u"utf 16"_uc</code>;
+    <li><code>char32_t const *text, size_t len</code>, same as the previous one, but
+        accepting a string of <code>char32_t</code> characters. It is used as, e.g.,
+        <code>U"UTF 32"_lc</code>;
+    </ul>
+    If literal operators are overloaded the compiler will pick the literal
+operator requiring the least `effort'. E.g., 120 is processed by a literal
+operator defining a <code>unsigned long long int</code> parameter and not by its
+overloaded version, defining a <code>char const *</code> parameter. But if overloaded
+literal operators exist defining <code>char const *</code> and <code>long double</code>
+parameters then the operator defining a <code>char const *</code> parameter is used
+when the argument 120 is provided, while the operator defining a <code>long
+double</code> parameter is used with the argument 120.3.
+<p>
+A literator operator can define any return type. Here is
+an example of a definition of the <code>_NM2km</code> literal operator:
+        <pre>
+    double operator "" _NM2km(char const *nm)
+    {
+        return std::stod(nm) * 1.852;
+    }
+
+    double value = 120_NM2km;   // example of use
+</pre>
+    Of course, the argument could also have been a <code>long double</code>
+constant. Here's an alternative implementation, explicitly expecting a <code>long
+double</code>:
+<p>
+<pre>
+    double constexpr operator "" _NM2km(long double nm)
+    {
+        return nm * 1.852;
+    }
+
+    double value = 450.5_NM2km;   // example of use
+</pre>
+<p>
+A numeric constant can also be processed completely at compile-time.
+Section <a href="cplusplus23.html#UDL">23.3</a> provides the details of this type of literal operator.
+<p>
+Arguments to literal operators are themselves always constants. A literal
+operator like <code>_NM2km</code> cannot be used to convert, e.g., the value of a
+variable. A literal operator, although it is defined as functinon, cannot be
+called like a function. The following examples therefore
+result in compilation errors:
+        <pre>
+    double speed;
+
+    speed_NM2km;        // no identifier 'speed_NM2km'
+    _NM2km(speed);      // no function _NM2km
+    _NM2km(120.3);      // no function _NM2km
+</pre>
+<p>
+<a name="OverloadableOperators"></a><a name="l220"></a>
+<h2>11.13: Overloadable operators</h2>
+The following <a name="an1162"></a> operators can be overloaded:
+        <pre>
+    +       -       *       /       %       ^       &amp;       |
+    ~       !       ,       =       &lt;       &gt;       &lt;=      &gt;=
+    ++      --      &lt;&lt;      &gt;&gt;      ==      !=      &amp;&amp;      ||
+    +=      -=      *=      /=      %=      ^=      &amp;=      |=
+    &lt;&lt;=     &gt;&gt;=     []      ()      -&gt;      -&gt;*     new     new[]
+    delete  delete[]
+</pre>
+    Several operators have <em>textual alternatives</em>:
+        <a name="an1163"></a>
+    <table>
+
+    <td colspan=2><hr></td>
+
+    
+<tr>
+<td> textual alternative</td>               <td> operator</td>
+ 
+</tr>
+
+    <td colspan=2><hr></td>
+
+    
+<tr>
+<td>   <a name="an1164"></a><code>and</code><a name="an1165"></a></td>       <td> <code> &amp;&amp; </code></td>
+ 
+</tr>
+
+    
+<tr>
+<td>   <a name="an1166"></a><code>and_eq</code><a name="an1167"></a></td> <td> <code> &amp;= </code></td>
+ 
+</tr>
+
+    
+<tr>
+<td>   <a name="an1168"></a><code>bitand</code><a name="an1169"></a></td> <td> <code> &amp;  </code></td>
+ 
+</tr>
+
+    
+<tr>
+<td>   <a name="an1170"></a><code>bitor</code><a name="an1171"></a></td>   <td> <code> |  </code></td>
+ 
+</tr>
+
+    
+<tr>
+<td>   <a name="an1172"></a><code>compl</code><a name="an1173"></a></td>   <td> <code> ~  </code></td>
+ 
+</tr>
+
+    
+<tr>
+<td>   <a name="an1174"></a><code>not</code><a name="an1175"></a></td>       <td> <code> !  </code></td>
+ 
+</tr>
+
+    
+<tr>
+<td>   <a name="an1176"></a><code>not_eq</code><a name="an1177"></a></td> <td> <code> != </code></td>
+ 
+</tr>
+
+    
+<tr>
+<td>   <a name="an1178"></a><code>or</code><a name="an1179"></a></td>         <td> <code> || </code></td>
+ 
+</tr>
+
+    
+<tr>
+<td>   <a name="an1180"></a><code>or_eq</code><a name="an1181"></a></td>   <td> <code> |= </code></td>
+ 
+</tr>
+
+    
+<tr>
+<td>   <a name="an1182"></a><code>xor</code><a name="an1183"></a></td>       <td> <code> ^  </code></td>
+ 
+</tr>
+
+    
+<tr>
+<td>   <a name="an1184"></a><code>xor_eq</code><a name="an1185"></a></td> <td> <code> ^= </code></td>
+ 
+</tr>
+
+    <td colspan=2><hr></td>
+
+    
+</table>
+    `Textual' alternatives of operators are also overloadable (e.g.,
+<code>operator and</code>). However, note that textual alternatives are not
+<em>additional</em> operators. So, within the same context <code>operator&amp;&amp;</code> and
+<code>operator and</code> can not <em>both</em> be overloaded.
+<p>
+Several of these operators may only be overloaded as member functions
+    <a name="an1186"></a> <em>within</em> a class. This
+holds true for the <code>'='</code>, the <code>'[]'</code>, the <code>'()'</code> and the <code>'-&gt;'</code>
+operators. Consequently, it isn't possible to redefine, e.g., the assignment
+operator globally in such a way that it accepts a <code>char const *</code> as an
+<code>lvalue</code> and a <code>String &amp;</code> as an <em>rvalue</em>. Fortunately, that isn't
+necessary either, as we have seen in section <a href="cplusplus11.html#ConversionOperators">11.3</a>.
+<p>
+Finally, the following operators cannot be  overloaded:
+        <pre>
+    .       .*      ::      ?:      sizeof  typeid
+</pre>
+<p>
+
+<hr>
+<ul>
+    <li> <a href="cplusplus.html">Table of Contents</a>
+    <li> <a href="cplusplus10.html">Previous Chapter</a>
+    <li> <a href="cplusplus12.html">Next Chapter</a>
+</ul>
+<hr>
+</body>
+</html>

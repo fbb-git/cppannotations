@@ -1,0 +1,2603 @@
+<!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<title> <div style="text-align: center">C++ Annotations Version 10.3.0</div> </title>
+<style type="text/css">
+    figure {text-align: center;}
+    img {vertical-align: center;}
+</style>
+</head>
+<body >
+<hr>
+<ul>
+    <li> <a href="cplusplus.html">Table of Contents</a>
+    <li> <a href="cplusplus20.html">Previous Chapter</a>
+    <li> <a href="cplusplus22.html">Next Chapter</a>
+</ul>
+<hr>
+<a name="TEMPLATES"></a><a name="l491"></a>
+<h1>Chapter 21: Function and Variable Templates</h1>
+
+<blockquote>
+    <em>
+        Don't hesitate to send in feedback: send an e-mail if you like the
+        C++ Annotations; if you think that important material was omitted;
+        if you find errors or typos in the text or the code examples;
+        or if you just feel like e-mailing. Send your e-mail to
+        <a href="mailto:f.b.brokken@rug.nl">Frank B. Brokken</a>.
+<p>
+<strong>Please</strong> state the document version you're referring to, as found in
+        the title (in this document: 10.3.0) and please state chapter and
+        paragraph name or number you're referring to.
+<p>
+All received mail is processed conscientiously, and received
+        suggestions for improvements are usually processed by the
+        time a new version of the Annotations is released. Except for the
+        incidental case I will normally not acknowledge the receipt of
+        suggestions for improvements. Please don't interpret this as me not
+        appreciating your efforts.
+    </em>
+</blockquote>
+<p>
+
+<strong>C++</strong> supports syntactic constructs allowing programmers to define and use
+completely general (or abstract) functions or classes, based on generic types
+and/or (possibly inferred) constant values. In the chapters on abstract
+containers (chapter <a href="cplusplus12.html#CONTAINERS">12</a>) and the <code>STL</code> (chapter <a href="cplusplus18.html#STL">18</a>) we've
+already used these constructs, commonly known as the
+<a name="an2693"></a><em>template mechanism</em>.
+<p>
+The template mechanism allows us to specify classes and algorithms, fairly
+independently of the actual types for which the templates are eventually going
+to be used. Whenever the template is used, the compiler generates code that is
+tailored to the particular data type(s) used with the template. This code is
+generated at <a name="an2694"></a>compile-time from the template's definition. The piece of
+generated code is called an <a name="an2695"></a><em>instantiation</em> of the template.
+<p>
+In this chapter the syntactic peculiarities of templates are covered.
+The notions of <em>template type parameter</em>, <em>template non-type parameter</em>,
+and <a name="an2696"></a><em>function template</em> are introduced and several examples of
+templates are provided (both in this chapter and in chapter <a href="cplusplus24.html#CONCRETE">24</a>).
+Template <em>classes</em> are covered in chapter <a href="cplusplus22.html#TEMPCLASS">22</a>.
+<p>
+Templates already offered by the language include the abstract containers
+(cf. chapter <a href="cplusplus12.html#CONTAINERS">12</a>); the <code>string</code> (cf. chapter <a href="cplusplus05.html#String">5</a>);
+streams (cf. chapter <a href="cplusplus06.html#IOStreams">6</a>); and the generic algorithms (cf. chapter
+<a href="cplusplus19.html#GENERIC">19</a>). So, templates play a central role in present-day <strong>C++</strong>, and
+should not be considered an esoteric feature of the language.
+<p>
+Templates should be approached somewhat similarly as generic algorithms:
+they're a <em>way of life</em>; a <strong>C++</strong> software engineer should actively look
+for opportunities to use them.  Initially, templates may appear to be rather
+complex and you might be tempted to turn your back on them. However, over time
+their strengths and benefits are more and more appreciated. Eventually you'll
+be able to recognize opportunities for using templates. That's the time where
+your efforts should no longer focus on constructing ordinary functions
+ <a name="an2697"></a> and classes <a name="an2698"></a> (i.e., functions or
+classes that are not templates), but on constructing templates.
+<p>
+This chapter starts by introducing <em>function templates</em>. The emphasis is on
+the required syntax. This chapter lays the foundation upon which the other
+chapters about templates are built.
+<p>
+<a name="TEMPFUNDEF"></a><a name="l492"></a>
+<h2>21.1: Defining function templates</h2>
+A <a name="an2699"></a>function template's definition is very similar to the definition of
+a normal function. A function template has a function head, a function body, a
+return type, possibly overloaded definitions, etc.. However, different from
+ordinary functions, function templates always use one or more
+ <a name="an2700"></a><em>formal types</em>: types for which almost any existing
+(class or primitive) type could be used. Let's have a look at a simple
+example. The following function <code>add</code> expects two <code>Type</code> arguments and
+returns their sum:
+        <pre>
+    Type add(Type const &amp;lvalue, Type const &amp;rvalue)
+    {
+        return lvalue + rvalue;
+    }
+</pre>
+    Note how closely the above function's definition follows its description.
+It receives two arguments, and returns its sum. Now consider what would happen
+if we defined this function for, e.g., <code>int</code> values. We would write:
+        <pre>
+    int add(int const &amp;lvalue, int const &amp;rvalue)
+    {
+        return lvalue + rvalue;
+    }
+</pre>
+    So far, so good. However, were we to add two doubles, we would overload
+this function:
+        <pre>
+    double add(double const &amp;lvalue, double const &amp;rvalue)
+    {
+        return lvalue + rvalue;
+    }
+</pre>
+    There is no end to the number of overloaded versions we might be forced to
+construct: an overloaded version for <code>string</code>, for <code>size_t</code>, for .... In
+general, we would need an overloaded version for every type supporting
+<code>operator+</code> and a copy constructor. All these overloaded versions of
+basically the same function are required because of the strongly typed nature
+of <strong>C++</strong>. Because of this, a truly generic function cannot be constructed
+without resorting to the <a name="an2701"></a>template mechanism.
+<p>
+Fortunately, we've already seen an important part of a template
+function. Our initial function <code>add</code> actually is an implementation of such a
+function although it isn't a full template definition yet. If we gave the
+first <code>add</code> function to the compiler, it would produce an error message
+like:
+        <pre>
+    error: `Type' was not declared in this scope
+    error: parse error before `const'
+</pre>
+    And rightly so, as we failed to define <code>Type</code>. The error is prevented
+when we change <code>add</code> into a full template definition. To do this, we look
+at the function's implementation and decide that <code>Type</code> is actually a
+<em>formal</em> typename. Comparing it to the alternate implementations, it is
+clear that we could have changed <code>Type</code> into <code>int</code> to get the first
+implementation, and into <code>double</code> to get the second.
+<p>
+The full template definition allows for this formal nature of the
+<code>Type</code> typename. Using the keyword <code>template</code>, we prefix one line to
+our initial definition, obtaining the following function template
+definition:
+        <pre>
+    template &lt;typename Type&gt;
+    Type add(Type const &amp;lvalue, Type const &amp;rvalue)
+    {
+        return lvalue + rvalue;
+    }
+</pre>
+<p>
+In this definition we distinguish:
+    <ul>
+    <li> The keyword <a name="an2702"></a><code>template</code>, starting a template definition or
+declaration.
+    <li> The angle bracket enclosed list following <code>template</code>. This is a
+list containing one or more comma-separated elements. This angle bracket
+enclosed list is called the
+ <a name="an2703"></a><em>template parameter list</em>. Template parameter lists using multiple
+elements could look like this:
+        <pre>
+    typename Type1, typename Type2
+</pre>
+    <li> Inside the template parameter list we find the <a name="an2704"></a><em>formal type</em> name
+<code>Type</code>. It is a formal type name, comparable to a formal parameter name in a
+function's definition. Up to now we've only encountered formal variable names
+with functions. The <em>types</em> of the parameters were always known by the time
+the function was defined. Templates escalate the notion of formal names one
+step further up the ladder. Templates allow type names to be formalized,
+rather than just the variable names themselves. The fact that <code>Type</code> is a
+formal type name is indicated by the keyword <code>typename</code>, prefixed to
+<code>Type</code> in the template parameter list. A formal type name like <code>Type</code> is
+also called a <a name="an2705"></a><em>template type parameter</em>. Template non-type parameters also
+exist, and are shortly introduced.
+<p>
+Other texts on <strong>C++</strong> sometimes use the keyword <a name="an2706"></a><code>class</code> where we use
+<a name="an2707"></a> <code>typename</code>. So, in other texts template definitions
+might start with a line like:
+        <pre>
+    template &lt;class Type&gt;
+</pre>
+    In the <strong>C++</strong> Annotations the use of <code>typename</code> over <code>class</code> is preferred,
+reasoning that a template type parameter is, after all, a type name (some
+authors prefer <code>class</code> over <code>typename</code>; in the end it's a matter of
+taste).
+    <li> The <code>template</code> keyword and the template parameter list is called
+the <a name="an2708"></a>template header.
+    <li> The function head: it is like a normal function head, albeit that the
+template's type parameters must be used in its parameter list. When the
+function is eventually called using actual arguments having actual types,
+these actual types are used by the compiler to infer which version (i.e.,
+overload to fit the actual argument types) of the function template must be
+used. At the point where the function is called the compiler creates the
+function that is called, a process called <a name="an2709"></a><em>instantiation</em>. The function
+head may also use a formal type to specify its return value. This feature was
+actually used in the <code>add</code> template's definition.
+    <li> The function parameters are specified as <code>Type const &amp;</code>
+parameters. This has the usual meaning: the parameters are references to
+<code>Type</code> objects or values that will not be modified by the function.
+    <li> The function body is like a normal function body. In the body the
+formal type names may be used to define or declare variables, which may then
+be used as any other local variable. But some restrictions apply. Looking at
+<code>add</code>'s body, it is clear that <code>operator+</code> is used, as well as a copy
+constructor, as the function returns a value. This allows us to formulate the
+following restrictions for the formal type <code>Type</code> as used by our <code>add</code>
+function template:
+        <ul>
+        <li> <code>Type</code> should support <code>operator+</code>
+        <li> <code>Type</code> should support a copy constructor
+        </ul>
+    Consequently, while <code>Type</code> could be a <code>string</code>, it could never be
+an <code>ostream</code>, as neither <code>operator+</code> nor the copy constructor are
+available for streams.
+    </ul>
+    Normal scope rules and identifier visibility rules apply to templates.
+Within the template definition's scope formal type names overrule identically
+named identifiers of broader scopes.
+<p>
+<a name="l493"></a>
+<h3>21.1.1: Considerations regarding template parameters</h3>
+    We've managed to design our first function template:
+        <pre>
+    template &lt;typename Type&gt;
+    Type add(Type const &amp;lvalue, Type const &amp;rvalue)
+    {
+        return lvalue + rvalue;
+    }
+</pre>
+<p>
+Look again at <code>add</code>'s parameters.  By specifying <code>Type const &amp;</code>
+rather than <code>Type</code> superfluous copying is prevented, at the same time
+allowing values of primitive types to be passed as arguments to the
+function. So, when <code>add(3, 4)</code> is called, <code>int{4}</code> is assigned to
+<code>Type const &amp;rvalue</code>. In general, function parameters should be defined as
+<code>Type const &amp;</code> to prevent unnecessary copying. The compiler is smart enough
+to handle `references to references' in this case, which is something the
+language normally does not support. For example, consider the following
+<code>main</code> function (here and in the following simple examples it is assumed
+that the template and the required headers and namespace declarations have
+been provided):
+        <pre>
+    int main()
+    {
+        size_t const &amp;var = size_t{4};
+        cout &lt;&lt; add(var, var) &lt;&lt; '\n';
+    }
+</pre>
+    Here <code>var</code> is a reference to a constant <code>size_t</code>. It is passed as
+argument to <code>add</code>, thereby initializing <code>lvalue</code> and <code>rvalue</code> as <code>Type
+const &amp;</code> to <code>size_t const &amp;</code> values. The compiler interprets <code>Type</code> as
+<code>size_t</code>. Alternatively, the parameters might have been specified using
+<code>Type &amp;</code>, rather than <code>Type const &amp;</code>. The disadvantage of this (non-const)
+specification being that temporary values cannot be passed to the function
+anymore. The following therefore fails to compile:
+        <pre>
+    int main()
+    {
+        cout &lt;&lt; add(string{"a"}, string{"b"}) &lt;&lt; '\n';
+    }
+</pre>
+    Here, a <code>string const &amp;</code> cannot be used to initialize a <code>string &amp;</code>.
+Had <code>add</code> defined <code>Type &amp;&amp;</code> parameters then the above program would have
+compiled just fine. In addition the following example correctly compiles as
+the compiler decides that <code>Type</code> apparently is a <code>string const</code>:
+        <pre>
+    int main()
+    {
+        string const &amp;s = string{"a"};
+        cout &lt;&lt; add(s, s) &lt;&lt; '\n';
+    }
+</pre>
+    What can we deduce from these examples?
+    <ul>
+    <li> In general, function parameters should be specified as <code>Type const
+&amp;</code> parameters to prevent unnecessary copying.
+    <li> The template mechanism is fairly flexible.  Formal types are
+interpreted as plain types, const types, pointer types, etc., depending on the
+actually provided types. The <a name="an2710"></a>rule of thumb is that the formal type is used
+as a generic mask for the actual type, with the formal type name covering
+whatever part of the actual type must be covered. Some examples, assuming the
+parameter is defined as <code>Type const &amp;</code>:
+            <div style="text-align: center">
+        <table>
+
+        <td colspan=2><hr></td>
+
+        
+<tr>
+
+            <td> <strong>Provided argument:</strong></td> <td> <strong>Actually used Type:</strong></td>
+
+         
+</tr>
+
+        <td colspan=2><hr></td>
+
+        
+<tr>
+
+            <td> <code>size_t const</code></td> <td> <code>size_t</code></td>
+
+         
+</tr>
+
+        
+<tr>
+
+            <td> <code>size_t</code></td> <td> <code>size_t</code></td>
+
+         
+</tr>
+
+        
+<tr>
+
+            <td> <code>size_t *</code></td> <td> <code>size_t *</code></td>
+
+         
+</tr>
+
+        
+<tr>
+
+            <td> <code>size_t const *</code></td> <td> <code>size_t const *</code></td>
+
+         
+</tr>
+
+        <td colspan=2><hr></td>
+
+        
+</table>
+            </div>
+    </ul>
+    As a second example of a function template, consider the following
+function template:
+        <pre>
+    template &lt;typename Type, size_t Size&gt;
+    Type sum(Type const (&amp;array)[Size])
+    {
+        Type tp{};  // note: the default constructor must exist.
+
+        for (size_t idx = 0; idx &lt; Size; idx++)
+            tp += array[idx];
+
+        return tp;
+    }
+</pre>
+    This template definition introduces the following new concepts and
+features:
+    <ul>
+    <li> The <a name="an2711"></a><em>template parameter list</em>. This template parameter list has
+two elements. The first element is a well-known template type parameter, but
+the second element has a very specific type: a <code>size_t</code>. Template parameters
+of specific (i.e., non-formal) types used in template parameter lists are
+called
+ <a name="an2712"></a><em>template non-type parameters</em>.
+    A template non-type parameter defines the type of a
+ <a name="an2713"></a>constant expression, which must be known by the time the template is
+instantiated and which is specified in terms of existing types, such as a
+<code>size_t</code>.
+    <li> Looking at the function's head, we see one parameter:
+        <pre>
+Type const (&amp;array)[Size]
+</pre>
+    This parameter defines <code>array</code> as a reference to an array having
+<code>Size</code> elements of type <code>Type</code> that may not be modified.
+    <li> In the parameter definition, both <code>Type</code> and <code>Size</code> are
+used. <code>Type</code> is of course the template's type parameter <code>Type</code>, but
+<code>Size</code> is also a template parameter. It is a <code>size_t</code>, whose value must be
+inferable by the compiler when it compiles an actual call of the <code>sum</code>
+function template. Consequently, <code>Size</code> must be a <code>const</code> value. Such a
+constant expression is called a <em>template non-type parameter</em>, and its type
+is named in the template's parameter list.
+    <li> When the function template is called, the compiler must be able to
+infer not only <code>Type</code>'s concrete value, but also <code>Size</code>'s value. Since
+the function <code>sum</code> only has one parameter, the compiler is only able to
+infer <code>Size</code>'s value from the function's actual argument. It can do so if
+the provided argument is an array (of known and fixed size) rather
+than a pointer to <code>Type</code> elements. So, in the following <code>main</code> function
+the first statement will compile correctly but the second statement
+will not:
+    <pre>
+int main()
+{
+    int values[5];
+    int *ip = values;
+
+    cout &lt;&lt; sum(values) &lt;&lt; '\n';    // compiles OK
+    cout &lt;&lt; sum(ip) &lt;&lt; '\n';        // won't compile
+}
+</pre>
+    <li> Inside the function's body the statement <code>Type tp = Type()</code> is used
+to initialize <code>tp</code> to a default value. Note here that no fixed value (like
+0) is used. Any type's default value may be obtained using its default
+constructor
+ <a name="an2714"></a>
+    rather than using a fixed numeric value. Of course, not every class
+accepts a numeric value as an argument to one of its constructors. But all
+types, even the primitive types, support default constructors (actually, some
+classes do not implement a default constructor, or make it inaccessible; but
+most do). The default constructor <a name="an2715"></a> of primitive
+types initializes their variables to 0 (or <code>false</code>). Furthermore, the
+statement <code>Type tp = Type()</code> is a true initialization: <code>tp</code> is initialized
+by <code>Type</code>'s default constructor, rather than using <code>Type</code>'s copy
+constructor to assign <code>Type</code>'s copy to <code>tp</code>.
+<p>
+It's interesting to note here (although not directly related to the
+current topic) that the syntactic construction <code>Type tp(Type())</code> <em>cannot</em>
+be used, even though it also looks like a proper initialization. Usually an
+initializing argument can be provided to an object's definition, like
+<code>string s("hello")</code>. Why, then, is <code>Type tp = Type()</code> accepted, whereas
+<code>Type tp(Type())</code> isn't?  When <code>Type tp(Type())</code> is used it won't result
+in an error message. So we don't immediately detect that it's <em>not</em> a
+<code>Type</code> object's default initialization. Instead, the compiler starts
+generating error messages once <code>tp</code> is used. This is caused by the fact that
+in <strong>C++</strong> (and in <strong>C</strong> alike) the compiler does its best to recognize a
+function or
+ <a name="an2716"></a> function pointer whenever possible: the
+<a name="an2717"></a><em>function prevalence rule</em>.  According to this rule <code>Type()</code> is (because
+of the pair of parentheses) interpreted as a <em>pointer to a function</em>
+expecting no arguments; returning a <code>Type</code>. The compiler will do so unless
+it clearly isn't possible to do so. In the initialization <code>Type tp = Type()</code>
+it <em>can't</em> see a pointer to a function as a <code>Type</code> object cannot be given
+the value of a function pointer (remember: <code>Type()</code> is interpreted as
+<code>Type (*)()</code> whenever possible). But in <code>Type tp(Type())</code> it <em>can</em> use
+the pointer interpretation: <code>tp</code> is now <em>declared</em> as a <em>function</em>
+expecting a pointer to a function returning a <code>Type</code>, with <code>tp</code> itself
+also returning a <code>Type</code>. E.g., <code>tp</code> could have been defined as:
+    <pre>
+Type tp(Type (*funPtr)())
+{
+    return (*funPtr)();
+}
+</pre>
+    <li> Comparable to the first function template, <code>sum</code> also assumes the
+existence of certain public members in <code>Type</code>'s class. This time
+<code>operator+=</code> and <code>Type</code>'s copy constructor.
+    </ul>
+<p>
+Like class definitions, template definitions should not contain <code>using</code>
+        <a name="an2718"></a><a name="an2719"></a>
+    directives or declarations: the template might be used in a situation
+where such a directive overrides the programmer's intentions: ambiguities or
+other conflicts may result from the template's author and the programmer using
+different <code>using</code> directives (E.g, a <code>cout</code> variable defined in the
+<code>std</code> namespace and in the programmer's own namespace). Instead, within
+template definitions only <a name="an2720"></a><a name="an2721"></a>
+fully qualified names, including all required namespace specifications should
+be used.
+<p>
+<a name="l494"></a>
+<h3>21.1.2: Late-specified return type</h3>
+    Traditional  <strong>C++</strong> requires function templates to specify their return type
+or to specify the return type as a template type parameter. Consider the
+following function:
+        <pre>
+    int add(int lhs, int rhs)
+    {
+        return lhs + rhs;
+    }
+</pre>
+ The above function may be converted to a function template:
+        <pre>
+    template &lt;typename Lhs, typename Rhs&gt;
+    Lhs add(Lhs lhs, Rhs rhs)
+    {
+        return lhs + rhs;
+    }
+</pre>
+ Unfortunately, when the function template is called as
+        <pre>
+    add(3, 3.4)
+</pre>
+ the intended return type is probably a <code>double</code> rather than an
+<code>int</code>. This can be solved by adding an additional template type parameter
+specifying the return type but then  that type must explicitly be specified:
+        <pre>
+    add&lt;double&gt;(3, 3.4);
+</pre>
+ Using <a name="an2722"></a><code>decltype</code> (cf. section <a href="cplusplus03.html#AUTO">3.3.5</a>) to define the return type won't
+work as <code>lhs</code> and <code>rhs</code> aren't known to the compiler by the time
+<code>decltype</code> is used. Thus the next attempt to get rid of the additional
+template type parameter fails to compile:
+        <pre>
+    template &lt;typename Lhs, typename Rhs&gt;
+    decltype(lhs + rhs) add(Lhs lhs, Rhs rhs)
+    {
+        return lhs + rhs;
+    }
+</pre>
+<p>
+The <code>decltype</code>-based definition of a function's return type may become
+fairly complex. This complexity can be reduced by using the 
+ <a name="an2723"></a><em>late-specified return type</em> syntax that <em>does</em> allow the use of
+<code>decltype</code> to define a function's return type. It is primarily used with
+function templates but it may also be used for ordinary (non-template)
+functions:
+        <pre>
+    template &lt;typename Lhs, typename Rhs&gt;
+    auto add(Lhs lhs, Rhs rhs) -&gt; decltype(lhs + rhs)
+    {
+        return lhs + rhs;
+    }
+</pre>
+ When this function is used in a statement like <code>cout &lt;&lt; add(3, 3.4)</code> the
+resulting value will be 6.4, which is most likely the intended result, rather
+than 6. As an example how a late-specified return type may reduce the
+complexity of a function's return type definition consider the following:
+        <pre>
+    template &lt;typename T, typename U&gt;
+    decltype((*(T*)0)+(*(U*)0)) add(T t, U u);
+</pre>
+    Using a late-specified return type we get the equivalent:
+        <pre>
+    template &lt;typename T, typename U&gt;
+    auto add(T t, U u) -&gt; decltype(t+u);
+</pre>
+    which most people think is easier to read.
+<p>
+The expression specified with <code>decltype</code> does not necessarily use the
+parameters <code>lhs</code> and <code>rhs</code> themselves. In the next function
+definition <code>lhs.length</code> is used instead of <code>lhs</code> itself:
+        <pre>
+    template &lt;typename Class, typename Rhs&gt;
+    auto  add(Class lhs, Rhs rhs) -&gt; decltype(lhs.length() + rhs)
+    {
+        return lhs.length() + rhs;
+    }
+</pre>
+    <em>Any</em> variable visible at the time <code>decltype</code> is compiled can be used
+in the <code>decltype</code> expression. However, it is currently not possible to
+handle member selection through pointers to members. The following code aims
+at specifying the address of a member function as <code>add</code>'s first argument and
+then use its return value type to determine the function template's return
+type:
+        <pre>
+    std::string global;
+
+    template &lt;typename MEMBER, typename RHS&gt;
+    auto  add(MEMBER mem, RHS rhs) -&gt; decltype((global.*mem)() + rhs)
+    {
+        return (global.*mem)() + rhs;
+    }
+</pre>
+    Although the above function compiles fine, it cannot currently be used as
+it results in a compiler error message like
+    <a name="an2724"></a><em>unimplemented: mangling dotstar_expr</em> (generated for a statement like
+<code>cout &lt;&lt; add(&amp;string::length, 3.4)</code>).
+<p>
+<a name="REFWRAP"></a><a name="l495"></a>
+<h2>21.2: Passing arguments by reference (reference wrappers)</h2>
+Before using the reference wrappers discussed in this section the
+<a name="an2725"></a><code>&lt;functional&gt;</code> header file must be included.
+<p>
+Situations exist where the compiler is unable to infer that a reference rather
+than a value is passed to a function template. In the following example the
+function template  <code>outer</code> receives <code>int x</code> as its argument and the
+compiler dutifully infers that <code>Type</code> is <code>int</code>:
+        <pre>
+    template &lt;typename Type&gt;
+    void outer(Type t)
+    {
+        t.x();
+    }
+    void useInt()
+    {
+        int arg;
+        outer(arg);
+    }
+</pre>
+<p>
+Compilation will of course fail and the compiler nicely reports the
+inferred type, e.g.:
+        <pre>
+    In function 'void outer(Type) [with Type = int]': ...
+</pre>
+<p>
+Unfortunately the same error is generated when using <code>call</code> in the next
+example. The function <code>call</code> is a template expecting a function that takes
+an argument which is then itself modified, and a value to pass on to that
+function. Such a function is, e.g., <code>sqrtArg</code> expecting a reference to a
+<code>double</code>, which is modified by calling <code>std::sqrt</code>.
+        <pre>
+    void sqrtArg(double &amp;arg)
+    {
+        arg = sqrt(arg);
+    }
+    template&lt;typename Fun, typename Arg&gt;
+    void call(Fun fun, Arg arg)
+    {
+        fun(arg);
+        cout &lt;&lt; "In call: arg = " &lt;&lt; arg &lt;&lt; '\n';
+    }
+</pre>
+<p>
+Assuming <code>double value = 3</code> then <code>call(sqrtArg, value)</code> does not modify
+<code>value</code> as the compiler infers <code>Arg</code> to be <code>double</code> and hence passes
+<code>value</code> by value.
+<p>
+To have <code>value</code> itself changed the compiler must be informed that <code>value</code>
+must be passed by reference. Note that it might not be acceptable to define
+<code>call</code>'s template argument as <code>Arg &amp;</code> as <em>not</em> changing the actual
+argument might be appropriate in some situations.
+<p>
+The <a name="an2726"></a><code>ref(arg)</code> and <a name="an2727"></a><code>cref(arg)</code>
+ <a name="an2728"></a><em>reference wrappers</em> can be used. They accept an
+argument and return it as a (const) reference-typed argument. To actually
+change <code>value</code> it can be passed to <code>call</code> using <code>ref(value)</code> as shown in
+the following <code>main</code> function:
+        <pre>
+    int main()
+    {
+        double value = 3;
+        call(sqrtArg, value);
+        cout &lt;&lt; "Passed value, returns: " &lt;&lt; value &lt;&lt; '\n';
+
+        call(sqrtArg, ref(value));
+        cout &lt;&lt; "Passed ref(value), returns: " &lt;&lt; value &lt;&lt; '\n';
+    }
+    /*
+        Displays:
+            In call: arg = 1.73205
+            Passed value, returns: 3
+            In call: arg = 1.73205
+            Passed ref(value), returns: 1.73205
+    */
+</pre>
+<p>
+<a name="l496"></a>
+<h2>21.3: Using local and unnamed types as template arguments</h2>
+Usually, types have names. But an <a name="an2729"></a><em>anonymous type</em> may also be defined:
+        <pre>
+    enum
+    {
+        V1,
+        V2,
+        V3
+    };
+</pre>
+    Here, the <code>enum</code> defines an <a name="an2730"></a> <em>unnamed</em> or
+        <a name="an2731"></a>
+    <a name="an2732"></a><em>anonymous type</em>.
+<p>
+When defining a function template, the compiler normally
+deducts the types of its template type parameters from its arguments:
+        <pre>
+    template &lt;typename T&gt;
+    void fun(T &amp;&amp;t);
+
+    fun(3);     // T is int
+    fun('c');   // T is char
+</pre>
+    The following, however, can also be used:
+        <pre>
+    fun(V1);    // T is a value of the above enum type
+</pre>
+    Within <code>fun</code> a <code>T</code> variable may be defined, even if it's an anonymous
+type:
+        <pre>
+    template &lt;typename T&gt;
+    void fun(T &amp;&amp;t)
+    {
+        T var(t);
+    }
+</pre>
+<p>
+Values or objects of
+        <a name="an2733"></a>
+    locally defined types may also be passed as arguments to function
+templates. E.g.,
+        <pre>
+    void definer()
+    {
+        struct Local
+        {
+            double  dVar;
+            int     iVar;
+        };
+        Local local;            // using a local type
+
+        fun(local);             // OK: T is 'Local'
+    }
+</pre>
+<p>
+<a name="TEMPFUNARGS"></a><a name="l497"></a>
+<h2>21.4: Template parameter deduction</h2>
+    In this section we concentrate on the process by which the compiler
+deduces the actual types of the template type parameters. These types are
+deduced when a function template is called using a process called
+ <a name="an2734"></a><em>template parameter deduction</em>. As we've already seen, the compiler is
+able to substitute a wide range of actual types for a single formal template
+type parameter. Even so, not every thinkable conversion is possible. In
+particular when a function has multiple parameters of the same template type
+parameter, the compiler is very restrictive when determining what argument
+types are actually accepted.
+<p>
+When the compiler deduces the actual types for template type parameters it
+<em>only</em> considers the types of the arguments that are actually
+used. Neither local variables nor the function's return value is considered in
+this process. This is understandable. When a function is called the compiler
+is only certain about the types of the function template's arguments. At the
+point of the call it definitely does not see the types of the function's local
+variables. Also, the function's return value might not actually be used or may
+be assigned to a variable of a subrange (or super-range) type of a deduced
+template type parameter. So, in the following example, the compiler won't ever
+be able to call <code>fun()</code>, as it won't be able to deduce the actual type for
+the <code>Type</code> template type parameter.
+        <pre>
+    template &lt;typename Type&gt;
+    Type fun()              // can never be called as `fun()'
+    {
+        return Type{};
+    }
+</pre>
+    Although the compiler won't be able to handle a call to `<code>fun()</code>', it
+<em>is</em> possible to call <code>fun()</code> using an
+ <a name="an2735"></a><a name="an2736"></a>explicit type specification. E.g.,
+<code>fun&lt;int&gt;()</code> calls <code>fun</code>, instantiated for <code>int</code>. This is of course
+<em>not</em> the same as <em>compiler</em> argument deduction.
+<p>
+In general, when a function has multiple parameters of identical template
+type parameters, the actual types must be exactly the same. So, whereas
+        <pre>
+    void binarg(double x, double y);
+</pre>
+    may be called using an <code>int</code> and a <code>double</code>, with the <code>int</code> argument
+silently being converted to a <code>double</code>, a similar function template cannot
+be called using an <code>int</code> and <code>double</code> argument: the compiler won't by
+itself promote <code>int</code> to <code>double</code> deciding that <code>Type</code> should be
+<code>double</code>:
+        <pre>
+    template &lt;typename Type&gt;
+    void binarg(Type const &amp;p1, Type const &amp;p2)
+    {}
+
+    int main()
+    {
+        binarg(4, 4.5); // ?? won't compile: different actual types
+    }
+</pre>
+<p>
+What, then, are the transformations the compiler  applies when deducing
+the actual types of template type parameters? It performs but three types
+of
+        <a name="an2737"></a>
+    parameter type transformations and a fourth one to function template
+non-type parameters. If it cannot deduce the actual types using these
+transformations, the function template will not be considered. The
+transformations performed by the compiler are:
+    <ul>
+    <li> <em>lvalue transformations</em>, creating an <em>rvalue</em> from an
+<em>lvalue</em>;
+    <li> <em>qualification transformations</em>, inserting a <code>const</code> modifier to
+a non-constant argument type;
+    <li> <em>transformation to a base class instantiated from a class template</em>,
+using a template base class when an argument of a template derived class type
+was provided in the call.
+    <li> Standard transformations for function template non-type
+parameters. This isn't a template type parameter transformation, but it refers
+to any remaining template non-type parameter of function templates. For these
+function parameters the compiler performs any standard conversion it has
+available (e.g., <code>int</code> to <code>size_t</code>, <code>int</code> to <code>double</code>, etc.).
+    </ul>
+    The purpose of the various template parameter type deduction
+transformations is <em>not</em> to match function arguments to function parameters,
+but rather, having matched arguments to parameters, to determine the <em>actual
+types</em> of the various template type parameters.
+<p>
+<a name="l498"></a>
+<h3>21.4.1: Lvalue transformations</h3>
+    There are three types of <a name="an2738"></a><em>lvalue transformations</em>:
+    <ul>
+    <li> <strong>lvalue-to-rvalue transformations.</strong>
+        <blockquote>An <a name="an2739"></a>lvalue-to-rvalue transformation is applied when an
+<code>rvalue</code> is required, but an <code>lvalue</code> is provided.  This happens when a
+variable is used as argument to a function specifying a <em>value
+parameter</em>. For example,
+    <pre>
+template&lt;typename Type&gt;
+Type negate(Type value)
+{
+    return -value;
+}
+int main()
+{
+    int x = 5;
+    x = negate(x);  // lvalue (x) to rvalue (copies x)
+}
+</pre>
+    </blockquote>
+    <li> <strong>array-to-pointer transformations.</strong>
+        <blockquote>An <a name="an2740"></a>array-to-pointer transformation is applied when the name
+of an array is assigned to a pointer variable. This is frequently used with
+functions defining pointer parameters.  Such functions frequently receive
+arrays as their arguments. The array's address is then assigned to the
+pointer-parameter and its type is used to deduce the corresponding template
+parameter's type. For example:
+    <pre>
+template&lt;typename Type&gt;
+Type sum(Type *tp, size_t n)
+{
+    return accumulate(tp, tp + n, Type());
+}
+int main()
+{
+    int x[10];
+    sum(x, 10);
+}
+</pre>
+    In this example, the location of the array <code>x</code> is passed to <code>sum</code>,
+expecting a pointer to some type. Using the array-to-pointer transformation,
+<code>x</code>'s address is considered a pointer value which is assigned to <code>tp</code>,
+deducing that <code>Type</code> is <code>int</code> in the process.
+    </blockquote>
+    <li> <strong>function-to-pointer transformations.</strong>
+        <blockquote>This transformation is most frequently used with function
+templates defining a parameter which is a pointer to a function.  When calling
+such a function the name of a function may be specified as its argument. The
+address of the function is then assigned to the pointer-parameter, deducing
+the template type parameter in the process. This is called a
+    <a name="an2741"></a>function-to-pointer transformation. For example:
+        <pre>
+#include &lt;cmath&gt;
+
+template&lt;typename Type&gt;
+void call(Type (*fp)(Type), Type const &amp;value)
+{
+    (*fp)(value);
+}
+int main()
+{
+    call(sqrt, 2.0);
+}
+</pre>
+<p>
+In this example, the address of the <code>sqrt</code> function is passed to
+<code>call</code>, expecting a pointer to a function returning a <code>Type</code> and expecting
+a <code>Type</code> for its argument. Using the function-to-pointer transformation,
+<code>sqrt</code>'s address is assigned to <code>fp</code>, deducing that <code>Type</code> is <code>double</code>
+in the process (note that <code>sqrt</code> is the <em>address</em> of a function, not a
+variable that is a pointer to a function, hence the lvalue
+transformation).
+<p>
+The argument <code>2.0</code> could not have been specified as <code>2</code> as there is no
+<code>int sqrt(int)</code> prototype. Furthermore, the function's first parameter
+specifies <code>Type (*fp)(Type)</code>, rather than <code>Type (*fp)(Type const &amp;)</code> as
+might have been expected from our previous discussion about how to specify the
+types of function template's parameters, preferring references over values.
+However, <code>fp</code>'s argument <code>Type</code> is not a function template parameter, but
+a parameter of the function <code>fp</code> points to. Since <code>sqrt</code> has prototype
+<code>double sqrt(double)</code>, rather than <code>double sqrt(double const &amp;)</code>,
+<code>call</code>'s parameter <code>fp</code> <em>must</em> be specified as <code>Type
+(*fp)(Type)</code>. It's that strict.
+    </blockquote>
+    </ul>
+<p>
+<a name="l499"></a>
+<h3>21.4.2: Qualification transformations</h3>
+    A <a name="an2742"></a><em>qualification transformation</em> adds <a name="an2743"></a><code>const</code> or <a name="an2744"></a><code>volatile</code>
+qualifications to <em>pointers</em>. This transformation is applied when the
+function template's type parameter explicitly specifies <code>const</code> (or
+<code>volatile</code>) but the function's argument isn't a <code>const</code> or <code>volatile</code>
+entity. In that case <code>const</code> or <code>volatile</code> is provided by the compiler.
+Subsequently the compiler deduces the template's type parameter. For example:
+        <pre>
+    template&lt;typename Type&gt;
+    Type negate(Type const &amp;value)
+    {
+        return -value;
+    }
+    int main()
+    {
+        int x = 5;
+        x = negate(x);
+    }
+</pre>
+    Here we see the function template's <code>Type const &amp;value</code> parameter: a
+reference to a <code>const Type</code>. However, the argument isn't a <code>const int</code>,
+but an <code>int</code> that can be modified. Applying a qualification transformation,
+the compiler adds <code>const</code> to <code>x</code>'s type, and so it matches <code>int const
+x</code>.  This is then matched against <code>Type const &amp;value</code> allowing the compiler
+to deduce that <code>Type</code> must be <code>int</code>.
+<p>
+<a name="l500"></a>
+<h3>21.4.3: Transformation to a base class</h3>
+    Although the <em>construction</em> of class templates is the topic of chapter
+<a href="cplusplus22.html#TEMPCLASS">22</a>, we've already extensively <em>used</em> class templates before. For
+example, abstract containers (cf. chapter <a href="cplusplus12.html#CONTAINERS">12</a>) are defined as
+class templates.  Class templates can, like
+ <a name="an2745"></a><a name="an2746"></a>
+    ordinary classes, participate in the construction of class hierarchies.
+<p>
+In section <a href="cplusplus22.html#DERIVEDTEMPCLASS">22.11</a> it is shown how a <a name="an2747"></a>class template can
+be derived from another class template.
+<p>
+As class template derivation remains to be covered, the following
+discussion is necessarily somewhat premature. The reader may of course skip
+briefly to section <a href="cplusplus22.html#DERIVEDTEMPCLASS">22.11</a> returning back to this section
+thereafter.
+<p>
+In this section it should be assumed, for the sake of argument, that a
+class template <code>Vector</code> has somehow been derived from a <code>std::vector</code>.
+Furthermore, assume that the following function template has been
+constructed to sort a vector using some function object <code>obj</code>:
+        <pre>
+    template &lt;typename Type, typename Object&gt;
+    void sortVector(std::vector&lt;Type&gt; vect, Object const &amp;obj)
+    {
+        sort(vect.begin(), vect.end(), obj);
+    }
+</pre>
+    To sort <code>std::vector&lt;string&gt;</code> objects case-insensitively, a <code>class
+Caseless</code> could be constructed as follows:
+        <pre>
+    class CaseLess
+    {
+        public:
+            bool operator()(std::string const &amp;before,
+                            std::string const &amp;after) const
+            {
+                return strcasecmp(before.c_str(), after.c_str()) &lt; 0;
+            }
+    };
+</pre>
+    Now various vectors may be sorted using <code>sortVector()</code>:
+        <pre>
+    int main()
+    {
+        std::vector&lt;string&gt; vs;
+        std::vector&lt;int&gt; vi;
+
+        sortVector(vs, CaseLess());
+        sortVector(vi, less&lt;int&gt;());
+    }
+</pre>
+    Applying the transformation
+        <a name="an2748"></a>
+        <a name="an2749"></a>
+    <em>transformation to a base class instantiated from a class template</em>, the
+function template <code>sortVector</code> may now also be used to sort <code>Vector</code>
+objects. For example:
+        <pre>
+    int main()
+    {
+        Vector&lt;string&gt; vs;      // `Vector' instead of `std::vector'
+        Vector&lt;int&gt; vi;
+
+        sortVector(vs, CaseLess());
+        sortVector(vi, less&lt;int&gt;());
+    }
+</pre>
+    In this example, <code>Vector</code>s were passed as argument to
+<code>sortVector</code>. Applying the transformation to a base class instantiated from
+a class template, the compiler considers <code>Vector</code> to be a <code>std::vector</code>
+enabling it to deduce the template's type parameter. A <code>std::string</code> for the
+<code>Vector vs</code>, an <code>int</code> for <code>Vector vi</code>.
+<p>
+<a name="PARDEDUCT"></a><a name="l501"></a>
+<h3>21.4.4: The template parameter deduction algorithm</h3>
+        The compiler uses the following algorithm to deduce the actual types of
+        <a name="an2750"></a> its template type parameters:
+    <ul>
+    <li> In turn, the function template's parameters are identified using the
+arguments of the called function.
+    <li> For each template parameter used in the function template's parameter
+list, the template type parameter is associated with the corresponding
+argument's type (e.g., <code>Type</code> is <code>int</code> if the argument is <code>int x</code>, and
+the function's parameter is <code>Type &amp;value</code>).
+    <li> While matching the argument types to the template type parameters,
+the three allowed transformations (see section <a href="cplusplus21.html#TEMPFUNARGS">21.4</a>) for template
+type parameters are applied where necessary.
+    <li> If identical template type parameters
+        <a name="an2751"></a>
+    are used with multiple function parameters, the deduced template types
+must exactly match. So, the next function template cannot be called with an
+<code>int</code> and a <code>double</code> argument:
+    <pre>
+template &lt;typename Type&gt;
+Type add(Type const &amp;lvalue, Type const &amp;rvalue)
+{
+    return lvalue + rvalue;
+}
+</pre>
+    When calling this function template, two identical types must be used
+(albeit that the three standard transformations are of course allowed). If the
+template deduction mechanism does not come up with identical actual types for
+identical template types, then the function template is not going to be
+instantiated.
+    </ul>
+<p>
+<a name="CONTRACTIONS"></a><a name="l502"></a>
+<h3>21.4.5: Template type contractions</h3>
+    With function templates the combination of the types of template arguments and
+template parameters shows some interesting contractions. What happens, for
+example if a template type parameter is specified as an rvalue reference but
+an lvalue reference argument type is provided?
+<p>
+In such cases the compiler performs type contractions. Doubling identical
+reference types results in a simple contraction: the type is deduced to be a
+single reference type. Example: if the template parameter type is specified as
+a <code>Type &amp;&amp;</code> and the actual parameter is an <code>int &amp;&amp;</code> then <code>Type</code> is
+deduced to be an <code>int</code>, rather than an <code>int &amp;&amp;</code>.
+<p>
+This is fairly intuitive. But what happens if the actual type is <code>int &amp;</code>?
+There is no such thing as an <code>int &amp; &amp;&amp;param</code> and so the compiler contracts
+the double reference by removing the rvalue reference, keeping the lvalue
+reference. Here the following rules are applied:
+<p>
+<blockquote>
+    1. A function template parameter defined as an lvalue reference to
+    a template's type parameter (e.g., <code>Type &amp;</code>) receiving an lvalue
+    reference argument results in a single lvalue reference.
+<p>
+2. A function template parameter defined as an rvalue reference to a
+    template's type parameter (e.g., <code>Type &amp;&amp;</code>) receiving any kind of
+    reference argument uses the reference type of the argument.  </blockquote>
+Examples:
+    <ul>
+    <li> When providing an <code>Actual &amp;</code> argument then <code>Type &amp;</code> becomes an
+    <code>Actual &amp;</code> and <code>Type</code> is inferred as <code>Actual</code>;
+<p>
+<li> When providing an <code>Actual &amp;</code> then <code>Type &amp;&amp;</code> becomes an
+    <code>Actual &amp;</code> and <code>Type</code> is inferred as <code>Actual</code>;
+<p>
+<li> When providing an <code>Actual &amp;&amp;</code> then <code>Type &amp;</code> also becomes
+    <code>Actual &amp;</code>  and <code>Type</code> is inferred as <code>Actual</code>;
+<p>
+<li> When providing an <code>Actual &amp;&amp;</code> then <code>Type &amp;&amp;</code>  becomes <code>Actual
+    &amp;&amp;</code> and <code>Type</code> is inferred as <code>Actual</code>;
+    </ul>
+<p>
+Let's look at a concrete exampe where contraction occurs. Consider the
+following function template where a function parameter is defined as an rvalue
+references to some template type parameter:
+        <pre>
+    template &lt;typename Type&gt;
+    void function(Type &amp;&amp;param)
+    {
+        callee(static_cast&lt;Type &amp;&amp;&gt;(param));
+    }
+</pre>
+ In this situation, when <code>function</code> is called with an (lvalue) argument of
+type <code>TP &amp;</code> the template type parameter <code>Type</code> is deduced to be <code>Tp
+&amp;</code>. Therefore, <code>Type &amp;&amp;param</code> is instantiated as <code>Tp &amp;param</code>, <code>Type</code>
+becomes <code>Tp</code> and the rvalue reference is replaced by an lvalue reference.
+<p>
+Likewise, when <code>callee</code> is called using the <code>static_cast</code> the same
+contraction occurs, so <code>Type &amp;&amp;param</code> operates on <code>Tp &amp;param</code>. Therefore
+(using contraction) the static cast <em>also</em> uses type <code>Tp &amp;param</code>. If
+<code>param</code> happened to be of type <code>Tp &amp;&amp;</code> then the static cast uses type
+<code>Tp &amp;&amp;param</code>.
+<p>
+This characteristic allows us to pass a function argument to a nested function
+<em>without</em> changing its type: lvalues remain lvalues, rvalues remain
+rvalues. This characteristic is therefore also known as
+ <a name="an2752"></a><em>perfect forwarding</em> which is discussed in greater detail in section
+<a href="cplusplus22.html#PERFECT">22.5.2</a>. Perfect forwarding prevents the template author from having to
+define multiply overloaded versions of a function template.
+<p>
+<a name="TEMPFUNDECL"></a><a name="l503"></a>
+<h2>21.5: Declaring function templates</h2>
+    Up to now, we've only defined function templates. There are various
+ <a name="an2753"></a> consequences of including function
+template definitions in multiple source files, none of them serious, but worth
+knowing.
+    <ul>
+    <li> Like class interfaces, template definitions are usually included in
+header files. Every time a header file containing a template definition is
+read by the compiler it must process the full definition. It must do so even
+if it does not actually use the template. This somewhat  slows-down the
+compilation. For example, compiling a template header file like <code>algorithm</code>
+on my old laptop takes about four times the amount of time it takes to compile
+a plain header file like <code>cmath</code>. The header file <code>iostream</code> is even
+harder to process, requiring almost 15 times the amount of time it takes to
+process <code>cmath</code>. Clearly, processing templates is serious business for the
+compiler. On the other hand this drawback shouldn't be taken too seriously.
+Compilers are continuously improving their template processing capacity and
+computers keep getting faster and faster. What was a nuisance a few years ago
+is hardly noticeable today.
+    <li> Every time a function template is instantiated, its code appears in
+the resulting object module. However, if multiple instantiations of a template
+using the same actual types for its template parameters exist in multiple
+object files the <a name="an2754"></a><em>one definition rule</em> is lifted.  The linker weeds out
+superfluous instantiations (i.e., identical definitions of instantiated
+templates). In the final program only one instantiation for a particular set
+of actual template type parameters remain available (see section
+<a href="cplusplus21.html#TEMPFUNINST">21.6</a> for an illustration). Therefore, the linker has an
+additional task to perform (<em>viz.</em> weeding out multiple instantiations),
+which somewhat slows down the linking process.
+    <li> Sometimes the definitions themselves are <em>not</em> required, but
+references or pointers to the templates <em>are</em>. Requiring the compiler to
+process the full template definitions in those cases needlessly slows down the
+compilation process.
+    <li> In the context of <a name="an2755"></a><em>template meta programming</em> (see chapter
+<a href="cplusplus23.html#ADVANCEDTEMPL">23</a>) it is sometimes not even required to provide a template
+implementation. Instead, only <em>specializations</em> (cf. section
+<a href="cplusplus21.html#SPECIALIZING">21.9</a>) are created which are based upon the mere <em>declaration</em>.
+    </ul>
+    So in some contexts template <em>definitions</em> may not be required.  Instead
+the software engineer may opt to <em>declare</em> a template rather than to
+include the template's definition time and again in various source files.
+<p>
+When templates are declared, the compiler does not have to process the
+template's definitions again and again; and no instantiations are created
+on the basis of template declarations alone. Any actually required
+instantiation must then be available elsewhere (of course, this holds true for
+declarations in general). Unlike the situation we encounter with ordinary
+functions, which are usually stored in libraries, it is currently not possible
+to store templates in libraries (although the compiler may construct
+<a name="an2756"></a><em>precompiled header</em> <em>files</em>). Consequently, using template declarations
+puts a burden on the shoulders of the software engineer, who has to make sure
+that the required instantiations exist. Below a simple way to accomplish that
+is introduced.
+<p>
+To create a function template declaration simply replace the function's
+body by a semicolon. Note that this is exactly identical to the way ordinary
+function declarations are constructed. So, the previously defined function
+template <code>add</code> can simply be declared as
+        <pre>
+    template &lt;typename Type&gt;
+    Type add(Type const &amp;lvalue, Type const &amp;rvalue);
+</pre>
+    We've already encountered <a name="an2757"></a>template declarations. The header file
+<code>iosfwd</code> may be included in sources not requiring instantiations of elements
+from the class <a name="an2758"></a><code>ios</code> and its derived classes. For example, to compile the
+<em>declaration</em>
+        <pre>
+    std::string getCsvLine(std::istream &amp;in, char const *delim);
+</pre>
+    it is not necessary to include the <code>string</code> and <code>istream</code> header
+files. Rather, a single
+        <pre>
+    #include &lt;iosfwd&gt;
+</pre>
+    is sufficient. Processing <code>iosfwd</code> requires only a fraction of the time
+it takes to process the <code>string</code> and <code>istream</code> header files.
+<p>
+<a name="TEMPFUNEXDEC"></a><a name="l504"></a>
+<h3>21.5.1: Instantiation declarations</h3>
+        If declaring function templates speeds up the compilation and the linking
+phases of a program, how can we make sure that the required instantiations of
+the function templates are available when the program is eventually linked
+together?
+<p>
+For this a variant of a template declaration is available, a so-called
+ <a name="an2759"></a><a name="an2760"></a><em>explicit instantiation declaration</em>.
+    An explicit instantiation declaration consists of the following elements:
+    <ul>
+    <li> It starts with the keyword <code>template</code>, omitting the template
+parameter list.
+    <li> Next the function template's return type and name are specified.
+    <li> The function template's name is followed by a <em>type specification
+list</em>. A type specification list is an angle brackets enclosed list of type
+names.  Each type specifies the actual type of the corresponding template type
+parameter in the template's parameter list.
+    <li> Finally the function template's parameter list is specified,
+terminated by a semicolon.
+    </ul>
+    Although this is a declaration, it is understood by the compiler as a
+request to instantiate that particular variant of the function template.
+<p>
+Using explicit instantiation declarations all instantiations of template
+functions required by a program can be collected in one file. This file, which
+should be a normal <em>source</em> file, should include the template definition
+header file and should subsequently specify the required explicit
+instantiation declarations. Since it's a source file, it is not included
+by other sources. So namespace <code>using</code> directives and declarations may
+safely be used once the required headers have been included.  Here is an
+example showing the required instantiations for our earlier <code>add</code> function
+template, instantiated for <code>double</code>, <code>int</code>, and <code>std::string</code> types:
+        <pre>
+    #include "add.h"
+    #include &lt;string&gt;
+    using namespace std;
+
+    template int add&lt;int&gt;(int const &amp;lvalue, int const &amp;rvalue);
+    template double add&lt;double&gt;(double const &amp;lvalue, double const &amp;rvalue);
+    template string add&lt;string&gt;(string const &amp;lvalue, string const &amp;rvalue);
+</pre>
+    If we're sloppy and forget to mention an instantiation required by our
+program then the repair is easily made by adding the missing instantiation
+declaration to the above list. After recompiling the file and relinking the
+program we're done.
+<p>
+<a name="TEMPFUNINST"></a><a name="l505"></a>
+<h2>21.6: Instantiating function templates</h2>
+    Different from an ordinary function that results in code once the compiler
+reads its definition a template is not instantiated when its definition is
+read. A template is merely a <em>recipe</em> telling the compiler how to create
+particular code once it's time to do so. It's indeed very much like a recipe
+in a cooking book. You reading how to bake a cake doesn't mean you have
+actually baked that cake by the time you've read the recipe.
+<p>
+So, when is a function template actually instantiated? There are two
+situations where the compiler decides to instantiate templates:
+    <ul>
+    <li> They are instantiated when they are used (e.g., the function
+<code>add</code> is called with a pair of <code>size_t</code> values);
+    <li> When addresses of function templates are taken they are instantiated.
+Example:
+        <pre>
+char (*addptr)(char const &amp;, char const &amp;) = add;
+</pre>
+    </ul>
+    The location of statements causing the compiler to instantiate a template
+is called the template's
+        <a name="an2761"></a>
+    <a name="an2762"></a><em>point of instantiation</em>. The point of instantiation has serious
+implications for the function template's code. These implications are
+discussed in section <a href="cplusplus21.html#NAMERESFUN">21.13</a>.
+<p>
+The compiler is not always able to deduce the template's type parameters
+unambiguously. When the compiler reports an ambiguity it must be solved by the
+software engineer. Consider the following code:
+        <pre>
+    #include &lt;iostream&gt;
+    #include "add.h"
+
+    size_t fun(int (*f)(int *p, size_t n));
+    double fun(double (*f)(double *p, size_t n));
+
+    int main()
+    {
+        std::cout &lt;&lt; fun(add);
+    }
+</pre>
+<p>
+When this little program is compiled, the compiler reports an ambiguity it
+cannot resolve. It has two candidate functions as for each overloaded version
+of <code>fun</code> an <code>add</code> function can be instantiated:
+        <pre>
+    error: call of overloaded 'fun(&lt;unknown type&gt;)' is ambiguous
+    note: candidates are: int fun(size_t (*)(int*, size_t))
+    note:                 double fun(double (*)(double*, size_t))
+</pre>
+    Such situations should of course be avoided. Function templates can only
+be instantiated if there's no ambiguity. Ambiguities arise when multiple
+functions emerge from the compiler's function selection mechanism (see section
+<a href="cplusplus21.html#FUNCTIONSELECTION">21.14</a>). It is up to us to resolve the ambiguities. They
+<em>could</em> be resolved using a blunt <a name="an2763"></a><code>static_cast</code> (by which we select among
+alternatives, all of them possible and available):
+        <pre>
+    #include &lt;iostream&gt;
+    #include "add.h"
+
+    int fun(int (*f)(int const &amp;lvalue, int const &amp;rvalue));
+    double fun(double (*f)(double const &amp;lvalue, double const &amp;rvalue));
+
+    int main()
+    {
+        std::cout &lt;&lt; fun(
+                        static_cast&lt;int (*)(int const &amp;, int const &amp;)&gt;(add)
+                    );
+    }
+</pre>
+<p>
+But it's good practice to avoid type casts wherever possible. How to do
+this is explained in the next section (<a href="cplusplus21.html#TEMPFUNEXPLICIT">21.7</a>).
+<p>
+<a name="l506"></a>
+<h3>21.6.1: Instantiations: no `code bloat'</h3>
+        As mentioned in section <a href="cplusplus21.html#TEMPFUNDECL">21.5</a>, the linker removes
+ <a name="an2764"></a> identical
+instantiations of a template from the final program, leaving only one
+instantiation for each unique set of actual template type parameters. To
+illustrate the linker's behavior we do as follows:
+    <ul>
+    <li> First we construct several source files:
+            <ul>
+            <li><code>source1.cc</code> defines a function <code>fun</code>, instantiating
+<code>add</code> for <code>int</code>-type arguments, including <code>add</code>'s template
+definition. It displays <code>add</code>'s address:
+        <pre>
+    union PointerUnion
+    {
+        int (*fp)(int const &amp;, int const &amp;);
+        void *vp;
+    };
+</pre>
+<p>
+<pre>
+    #include &lt;iostream&gt;
+    #include "add.h"
+    #include "pointerunion.h"
+
+    void fun()
+    {
+        PointerUnion pu = { add };
+
+        std::cout &lt;&lt; pu.vp &lt;&lt; '\n';
+    }
+</pre>
+<p>
+<li><code>source2.cc</code> defines the same function, but merely declares the
+proper <code>add</code> template using a template declaration (<em>not</em> an instantiation
+declaration). Here is <code>source2.cc</code>:
+        <pre>
+    #include &lt;iostream&gt;
+    #include "pointerunion.h"
+
+    template&lt;typename Type&gt;
+    Type add(Type const &amp;, Type const &amp;);
+
+    void fun()
+    {
+        PointerUnion pu = { add };
+
+        std::cout &lt;&lt; pu.vp &lt;&lt; '\n';
+    }
+</pre>
+<p>
+<li><code>main.cc</code> again includes <code>add</code>'s template definition,
+declares the function <code>fun</code> and defines <code>main</code>, defining <code>add</code>
+for <code>int</code>-type arguments as well and displaying <code>add</code>'s function
+address. It also calls the function <code>fun</code>. Here is <code>main.cc</code>:
+        <pre>
+    #include &lt;iostream&gt;
+    #include "add.h"
+    #include "pointerunion.h"
+
+    void fun();
+
+    int main()
+    {
+        PointerUnion pu = { add };
+
+        fun();
+        std::cout &lt;&lt; pu.vp &lt;&lt; '\n';
+    }
+</pre>
+<p>
+</ul>
+    <li> All sources are compiled to object modules. Note the different sizes
+of <code>source1.o</code> (1912 bytes using <code>g++</code> version 4.3.4 (sizes of object
+modules reported in this section may differ for different compilers and/or
+run-time libraries)) and <code>source2.o</code> (1740 bytes). Since <code>source1.o</code>
+contains the instantiation of <code>add</code>, it is somewhat larger than
+<code>source2.o</code>, containing only the template's declaration. Now we're ready to
+start our little experiment.
+    <li> Linking <code>main.o</code> and <code>source1.o</code>, we obviously link together two
+object modules, each containing its own instantiation of the same template
+function. The resulting program produces the following output:
+        <pre>
+    0x80486d8
+    0x80486d8
+</pre>
+        Furthermore, the size of the resulting program is 6352 bytes.
+    <li> Linking <code>main.o</code> and <code>source2.o</code>, we now link together an object
+module containing the instantiation of the <code>add</code> template, and another
+object module containing the mere declaration of the same template
+function. So, the resulting program cannot but contain a single instantiation
+of the required function template. This program has exactly the same size, and
+produces exactly the same output as the first program.
+    </ul>
+    From our little experiment we conclude that the linker indeed removes
+identical template instantiations from a final program. Furthermore we
+conclude that using mere template declarations does not result in template
+instantiations.
+<p>
+<a name="TEMPFUNEXPLICIT"></a><a name="l507"></a>
+<h2>21.7: Using explicit template types</h2>
+    In the previous section we saw that the compiler may encounter ambiguities
+when attempting to instantiate a template. In an example overloaded versions
+of a function (<code>fun</code>) existed, expecting different types of arguments. The
+ambiguity resulted from the fact that both arguments could have been provided
+by an instantiation of a function template. The intuitive way to solve such an
+ambiguity is to use a <code>static_cast</code>. But casts should be avoided wherever
+possible.
+<p>
+With function templates static casts may indeed be avoided using
+ <a name="an2765"></a><em>explicit template type arguments</em>. Explicit template type arguments can
+be used to inform the compiler about the actual types it should use when
+instantiating a template. To use explicit type arguments the function's name
+is followed by an <em>actual template type argument list</em> which may again be
+followed by the function's argument list. The actual types mentioned in the
+actual template argument list are used by the compiler to `deduce' what types
+to use when instantiating the template. Here is the example from the previous
+section, now using explicit template type arguments:
+        <pre>
+    #include &lt;iostream&gt;
+    #include "add.h"
+
+    int fun(int (*f)(int const &amp;lvalue, int const &amp;rvalue));
+    double fun(double (*f)(double const &amp;lvalue, double const &amp;rvalue));
+
+    int main()
+    {
+        std::cout &lt;&lt; fun(add&lt;int&gt;) &lt;&lt; '\n';
+    }
+</pre>
+<p>
+Explicit template type arguments  can be used in situations where the
+compiler has no way to detect which types should actually be used. E.g., in
+section <a href="cplusplus21.html#TEMPFUNARGS">21.4</a> the function template <code>Type fun()</code> was defined. To
+instantiate this function for the <code>double</code> type, we can call
+<code>fun&lt;double&gt;()</code>.
+<p>
+<a name="l508"></a>
+<h2>21.8: Overloading function templates</h2>
+Let's once again look at our <code>add</code> template. That template was designed to
+return the sum of two entities. If we would want to compute the sum of three
+entities, we could write:
+        <pre>
+    int main()
+    {
+        add(add(2, 3), 4);
+    }
+</pre>
+    This is an acceptable solution for the occasional situation. However, if
+we would have to add three entities regularly, an <em>overloaded</em> version of
+the <code>add</code> function expecting three arguments might be a useful function to
+have. There's a simple solution to this problem: function templates may be
+        <a name="an2766"></a>
+        <a name="an2767"></a>
+overloaded.
+<p>
+To define an overloaded function template, merely put multiple definitions
+of the template in its header file. For the <code>add</code> function this would boil
+down to:
+        <pre>
+    template &lt;typename Type&gt;
+    Type add(Type const &amp;lvalue, Type const &amp;rvalue)
+    {
+        return lvalue + rvalue;
+    }
+    template &lt;typename Type&gt;
+    Type add(Type const &amp;lvalue, Type const &amp;mvalue, Type const &amp;rvalue)
+    {
+        return lvalue + mvalue + rvalue;
+    }
+</pre>
+    The overloaded function does not have to be defined in terms of simple
+values. Like all overloaded functions, a unique set of function parameters is
+enough to define an overloaded function template. For example, here's an
+overloaded version that can be used to compute the sum of the elements of a
+vector:
+        <pre>
+    template &lt;typename Type&gt;
+    Type add(std::vector&lt;Type&gt; const &amp;vect)
+    {
+        return accumulate(vect.begin(), vect.end(), Type());
+    }
+</pre>
+<p>
+When overloading function templates we do not have to restrict ourselves
+to the function's parameter list. The template's type parameter list itself
+may also be
+        <a name="an2768"></a>
+    overloaded. The last definition of the <code>add</code> template allows us to
+specify a <code>vector</code> as its first argument, but no <code>deque</code> or
+<code>map</code>. Overloaded versions for those types of containers could of course be
+constructed, but how far should we go? A better approach seems to be to look
+for common characteristics of these containers. If found we may be able to
+define an overloaded function template based on these common
+characteristics. One common characteristic of the mentioned containers is that
+they all support <code>begin</code> and <code>end</code> members, returning iterators. Using
+this, we could define a template type parameter representing containers that
+must support these members. But mentioning a plain `container type' doesn't
+tell us for what type of data it was instantiated. So we need a second
+template type parameter representing the container's data type, thus
+overloading the template's type parameter list. Here is the resulting
+overloaded version of the <code>add</code> template:
+        <pre>
+    template &lt;typename Container, typename Type&gt;
+    Type add(Container const &amp;cont, Type const &amp;init)
+    {
+        return std::accumulate(cont.begin(), cont.end(), init);
+    }
+</pre>
+    One may wonder whether the <code>init</code> parameter could not be left out of the
+parameter list as <code>init</code> often has a default initialization value. The
+answer is `yes', but there are complications. It <em>is</em> possible to define the
+<code>add</code> function as follows:
+        <pre>
+    template &lt;typename Type, typename Container&gt;
+    Type add(Container const &amp;cont)
+    {
+        return std::accumulate(cont.begin(), cont.end(), Type());
+    }
+</pre>
+    Note, however, that the template's type parameters were reordered, which
+is necessary because the compiler won't be able to determine <code>Type</code> in a
+call like:
+        <pre>
+    int x = add(vectorOfInts);
+</pre>
+    After reordering the template type parameters, putting <code>Type</code> first, an
+explicit template type argument can be provided for the first template type
+parameter:
+        <pre>
+    int x = add&lt;int&gt;(vectorOfInts);
+</pre>
+    In this example we provided a <code>vector&lt;int&gt;</code> argument. One might wonder
+why we have to specify <code>int</code> explicitly to allow the compiler to determine
+the template type parameter <code>Type</code>. In fact, we don't. A third kind of
+template parameter exists, a <em>template template parameter</em>, allowing the
+compiler to determine <code>Type</code> directly from the actual container
+argument. Template template parameters are discussed in section
+<a href="cplusplus23.html#TEMPTEMPPAR">23.4</a>.
+<p>
+<a name="l509"></a>
+<h3>21.8.1: An example using overloaded function templates</h3>
+        With all these overloaded versions in place, we may now start the compiler
+to compile the following function:
+        <pre>
+    using namespace std;
+
+    int main()
+    {
+        vector&lt;int&gt; v;
+
+        add(3, 4);          // 1 (see text)
+        add(v);             // 2
+        add(v, 0);          // 3
+    }
+</pre>
+    <ul>
+    <li> In statement 1 the compiler recognizes two identical types, both
+<code>int</code>. It therefore instantiates <code>add&lt;int&gt;</code>, our very first definition
+of the <code>add</code> template.
+    <li> In statement 2 a single argument is used. Consequently, the compiler
+looks for an overloaded version of <code>add</code> requiring but one argument. It
+finds the overloaded function template expecting a <code>std::vector</code>, deducing
+that the template's type parameter must be <code>int</code>. It instantiates
+        <pre>
+    add&lt;int&gt;(std::vector&lt;int&gt; const &amp;)
+</pre>
+    <li> In statement 3 the compiler again encounters an argument list having
+  two arguments. However, this time the types of the arguments aren't equal,
+so <code>add</code> template's first definition can't be used. But it <em>can</em> use the
+last definition, expecting entities having different types. As a
+<code>std::vector</code> supports <code>begin</code> and <code>end</code>, the compiler is now able to
+instantiate the function template
+        <pre>
+add&lt;std::vector&lt;int&gt;, int&gt;(std::vector&lt;int&gt; const &amp;, int const &amp;)
+</pre>
+    </ul>
+    Having defined the <code>add</code> function template for two equal and two
+different template type parameters we've exhausted the possibilities for using
+an <code>add</code> function template having two template type parameters.
+<p>
+<a name="l510"></a>
+<h3>21.8.2: Ambiguities when overloading function templates</h3>
+    Although it <em>is</em> possible to define another function template <code>add</code> this
+introduces an ambiguity as the compiler won't be able to choose which of
+the two overloaded versions defining two differently typed function parameters
+should be used. For example when defining:
+        <pre>
+    #include "add.h"
+
+    template &lt;typename T1, typename T2&gt;
+    T1 add(T1 const &amp;lvalue, T2 const &amp;rvalue)
+    {
+        return lvalue + rvalue;
+    }
+    int main()
+    {
+        add(3, 4.5);
+    }
+</pre>
+    the compiler reports an ambiguity like the following:
+        <pre>
+        error: call of overloaded `add(int, double)' is ambiguous
+        error: candidates are: Type add(const Container&amp;, const Type&amp;)
+                                    [with Container = int, Type = double]
+        error:                 T1 add(const T1&amp;, const T2&amp;)
+                                    [with T1 = int, T2 = double]
+</pre>
+    Now recall the overloaded function template accepting three arguments:
+        <pre>
+    template &lt;typename Type&gt;
+    Type add(Type const &amp;lvalue, Type const &amp;mvalue, Type const &amp;rvalue)
+    {
+        return lvalue + mvalue + rvalue;
+    }
+</pre>
+    It may be considered as a disadvantage that only equally typed arguments
+are accepted by this function (three <code>int</code>s, three <code>double</code>s, etc.). To
+remedy this we define yet another overloaded function template, this time
+accepting arguments of any type.  This function template can only be used if
+<code>operator+</code> is defined between the function's actually used types, but apart
+from that there appears to be no problem. Here is the overloaded version
+accepting arguments of any type:
+        <pre>
+    template &lt;typename Type1, typename Type2, typename Type3&gt;
+    Type1 add(Type1 const &amp;lvalue, Type2 const &amp;mvalue, Type3 const &amp;rvalue)
+    {
+        return lvalue + mvalue + rvalue;
+    }
+</pre>
+    Now that we've defined the above two overloaded function templates
+expecting three arguments let's call <code>add</code> as follows:
+        <pre>
+    add(1, 2, 3);
+</pre>
+    Should we expect an ambiguity here? After all, the compiler might select
+the former function, deducing that <code>Type == int</code>, but it might also select
+the latter function, deducing that <code>Type1 == int, Type2 == int</code> and <code>Type3
+== int</code>. Remarkably, the compiler reports no ambiguity.
+<p>
+No ambiguity is reported because of the following. If overloaded template
+functions are defined using <em>less</em> and <em>more</em> specialized template type
+parameters (e.g., less specialized: all types different vs. more specialized:
+        <a name="an2769"></a> all types equal)
+then the compiler selects the more specialized function whenever possible.
+<p>
+As a <a name="an2770"></a>rule of thumb: overloaded function templates must allow a unique
+combination of template type arguments to be specified to prevent ambiguities
+when selecting which overloaded function template to instantiate.  The
+<em>ordering</em> of template type parameters in the function template's type
+parameter list is not important. E.g., trying to instantiate one of the
+following function templates results in an ambiguity:
+        <pre>
+    template &lt;typename T1, typename T2&gt;
+    void binarg(T1 const &amp;first, T2 const &amp;second)
+    {}
+    template &lt;typename T1, typename T2&gt;
+    void binarg(T2 const &amp;first, T1 const &amp;second)
+    {}
+</pre>
+    This should not come as a surprise. After all, template type parameters
+are just formal names. Their names (<code>T1</code>, <code>T2</code> or <code>Whatever</code>) have no
+concrete meanings.
+<p>
+<a name="l511"></a>
+<h3>21.8.3: Declaring overloaded function templates</h3>
+        Like any function, overloaded functions may be declared, either using
+plain declarations or instantiation declarations. Explicit template argument
+types may also be used. Example:
+    <ul>
+    <li> To declare a function template <code>add</code> accepting certain containers:
+    <pre>
+template &lt;typename Container, typename Type&gt;
+Type add(Container const &amp;container, Type const &amp;init);
+</pre>
+    <li> to use an instantiation declaration (in which case the compiler must
+already have seen the template's definition):
+    <pre>
+template int add&lt;std::vector&lt;int&gt;, int&gt;
+                (std::vector&lt;int&gt; const &amp;vect, int const &amp;init);
+</pre>
+    <li> to use explicit template type arguments:
+    <pre>
+std::vector&lt;int&gt; vi;
+int sum = add&lt;std::vector&lt;int&gt;, int&gt;(vi, 0);
+</pre>
+    </ul>
+<p>
+<a name="SPECIALIZING"></a><a name="l512"></a>
+<h2>21.9: Specializing templates for deviating types</h2>
+    The initial <code>add</code> template, defining two identically typed parameters
+works fine for all types supporting <code>operator+</code> and a copy
+constructor. However, these assumptions are not always met. For example, with
+<code>char *</code>s, using <code>operator+</code> or a `copy constructor' does not make
+sense. The compiler tries to instantiate the function template, but
+compilation fails as  <code>operator+</code> is not defined for pointers.
+<p>
+In such situations the compiler may be able to resolve the template type
+parameters but it (or we ...) may then detect that the standard implementation
+is pointless or produces errors.
+<p>
+To solve this problem a <a name="an2771"></a><em>template explicit specialization</em> may be
+defined.  A template explicit specialization defines the function template for
+which a generic definition already exists using specific actual template type
+parameters. As we saw in the previous section the compiler always prefers
+a more specialized function over a less specialized one. So the template
+explicit specialization is selected whenever possible.
+<p>
+A template explicit specialization offers a specialization for its template
+type parameter(s). The special type is consistently subsituted for
+the template type parameter in the function template's code. For
+example if the explicitly specialized type is <code>char const *</code> then in the
+template definition
+        <pre>
+    template &lt;typename Type&gt;
+    Type add(Type const &amp;lvalue, Type const &amp;rvalue)
+    {
+        return lvalue + rvalue;
+    }
+</pre>
+    <code>Type</code> must be replaced by <code>char const *</code>, resulting in a function
+having prototype
+        <pre>
+    char const *add(char const *const &amp;lvalue, char const *const &amp;rvalue);
+</pre>
+    Now we try to use this function:
+        <pre>
+    int main(int argc, char **argv)
+    {
+        add(argv[0], argv[1]);
+    }
+</pre>
+    However, the compiler ignores our specialization and tries to instantiate
+the initial function template. This fails, leaving us wondering why it didn't
+select the explicit specialization....
+<p>
+To see what happened here we replay, step by step, the compiler's actions:
+    <ul>
+    <li> <code>add</code> is called with <code>char *</code> arguments.
+    <li> Both types are equal, so the compiler deduces that <code>Type</code> equals
+<code>char *</code>.
+    <li> Now it inspects the specialization. Can a <code>char *</code> template type
+argument match a <code>char const *const &amp;</code> template parameter? Here
+opportunities for the allowable transformations from section <a href="cplusplus21.html#TEMPFUNARGS">21.4</a>
+may arise. A qualification transformation seems to be the only viable one,
+allowing the compiler to bind a const-parameter to a non-const argument.
+    <li> So, in terms of <code>Type</code> the compiler can match an argument of some
+<code>Type</code> or an argument of some <code>Type const</code> to a <code>Type const &amp;</code>.
+    <li> <code>Type</code> itself is not modified, and so <code>Type</code> is a <code>char *</code>.
+    <li> Next the compiler inspects the available explicit specializations. It
+finds one, specializing for <code>char const *</code>.
+    <li> Since a <code>char const *</code> is not a <code>char *</code> it rejects the explicit
+specialization and uses the generic form, resulting in a compilation error.
+    </ul>
+    If our <code>add</code> function template should also be able to handle <code>char *</code>
+template type arguments another explicit specialization for <code>char *</code> may be
+required, resulting in the prototype
+        <pre>
+    char *add(char *const &amp;lvalue, char *const &amp;rvalue);
+</pre>
+<p>
+Instead of defining another explicit specialization an <em>overloaded</em>
+function template could be designed expecting pointers. The following function
+template definition expects two pointers to constant <code>Type</code> values and
+returns a pointer to a non-constant <code>Type</code>:
+        <pre>
+    template &lt;typename Type&gt;
+    Type *add(Type const *t1, Type const *t2)
+    {
+        std::cout &lt;&lt; "Pointers\n";
+        return new Type;
+    }
+</pre>
+    What actual types may be bound to the above function parameters? In this
+case only a <code>Type const *</code>, allowing <code>char const *</code>'s to be passed as
+arguments. There's no opportunity for a qualification transformation here.
+The qualification transformation allows the compiler to add a <code>const</code> to a
+non-const argument if the parameter itself (and <em>not</em>  <code>Type</code>) is
+specified in terms of a <code>const</code> or <code>const &amp;</code>. Loooking at, e.g., <code>t1</code> we
+see that it's defined as a <code>Type const *</code>. There's nothing <code>const</code> here
+that's referring to the parameter (in which case it would have been <code>Type
+const *const t1</code> or <code>Type const *const &amp;t1</code>). Consequently a qualification
+transformation cannot be applied here.
+<p>
+As the above overloaded function template only accepts <code>char const *</code>
+arguments, it will not accept (without a reinterpret cast) <code>char *</code>
+arguments. So <code>main</code>'s <code>argv</code> elements cannot be passed to our overloaded
+function template.
+<p>
+<a name="l513"></a>
+<h3>21.9.1: Avoiding too many specializations</h3>
+        So do we have to define yet another overloaded function template, this
+time expecting <code>Type *</code> arguments? It is possible, but at some point it
+should become clear that our approach doesn't scale. Like ordinary functions
+and classes, function templates should have one conceptually clear
+purpose. Trying to add overloaded function templates to overloaded function
+templates quickly turns the template into a kludge. Don't use this approach. A
+better approach is to construct the template so that it fits its original
+purpose, to make allowances for the occasional specific case and to describe
+its purpose clearly in its documentation.
+<p>
+In some situations constructing template explicit specialization may of
+course be defensible. Two specializations for <code>const</code> and non-<code>const</code>
+pointers to characters might be appropriate for our <code>add</code> function
+template. <a name="an2772"></a> Here's how they are
+constructed:
+    <ul>
+    <li> Start with the keyword <code>template</code>.
+    <li> Next, an empty set of angle brackets is written. This indicates to
+the compiler that there must be an <em>existing</em> template whose prototype
+matches the one we're about to define. If we err and there is no such template
+        <a name="an2773"></a>
+then the compiler reports an error like:
+        <pre>
+    error: template-id `add&lt;char*&gt;' for `char* add(char* const&amp;, char*
+           const&amp;)' does not match any template declaration
+</pre>
+    <li> Now the function's head is defined. It must match the prototype of
+the initial function template or the form of a template explicit instantiation
+declaration (see section <a href="cplusplus21.html#TEMPFUNEXDEC">21.5.1</a>) if its specialized type cannot be
+determined from the function's arguments. It must specify the correct
+returntype, function name, maybe explicit template type arguments, as well as
+the function's parameter list.
+    <li> Finally the function's body is defined, providing the special
+implementation that is required for the specialization.
+    </ul>
+<p>
+Here are two explicit specializations for the function template <code>add</code>,
+expecting <code>char *</code> and <code>char const *</code> arguments:
+        <pre>
+    template &lt;&gt; char *add&lt;char *&gt;(char *const &amp;p1,
+                                        char *const &amp;p2)
+    {
+        std::string str(p1);
+        str += p2;
+        return strcpy(new char[str.length() + 1], str.c_str());
+    }
+
+    template &lt;&gt; char const *add&lt;char const *&gt;(char const *const &amp;p1,
+                                        char const *const &amp;p2)
+    {
+        static std::string str;
+        str = p1;
+        str += p2;
+        return str.c_str();
+    }
+</pre>
+    Template explicit specializations are normally included in the file
+containing the other function template's implementations.
+<p>
+<a name="l514"></a>
+<h3>21.9.2: Declaring specializations</h3>
+        Template explicit specializations can be declared in the usual way. I.e.,
+by replacing its body with a semicolon.
+<p>
+When <em>declaring</em> a template explicit specialization the pair of
+ <a name="an2774"></a>angle brackets following the <code>template</code> keyword are essential. If
+omitted, we would have constructed a
+        <a name="an2775"></a>template instantiation declaration.
+    The compiler would silently process it, at the expense of a somewhat
+longer compilation time.
+<p>
+When declaring a template explicit specialization (or when using an
+instantiation declaration) the
+        <a name="an2776"></a>
+    explicit specification of the template type parameters can be omitted if
+the compiler is able to deduce these types from the function's arguments.  As
+this is the case with the <code>char (const) *</code> specializations, they could also
+be declared as follows:
+        <pre>
+    template &lt;&gt; char *add(char *const &amp;p1, char *const &amp;p2)
+    template &lt;&gt; char const *add(char const *const &amp;p1,
+                                char const *const &amp;p2);
+</pre>
+    If in addition <code>template &lt;&gt;</code> could be omitted the template character
+would be removed from the declaration. The resulting declaration is now a mere
+function declaration. This is not an error: function templates and ordinary
+(non-template) functions may mutually overload each other. Ordinary functions
+are not as restrictive as function templates with respect to allowed type
+conversions. This could be a reason to overload a template with an ordinary
+function every once in a while.
+<p>
+A function template explicit specialization is not just another overloaded
+        <a name="an2777"></a> version of
+the function template. Whereas an overloaded version may define a completely
+different set of template parameters, a specialization must use the same set
+of template parameters as its non-specialized variant. The compiler uses the
+specialization in situations where the actual template arguments match the
+types defined by the specialization (following the rule that the most
+specialized set of parameters matching a set of arguments will be
+used). For different sets of parameters  overloaded versions of functions (or
+function templates) must be used.
+<p>
+<a name="l515"></a>
+<h3>21.9.3: Complications when using the insertion operator</h3>
+        Now that we've covered explicit specializations and overloading let's
+consider what happens when a class defines a <code>std::string</code> conversion
+operator (cf. section <a href="cplusplus11.html#ConversionOperators">11.3</a>).
+<p>
+A conversion operator is guaranteed to be used as an rvalue. This means that
+objects of a class defining a <code>string</code> conversion operator can be assigned
+to, e.g., <code>string</code> objects. But when trying to insert objects defining
+<code>string</code> conversion operators into streams then the compiler complains that
+we're attemping to insert an inappropriate type into an <code>ostream</code>.
+<p>
+On the other hand, when this class defines an <code>int</code> conversion operator
+insertion is performed flawlessly.
+<p>
+The reason for this distinction is that <code>operator&lt;&lt;</code> is defined as a plain
+(free) function when inserting a basic type (like <code>int</code>) but it is defined
+as a function template when inserting a <code>string</code>. Hence, when trying to
+insert an object of our class defining a <code>string</code> conversion operator the
+compiler visits all overloaded versions of insertion operators inserting into
+<code>ostream</code> objects.
+<p>
+Since no basic type conversion is available the basic type insertion operators
+can't be used. Since the available conversions for template arguments do not
+allow the compiler to look for conversion operators our class defining the
+<code>string</code> conversion operator cannot be inserted into an <code>ostream</code>.
+<p>
+If it should be possible to insert objects of such a class into <code>ostream</code>
+objects the class must define its own overloaded insertion operator (in
+addition to the <code>string</code> conversion operator that was required to use the
+class's objects as rvalue in <code>string</code> assignments).
+<p>
+<a name="STATICASSERT"></a><a name="l516"></a>
+<h2>21.10: Static assertions</h2>
+The <a name="an2778"></a>
+        <pre>
+    static_assert(constant expression, error message)
+</pre>
+    utility is available to allow assertions to be made from inside template
+definitions. Here are two examples of its use:
+        <pre>
+    static_assert(BUFSIZE1 == BUFSIZE2,
+                                "BUFSIZE1 and BUFSIZE2 must be equal");
+
+    template &lt;typename Type1, typename Type2&gt;
+    void rawswap(Type1 &amp;type1, Type2 &amp;type2)
+    {
+        static_assert(sizeof(Type1) == sizeof(Type2),
+                        "rawswap: Type1 and Type2 must have equal sizes");
+        // ...
+    }
+</pre>
+    The first example shows how to avoid yet another preprocessor directive
+        <a name="an2779"></a>
+ (in this case the <a name="an2780"></a><code>#error</code> directive).
+<p>
+The second example shows how <code>static_assert</code> can be used to ensure that
+a template operates under the right condition(s).
+<p>
+The string defined in <code>static_assert</code>'s second argument is displayed and
+compilation stops if the condition specified in <code>static_assert</code>'s first
+argument is <code>false</code>.
+<p>
+Like the <code>#error</code> preprocessor directive <code>static_assert</code> is a
+<a name="an2781"></a>compile-time matter that doesn't have any effect on the <a name="an2782"></a>run-time
+efficiency of the code in which it is used.
+<p>
+<a name="l517"></a>
+<h2>21.11: Numeric limits</h2>
+The header file <a name="an2783"></a><code>&lt;climits&gt;</code> defines constants for various types, e.g.,
+<a name="an2784"></a><code>INT_MAX</code> defines the maximum value that can be stored in an <code>int</code>.
+<p>
+The disadvantage of the limits defined in <code>climits</code> is that they are fixed
+limits. Let's assume you write a function template that receives an argument
+of a certain type. E.g,
+        <pre>
+    template&lt;typename Type&gt;
+    Type operation(Type &amp;&amp;type);
+</pre>
+    Assume this function should return the largest negative value for <code>Type</code>
+if <code>type</code> is a negative value and the largest positive value if <code>type</code> is
+a positive value. However, 0 should be returned if the type is not an integral
+value.
+<p>
+How to proceed?
+<p>
+Since the constants in <code>climits</code> can only be used if the type to use is
+already known, the only approach seems to be to create function template
+specializations for the various integral types, like:
+        <pre>
+    template&lt;&gt;
+    int operation&lt;int&gt;(int &amp;&amp;type)
+    {
+        return type &lt; 0 ? INT_MIN : INT_MAX;
+    }
+</pre>
+<p>
+The facilities provided by <a name="an2785"></a>numeric_limits provide an alternative. To use
+these facilities the header file <a name="an2786"></a><code>&lt;limits&gt;</code> header file must be included.
+<p>
+The class template <code>numeric_limits</code> offers various members answering all
+kinds of questions that could be asked of numeric types. Before introducing
+these members, let's have a look at how we could implement the <code>operation</code>
+function template as just one single function template:
+        <pre>
+    template&lt;typename Type&gt;
+    Type operation(Type &amp;&amp;type)
+    {
+        return
+            not numeric_limits&lt;Type&gt;::is_integer ? 0 :
+            type &lt; 0 ? numeric_limits&lt;Type&gt;::min() :
+                       numeric_limits&lt;Type&gt;::max();
+    }
+</pre>
+    Now <code>operation</code> can be used for all the language's primitive types.
+<p>
+Here is an overview of the facilities offered by <code>numeric_limits</code>. Note
+that the member functions defined by <code>numeric_limits</code> return <code>constexpr</code>
+values. A member `<code>member</code>' defined by <code>numeric_limits</code> for type <code>Type</code>
+can be used as follows:
+        <pre>
+    numeric_limits&lt;Type&gt;::member    // data members
+    numeric_limits&lt;Type&gt;::member()  // member functions
+</pre>
+    All <code>numeric_limits</code> member functions return <code>constexpr</code> values.
+<p>
+<ul>
+    <li><a name="an2787"></a><code>Type denorm_min()</code>:<blockquote>
+        if available for <code>Type</code>: its minimum positive denormalized value;
+        otherwise it returns <code>numeric_limits&lt;Type&gt;::min()</code>.
+    </blockquote>
+    <li><a name="an2788"></a><code>int digits</code>:<blockquote>
+        the number of non-sign bits used by <code>Type</code> values, or (floating
+        point types) the number of digits in the mantissa are returned.
+    </blockquote>
+    <li><a name="an2789"></a><code>int digits10</code>:<blockquote>
+        the number of digits that are required to represent a <code>Type</code> value
+        without  changing it.
+    </blockquote>
+    <li><a name="an2790"></a><code>Type constexpr epsilon()</code>:<blockquote>
+        The difference for <code>Type</code> between the smallest value exceeding 1 and
+        1 itself.
+    </blockquote>
+    <li><a name="an2791"></a><code>float_denorm_style has_denorm</code>:<blockquote>
+        <a name="an2792"></a>
+        <a name="an2793"></a>
+        denormalized floating point value representations use a variable
+        number of exponent bits. The <code>has_denorm</code> member returns information
+        about denormalized values for type <code>Type</code>:
+        <ul>
+        <li><code>denorm_absent</code>: <code>Type</code> does not allow denormalized values;
+        <li><code>denorm_indeterminate</code>: <code>Type</code> may or may not use denormalized
+            values; the compiler cannot determine this at compile-time;
+        <li><code>denorm_present</code>: <code>Type</code> uses denormalized values;
+        </ul>
+    </blockquote>
+    <li><a name="an2794"></a><code>bool has_denorm_loss</code>:<blockquote>
+        <code>true</code> if a loss of accuracy was detected as a result of using
+        denormalization (rather than being an inexact result).
+    </blockquote>
+    <li><a name="an2795"></a><code>bool has_infinity</code>:<blockquote>
+        <code>true</code> if <code>Type</code> has a representation for positive infinity.
+    </blockquote>
+    <li><a name="an2796"></a><code>bool has_quiet_NaN</code>:<blockquote>
+        <code>true</code> if <code>Type</code> has a representation for a non-signaling
+        <a name="an2797"></a>`<a name="an2798"></a>Not-a-Number' value.
+    </blockquote>
+    <li><a name="an2799"></a><code>bool has_signaling_NaN</code>:<blockquote>
+        <code>true</code> if <code>Type</code> has a representation for a signaling
+        `Not-a-Number' value.
+    </blockquote>
+    <li><a name="an2800"></a><code>Type constexpr infinity()</code>:<blockquote>
+        if available for <code>Type</code>: its positive infiniy value.
+    </blockquote>
+    <li><a name="an2801"></a><code>bool is_bounded</code>:<blockquote>
+        <code>true</code> if <code>Type</code> contains a finite set of values.
+    </blockquote>
+    <li><a name="an2802"></a><code>bool is_exact</code>:<blockquote>
+        <code>true</code> if <code>Type</code> uses an exact representation.
+    </blockquote>
+    <li><a name="an2803"></a><code>bool is_iec559</code>:<blockquote>
+        <code>true</code> if <code>Type</code> uses the <a name="an2804"></a>IEC-559 (<a name="an2805"></a>IEEE-754) standard. Such
+        types always return <code>true</code> for <code>has_infinity, has_quiet_NaN</code> and
+        <code>has_signaling_NaN</code>, while <code>infinity(), quiet_NaN()</code> and
+        <code>signaling_NaN()</code> return non-zero values.
+    </blockquote>
+    <li><a name="an2806"></a><code>bool is_integer</code>:<blockquote>
+        <code>true</code> if <code>Type</code> is an integral type.
+    </blockquote>
+    <li><a name="an2807"></a><code>bool is_modulo</code>:<blockquote>
+        <code>true</code> if <code>Type</code> is a `modulo' type. Values of modulo types can
+        always be added, but the addition may `wrap around' producing a
+        smaller <code>Type</code> result than either of the addition's two operands.
+    </blockquote>
+    <li><a name="an2808"></a><code>bool is_signed</code>:<blockquote>
+        <code>true</code> if <code>Type</code> is signed.
+    </blockquote>
+    <li><a name="an2809"></a><code>bool is_specialized</code>:<blockquote>
+        <code>true</code> for specializations of <code>Type</code>.
+    </blockquote>
+    <li><a name="an2810"></a><code>Type constexpr lowest()</code>:<blockquote>
+        <code>Type</code>'s lowest finite value representable by <code>Type</code>: 
+        no other finite value smaller than the value returned by <code>lowest</code>
+        exists. This value equals the value returned by <code>min</code> except for
+        floating-point types. 
+    </blockquote>
+    <li><a name="an2811"></a><code>T constexpr max()</code>:<blockquote>
+        <code>Type</code>'s maximum value.
+    </blockquote>
+    <li><a name="an2812"></a><code>T constexpr min()</code>:<blockquote>
+        <code>Type</code>'s minimum value. For denormalized floating point types the
+        minimum positive normalized value.
+    </blockquote>
+    <li><a name="an2813"></a><code>int max_exponent</code>:<blockquote>
+        maximum positive integral value for the exponent of a floating point
+        type <code>Type</code> producing a valid <code>Type</code> value.
+    </blockquote>
+    <li><a name="an2814"></a><code>int max_exponent10</code>:<blockquote>
+        maximum integral value for the exponent that can be used for base 10,
+        producing a valid <code>Type</code> value.
+    </blockquote>
+    <li><a name="an2815"></a><code>int min_exponent</code>:<blockquote>
+        minimum negative integral value for the exponent of a floating point
+        type <code>Type</code> producing a valid <code>Type</code> value.
+    </blockquote>
+    <li><a name="an2816"></a><code>int min_exponent10</code>:<blockquote>
+        minimum negative integral value for the exponent that can be used for
+        base 10, producing a valid <code>Type</code> value.
+    </blockquote>
+    <li><a name="an2817"></a><code>Type constexpr quiet_NaN()</code>:<blockquote>
+        if available for <code>Type</code>: its a non-signaling `Not-a-Number' value.
+    </blockquote>
+    <li><a name="an2818"></a><code>int radix</code>:<blockquote>
+        if <code>Type</code> is an integral type: base of the representation; if
+        <code>Type</code> is a floating point type: the base of the exponent of the
+        representation.
+    </blockquote>
+    <li><a name="an2819"></a><code>Type constexpr round_error()</code>:<blockquote>
+        the maximum rounding error for <code>Type</code>.
+    </blockquote>
+    <li><a name="an2820"></a><code>float_round_style round_syle</code>:<blockquote>
+        the rounding style used by <code>Type</code>. It has one of the following
+        <code>enum</code> <a name="an2821"></a><code>float_round_style</code>
+                <a name="an2822"></a> values:
+        <ul>
+        <li><code>round_toward_zero</code>: values are rounded toward zero;
+        <li><code>round_to_nearest</code>: values are rounded to the nearest representable
+            value;
+        <li><code>round_toward_infinity</code>:values are rounded toward infinity;
+        <li><code>round_toward_neg_infinity</code>: if it rounds toward negative infinity;
+        <li><code>round_indeterminate</code>: if the rounding style is indeterminable at
+            compile-time.
+        </ul>
+    </blockquote>
+    <li><a name="an2823"></a><code>Type constexpr signaling_NaN()</code>:<blockquote>
+        if available for <code>Type</code>: its a signaling `Not-a-Number' value.
+    </blockquote>
+    <li><a name="an2824"></a><code>bool tinyness_before</code>:<blockquote>
+        <code>true</code> if <code>Type</code> allows tinyness to be detected before rounding.
+    </blockquote>
+    <li><a name="an2825"></a><code>bool traps</code>:<blockquote>
+        <code>true</code> if <code>Type</code> implements trapping.
+    </blockquote>
+    </ul>
+<p>
+<a name="l518"></a>
+<h2>21.12: Polymorphous wrappers for function objects</h2>
+In <strong>C++</strong> pointers to (member) functions have fairly strict rvalues. They can
+only point to functions matching their types.  This becomes a problem when
+defining templates where the type of a function pointer may depend on the
+template's parameters.
+<p>
+To solve this problem 
+        <a name="an2826"></a>
+        <a name="an2827"></a>
+    <em>polymorphous (function object) wrappers</em> can be used.  Polymorphous
+wrappers refer to function pointers, member functions or function objects, as
+long as their parameters match in type and number.
+<p>
+Before using polymorphic function wrappers the header file `<a name="an2828"></a><code>&lt;functional&gt;</code>'
+must be included.
+<p>
+Polymorphic function wrappers are made available through the
+<code>std::function</code><a name="an2829"></a>  class template. Its template argument
+is the prototype of the function to create a wrapper for. Here is an example
+of the definition of a polymorphic function wrapper that can be used to point
+to a function expecting two <code>int</code> values and returning an <code>int</code>:
+        <pre>
+    std::function&lt;int (int, int)&gt; ptr2fun;
+</pre>
+    Here, the template's parameter is <code>int (int, int)</code>, indicating a
+function expecting two <code>int</code> arguments, and returning and <code>int</code>. Other
+prototypes return other, matching, function wrappers.
+<p>
+Such a function wrapper can now be used to point to any function the wrapper
+was created for. E.g., `<code>plus&lt;int&gt; add</code>' creates a functor defining an
+<code>int operator()(int, int)</code> function call member. As this qualifies as a
+function having prototype <code>int (int, int)</code>, our <code>ptr2fun</code> may point to
+<code>add</code>:
+        <pre>
+    ptr2fun = add;
+</pre>
+<p>
+If <code>ptr2fun</code> does not yet point to a function (e.g., it is merely
+defined) and an attempt is made to call a function through it a
+        <a name="an2830"></a>`<code>std::bad_function_call</code>'
+    exception is thrown. Also, a polymorphic function wrapper that hasn't been
+assigned to a function's address represents the value <code>false</code> in logical
+expressions (as if it had been a pointer having value zero):
+        <pre>
+    std::function&lt;int(int)&gt; ptr2int;
+
+    if (not ptr2int)
+        cout &lt;&lt; "ptr2int is not yet pointing to a function\n";
+</pre>
+<p>
+Polymorphous function wrappers can also be used to refer to functions,
+functors or other polymorphous function wrappers having prototypes for which
+standard conversions exist for either parameters or return values. E.g.,
+        <pre>
+    bool predicate(long long value);
+
+    void demo()
+    {
+        std::function&lt;int(int)&gt; ptr2int;
+
+        ptr2int = predicate;    // OK, convertible param. and return type
+
+        struct Local
+        {
+            short operator()(char ch);
+        };
+
+        Local object;
+
+        std::function&lt;short(char)&gt; ptr2char(object);
+
+        ptr2int = object;       // OK, object is a functor whose function
+                                //  operator has a convertible param. and
+                                // return type.
+        ptr2int = ptr2char;     // OK, now using a polym. funct. wrapper
+    }
+</pre>
+<p>
+<a name="NAMERESFUN"></a><a name="l519"></a>
+<h2>21.13: Compiling template definitions and instantiations</h2>
+    Consider this definition of the <code>add</code> function template:
+        <pre>
+    template &lt;typename Container, typename Type&gt;
+    Type add(Container const &amp;container, Type init)
+    {
+        return std::accumulate(container.begin(), container.end(), init);
+    }
+</pre>
+    Here <code>std::accumulate</code> is called using <code>container</code>'s <code>begin</code> and
+<code>end</code> members.
+<p>
+The calls <code>container.begin()</code> and <code>container.end()</code> are said to
+        <a name="an2831"></a>
+    <em>depend on template type parameters</em>. The compiler, not having seen
+<code>container</code>'s interface, cannot check whether <code>container</code> actually
+has members <code>begin</code> and <code>end</code> returning input iterators.
+<p>
+On the other hand, <code>std::accumulate</code> itself is independent of any
+template type parameter. Its <em>arguments</em> depend on template parameters, but
+the function call itself isn't. Statements in a template's body that are
+independent of template type parameters are said <em>not to depend on template
+type parameters</em>.
+<p>
+When the compiler encounters a template definition, it verifies the
+syntactic correctness of all statements not depending on template
+parameters. I.e., it must have seen all class definitions, all type
+definitions, all function declarations etc. that are used in those statements.
+If the compiler hasn't seen the required definitions and declarations then it
+will reject the template's definition. Therefore, when submitting the above
+template to the compiler the header file <code>numeric</code> must first have been
+included as this header file declares <code>std::accumulate</code>.
+<p>
+With statements depending on template parameters the compiler cannot
+perform those extensive syntactic checks. It has no way to verify the
+existence of a member <code>begin</code> for the as yet unspecified type
+<code>Container</code>. In these cases the compiler performs superficial checks,
+assuming that the required members, operators and types eventually become
+available.
+<p>
+The location in the program's source where the template is instantiated is
+        <a name="an2832"></a> <a name="an2833"></a> called
+its <em>point of instantiation</em>. At the point of instantiation the compiler
+deduces the actual types of the template's parameters. At that point it checks
+the syntactic correctness of the template's statements that depend on template
+type parameters. This implies that the compiler must have seen the required
+declarations <em>only at the point of instantiation</em>.  As a
+        <a name="an2834"></a>rule of thumb,
+    you should make sure that all required declarations (usually: header
+files) have been read by the compiler at every point of instantiation of the
+template. For the template's definition itself a more relaxed requirement can
+be formulated. When the definition is read only the declarations required for
+statements <em>not</em> depending on the template's type parameters must have been
+provided.
+<p>
+<a name="FUNCTIONSELECTION"></a><a name="l520"></a>
+<h2>21.14: The function selection mechanism</h2>
+When the compiler encounters a function call, it must decide which function to
+call when overloaded functions are available. Earlier we've encountered
+principles like `the most specific function is selected'. This is a
+fairly intuitive description of the compiler's <a name="an2835"></a>function selection mechanism.
+In this section we'll have a closer look at this mechanism.
+<p>
+Assume we ask the compiler to compile the following <code>main</code> function:
+        <pre>
+    int main()
+    {
+        process(3, 3);
+    }
+</pre>
+    Furthermore assume that the compiler has encountered the following
+function declarations when it's about to compile <code>main</code>:
+        <pre>
+    template &lt;typename T&gt;
+    void process(T &amp;t1, int i);                 // 1
+
+    template &lt;typename T1, typename T2&gt;
+    void process(T1 const &amp;t1, T2 const &amp;t2);   // 2
+
+    template &lt;typename T&gt;
+    void process(T const &amp;t, double d);         // 3
+
+    template &lt;typename T&gt;
+    void process(T const &amp;t, int i);            // 4
+
+    template &lt;&gt;
+    void process&lt;int, int&gt;(int i1, int i2);     // 5
+
+    void process(int i1, int i2);               // 6
+
+    void process(int i, double d);              // 7
+
+    void process(double d, int i);              // 8
+
+    void process(double d1, double d2);         // 9
+
+    void process(std::string s, int i)          // 10
+
+    int add(int, int);                          // 11
+</pre>
+    The compiler, having read <code>main</code>'s statement, must now decide which
+function must actually be called. It proceeds as follows:
+    <ul>
+    <li> First, a set of
+ <a name="an2836"></a> <a name="an2837"></a><em>candidate functions</em> is constructed. This set
+contains all functions that:
+        <ul>
+        <li> are visible at the point of the call;
+        <li> have the same names as the called function.
+        </ul>
+        As function 11 has a different name, it is removed from the set. The
+compiler is left with a set of 10 candidate functions.
+<p>
+<li> Second, the set of
+ <a name="an2838"></a> <a name="an2839"></a><em>viable functions</em> is constructed. Viable functions
+are functions for which <a name="an2840"></a>type conversions exist that can be applied so as to
+match the types of the function's parameters to the types of the actual
+arguments.
+<p>
+This implies that at least the number of arguments must match the number of
+parameters of the viable functions. Function 10's first argument is a
+<code>string</code>. As a <code>string</code> cannot be initialized by an <code>int</code> value no
+approprate conversion exists and function 10 is removed from the list of
+candidate functions.  <code>double</code> parameters can be retained. Standard
+conversions <em>do</em> exists for <code>int</code>s to <code>double</code>s, so all functions having
+ordinary <code>double</code> parameters can be retained. Therefore, the set of viable
+functions consists of functions 1 through 9.
+    </ul>
+    At this point the compiler tries to determine the types of the template
+type parameters. This step is outlined in the following subsection.
+<p>
+<a name="l521"></a>
+<h2>21.15: Determining the template type parameters</h2>
+    Having determined the set of candidate functions and from that set the set of
+viable functions the compiler must now determine the actual types of the
+template type parameters.
+<p>
+It may use any of the three standard template parameter transformation
+procedures (cf. section <a href="cplusplus21.html#TEMPFUNARGS">21.4</a>) when trying to match actual types to
+template type parameters. In this process it concludes that no type can be
+determined for the <code>T</code> in function 1's <code>T &amp;t1</code> parameter as the argument
+<code>3</code> is a constant <code>int</code> value. Thus function 1 is removed from the list of
+viable functions. The compiler is now confronted with the following set of
+potentially instantiated function templates and ordinary functions:
+        <pre>
+    void process(T1 [= int] const &amp;t1, T2 [= int] const &amp;t2);   // 2
+    void process(T [= int] const &amp;t, double d);                 // 3
+    void process(T [= int] const &amp;t, int i);                    // 4
+    void process&lt;int, int&gt;(int i1, int i2);                     // 5
+    void process(int i1, int i2);                               // 6
+    void process(int i, double d);                              // 7
+    void process(double d, int i);                              // 8
+    void process(double d1, double d2);                         // 9
+</pre>
+<p>
+The compiler associates a <em>direct match count</em> value to each of the
+viable functions. The direct match count counts the number of arguments that
+can be matched to function parameters without an (automatic) type
+conversion. E.g., for function 2 this count equals 2, for function 7 it is 1
+and for function 9 it is 0. The functions are now (decrementally) sorted by
+their direct match count values:
+        <pre>
+                                                             match
+                                                             count
+    void process(T1 [= int] const &amp;t1, T2 [= int] const &amp;t2);  2 // 2
+    void process(T [= int] const &amp;t, int i);                   2 // 4
+    void process&lt;int, int&gt;(int i1, int i2);                    2 // 5
+    void process(int i1, int i2);                              2 // 6
+    void process(T [= int] const &amp;t, double d);                1 // 3
+    void process(int i, double d);                             1 // 7
+    void process(double d, int i);                             1 // 8
+    void process(double d1, double d2);                        0 // 9
+</pre>
+    If there is no draw for the top value the corresponding function is
+selected and the function selection process is completed.
+<p>
+When multiple functions appear at the top the compiler verifies that no
+ambiguity has been encountered. An ambiguity is encountered if the
+<em>sequences</em> of parameters for which type conversions were (not) required
+differ. As an example consider functions 3 and 8. Using D for `direct match'
+and C for `conversion' the arguments match function 3 as D,C and function 8 as
+C,D. Assuming that 2, 4, 5 and 6 were not available, then the compiler would
+have reported an ambiguity as the sequences of argument/parameter matching
+procedures differ for functions 3 and 8. The same difference is encountered
+comparing functions 7 and 8, but no such difference is encountered comparing
+functions 3 and 7.
+<p>
+At this point there is a draw for the top value and the compiler
+proceeds with the subset of associated functions (functions 2, 4, 5 and
+6). With each of these functions an `ordinary parameter count' is associated
+counting the number of non-template parameters of the functions. The functions
+are decrementally sorted by this count, resulting in:
+        <pre>
+                                                         ordin. param.
+                                                             count
+    void process(int i1, int i2);                              2 // 6
+    void process(T [= int] const &amp;t, int i);                   1 // 4
+    void process(T1 [= int] const &amp;t1, T2 [= int] const &amp;t2);  0 // 2
+    void process&lt;int, int&gt;(int i1, int i2);                    0 // 5
+</pre>
+    Now there is no draw for the top value. The corresponding function
+(<code>process(int, int)</code>, function 6) is selected and the function selection
+process is completed. Function 6 is used in <code>main</code>'s function call
+statement.
+<p>
+Had function 6 not been defined, function 4 would have been used. Assuming
+that neither function 4 nor function 6 had been defined, the selection
+process would continue with functions 2 and 5:
+        <pre>
+                                                         ordin. param.
+                                                             count
+    void process(T1 [= int] const &amp;t1, T2 [= int] const &amp;t2);  0 // 2
+    void process&lt;int, int&gt;(int i1, int i2);                    0 // 5
+</pre>
+<p>
+In this situation a draw is encountered once again and the selection
+process continues. A `type of function' value is associated with each of the
+functions having the highest ordinary parameter count and these functions are
+decrementally sorted by their type of function values. Value 2 is associated
+to ordinary functions, value 1 to template explicit specializations and value
+0 to plain function templates.
+<p>
+If there is no draw for the top value the corresponding function is
+selected and the function selection process is completed. If there is a draw
+the compiler reports an ambiguity and cannot determine which function to
+call.  Assuming only functions 2 and 5 existed then this selection step
+would have resulted in the following ordering:
+        <pre>
+                                                           function
+                                                             type
+    void process&lt;int, int&gt;(int i1, int i2);                    1 // 5
+    void process(T1 [= int] const &amp;t1, T2 [= int] const &amp;t2);  0 // 2
+</pre>
+    Function 5, the template explicit specialization, would have been
+selected.
+    <a name="selection"></a><p><figure><img src="functiontemplates/selection.gif" alt="Figure 24 is shown here."/><br>
+<figcaption>Figure 24: The function template selection mechanism</figcaption>
+</figure></p>
+
+ Here is a summary of the function template selection mechanism (cf. figure
+Figure <a href="cplusplus21.html#selection">24</a>):
+    <ul>
+    <li> The set of candidate functions is constructed: identical names;
+    <li> The set of viable functions is constructed: correct number of
+        parameters and available type conversions;
+    <li> Template type determination, dropping templates whose type parameters
+        cannot be determined;
+    <li> Decrementally sort the functions by their direct match count
+        values. If there is no draw for the top value the associated function
+        is selected, completing the selection process.
+    <li> Inspect the functions associated with the top value for ambiguities
+        in automatic type conversion sequences. If different sequences are
+        encountered report an ambiguity and terminate the selection process.
+    <li> Decrementally sort the functions associated with the top value by
+        their ordinary parameter count values.  If there is no draw for the
+        top value the associated function is selected, completing the
+        selection process.
+    <li> Decrementally sort the functions associated with the top value by
+        their function type values using 2 for ordinary functions, 1 for
+        template explicit specializations and 0 for plain function templates.
+        If there is no draw for the top value the associated function is
+        selected, completing the selection process.
+    <li> Report an ambiguity and terminate the selection process.
+    </ul>
+<p>
+<a name="l522"></a>
+<h2>21.16: SFINAE: Substitution Failure Is Not An Error</h2>
+Consider the following struct definition:
+        <pre>
+    struct Int
+    {
+        typedef int type;
+    };
+</pre>
+    Although at this point it may seem strange to embed a typedef in a struct,
+in chapter <a href="cplusplus23.html#ADVANCEDTEMPL">23</a> we'll encounter situations where this is
+actually very useful.  It allows us to define a variable of a type that is
+required by the template. E.g., (ignore the use of <code>typename</code> in the
+following function parameter list, but see section <a href="cplusplus22.html#DISTINGUISH">22.2.1</a> for
+details):
+        <pre>
+    template &lt;typename Type&gt;
+    void func(typename Type::type value)
+    {
+    }
+</pre>
+    To call <code>func(10)</code> <code>Int</code> has to be specified explicitly since there
+may be many structs that define <code>type</code>: the compiler needs some
+assistance. The correct call is <code>func&lt;Int&gt;(10)</code>. Now that it's clear that
+<code>Int</code> is meant, and the compiler correctly deduces that <code>value</code> is an
+<code>int</code>.
+<p>
+But templates may be overloaded and our next definition is:
+        <pre>
+    template &lt;typename Type&gt;
+    void func(Type value)
+    {}
+</pre>
+    Now, to make sure this function is used we specify <code>func&lt;int&gt;(10)</code> and
+again this compiles flawlessly.
+<p>
+But as we've seen in the previous section when the compiler determines
+which template to instantiate it creates a list of viable functions by
+matching the parameter types of available function prototypes with the
+provided actual argument types. To do so it has to <em>determine</em> the types of
+the parameters and herein lies a problem.
+<p>
+When evaluating <code>Type = int</code> the compiler encounters the prototypes
+<code>func(int::type)</code> (first template definition) and <code>func(int)</code> (second
+template definition). But there is no <code>int::type</code>, and so in a way this
+generates an error. However, the error results from substituting the provided
+template type argument into the various template definitions.
+<p>
+A type-problem caused by substituting a type in a template definition is
+<em>not</em> considered an error, but merely an indication that that particular
+type cannot be used in that particular template. The template is therefore
+removed from the list of candidate functions.
+<p>
+This principle is known as <a name="an2841"></a><em>substitution failure</em> <em>is not an error</em>
+<a name="an2842"></a>(SFINAE) and it is often used by the compiler to select not only a
+simple overloaded function (as shown here) but also to choose among available
+template specializations (see also chapters <a href="cplusplus22.html#TEMPCLASS">22</a> and
+<a href="cplusplus23.html#ADVANCEDTEMPL">23</a>).
+<p>
+<a name="l523"></a>
+<h2>21.17: Summary of the template declaration syntax</h2>
+In this section the basic syntactic constructions for declaring templates
+are summarized. When <em>defining</em> templates, the terminating
+semicolon should be replaced by a function body.
+<p>
+Not every template declaration may be converted into a template definition. If
+a definition may be provided it is explicitly mentioned.
+    <ul>
+    <li> A plain template declaration (a definition may be provided):
+    <pre>
+template &lt;typename Type1, typename Type2&gt;
+void function(Type1 const &amp;t1, Type2 const &amp;t2);
+</pre>
+    <li> A template instantiation declaration (no definition may be provided):
+    <pre>
+template
+void function&lt;int, double&gt;(int const &amp;t1, double const &amp;t2);
+</pre>
+    <li> A template using explicit types (no definition may be provided):
+    <pre>
+void (*fp)(double, double) = function&lt;double, double&gt;;
+void (*fp)(int, int) = function&lt;int, int&gt;;
+</pre>
+    <li> A template explicit specialization (a definition may be provided):
+    <pre>
+template &lt;&gt;
+void function&lt;char *, char *&gt;(char *const &amp;t1, char *const &amp;t2);
+</pre>
+    <li> A template declaration declaring friend function templates within
+        <a name="an2843"></a> class templates (covered
+in section <a href="cplusplus22.html#TEMPFRIENDS">22.10</a>, no definition may be provided):
+    <pre>
+friend void function&lt;Type1, Type2&gt;(parameters);
+</pre>
+    </ul>
+<p>
+<a name="l524"></a>
+<h2>21.18: C++14: variable templates</h2>
+In addition to function templates and class templates (cf. chapter
+<a href="cplusplus22.html#TEMPCLASS">22</a>) the <a name="an2844"></a>C++14 standard allows the definition of variable
+templates. Variable templates might come in handy when defining (function or
+class) templates defining variables of types specified by template type
+parameters. 
+<p>
+A variable template starts with a familiar <code>template</code> header, followed by
+the definition of the variable itself. The template header specifies a type,
+for which a default type may also be specified. E.g.,
+        <pre>
+    template&lt;typename T = long double&gt;
+    constexpr T pi = T(3.1415926535897932385);
+</pre>
+<p>
+To use this variable a type must be specified, and as long as the initialized
+value can be converted to the specified type the conversion is silently 
+performed by the compiler:
+        <pre>
+    cout &lt;&lt; pi&lt;&gt; &lt;&lt; ' ' &lt;&lt; pi&lt;int&gt;;
+</pre>
+    At the second insertion the <code>long double</code> initialization value is
+converted to <code>int</code>, and 3 is displayed.
+<p>
+Specializations are also supported. E.g., to show the text `pi' a
+specialization for a <code>char const *</code> type can be defined:
+        <pre>
+    template&lt;&gt;
+    constexpr char const *pi&lt;char const *&gt; = "pi";
+</pre>
+With this specialization we can do <code>cout &lt;&lt; pi&lt;char const *&gt;</code> to show
+<code>pi</code>. 
+<p>
+
+<hr>
+<ul>
+    <li> <a href="cplusplus.html">Table of Contents</a>
+    <li> <a href="cplusplus20.html">Previous Chapter</a>
+    <li> <a href="cplusplus22.html">Next Chapter</a>
+</ul>
+<hr>
+</body>
+</html>

@@ -1,0 +1,2038 @@
+<!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<title> <div style="text-align: center">C++ Annotations Version 10.3.0</div> </title>
+<style type="text/css">
+    figure {text-align: center;}
+    img {vertical-align: center;}
+</style>
+</head>
+<body >
+<hr>
+<ul>
+    <li> <a href="cplusplus.html">Table of Contents</a>
+    <li> <a href="cplusplus02.html">Previous Chapter</a>
+    <li> <a href="cplusplus04.html">Next Chapter</a>
+</ul>
+<hr>
+<a name="FirstImpression"></a><a name="l27"></a>
+<h1>Chapter 3: A First Impression Of C++</h1>
+
+<blockquote>
+    <em>
+        Don't hesitate to send in feedback: send an e-mail if you like the
+        C++ Annotations; if you think that important material was omitted;
+        if you find errors or typos in the text or the code examples;
+        or if you just feel like e-mailing. Send your e-mail to
+        <a href="mailto:f.b.brokken@rug.nl">Frank B. Brokken</a>.
+<p>
+<strong>Please</strong> state the document version you're referring to, as found in
+        the title (in this document: 10.3.0) and please state chapter and
+        paragraph name or number you're referring to.
+<p>
+All received mail is processed conscientiously, and received
+        suggestions for improvements are usually processed by the
+        time a new version of the Annotations is released. Except for the
+        incidental case I will normally not acknowledge the receipt of
+        suggestions for improvements. Please don't interpret this as me not
+        appreciating your efforts.
+    </em>
+</blockquote>
+<p>
+In this chapter <strong>C++</strong> is further explored. The possibility to
+declare functions in <code>struct</code>s is illustrated in various examples; the
+concept of a <code>class</code> is introduced; casting is covered in detail; many new
+types are introduced and several important notational extensions to <strong>C</strong> are
+discussed.
+<p>
+<a name="l28"></a>
+<h2>3.1: Notable differences with C</h2>
+Before we continue with the `real' object-approach to programming, we first
+introduce some notable differences with the <strong>C</strong> programming language: not
+mere differences between <strong>C</strong> and <strong>C++</strong>, but important syntactic constructs
+and keywords not found or differently used in <strong>C</strong>.
+<p>
+<a name="ConstRule"></a><a name="l29"></a>
+<h3>3.1.1: Using the keyword `const'</h3>
+    Even though the keyword <a name="an119"></a><code>const</code> is part of the <strong>C</strong> grammar, its use is
+more important and much more common and strictly used in <strong>C++</strong> than it is in
+<strong>C</strong>.
+<p>
+The <code>const</code> keyword is a modifier stating that the value of a variable
+or of an argument may not be modified. In the following example the intent is
+to  change the value of a variable <code>ival</code>, which fails:
+        <pre>
+    int main()
+    {
+        int const ival = 3;     // a constant int
+                                // initialized to 3
+
+        ival = 4;               // assignment produces
+                                // an error message
+    }
+</pre>
+    This example shows how <code>ival</code> may be initialized to a given value in its
+definition; attempts to change the value later (in an assignment) are not
+permitted.
+<p>
+Variables that are declared <code>const</code> can, in contrast to <strong>C</strong>, be used to
+specify the size of an array, as in the following example:
+        <pre>
+    int const size = 20;
+    char buf[size];             // 20 chars big
+</pre>
+    Another use of the keyword <code>const</code> is seen in the declaration of
+pointers, e.g., in pointer-arguments. In the declaration
+        <pre>
+    char const *buf;
+</pre>
+    <code>buf</code> is a pointer variable pointing to <code>char</code>s. Whatever is pointed
+to by <code>buf</code> may not be changed through <code>buf</code>: the <code>char</code>s are declared
+as <code>const</code>. The pointer <code>buf</code> itself however may be changed. A statement
+like <code>*buf = 'a';</code> is therefore not allowed, while <code>++buf</code> is.
+<p>
+In the declaration
+        <pre>
+    char *const buf;
+</pre>
+    <code>buf</code> itself is a <code>const</code> pointer which may not be changed. Whatever
+<code>char</code>s are pointed to by <code>buf</code> may be changed at will.
+<p>
+Finally, the declaration
+        <pre>
+    char const *const buf;
+</pre>
+    is also possible; here, neither the pointer nor what it points to may be
+changed.
+<p>
+The <a name="an120"></a>rule of thumb for the placement of the keyword <code>const</code> is the
+following: whatever occurs to the <em>left</em> to the keyword may not be changed.
+<p>
+Although simple, this rule of thumb is often used. For example,
+    <a name="an121"></a>
+    Bjarne Stroustrup states (in
+    <a name="an122"></a>
+    <a target=_top href="http://www.research.att.com/~bs/bs_faq2.html#constplacement">http://www.research.att.com/~bs/bs_faq2.html#constplacement</a>):
+    <blockquote>
+    <em>Should I put "const" before or after the type?</em>
+<p>
+<em>I put it before, but that's a matter of taste. "const T" and "T const"
+were always (both) allowed and equivalent. For example:</em>
+        <pre>
+    const int a = 1;        // OK
+    int const b = 2;        // also OK
+</pre>
+    <em>My guess is that using the first version will confuse fewer programmers
+(``is more idiomatic'').</em>
+    </blockquote>
+    But we've already seen an example where applying this simple `before'
+placement rule for the keyword <code>const</code> produces unexpected (i.e., unwanted)
+results as we will shortly see (below). Furthermore, the `idiomatic'
+before-placement also conflicts with the notion of <a name="an123"></a><em>const functions</em>, which
+we will encounter in section <a href="cplusplus07.html#ConstFunctions">7.7</a>. With const functions the
+keyword <code>const</code> is also placed behind rather than before the name of the
+function.
+<p>
+The definition or declaration (either or not containing <code>const</code>) should
+always be read from the variable or function identifier back to the type
+indentifier:
+        <blockquote>
+    ``Buf is a const pointer to const characters''
+        </blockquote>
+    This rule of thumb is especially useful in cases where confusion may
+occur.  In examples of <strong>C++</strong> code published in other places one often
+encounters the reverse: <code>const</code> <em>preceding</em> what should not be
+altered. That this may result in sloppy code is indicated by our second
+example above:
+        <pre>
+    char const *buf;
+</pre>
+    What must remain constant here? According to the sloppy interpretation,
+the pointer cannot be altered (as <code>const</code> precedes the pointer). In fact,
+the char values are the constant entities here, as becomes clear when we try
+to compile the following program:
+        <pre>
+    int main()
+    {
+        char const *buf = "hello";
+
+        ++buf;                  // accepted by the compiler
+        *buf = 'u';             // rejected by the compiler
+    }
+</pre>
+    Compilation fails on the statement <code>*buf = 'u';</code> and <em>not</em> on the
+statement <code>++buf</code>.
+<p>
+<a name="an124"></a>
+    <a name="an125"></a>
+    <a name="an126"></a>Marshall Cline's
+    <a target=_top href="http://www.parashift.com/c++-faq-lite/const-correctness.html">C++ FAQ</a> gives the
+same rule (paragraph 18.5) , in a similar context:
+    <blockquote><em>
+    [18.5] What's the difference between "const Fred* p", "Fred* const p" and
+"const Fred* const p"?</em>
+<p>
+<em>You have to read pointer declarations right-to-left.</em>
+    </blockquote>
+    Marshal Cline's advice can be improved, though. Here's a recipe that will
+effortlessly dissect even the most complex declaration:
+    <ol>
+    <li> start reading at the variable's name
+    <li> read as far as possible until you reach the end of the declaration or
+an (as yet unmatched) closing parenthesis.
+    <li> return to the point where you started reading, and read backwards
+until you reach the beginning of the declaration or a matching opening
+parenthesis.
+    <li> If you reached an opening parenthese, continue at step 2 beyond the
+parenthesis where you previously stopped.
+    </ol>
+    Let's apply this recipe to the following (by itself irrelevant) complex
+declaration. Little arrows indicate how far we should read at each step and
+the direction of the arrow indicates the reading direction:
+            <pre>
+    char const *(* const (*(*ip)())[])[]
+
+                             ip          Start at the variable's name:
+                                             'ip' is
+
+                             ip)         Hitting a closing paren: revert
+                             --&gt;
+
+                           (*ip)         Find the matching open paren:
+                           &lt;-                'a pointer to'
+
+                           (*ip)())      The next unmatched closing par:
+                                --&gt;          'a function (not expecting
+                                              arguments)'
+
+                         (*(*ip)())      Find the matching open paren:
+                         &lt;-                  'returning a pointer to'
+
+                         (*(*ip)())[])   The next closing par:
+                                   --&gt;       'an array of'
+
+                (* const (*(*ip)())[])   Find the matching open paren:
+                &lt;--------                    'const pointers to'
+
+                (* const (*(*ip)())[])[] Read until the end:
+                                      -&gt;     'an array of'
+
+    char const *(* const (*(*ip)())[])[] Read backwards what's left:
+    &lt;-----------                             'pointers to const chars'
+</pre>
+    Collecting all the parts, we get for <code>char const *(* const
+(*(*ip)())[])[]</code>: <em>ip is a pointer to a function (not expecting arguments),
+returning a pointer to an array of const pointers to an array of pointers to
+const chars</em>. This is what <code>ip</code> represents; the recipe can be used to parse
+any declaration you ever encounter.
+<p>
+<a name="INTRONAME"></a><a name="l30"></a>
+<h3>3.1.2: Namespaces</h3>
+    <strong>C++</strong> introduces the notion of a <a name="an127"></a><em>namespace</em>: all symbols are defined
+in a larger context, called a <em>namespace</em>. Namespaces are used to avoid
+    <a name="an128"></a>name conflicts that could arise when a programmer would like to define
+a function like <code>sin</code> operating on <em>degrees</em>, but does not want to lose
+the capability of using the standard <code>sin</code> function, operating on
+<em>radians</em>.
+<p>
+Namespaces are covered extensively in chapter <a href="cplusplus04.html#NAMESPACE">4</a>. For now it
+should be noted that most compilers require the explicit declaration of a
+<a name="an129"></a><em>standard namespace</em>: <code>std</code>. So, unless otherwise indicated, it is
+stressed that all examples in the Annotations now implicitly use the
+    <a name="an130"></a>
+        <pre>
+        using namespace std;
+</pre>
+    declaration. So, if you actually intend to compile examples given in
+the <strong>C++</strong> Annotations, make sure that the sources start with the above <code>using</code>
+declaration.
+<p>
+<a name="l31"></a>
+<h3>3.1.3: The scope resolution operator ::</h3>
+    <strong>C++</strong> introduces several new operators, among which the
+<a name="an131"></a>scope resolution operator (<a name="an132"></a><code>::</code>). This operator can be
+used in situations where a global variable exists having the same name as a
+local variable:
+        <pre>
+    #include &lt;stdio.h&gt;
+
+    double counter = 50;                // global variable
+
+    int main()
+    {
+        for (int counter = 1;           // this refers to the
+             counter != 10;             // local variable
+             ++counter)
+        {
+            printf("%d\n",
+                    ::counter           // global variable
+                    /                   // divided by
+                    counter);           // local variable
+        }
+    }
+</pre>
+    In the above program the scope operator is used to address a global
+variable instead of the local variable having the same name. In <strong>C++</strong> the
+scope operator is used extensively, but it is seldom used to reach a global
+variable shadowed by an identically named local variable. Its main purpose
+is encountered in chapter <a href="cplusplus07.html#Classes">7</a>.
+<p>
+<a name="CoutCinCerr"></a><a name="l32"></a>
+<h3>3.1.4: `cout', `cin', and `cerr'</h3>
+    Analogous to <strong>C</strong>, <strong>C++</strong> defines standard input- and output streams
+which are available when a program is executed. The streams are:
+    <ul>
+    <li> <a name="an133"></a><code>cout</code>, analogous to <a name="an134"></a><code>stdout</code>,
+    <li> <a name="an135"></a><code>cin</code>, analogous to <a name="an136"></a><code>stdin</code>,
+    <li> <a name="an137"></a><code>cerr</code>, analogous to <a name="an138"></a><code>stderr</code>.
+    </ul>
+    Syntactically these streams are not used as functions: instead, data are
+written to streams or read from them using the operators &lt;&lt;, called
+the <a name="an139"></a><em>insertion operator</em> and &gt;&gt;, called the
+<a name="an140"></a><em>extraction operator</em>.  This is illustrated in the next example:
+        <pre>
+    #include &lt;iostream&gt;
+
+    using namespace std;
+
+    int main()
+    {
+        int     ival;
+        char    sval[30];
+
+        cout &lt;&lt; "Enter a number:\n";
+        cin &gt;&gt; ival;
+        cout &lt;&lt; "And now a string:\n";
+        cin &gt;&gt; sval;
+
+        cout &lt;&lt; "The number is: " &lt;&lt; ival &lt;&lt; "\n"
+                "And the string is: " &lt;&lt; sval &lt;&lt; '\n';
+    }
+</pre>
+    This program reads a number and a string from the <code>cin</code> stream (usually
+the keyboard) and prints these data to <code>cout</code>. With respect to streams,
+please note:
+    <ul>
+    <li> The standard streams are declared in the header file
+        <a name="an141"></a><code>iostream</code>. In the examples in the
+<strong>C++</strong> Annotations this header file is often not mentioned explicitly. Nonetheless,
+it <em>must</em> be included (either directly or indirectly) when these streams are
+used. Comparable to the use of the <code>using namespace std;</code> clause, the reader
+is expected to <code>#include &lt;iostream&gt;</code> with all the examples in which the
+standard streams are used.
+    <li> The streams <code>cout</code>, <code>cin</code> and <code>cerr</code> are variables of so-called
+<a name="an142"></a><em>class</em>-types. Such variables are commonly called <em>objects</em>. Classes
+are discussed in detail in chapter <a href="cplusplus07.html#Classes">7</a> and are used extensively in
+<strong>C++</strong>.
+    <li> The stream <code>cin</code> extracts data from a stream and copies the
+extracted information to variables (e.g., <code>ival</code> in the above example) using
+the extraction operator (two consecutive <code>&gt;</code> characters: &gt;&gt;). Later in
+the Annotations we will describe how operators in <strong>C++</strong> can perform quite
+different actions than what they are defined to do by the language, as is the
+case here. Function overloading has already been mentioned.  In <strong>C++</strong>
+<em>operators</em> can also have multiple definitions, which is called <em>operator
+overloading</em>.
+    <li> The operators which manipulate <code>cin</code>, <code>cout</code> and <code>cerr</code> (i.e.,
+&gt;&gt; and &lt;&lt;) also manipulate variables of different types. In the
+above example <code>cout</code> &lt;&lt; <code>ival</code> results in the printing of an integer
+value, whereas <code>cout</code> &lt;&lt; <code>"Enter a number"</code> results in the printing
+of a string. The actions of the operators therefore depend on the types of
+supplied variables.
+    <li> The <a name="an143"></a><em>extraction operator</em> (&gt;&gt;) performs a so called
+        <a name="an144"></a><em>type safe</em> assignment to a variable by `extracting' its value from
+a text stream. Normally, the extraction operator skips all
+        <a name="an145"></a><em>white space</em> <a name="an146"></a> characters preceding
+the values to be extracted.
+    <li> Special <a name="an147"></a>symbolic constants are used for special
+situations. Normally a line is terminated by inserting <code>"\n"</code> or
+<code>'\n'</code>. But when inserting the <a name="an148"></a><code>endl</code> symbol the line is terminated
+followed by the flushing of the stream's internal buffer. Thus, <code>endl</code> can
+usually be avoided in favor of <code>'\n'</code> resulting in somewhat more efficient
+code.
+    </ul>
+    The stream objects <code>cin</code>, <code>cout</code> and <code>cerr</code> are not part of the
+<strong>C++</strong> grammar proper. The streams are part of the definitions in the header
+file <code>iostream</code>. This is comparable to functions like <code>printf</code> that are
+not part of the <strong>C</strong> grammar, but were originally written by people who
+considered such functions important and collected them in a run-time library.
+<p>
+A program may still use the old-style functions like <code>printf</code> and <code>scanf</code>
+rather than the new-style streams.  The two styles can even be mixed. But
+streams offer several clear advantages and in many <strong>C++</strong> programs have
+completely replaced the old-style <strong>C</strong> functions. Some advantages of using
+streams are:
+    <ul>
+    <li> Using insertion and extraction operators is
+<a name="an149"></a><em>type-safe</em>.  The format strings which are used with <code>printf</code> and
+<code>scanf</code> can define wrong format specifiers for their arguments, for which
+the compiler sometimes can't warn. In contrast, argument checking with
+<code>cin</code>, <code>cout</code> and <code>cerr</code> is performed by the compiler. Consequently it
+isn't possible to err by providing an <code>int</code> argument in places where,
+according to the format string, a string argument should appear. With streams
+there are no format strings.
+    <li> The functions <code>printf</code> and <code>scanf</code> (and other functions using
+format strings) in fact implement a <em>mini-language</em> which is interpreted at
+run-time. In contrast, with streams the <strong>C++</strong> compiler knows exactly which
+in- or output action to perform given the arguments used. No mini-language
+here.
+    <li> In addition the possibilities of the insertion and extraction
+operators may be <em>extended</em> allowing objects of classes that didn't exist
+when the streams were originally designed to be inserted into or extracted
+from streams. Mini languages as used with <code>printf</code> cannot be extended.
+    <li> The usage of the left-shift and right-shift operators in the context
+of the streams illustrates yet another capability of <strong>C++</strong>: operator
+overloading allowing us to redefine the actions an operator performs in
+certain contexts. Ascending from <strong>C</strong> operator overloading requires some
+getting used, but after a short little while these overloaded operators feel
+rather comfortable.
+    <li> Streams are independent of the media they operate upon. This (at this
+point somewhat abstract) notion means that the same code can be used without
+<em>any</em> modification at all to interface your code to <em>any</em> kind of
+device. The code using streams can be used when the device is a file on disk;
+an Internet connection; a digital camera; a DVD device; a satellite link; and
+much more: you name it. Streams allow your code to be decoupled (independent)
+of the devices your code is supposed to operate on, which eases maintenance
+and allows reuse of the same code in new situations.
+    </ul>
+    The <em>iostream library</em> has a lot more to offer than just <code>cin, cout</code>
+and <code>cerr</code>. In chapter <a href="cplusplus06.html#IOStreams">6</a> <em>iostreams</em> are covered in
+greater detail. Even though <a name="an150"></a><code>printf</code> and friends can still be used in
+<strong>C++</strong> programs, streams have practically replaced the old-style <strong>C</strong>
+<code>I/O</code> functions like <code>printf</code>. If you <em>think</em> you still need to use
+<code>printf</code> and related functions, think again: in that case you've probably
+not yet completely grasped the possibilities of stream objects.
+<p>
+<a name="FunctionsInStructs"></a><a name="l33"></a>
+<h2>3.2: Functions as part of structs</h2>
+Earlier we noted that functions can be part of <code>struct</code>s (see
+section <a href="cplusplus02.html#FunctionInStruct">2.5.13</a>).  Such functions are called
+    <a name="an151"></a><em>member functions</em>.
+This section briefly discusses how to define such functions.
+<p>
+The code fragment below shows a <code>struct</code> having data fields for a person's
+name and address. A function <code>print</code> is included in the
+<code>struct</code>'s definition:
+        <pre>
+    struct Person
+    {
+        char name[80];
+        char address[80];
+
+        void print();
+    };
+</pre>
+    When defining the member function <code>print</code> the structure's name
+(<code>Person</code>) and the scope resolution operator (<code>::</code>) are used:
+        <pre>
+    void Person::print()
+    {
+        cout &lt;&lt; "Name:      " &lt;&lt; name &lt;&lt; "\n"
+                "Address:   " &lt;&lt; address &lt;&lt; '\n';
+    }
+</pre>
+    The implementation of <code>Person::print</code> shows how the fields of the
+<code>struct</code> can be accessed without using the structure's type name. Here the
+function <code>Person::print</code> prints a variable <code>name</code>. Since <code>Person::print</code>
+is itself a part of <code>struct</code> <code>person</code>, the variable <code>name</code> implicitly
+refers to the same type.
+<p>
+This <code>struct Person</code> could be used as follows:
+        <pre>
+    Person person;
+
+    strcpy(person.name, "Karel");
+    strcpy(person.address, "Marskramerstraat 33");
+    person.print();
+</pre>
+    The advantage of member functions is that the called function
+automatically accesses the data fields of the structure for which it was
+invoked. In the statement <code>person.print()</code> the object <code>person</code> is the
+`substrate': the variables <code>name</code> and <code>address</code> that are used in the code
+of <code>print</code> refer to the data stored in the <code>person</code> object.
+<p>
+<a name="HIDING"></a><a name="l34"></a>
+<h3>3.2.1: Data hiding: public, private and class</h3>
+    As mentioned before (see section <a href="cplusplus02.html#Pretensions">2.3</a>), <strong>C++</strong> contains
+specialized syntactic possibilities to implement <a name="an152"></a>data hiding. Data hiding
+is the capability of sections of a program to hide its data from other
+sections. This results in very clean data definitions. It also allows these
+sections to enforce the integrity of their data.
+<p>
+<strong>C++</strong> has three keywords that are related to data hiding: <a name="an153"></a><code>private</code>,
+<a name="an154"></a><code>protected</code> and <a name="an155"></a><code>public</code>. These keywords can be used in the definition of
+<code>struct</code>s. The keyword <code>public</code> allows all subsequent fields of a
+structure to be accessed by all code; the keyword <code>private</code> only allows code
+that is part of the <code>struct</code> itself to access subsequent fields. The keyword
+<code>protected</code> is discussed in chapter <a href="cplusplus13.html#INHERITANCE">13</a>, and is somewhat
+outside of the scope of the current discussion.
+<p>
+In a <code>struct</code> all fields are <code>public</code>, unless explicitly stated otherwise.
+Using this knowledge we can expand the <code>struct</code> <code>Person</code>:
+        <pre>
+    struct Person
+    {
+        private:
+            char d_name[80];
+            char d_address[80];
+        public:
+            void setName(char const *n);
+            void setAddress(char const *a);
+            void print();
+            char const *name();
+            char const *address();
+    };
+</pre>
+    As the data fields <code>d_name</code> and <code>d_address</code> are in a <code>private</code>
+section they are only accessible to the member functions which are defined in
+the <code>struct</code>: these are the functions <code>setName</code>, <code>setAddress</code> etc.. As
+an illustration consider the following code:
+        <pre>
+    Person fbb;
+
+    fbb.setName("Frank");         // OK, setName is public
+    strcpy(fbb.d_name, "Knarf");  // error, x.d_name is private
+</pre>
+    Data integrity is implemented as follows: the actual data of a <code>struct</code>
+<code>Person</code> are mentioned in the structure definition. The data are accessed by
+the outside world using special functions that are also part of the
+definition. These member functions control all traffic between the data fields
+and other parts of the program and are therefore also called `interface'
+functions.  The thus implemented data hiding is illustrated in
+Figure <a href="cplusplus03.html#datahiding">2</a>.
+        <a name="datahiding"></a><p><figure><img src="first/datahiding.gif" alt="Figure 2 is shown here."/><br>
+<figcaption>Figure 2: Private data and public interface functions of the class Person.</figcaption>
+</figure></p>
+
+    The members <code>setName</code> and <code>setAddress</code> are declared with <code>char const
+*</code> parameters. This indicates that the functions will not alter the strings
+which are supplied as their arguments.  Analogously, the members <code>name</code>
+and <code>address</code> return <code>char const *</code>s: the compiler prevents callers of
+those members from modifying  the information made accessible through the
+return values of those members.
+<p>
+Two examples of member functions of the <code>struct</code> <code>Person</code> are shown
+below:
+        <pre>
+    void Person::setName(char const *n)
+    {
+        strncpy(d_name, n, 79);
+        d_name[79] = 0;
+    }
+
+    char const *Person::name()
+    {
+        return d_name;
+    }
+</pre>
+    The power of member functions and of the concept of data hiding results
+from the abilities of member functions to perform special tasks, e.g.,
+checking the validity of the data. In the above example <code>setName</code> copies
+only up to 79 characters from its argument to the data member <code>name</code>,
+thereby avoiding a <a name="an156"></a>buffer overflow.
+<p>
+Another illustration of the concept of data hiding is the following. As an
+alternative to member functions that keep their data in memory a library could
+be developed featuring member functions storing data on file. To convert a
+program storing <code>Person</code> structures in memory to one that stores the
+data on disk no special modifications are required. After recompilation
+and linking the program to a new library it is converted from storage
+in memory to storage on disk. This example illustrates a broader concept than
+data hiding; it illustrates <a name="an157"></a><em>encapsulation</em>. Data hiding is a kind of
+encapsulation. Encapsulation in general results in reduced coupling of
+different sections of a program. This in turn greatly enhances reusability and
+maintainability of the resulting software. By having the structure encapsulate
+the actual storage medium the program using the structure becomes independent
+of the actual storage medium that is used.
+<p>
+Though data hiding can be implemented using <code>struct</code>s, more often (almost
+always) <em>classes</em> are used instead. A class is a kind of struct, except that
+a class uses private access by default, whereas structs use public access by
+default. The definition of a <code>class</code> <code>Person</code> is therefore identical to
+the one shown above, except for the fact that the keyword <code>class</code> has
+replaced <code>struct</code> while the initial <code>private:</code> clause can be omitted.  Our
+typographic suggestion for class names (and other type names defined by the
+programmer) is to start with a capital character to be followed by the
+remainder of the type name using lower case letters (e.g., <code>Person</code>).
+<p>
+<a name="l35"></a>
+<h3>3.2.2: Structs in C vs. structs in C++</h3>
+    In this section we'll discuss an important difference between <strong>C</strong> and
+<strong>C++</strong> structs and (member) functions. In <strong>C</strong> it is common to define
+several functions to process a <code>struct</code>, which then require a pointer to the
+<code>struct</code> as one of their arguments. An imaginary <strong>C</strong> header file showing
+this concept is:
+        <pre>
+    /* definition of a struct PERSON    This is C   */
+    typedef struct
+    {
+        char name[80];
+        char address[80];
+    } PERSON;
+
+    /* some functions to manipulate PERSON structs */
+
+    /* initialize fields with a name and address    */
+    void initialize(PERSON *p, char const *nm,
+                       char const *adr);
+
+    /* print information    */
+    void print(PERSON const *p);
+
+    /* etc..    */
+</pre>
+<p>
+In <strong>C++</strong>, the declarations of the involved functions are put inside
+the definition of the <code>struct</code> or <code>class</code>. The argument denoting
+which <code>struct</code> is involved is no longer needed.
+        <pre>
+    class Person
+    {
+        char d_name[80];
+        char d_address[80];
+
+        public:
+            void initialize(char const *nm, char const *adr);
+            void print();
+            // etc..
+    };
+</pre>
+    In <strong>C++</strong> the <code>struct</code> parameter is not used. A <strong>C</strong> function call
+such as:
+        <pre>
+    PERSON x;
+
+    initialize(&amp;x, "some name", "some address");
+</pre>
+    becomes in <strong>C++</strong>:
+        <pre>
+    Person x;
+
+    x.initialize("some name", "some address");
+</pre>
+<p>
+<a name="l36"></a>
+<h2>3.3: Several additions to C's grammar</h2>
+<p>
+<a name="l37"></a>
+<h3>3.3.1: References</h3>
+    In addition to the common ways to define variables (plain variables or
+pointers) <strong>C++</strong> introduces <a name="an158"></a><em>references</em> defining synonyms
+for variables. A reference to a variable is like an <em>alias</em>; the variable
+and the reference can both be used in statements involving the variable:
+        <pre>
+    int int_value;
+    int &amp;ref = int_value;
+</pre>
+    In the above example a variable <code>int_value</code> is defined. Subsequently a
+reference <code>ref</code> is defined, which (due to its initialization) refers to the
+same memory location as <code>int_value</code>. In the definition of <code>ref</code>, the
+<a name="an159"></a>reference operator <a name="an160"></a> <code>&amp;</code> indicates that <code>ref</code> is not
+itself an <code>int</code> but a reference to one. The two statements
+        <pre>
+    ++int_value;
+    ++ref;
+</pre>
+    have the same effect: they increment <code>int_value</code>'s value.  Whether that
+location is called <code>int_value</code> or <code>ref</code> does not matter.
+<p>
+References serve an important function in <strong>C++</strong> as a means to pass
+modifiable arguments to functions. E.g., in standard <strong>C</strong>, a function that
+increases the value of its argument by five and returning nothing needs a
+pointer parameter:
+        <pre>
+    void increase(int *valp)    // expects a pointer
+    {                           // to an int
+        *valp += 5;
+    }
+
+    int main()
+    {
+        int x;
+
+        increase(&amp;x);           // pass x's address
+    }
+</pre>
+    This construction can <em>also</em> be used in <strong>C++</strong> but the same effect
+is also achieved using a reference:
+        <pre>
+    void increase(int &amp;valr)    // expects a reference
+    {                           // to an int
+        valr += 5;
+    }
+
+    int main()
+    {
+        int x;
+
+        increase(x);            // passed as reference
+    }
+</pre>
+    It is arguable whether code such as the above should be preferred over
+<strong>C</strong>'s method, though. The statement <code>increase</code> <code>(x)</code> suggests that not
+<code>x</code> itself but a <em>copy</em> is passed. Yet the value of <code>x</code> changes because
+of the way <code>increase()</code> is defined. However, references can also be used to
+pass objects that are only inspected (without the need for a copy or a const
+*) or to pass objects whose modification is an accepted side-effect of their
+use. In those cases using references are strongly preferred over existing
+alternatives like copy by value or passing pointers.
+<p>
+Behind the scenes references are implemented using pointers. So, as far as
+the compiler is concerned references in <strong>C++</strong> are just const pointers.  With
+references, however, the programmer does not need to know or to bother about
+levels of indirection. An important distinction between plain pointers and
+references is of course that with references no indirection takes place. For
+example:
+        <pre>
+    extern int *ip;
+    extern int &amp;ir;
+
+    ip = 0;     // reassigns ip, now a 0-pointer
+    ir = 0;     // ir unchanged, the int variable it refers to
+                // is now 0.
+</pre>
+<p>
+In order to prevent confusion, we suggest to adhere to the following:
+    <ul>
+    <li> In those situations where a function does not alter its
+parameters of a built-in or pointer type, value parameters can be used:
+        <pre>
+void some_func(int val)
+{
+    cout &lt;&lt; val &lt;&lt; '\n';
+}
+
+int main()
+{
+    int x;
+
+    some_func(x);       // a copy is passed
+}
+</pre>
+    <li> When a function explicitly must change the values of its arguments, a
+pointer parameter is preferred. These pointer parameters should preferably be
+the function's initial parameters. This is called <a name="an161"></a><em>return by argument</em>.
+        <pre>
+void by_pointer(int *valp)
+{
+    *valp += 5;
+}
+</pre>
+    <li> When a function doesn't change the value of its class- or struct-type
+arguments, or if the modification of the argument is a trivial side-effect
+(e.g., the argument is a stream) references can be used. Const-references
+should be used if the function does not modify the argument:
+        <pre>
+void by_reference(string const &amp;str)
+{
+    cout &lt;&lt; str;    // no modification of str
+}
+
+int main ()
+{
+    int x = 7;
+    by_pointer(&amp;x);         // a pointer is passed
+                            // x might be changed
+    string str("hello");
+    by_reference(str);      // str is not altered
+}
+</pre>
+    References play an important role in cases where the argument is not
+changed by the function but where it is undesirable to copy the argument to
+initialize the parameter. Such a situation occurs when a large object is
+passed as argument, or is returned by the function.  In these cases the
+copying operation tends to become a significant factor, as the entire
+object must be copied. In these cases references are preferred.
+<p>
+If the argument isn't modified by the function, or if the caller shouldn't
+modify the returned information, the <code>const</code> keyword should be
+used. Consider the following example:
+        <pre>
+struct Person                   // some large structure
+{
+    char    name[80];
+    char    address[90];
+    double  salary;
+};
+
+Person person[50];          // database of persons
+
+                            // printperson expects a
+                            // reference to a structure
+                            // but won't change it
+void printperson (Person const &amp;p)
+{
+    cout &lt;&lt; "Name: " &lt;&lt; p.name &lt;&lt; '\n' &lt;&lt;
+            "Address: " &lt;&lt; p.address &lt;&lt; '\n';
+
+}
+                            // get a person by indexvalue
+Person const &amp;person(int index)
+{
+    return person[index];   // a reference is returned,
+}                           // not a copy of person[index]
+
+int main()
+{
+    Person boss;
+
+    printperson (boss);     // no pointer is passed,
+                            // so variable won't be
+                            // altered by the function
+    printperson(person(5));
+                            // references, not copies
+                            // are passed here
+}
+</pre>
+    <li> Furthermore, note that there is yet another reason for using
+references when passing objects as function arguments. When passing a
+reference to an object, the activation of a so called <em>copy constructor</em>
+is avoided. Copy constructors are covered in chapter <a href="cplusplus09.html#MEMORY">9</a>.
+    </ul>
+<p>
+References <em>could</em> result in extremely `ugly' code. A function may
+return a reference to a variable, as in the following example:
+        <pre>
+    int &amp;func()
+    {
+        static int value;
+        return value;
+    }
+</pre>
+    This allows the use of the following constructions:
+        <pre>
+    func() = 20;
+    func() += func();
+</pre>
+    It is probably superfluous to note that such constructions should normally
+not be used. Nonetheless, there are situations where it is useful to return a
+reference.  We have actually already seen an example of this phenomenon in our
+previous discussion of streams. In a statement like <code>cout</code> &lt;&lt;
+<code>"Hello"</code> &lt;&lt; <code>'\n';</code> the insertion operator returns a reference to
+<code>cout</code>. So, in this statement first the <code>"Hello"</code> is inserted into
+<code>cout</code>, producing a reference to <code>cout</code>. Through this reference the
+<code>'\n'</code> is then inserted in the <code>cout</code> object, again producing a reference
+to <code>cout</code>, which is then ignored.
+<p>
+Several differences between pointers and references are pointed out in the
+next list below:
+    <ul>
+    <li> A reference cannot exist by itself, i.e., without something to
+refer to. A declaration of a reference like
+        <div style="text-align: center"><code>int &amp;ref;</code></div>
+    is not allowed; what would <code>ref</code> refer to?
+    <li> References can be declared as <code>external</code>.  These references were
+initialized elsewhere.
+    <li> References may exist as parameters of functions: they are initialized
+when the function is called.
+    <li> References may be used in the return types of functions. In those
+cases the function determines what the return value refers to.
+    <li> References may be used as data members of classes. We return
+to this usage later.
+    <li> Pointers are variables by themselves. They point at
+something concrete or just ``at nothing''.
+    <li> References are aliases for other variables and cannot be re-aliased
+to another variable. Once a reference is defined, it refers to its particular
+variable.
+    <li> Pointers (except for const pointers) can be reassigned to point to
+different variables.
+    <li> When an <a name="an162"></a>address-of operator <a name="an163"></a> <a name="an164"></a><code>&amp;</code> is used with a
+reference, the expression yields the address of the variable to which the
+reference applies. In contrast, ordinary pointers are variables themselves, so
+the address of a pointer variable has nothing to do with the address of the
+variable pointed to.
+    </ul>
+<p>
+<a name="RREF"></a><a name="l38"></a>
+<h3>3.3.2: Rvalue References</h3>
+    In <strong>C++</strong>, temporary (rvalue) values are indistinguishable from <code>const &amp;</code>
+types. <strong>C++</strong> introduces a new reference type called an
+    <a name="an165"></a><em>rvalue reference</em>, which is defined as <a name="an166"></a><code>typename &amp;&amp;</code>.
+<p>
+The name <em>rvalue</em> reference is derived from assignment statements, where the
+variable to the left of the assignment operator is called an <a name="an167"></a><em>lvalue</em> and
+the expression to the right of the assignment operator is called an
+<a name="an168"></a><em>rvalue</em>. Rvalues are often temporary (or anonymous) values, like values
+returned by functions.
+<p>
+In this parlance the <strong>C++</strong> reference should be considered an
+ <a name="an169"></a><em>lvalue reference</em> (using the notation <code>typename &amp;</code>). They can be
+contrasted to <em>rvalue references</em> (using the notation <code>typename &amp;&amp;</code>).
+<p>
+The key to understanding rvalue references is the concept of an
+ <a name="an170"></a><em>anonymous variable</em>. An anonymous variable has no name and this is the
+distinguishing feature for the compiler to associate it automatically with an
+rvalue reference if it has a choice. Before introducing some interesting
+constructions let's first have a look at some standard situations where
+<em>lvalue</em> references are used. The following function returns a temporary
+(anonymous) value:
+        <pre>
+    int intVal()
+    {
+        return 5;
+    }
+</pre>
+    Although <code>intVal</code>'s return value  can be assigned to an <code>int</code>
+variable it requires copying, which might become prohibitive when
+a function does not return an <code>int</code> but instead some large object. A
+<em>reference</em> or <em>pointer</em> cannot be used either to collect the anonymous
+return value as the return value won't survive beyond that. So the following
+is illegal (as noted by the compiler):
+        <pre>
+    int &amp;ir = intVal();         // fails: refers to a temporary
+    int const &amp;ic = intVal();   // OK: immutable temporary
+    int *ip = &amp;intVal();        // fails: no lvalue available
+</pre>
+<p>
+Apparently it is not possible to modify the temporary returned by
+<code>intVal</code>. But now consider these functions:
+        <pre>
+    void receive(int &amp;value)            // note: lvalue reference
+    {
+        cout &lt;&lt; "int value parameter\n";
+    }
+    void receive(int &amp;&amp;value)           // note: rvalue reference
+    {
+        cout &lt;&lt; "int R-value parameter\n";
+    }
+</pre>
+    and let's call this function from <code>main</code>:
+        <pre>
+    int main()
+    {
+        receive(18);
+        int value = 5;
+        receive(value);
+        receive(intVal());
+    }
+</pre>
+    This program produces the following output:
+        <pre>
+    int R-value parameter
+    int value parameter
+    int R-value parameter
+</pre>
+    The program's output shows the compiler selecting <code>receive(int &amp;&amp;value)</code>
+in all cases where it receives an anonymous <code>int</code> as its argument. Note that
+this includes <code>receive(18)</code>: a value 18 has no name and thus <code>receive(int
+&amp;&amp;value)</code> is called. Internally, it actually uses a temporary variable to
+store the 18, as is shown by the following example which modifies <code>receive</code>:
+        <pre>
+    void receive(int &amp;&amp;value)
+    {
+        ++value;
+        cout &lt;&lt; "int R-value parameter, now: " &lt;&lt; value &lt;&lt; '\n';
+            // displays 19 and 6, respectively.
+    }
+</pre>
+    Contrasting <code>receive(int &amp;value)</code> with <code>receive(int &amp;&amp;value)</code> has
+nothing to do with <code>int &amp;value</code> not being a const reference. If
+<code>receive(int const &amp;value)</code> is used the same results are obtained. Bottom
+line: the compiler selects the overloaded function using the rvalue reference
+if the function is passed an anonymous value.
+<p>
+The compiler runs into problems if <code>void receive(int &amp;value)</code> is
+replaced by <code>void receive(int value)</code>, though. When confronted with the
+choice between a value parameter and a reference parameter (either lvalue or
+rvalue) it cannot make a decision and reports an ambiguity. In practical
+contexts this is not a problem. Rvalue refences were added to the language in
+order to be able to distinguish the two forms of references: named values
+(for which lvalue references are used) and anonymous values (for which
+rvalue references are used).
+<p>
+It is this distinction that allows the implementation of
+ <a name="an171"></a><em>move semantics</em> and <a name="an172"></a><em>perfect forwarding</em>. At this point the concept of
+<a name="an173"></a><em>move semantics</em> cannot yet fully be discussed (but see section <a href="cplusplus09.html#MOVE">9.7</a>
+for a more thorough discussusion) but it is very well possible to illustrate
+the underlying ideas.
+<p>
+Consider the situation where a function returns a <code>struct Data</code> containing a
+pointer to dynamically allocated characters. Moreover, the struct defines a
+member function <code>copy(Data const &amp;other)</code> that takes another <code>Data</code> object
+and copies the other's data into the current object. The (partial) definition
+of the <code>struct Data</code> might look like this&nbsp;(To the observant reader:
+in this example the memory leak that results from using Data::copy()
+should be ignored):
+        <pre>
+    struct Data
+    {
+        char *text;
+        size_t size;
+        void copy(Data const &amp;other)
+        {
+            text = strdup(other.text);
+            size = strlen(text);
+        }
+    };
+</pre>
+    Next, functions <code>dataFactory</code> and <code>main</code> are defined as follows:
+        <pre>
+    Data dataFactory(char const *txt)
+    {
+        Data ret = {strdup(txt), strlen(txt)};
+        return ret;
+    }
+
+    int main()
+    {
+        Data d1 = {strdup("hello"), strlen("hello")};
+
+        Data d2;
+        d2.copy(d1);                        // 1 (see text)
+
+        Data d3;
+        d3.copy(dataFactory("hello"));      // 2
+    }
+</pre>
+    At (1) <code>d2</code> appropriately receives a copy of <code>d1</code>'s text. But at (2)
+<code>d3</code> receives a copy of the text stored in the temporary returned by the
+<code>dataFactory</code> function. As the temporary ceases to exist after the call to
+<code>copy()</code> two releated and unpleasant consequences are observed:
+        <ul>
+        <li> The return value is a temporary object: its only reason for
+existence is to pass its data on to <code>d3</code>. Now <code>d3</code> copies the
+temporary's data which clearly is somewhat overdone.
+        <li> The temporary <code>Data</code> object is lost following the call to
+<code>copy()</code>. Unfortunately its dynamically allocated data is lost as well
+resulting in a memory leak.
+        </ul>
+    In cases like these <em>rvalue reference</em> should be used. By overloading
+the <code>copy</code> member with a member <code>copy(Data &amp;&amp;other)</code> the compiler is able
+to distinguish situations (1) and (2). It now calls the initial <code>copy()</code>
+member in situation (1) and the newly defined overloaded <code>copy()</code> member in
+situation (2):
+        <pre>
+    struct Data
+    {
+        char *text;
+        size_t size;
+        void copy(Data const &amp;other)
+        {
+            text = strdup(other.text);
+        }
+        void copy(Data &amp;&amp;other)
+        {
+            text = other.text;
+            other.text = 0;
+        }
+    };
+</pre>
+    Note that the overloaded <code>copy()</code> function merely moves the
+<code>other.text</code> pointer to the current object's <code>text</code> pointer followed by
+reassigning 0 to <code>other.text</code>. <code>Struct Data</code> suddenly has become
+<a name="an174"></a><em>move-aware</em> and implements <em>move semantics</em>, removing the drawbacks of
+the previously shown approach:
+    <ul>
+    <li> Instead of making a deep copy (which is required in situation (1)),
+the pointer value is simply moved to its new owner;
+    <li> Since the <code>other.text</code> doesn't point to dynamically allocated
+memory anymore the memory leak is prevented.
+    </ul>
+<p>
+Rvalue references for <code>*this</code> and initialization of class
+objects by rvalues are not yet supported by the <code>g++</code> compiler.
+<p>
+<a name="l39"></a>
+<h3>3.3.3: Strongly typed enumerations</h3>
+    Enumeration values in <strong>C++</strong> are in fact <code>int</code> values, thereby bypassing
+type safety. E.g., values of different enumeration types may  be
+compared for (in)equality, albeit through a (static) type cast.
+<p>
+Another problem with the current <code>enum</code> type is that their values are not
+restricted to the enum type name itself, but to the scope where the
+enumeration is defined. As a consequence, two enumerations having the same
+scope cannot have identical values.
+<p>
+Such problems are solved by defining
+    <em>enum classes</em>. An <a name="an175"></a><em>enum class</em> can be defined as in the following
+example:
+        <pre>
+    enum class SafeEnum
+    {
+        NOT_OK,     // 0, by implication
+        OK          = 10,
+        MAYBE_OK    // 11, by implication
+    };
+</pre>
+    Enum classes use <code>int</code> values by default, but the used value type can
+easily be changed using the <code>: type</code> notation, as in:
+        <pre>
+    enum class CharEnum: unsigned char
+    {
+        NOT_OK,
+        OK
+    };
+</pre>
+    To use a value defined in an enum class its enumeration name must be
+provided as well. E.g., <code>OK</code> is not defined, <code>CharEnum::OK</code> is.
+<p>
+Using the data type specification (noting that it defaults to <code>int</code>) it
+is possible to use enum class forward declarations.
+        <a name="an176"></a>
+    E.g.,
+        <pre>
+    enum Enum1;                 // Illegal: no size available
+    enum Enum2: unsigned int;   // Legal: explicitly declared type
+
+    enum class Enum3;           // Legal: default int type is used
+    enum class Enum4: char;     // Legal: explicitly declared type
+</pre>
+<p>
+A sequence of symbols of a strongly typed enumeration can also be
+indicated in a <code>switch</code> using the <a name="an177"></a>ellipsis syntax, as shown in the next
+example:
+        <pre>
+    SafeEnum enumValue();
+
+    switch (enumValue())
+    {
+        case SafeEnum::NOT_OK ... SafeEnum::OK:
+            cout &lt;&lt; "Status is known\n";
+        break;
+
+        default: 
+            cout &lt;&lt; "Status unknown\n";
+        break;
+    }
+</pre>
+<p>
+<a name="l40"></a>
+<h3>3.3.4: Initializer lists</h3>
+    The <strong>C</strong> language defines the <a name="an178"></a>initializer list as a list of values enclosed
+by curly braces, possibly themselves containing initializer lists. In <strong>C</strong>
+these initializer lists are commonly used to initialize arrays and structs.
+<p>
+<strong>C++</strong> extends this concept by introducing the <em>type</em>
+    <code>initializer_list&lt;Type&gt;</code> where <code>Type</code> is replaced by the type name of
+the values used in the initializer list. Initializer lists in <strong>C++</strong> are,
+like their counterparts in <strong>C</strong>, recursive, so they can also be used with
+multi-dimensional arrays, structs and classes.
+<p>
+Before using the <code>initializer_list</code> the <a name="an179"></a><code>&lt;initializer_list&gt;</code> header file
+must be included.
+<p>
+Like in <strong>C</strong>, initializer lists consist of a list of values surrounded by
+curly braces. But unlike <strong>C</strong>, <em>functions</em> can define initializer list
+parameters. E.g.,
+        <pre>
+    void values(std::initializer_list&lt;int&gt; iniValues)
+    {
+    }
+</pre>
+    A function like <code>values</code> could be called as follows:
+        <pre>
+    values({2, 3, 5, 7, 11, 13});
+</pre>
+    The initializer list appears as an argument which is a  list of values
+surrounded by curly braces. Due to the recursive nature of initializer lists a
+two-dimensional series of values can also be passes, as shown in the next
+example:
+        <pre>
+    void values2(std::initializer_list&lt;std::initializer_list&lt;int&gt;&gt; iniValues)
+    {}
+
+    values2({{1, 2}, {2, 3}, {3, 5}, {4, 7}, {5, 11}, {6, 13}});
+</pre>
+    Initializer lists are constant expressions and cannot be
+modified. However, their <em>size</em> and values may be retrieved using their
+<code>size, begin</code>, and <code>end</code> members as follows:
+<p>
+<pre>
+    void values(initializer_list&lt;int&gt; iniValues)
+    {
+        cout &lt;&lt; "Initializer list having " &lt;&lt; iniValues.size() &lt;&lt; "values\n";
+        for
+        (
+            initializer_list&lt;int&gt;::const_iterator begin = iniValues.begin();
+                begin != iniValues.end();
+                    ++begin
+        )
+            cout &lt;&lt; "Value: " &lt;&lt; *begin &lt;&lt; '\n';
+    }
+</pre>
+<p>
+Initializer lists can also be used to initialize objects of classes
+(cf. section <a href="cplusplus07.html#UNIFORMINIT">7.5</a>).
+<p>
+<a name="AUTO"></a><a name="l41"></a>
+<h3>3.3.5: Type inference using `auto'</h3>
+    The keyword <a name="an180"></a><code>auto</code> can be used to simplify type definitions of variables and
+return types of functions if  the compiler is able to determine the proper
+types of such variables or functions.
+<p>
+In additon, the use of <code>auto</code> as a storage class specifier is no longer
+supported by <strong>C++</strong>: a variable definition like <code>auto int var</code> results in a
+compilation error.
+<p>
+This can be very useful in situations where it is very hard to determine the
+variable's type in advance. These situations occur, e.g., in the context of
+<em>templates</em>, topics covered in chapters <a href="cplusplus18.html#STL">18</a> until <a href="cplusplus23.html#ADVANCEDTEMPL">23</a>.
+<p>
+At this point in the Annotations only simple examples can be given. Also, some
+hints will be provided about more general uses of the <code>auto</code> keyword.
+<p>
+When defining and initializing a variable <code>int variable = 5</code> the type of the
+initializing expression is well known: it's an <code>int</code>, and unless the
+programmer's intentions are different this could be used to define
+<code>variable</code>'s type (although it shouldn't in normal circumstances as it
+reduces rather than improves the clarity of the code):
+        <pre>
+    auto variable = 5;
+</pre>
+<p>
+Here are some examples where using <code>auto</code> <em>is</em> useful.
+In chapter <a href="cplusplus05.html#String">5</a> the <a name="an181"></a><em>iterator</em> concept is introduced (see also
+chapters <a href="cplusplus12.html#CONTAINERS">12</a> and <a href="cplusplus18.html#STL">18</a>). Iterators sometimes have long type
+definitions, like
+        <pre>
+    std::vector&lt;std::string&gt;::const_reverse_iterator
+</pre>
+    Functions may return types like this. Since the compiler knows the
+types returned by functions we may exploit this knowledge using
+<code>auto</code>. Assuming that a function <code>begin()</code> is declared as follows:
+        <pre>
+    std::vector&lt;std::string&gt;::const_reverse_iterator begin();
+</pre>
+    Rather than writing the verbose variable definition (at <code>//
+1</code>) a much shorter definition (at <code>// 2</code>) may be used:
+        <pre>
+    std::vector&lt;std::string&gt;::const_reverse_iterator iter = begin();    // 1
+    auto iter = begin();                                                // 2
+</pre>
+    It's easy to define additional variables of this type. When initializing
+those variables using <code>iter</code> the <code>auto</code> keyword can be used again:
+        <pre>
+    auto start = iter;
+</pre>
+<p>
+Merely using <code>auto</code> always results in a non-reference type. If <code>auto</code>
+should refer to a reference type, <a name="an182"></a><code>auto &amp;&amp;</code> should be used.
+<p>
+If <code>start</code> can't be initialized immediately using an existing
+variable the type of a well known variable or function can be used in
+combination with the <a name="an183"></a><code>decltype</code> keyword, as in:
+        <pre>
+    decltype(iter) start;
+    decltype(begin()) spare;
+</pre>
+    The keyword <code>decltype</code> may also receive an expression as its
+argument. E.g., <code>decltype(3 + 5)</code> represents an int, <code>decltype(3 /
+double(3))</code> represents <code>double</code>.
+<p>
+Different from <code>auto</code> the type deduced by <code>decltype</code> may either be a
+value or a reference type, depending on the kind of expression that is passed
+to <code>decltype</code>. E.g, if <code>int intVal</code> and <code>int &amp;&amp;intTmp()</code> are available,
+then 
+        <pre>
+    decltype(intVal)     iv(3);         // iv is an int
+    declType( (intVal) ) iref(intVal);  // iref is an int &amp;
+    declType(intTmp())   tmpRef(f());   // tmpRef is an int &amp;&amp;
+</pre>
+<p>
+In addition to this, <a name="an184"></a>C++14 supports <code>decltype(auto)</code> specifications, in
+which case <code>decltype's</code> rules are applied to <code>auto</code>. E.g.,
+        <pre>
+    decltype(auto) iref2((intVal));     // iref2 is an int &amp;
+    auto iref3((intVal));               // iref3 is an int
+</pre>
+<p>
+The <code>auto</code> keyword can also be used to postpone the definition of a
+function's return type. The declaration of a function <code>intArrPtr</code> returning
+a pointer to an array of 10 <code>int</code>s looks like this:
+        <pre>
+    int (*intArrPtr())[10];
+</pre>
+    Such a declaration is fairly complex. E.g., among other complexities it
+requires `protection of the pointer'<a name="an185"></a> using parentheses
+in combination with the function's parameter list. In situations like these
+the specification of the return type can be postponed using the <code>auto</code>
+return type, followed by the specification of the function's return type after
+any other specification the function might receive (e.g., as a const member
+(cf. section <a href="cplusplus07.html#ConstFunctions">7.7</a>) or following its <code>noexcept</code> specification
+(cf. section <a href="cplusplus23.html#NOEXCEPT">23.7</a>)).
+<p>
+Using <code>auto</code> to declare the above function, the declaration becomes:
+        <pre>
+    auto intArrPtr() -&gt; int (*)[10];
+</pre>
+    A return type specification using <code>auto</code> is called a
+        <a name="an186"></a><em>late-specified return type</em>.
+<p>
+The <code>auto</code> keyword can also be used to defined types that are related to
+the actual <code>auto</code> associated type. Here are some examples:
+        <pre>
+    vector&lt;int&gt; vi;
+    auto iter = vi.begin();     // standard: auto is vector&lt;int&gt;::iterator
+    auto &amp;&amp;rref = vi.begin();   // auto is rvalue ref. to the iterator type
+    auto *ptr = &amp;iter;          // auto is pointer to the iterator type
+    auto *ptr = &amp;rref;          // same
+</pre>
+<p>
+For functions returning <code>auto</code> the C++14 standard no longer requires a late
+return type specification. Such a function can also be declared, e.g.
+        <pre>
+    auto autoReturnFunction();
+</pre>
+    In this case some restrictions apply, both to the function definitions and
+the function declarations:
+    <ul>
+    <li> If multiple return statements are used in function definitions they
+all must be of the same type;
+    <li> Functions merely returning <code>auto</code> cannot be used before the
+compiler has seen their definitions. So they cannot be used after mere
+declarations;
+    <li> When functions returning <code>auto</code> are implemented as recursive
+function then at least one return statement must have been seen before the 
+recursive call. E.g.,
+        <pre>
+    auto fibonacci(size_t n)
+    {
+        if (n &lt;= 1)
+            return n;
+        return fibonacci(n - 1) + fibonacci(n - 2);
+    }
+</pre>
+    </ul>
+<p>
+<a name="l42"></a>
+<h3>3.3.6: Defining types and 'using' declarations</h3>
+    In <strong>C++</strong> <code>typedef</code> is commonly used to define shorthand notations for
+complex types. Assume we want to define a shorthand for `a pointer to a
+function expecting a double and an int, and returning an unsigned long long
+int'. Such a function could be:
+        <pre>
+    unsigned long long int compute(double, int);
+</pre>
+    A pointer to such a function has the following form:
+        <pre>
+    unsigned long long int (*pf)(double, int);
+</pre>
+    If this kind of pointer is frequently used, consider defining it using
+<code>typedef</code>: simply put <code>typedef</code> in front of it and the pointer's name is
+turned into the name of a type. It could be capitalized to let it stand out
+more clearly as the name of a type:
+        <pre>
+    typedef unsigned long long int (*PF)(double, int);
+</pre>
+    After having defined this type, it can be used to declare or define such
+pointers:
+        <pre>
+    PF pf = compute;        // initialize the pointer to a function like
+                            // 'compute'
+    void fun(PF pf);        // fun expects a pointer to a function like
+                            // 'compute'
+</pre>
+    However, including the pointer in the typedef might not be a very good
+idea, as it masks the fact that <code>pf</code> is a pointer. After all, <code>PF pf</code>
+looks more like `<code>int x</code>' than `<code>int *x</code>'. To document that <code>pf</code> is
+in fact a pointer, slightly change the <code>typedef</code>:
+        <pre>
+    typedef unsigned long long int FUN(double, int);
+
+    FUN *pf = compute;      // now pf clearly is a pointer.
+</pre>
+    The scope of typedefs is restricted to compilation units. Therefore,
+typedefs are usually embedded in header files which are then included by
+multiple source files in which the typedefs should be used.
+<p>
+In addition to <code>typedef</code> <strong>C++</strong> offers the <a name="an187"></a><code>using</code> keyword to
+associate a type and and identifier. In practice <code>typedef</code> and <code>using</code> can
+be used interchangeably. The <code>using</code> keyword arguably result in more
+readable type definitions. Consider the following three (equivalent)
+definitions:
+    <ul>
+    <li> The traditional, <strong>C</strong> style definition of a type, embedding the type
+        name in the definition (turning a variable name into a type name):
+    <pre>
+typedef unsigned long long int FUN(double, int);
+</pre>
+    <li> Apply <code>using</code> to improve the visibility (for humans) of the type
+        name, by moving the type  name to the front of the definition:
+    <pre>
+using FUN = unsigned long long int (double, int);
+</pre>
+    <li> An alternative construction, using a late-specified return type
+        (cf. section <a href="cplusplus03.html#AUTO">3.3.5</a>):
+    <pre>
+using FUN = auto (double, int) -&gt; unsigned long long int;
+</pre>
+    </ul>
+<p>
+<a name="l43"></a>
+<h3>3.3.7: Range-based for-loops</h3>
+    The <strong>C++</strong> for-statement is identical to <strong>C</strong>'s for-statement:
+        <pre>
+    for (init; cond; inc)
+        statement
+</pre>
+    Often the initialization, condition, and increment parts are fairly
+obvious, as in situations where all elements of an array or vector must be
+processed. Many languages offer the <code>foreach</code> statement for that and <strong>C++</strong>
+offers the <code>std::for_each</code> generic algorithm (cf. section <a href="cplusplus19.html#FOREACH">19.1.17</a>).
+<p>
+In addition to the traditional syntax <strong>C++</strong> adds new syntax for the
+<code>for</code>-statement: the
+    <a name="an188"></a><em>range-based for-loop</em>. This new syntax can be used to process all
+element of a <a name="an189"></a>range in turn. Three types of ranges are distinguished:
+        <ul>
+        <li> Plain arrays (e.g., <code>int array[10]</code>);
+        <li> Initializer lists;
+        <li> Standard containers (or comparable) (cf. chapter
+            <a href="cplusplus12.html#CONTAINERS">12</a>);
+        <li> Any other type offering <code>begin()</code> and <code>end()</code> functions
+            returning so-called <em>iterators</em> (cf. section <a href="cplusplus18.html#ITERATORS">18.2</a>).
+        </ul>
+    Here the following additional <a name="an190"></a>for-statement syntax is available:
+        <pre>
+    // assume int array[30]
+    for (auto &amp;element: array)
+        statement
+</pre>
+    The part to the left of the colon is called the
+    <a name="an191"></a><em>for range declaration</em>. The declared variable (<code>element</code>) is a
+formal name; use any identifier you like. The variable is only
+available within the nested statement, and it refers to (or is a copy of) each
+of the elements of the range, from the first element up to the last.
+<p>
+There's no formal requirement to use <code>auto</code>, but using <code>auto</code> is extremely
+useful in many situations. Not only in situations where the range refers to
+elements of some complex type, but also in situations where you know what you
+can do with the elements in the range, but don't care about their exact type
+names. In the above example <code>int</code> could also have been used.
+<p>
+The reference symbol (<code>&amp;</code>) is important in the following cases:
+    <ul>
+    <li> if you want to modify the elements in the nested statements
+    <li> if the elements themselves are <code>struct</code>s (or <em>classes</em>,
+        cf. chapter <a href="cplusplus07.html#Classes">7</a>)
+    </ul>
+    When the reference symbol is omitted the variable will be a copy of each
+of the subsequent elements of the range. Fine, probably, if you merely need to
+look at the variables when they are of primitive types, but needlessly
+inefficient if you have an array of <code>BigStruct</code> elements:
+        <pre>
+    struct BigStruct
+    {
+        double array[100];
+        int    last;
+    };
+</pre>
+    Inefficient, because you don't need to make copies of the array's
+elements. Instead, use refences to elements:
+        <pre>
+    BigStruct data[100];    // assume properly initialized elsewhere
+
+    int countUsed()
+    {
+        int sum = 0;
+                            // const &amp;: the elements aren't modified
+        for (auto const &amp;element: data)
+            sum += element.last;
+        return sum;
+    }
+</pre>
+    If <code>data</code> is only available as a pointer to its first element in
+combination with the number of elements, range-based for loops can also be
+used, but require a little help. Section <a href="cplusplus24.html#RANGER">24.5</a> describes a generic
+approach to using range based for loops in such cases.
+<p>
+<a name="l44"></a>
+<h3>3.3.8: Raw String Literals</h3>
+    Standard ASCII-C strings are delimited by double quotes, supporting
+ <a name="an192"></a> escape sequences like <code>\n, \\</code> and <code>\"</code>. In some
+cases it is useful to avoid escaping strings (e.g., in the context of XML). To
+this end, <strong>C++</strong> offers <a name="an193"></a> <em>raw string literals</em>.
+<p>
+Raw string literals start with an <code>R</code>, followed by a double quote, followed
+by a label (which is an arbitrary sequence of characters not equal to
+<code>(</code>), followed by <code>(</code>. The raw string ends at the closing
+parenthesis <code>)</code>, followed by the label which is in turn followed by a
+double quote. Example:
+        <pre>
+    R"(A Raw \ "String")"
+    R"delimiter(Another \ Raw "(String))delimiter"
+</pre>
+    In the first case, everything between <code>"(</code> and <code>)"</code> is
+part of the string. Escape sequences aren't supported so the text <code>\ "</code>
+within the first raw string literal defines three characters: a backslash, a
+blank character and a double quote. The second example shows a raw string
+defined between the markers <code>"delimiter(</code> and <code>)delimiter"</code>.
+<p>
+<a name="l45"></a>
+<h3>3.3.9: Binary constants</h3>
+    In addition to hexadecimal <a name="an194"></a> integral constants
+(starting with <a name="an195"></a>0x), octal integral <a name="an196"></a> constants (starting
+with <a name="an197"></a>0), and decimal integral <a name="an198"></a> constants (starting
+with one of the digits 1..9), <em>binary</em> integral <a name="an199"></a>
+constants can be defined using the prefixes <a name="an200"></a>0b or <a name="an201"></a>0B. E.g., to represent
+the (decimal) value 5 the notation <code>0b101</code> can also be used. Formally binary
+constants are supported by <strong>C++</strong> since the <a name="an202"></a>C++14 standard, but compilers
+usually supported this well before implementing the C++14 standard.
+<p>
+The binary constants come in handy in the context of, e.g., <a name="an203"></a>bit-flags, as
+it immediately shows which bit-fields are set, while other notations are less
+informative.
+<p>
+<a name="l46"></a>
+<h3>3.3.10: Attributes</h3>
+    Attributes <a name="an204"></a> are compiler directives that are inserted into source
+files to inform the compiler of some peculiarity of the code (variable or
+function) following the attribute.
+<p>
+The C++ standard defines the following attributes:
+<p>
+<ul>
+    <li><a name="an205"></a><code>[[noreturn]]</code>:<blockquote><code>[[noreturn]]</code> indicates that the function does not
+return. <code>[[noreturn]]'s</code> behavior is undefined if the function declared with
+this attribute actually returns. The following standard functions have this
+attribute: <code>std::_Exit, std::abort, std::exit, std::quick_exit,
+std::unexpected, std::terminate, std::rethrow_exception,
+std::throw_with_nested, std::nested_exception::rethrow_nested</code>, Here is an
+example of a function declaration and definition using the <code>[[noreturn]]</code>
+attribute:
+        <pre>
+    [[noreturn]] void doesntReturn();
+
+    [[noreturn]] void doesntReturn()
+    {
+        exit(0);
+    }
+</pre>
+        </blockquote>
+    <li><a name="an206"></a><code>[[carries_dependency]]</code>:<blockquote>This attribute is currently not yet covered by the <strong>C++</strong> Annotations. At
+this point in the <strong>C++</strong> Annotations it can safely be ignored.
+    
+    </blockquote>
+    <li><a name="an207"></a><code>[[deprecated]]</code>:<blockquote>This attribute (and its alternative form
+<code>[[deprecated("reason")]]</code>) is not available before the <a name="an208"></a>C++14 standard.  It
+indicates that the use of the name or entity declared with this attribute is
+allowed, but discouraged for some reason. This attribute can be used for
+classes, typedef-names, variables, non-static data members, functions,
+enumerations, and template specializations. An existing non-deprecated entity
+may be redeclared deprecated, but once an entity has been declared deprecated
+it cannot be redeclared as `undeprecated'. When encountering the
+<code>[[deprecated]]</code> attribute the compiler generates a warning, e.g.,
+    <pre>
+    demo.cc:12:24: warning: 'void deprecatedFunction()' is deprecated 
+                    [-Wdeprecated-declarations] deprecatedFunction();
+
+    demo.cc:5:21: note: declared here
+                     [[deprecated]] void deprecatedFunction()
+</pre>
+<p>
+When using the alternative form (e.g., 
+        <code>[[deprecated("do not use")]] void fun()</code>) the compiler generates a
+warning showing the text between the double quotes, e.g.,
+    <pre>
+    demo.cc:12:24: warning: 'void deprecatedFunction()' is deprecated: 
+        do not use [-Wdeprecated-declarations] 
+     deprecatedFunction();
+
+    demo.cc:5:38: note: declared here
+         [[deprecated("do not use")]] void deprecatedFunction()
+</pre>
+    </blockquote>
+</ul>
+<p>
+<a name="l47"></a>
+<h2>3.4: New language-defined data types</h2>
+In <strong>C</strong> the following <a name="an209"></a>built-in data types are available: <code>void, char,
+short, int, long, float</code> and <code>double</code>. <strong>C++</strong> extends these built-in types
+with several additional built-in types: the types <a name="an210"></a><code>bool</code>, <a name="an211"></a><code>wchar_t</code>,
+<a name="an212"></a><code>long long</code> and <a name="an213"></a><code>long double</code> (Cf. <a name="an214"></a>ANSI/ISO draft (1995),
+par. 27.6.2.4.1 for examples of these very long types).  The type
+ <a name="an215"></a><code>long long</code> is merely a double-long <code>long</code> datatype. The type
+ <a name="an216"></a><code>long double</code> is merely a double-long <code>double</code> datatype. These built-in
+types as well as pointer variables are called
+ <a name="an217"></a><em>primitive types</em><a name="an218"></a> in the <strong>C++</strong> Annotations.
+<p>
+There is a subtle issue to be aware of when converting applications developed
+for 32-bit architectures to 64-bit architectures. When converting 32-bit
+programs to 64-bit programs, only <code>long</code> types and pointer types change in
+size from 32 bits to 64 bits; integers of type <code>int</code> remain at their size of
+32 bits. This may cause data truncation when assigning pointer or <code>long</code>
+types to <code>int</code> types. Also, problems with sign extension can occur when
+assigning expressions using types shorter than the size of an <code>int</code> to an
+<code>unsigned long</code> or to a pointer. More information about this issue can be
+found
+ <a href="http://developers.sun.com/solaris/articles/ILP32toLP64Issues.html">here</a>.
+<p>
+Except for these built-in types the class-type <code>string</code> is available
+for handling character strings. The datatypes <code>bool</code>, and <code>wchar_t</code> are
+covered in the following sections, the datatype <code>string</code> is covered in
+chapter <a href="cplusplus05.html#String">5</a>. Note that recent versions of <strong>C</strong> may also have adopted
+some of these newer data types (notably <code>bool</code> and <code>wchar_t</code>).
+Traditionally, however, <strong>C</strong> doesn't support them, hence they are mentioned
+here.
+<p>
+Now that these new types are introduced, let's refresh your memory about
+<em>letters</em> that can be used in <a name="an219"></a><em>literal constants</em> of various
+ <a name="an220"></a> types. They are:
+    <ul>
+    <li> <a name="an221"></a><code>b</code> or <code>B</code>: in addition to its use to indicate a hexadecimal
+value, it can also be used to define a <a name="an222"></a><em>binary constant</em>. E.g., <code>0b101</code>
+equals the decimal value 5. The <code>0b</code> prefix can be used to specify binary
+constants starting with the <a name="an223"></a>C++14 standard.
+    <li> <a name="an224"></a><code>E</code> or <code>e</code>: <a name="an225"></a> the
+<a name="an226"></a><em>exponentiation</em> character in floating point literal values. For example:
+<code>1.23E+3</code>. Here, <code>E</code> should be pronounced (and interpreted) as: <em>times 10
+to the power</em>. Therefore, <code>1.23E+3</code> represents the value <code>1230</code>.
+    <li> <a name="an227"></a><code>F</code> <a name="an228"></a> can be used as <em>postfix</em> to a
+non-integral numeric constant to indicate a value of type <code>float</code>, rather
+than <code>double</code>, which is the default. For example: <code>12.F</code> (the dot
+transforms 12 into a floating point value); <code>1.23E+3F</code> (see the previous
+example. <code>1.23E+3</code> is a <code>double</code> value, whereas <code>1.23E+3F</code> is a
+<code>float</code> value).
+    <li> <a name="an229"></a><code>L</code> <a name="an230"></a> can be used as <em>prefix</em> to
+indicate a character string whose elements are <code>wchar_t</code>-type
+characters. For example: <code>L"hello world"</code>.
+    <li> <code>L</code> <a name="an231"></a> can be used as <em>postfix</em> to an
+integral value to indicate a value of type <code>long</code>, rather than <code>int</code>,
+which is the default. Note that there is no letter indicating a <code>short</code>
+type. For that a <code>static_cast&lt;short&gt;()</code> must be used.
+    <li> <a name="an232"></a><code>p</code>, to specify the power <a name="an233"></a> in
+hexadecimal floating point numbers.  E.g. <code>0x10p4</code>. The exponent itself is
+read as a decimal constant and can therefore not start with 0x. The exponent
+part is interpreted as a power of 2. So <code>0x10p2</code> is (decimal) equal to 64:
+<code>16 * 2^2</code>.
+    <li> <a name="an234"></a><code>U</code> <a name="an235"></a> can be used as <em>postfix</em> to an
+integral value to indicate an <code>unsigned</code>  value, rather than an <code>int</code>.
+It may also be combined with the postfix <code>L</code> to produce an <code>unsigned long
+int</code> value.
+    </ul>
+    And, of course: the <code>x</code> and <code>a</code> until <code>f</code> characters can be used to
+specify hexadecimal constants (optionally using capital letters).
+<p>
+<a name="BOOL"></a><a name="l48"></a>
+<h3>3.4.1: The data type `bool'</h3>
+        The type <code>bool</code> represents boolean (logical) values, for which the (now
+reserved) constants <a name="an236"></a><code>true</code> and <a name="an237"></a><code>false</code> may be used. Except for these
+reserved values, integral values may also be assigned to variables of type
+<code>bool</code>, which are then implicitly converted to <code>true</code> and <code>false</code>
+according to the following <a name="an238"></a>conversion rules (assume <code>intValue</code> is an
+<code>int</code>-variable, and <code>boolValue</code> is a <code>bool</code>-variable):
+        <pre>
+        // from int to bool:
+    boolValue = intValue ? true : false;
+
+        // from bool to int:
+    intValue = boolValue ? 1 : 0;
+</pre>
+    Furthermore, when <code>bool</code> values are inserted into streams then <code>true</code>
+is represented by <code>1</code>, and <code>false</code> is represented by <code>0</code>. Consider the
+following example:
+        <pre>
+    cout &lt;&lt; "A true value: "  &lt;&lt; true &lt;&lt; "\n"
+            "A false value: " &lt;&lt; false &lt;&lt; '\n';
+</pre>
+    The <code>bool</code> data type is found in other programming languages as
+well. <strong>Pascal</strong> has its type <code>Boolean</code>; <strong>Java</strong> has a <code>boolean</code>
+type. Different from these languages, <strong>C++</strong>'s type <code>bool</code> acts like a kind
+of <code>int</code> type. It is primarily a documentation-improving type, having just
+two values <code>true</code> and <code>false</code>. Actually, these values can be interpreted
+as <code>enum</code> values for <code>1</code> and <code>0</code>. Doing so would ignore the philosophy
+behind the <code>bool</code> data type, but nevertheless: assigning <code>true</code> to an
+<code>int</code> variable neither produces warnings nor errors.
+<p>
+Using the <code>bool</code>-type is usually clearer than using
+<code>int</code>. Consider the following prototypes:
+        <pre>
+    bool exists(char const *fileName);  // (1)
+    int  exists(char const *fileName);  // (2)
+</pre>
+    With the first prototype, readers expect the function to
+return <code>true</code> if the given filename is the name of an existing
+file. However, with the second prototype some ambiguity arises: intuitively
+the return value 1 is appealing, as it allows constructions like
+        <pre>
+    if (exists("myfile"))
+        cout &lt;&lt; "myfile exists";
+</pre>
+    On the other hand, many system functions (like <a name="an239"></a><code>access</code>, <a name="an240"></a><code>stat</code>, and
+many other) return 0 to indicate a successful operation, reserving other
+values to indicate various types of errors.
+<p>
+As a rule of thumb I suggest the following: if a function should inform
+its caller about the success or failure of its task, let the function return a
+<code>bool</code> value. If the function should return success or various types of
+errors, let the function return <em>enum</em> values, documenting the situation by
+its various symbolic constants. Only when the function returns a conceptually
+meaningful integral value (like the sum of two <code>int</code> values), let the
+function return an <code>int</code> value.
+<p>
+<a name="WCHAR"></a><a name="l49"></a>
+<h3>3.4.2: The data type `wchar_t'</h3>
+    The <a name="an241"></a><code>wchar_t</code> type is an extension of the <code>char</code> built-in type, to accomodate
+<em>wide</em> character values (but see also the next section).  The <code>g++</code>
+compiler reports <code>sizeof(wchar_t)</code> as 4, which easily accomodates all 65,536
+different <em>Unicode</em> character values.
+<p>
+Note that <strong>Java</strong>'s <code>char</code> data type is somewhat comparable to <strong>C++</strong>'s
+<code>wchar_t</code> type. <strong>Java</strong>'s <code>char</code> type is 2 bytes wide, though. On the
+other hand, <strong>Java</strong>'s <code>byte</code> data type is comparable to <strong>C++</strong>'s <code>char</code>
+type: one byte. Confusing?
+<p>
+<a name="UNICODE"></a><a name="l50"></a>
+<h3>3.4.3: Unicode encoding</h3>
+    In <strong>C++</strong> string literals can be defined as NTB strings.  Prepending an NTBS
+by <code>L</code> (e.g., <code>L"hello"</code>) defines a <code>wchar_t</code> string literal.
+<p>
+<strong>C++</strong> also supports 8, 16 and 32 bit
+<a name="an242"></a>Unicode encoded strings. Furthermore, two new data types are introduced:
+<code>char16_t</code> and <code>char32_t</code> storing, respectively, a
+<a name="an243"></a><code>UTF-16</code> and <a name="an244"></a><code>UTF-32</code> unicode value.
+<p>
+In addition, a <code>char</code> type variable is large enough to contain any <a name="an245"></a><code>UTF-8</code>
+unicode value as well (i.e., it remains an 8-bit value).
+<p>
+String literals for the various types of unicode encodings (and
+associated variables) can be defined as follows:
+        <pre>
+    char     utf_8[] = u8"This is UTF-8 encoded.";
+    char16_t utf16[] = u"This is UTF-16 encoded.";
+    char32_t utf32[] = U"This is UTF-32 encoded.";
+</pre>
+    Alternatively, unicode constants may be defined using the <a name="an246"></a><code>\u</code> escape
+sequence, followed by a hexadecimal value. Depending on the type of the
+unicode variable (or constant) a <code>UTF-8, UTF-16</code> or <code>UTF-32</code> value is
+used. E.g.,
+        <pre>
+    char     utf_8[] = u8"\u2018";
+    char16_t utf16[] = u"\u2018";
+    char32_t utf32[] = U"\u2018";
+</pre>
+    Unicode strings can be delimited by double quotes but raw string literals
+can also be used.
+<p>
+<a name="l51"></a>
+<h3>3.4.4: The data type `long long int'</h3>
+    <strong>C++</strong> also supports the type <a name="an247"></a><code>long long int</code>. On 32 bit systems it has at
+least 64 usable bits.
+<p>
+<a name="l52"></a>
+<h3>3.4.5: The data type `size_t'</h3>
+    The <a name="an248"></a><code>size_t</code> type is not really a built-in primitive data type, but a data
+type that is promoted by <a name="an249"></a><strong>POSIX</strong> as a typename to be used for non-negative
+integral values answering questions like `how much' and `how many', in which
+case it should be used instead of <a name="an250"></a><code>unsigned int</code>. It is not a specific
+<strong>C++</strong> type, but also available in, e.g., <strong>C</strong>. Usually it is defined
+implictly when a (any) system header file is included. The header file
+`officially' defining <code>size_t</code> in the context of <strong>C++</strong> is <a name="an251"></a><code>cstddef</code>.
+<p>
+Using <code>size_t</code> has the advantage of being a <em>conceptual</em> type, rather than
+a standard type that is then modified by a modifier. Thus, it improves
+the self-documenting value of source code.
+<p>
+Sometimes functions explictly require <code>unsigned int</code> to be used. E.g., on
+<a name="an252"></a><code>amd</code>-architectures the <a name="an253"></a>X-windows function <a name="an254"></a><code>XQueryPointer</code> explicitly
+requires a pointer to an <code>unsigned int</code> variable as one of its arguments. In
+such situations a pointer to a <code>size_t</code> variable can't be used, but the
+address of an <code>unsigned int</code> must be provided. Such situations are
+exceptional, though.
+<p>
+Other useful bit-represented types also exists. E.g., <a name="an255"></a><code>uint32_t</code> is
+guaranteed to hold 32-bits unsigned values. Analogously, <a name="an256"></a><code>int32_t</code> holds
+32-bits signed values. Corresponding types exist for 8, 16 and 64 bits
+values. These types are defined in the header file <a name="an257"></a><code>cstdint</code>.
+<p>
+<a name="l53"></a>
+<h3>3.4.6: C++14: digit separators</h3>
+    The <a name="an258"></a>C++14 standard introduces <em>digit separators</em><a name="an259"></a> for
+integer and floating point literals. The digit separator is a single quote
+which may be inserted between digits of such literals to enhance human
+readability. Multiple digit separators may be used, but only one separator can
+be inserted between successive digits. E.g.,
+        <pre>
+    1'000'000
+    3.141'592'653'589'793'238'5
+    ''123       // won't compile
+    1''23       // won't compile either
+</pre>
+<p>
+<a name="CPPCASTS"></a><a name="l54"></a>
+<h2>3.5: A new syntax for casts</h2>
+Traditionally, <strong>C</strong> offers the following <em>cast</em> syntax:
+            <pre>
+        (typename)expression
+</pre>
+ here <code>typename</code> is the name of a valid <em>type</em>, and <code>expression</code> is an
+expression.
+<p>
+<strong>C</strong> style casts are now deprecated. <strong>C++</strong> programs should merely use
+the new style <strong>C++</strong> casts as they offer the compiler facilities to verify
+the sensibility of the cast. Facilities which are not offered by the classic
+<strong>C</strong>-style cast.
+<p>
+A cast should not be confused with the often used
+    <a name="an260"></a><em>constructor notation</em>:
+        <pre>
+    typename(expression)
+</pre>
+ the constructor notation is not a cast, but a request to the compiler to
+construct an (anonymous) variable of type <code>typename</code> from <code>expression</code>.
+<p>
+If casts are really necessary one of several <a name="an261"></a><em>new-style casts</em> should be
+used. These new-style casts are introduced in the upcoming sections.
+<p>
+<a name="l55"></a>
+<h3>3.5.1: The `static_cast'-operator</h3>
+    The <a name="an262"></a><code>static_cast&lt;type&gt;(expression)</code> is used to convert
+`conceptually comparable or related types' to each other. Here as well as in
+other <strong>C++</strong> style casts <code>type</code> is the type to which the type of
+<code>expression</code> should be cast.
+<p>
+Here are some examples of situations where the <code>static_cast</code> can (or should)
+be used:
+    <ul>
+    <li> When converting an <code>int</code> to a <code>double</code>. <br>
+<p>
+This happens, for example when the quotient of two <code>int</code> values must be
+computed without losing the fraction part of the division. The <code>sqrt</code>
+function called in the following fragment returns 2:
+    <pre>
+int x = 19;
+int y = 4;
+sqrt(x / y);
+</pre>
+    whereas it returns 2.179 when a <code>static_cast</code> is used, as in:
+    <pre>
+sqrt(static_cast&lt;double&gt;(x) / y);
+</pre>
+    The important point to notice here is that a <code>static_cast</code> is allowed to
+change the representation of its <code>expression</code> into the representation that's
+used by the destination type.
+<p>
+Also note that the division is put outside of the cast expression. If the
+division is performed within the cast's <code>expression</code> (as in
+<code>static_cast&lt;double&gt;(x / y)</code>) an <a name="an263"></a><em>integer division</em> has already been
+performed <em>before</em> the cast has had a chance to convert the type of an
+operand to <code>double</code>.
+<p>
+<li> When converting <code>enum</code> values to <code>int</code> values (in any
+direction). <br>
+<p>
+Here the two types use identical representations, but different
+semantics. Assigning an ordinary <code>enum</code> value to an <code>int</code> doesn't require
+a cast, but when the enum is a <em>strongly typed enum</em> a cast <em>is</em>
+required. Conversely, a <code>static_cast</code> is required when assigning an <code>int</code>
+value to a variable of some enum type. Here is an example:
+    <pre>
+enum class Enum
+{
+    VALUE
+};
+
+cout &lt;&lt; static_cast&lt;int&gt;(VALUE);    // show the numeric value
+</pre>
+<p>
+<li> When converting related pointers to each other.<br>
+<p>
+The <code>static_cast</code> is used in the context of class inheritance
+(cf. chapter <a href="cplusplus13.html#INHERITANCE">13</a>) to convert a pointer to a so-called `derived
+class' to a pointer to its `base class'. It cannot be used for casting
+unrelated types to each other (e.g., a <code>static_cast</code> can<em>not</em> be used to
+cast a pointer to a <code>short</code> to a pointer to an <code>int</code>).
+<p>
+A <code>void *</code> is a <em>generic pointer</em>. It is frequently used by
+functions in the <strong>C</strong> library (e.g., <strong>memcpy</strong>(3)). Since it is the generic
+pointer it is related to any other pointer, and a <code>static_cast</code> should be
+used to convert a <code>void *</code> to an intended destination pointer. This is a
+somewhat awkward left-over from <strong>C</strong>, which should probably only be used in
+that context. Here is an example:
+<p>
+The <code>qsort</code> functions from the <strong>C</strong> library expects a pointer to a
+(comparison) function having two <code>void const *</code> parameters. In fact, these
+parameters point to data elements of the array to be sorted, and so the
+comparison function must cast the <code>void const *</code> parameters to pointers to
+the elements of the array to be sorted. So, if the array is an <code>int array[]</code>
+and the compare function's parameters are <code>void const *p1</code> and <code>void const
+*p2</code> then the compare function obtains the address of the <code>int</code> pointed
+to by <code>p1</code> by using:
+    <pre>
+static_cast&lt;int const *&gt;(p1);
+</pre>
+<p>
+<li> When undoing or introducing the signed-modifier of an <code>int</code>-typed
+variable (remember that a <code>static_cast</code> is allowed to change the
+expression's representation!). <br>
+<p>
+Here is an example: the <strong>C</strong> function <code>tolower</code> requires an <code>int</code>
+representing the value of an <code>unsigned char</code>. But <code>char</code> by default is a
+signed type. To call <code>tolower</code> using an available <code>char ch</code> we should use:
+        <pre>
+        tolower(static_cast&lt;unsigned char&gt;(ch))
+</pre>
+    </ul>
+<p>
+<a name="l56"></a>
+<h3>3.5.2: The `const_cast'-operator</h3>
+    The <code>const</code> keyword has been given a special place in casting. Normally
+anything <code>const</code> is <code>const</code> for a good reason. Nonetheless situations
+may be encountered where the <code>const</code> can be ignored. For these special
+situations the <code>const_cast</code> should be used. Its syntax is:
+                     <pre>
+        const_cast&lt;type&gt;(expression)
+</pre>
+ A <a name="an264"></a><code>const_cast&lt;type&gt;(expression)</code> expression is used to undo the
+<code>const</code> attribute of a (pointer) type.
+<p>
+The need for a <code>const_cast</code> may occur in combination with functions from
+the standard <strong>C</strong> library which traditionally weren't always as const-aware
+as they should. A function <code>strfun(char *s)</code> might be available, performing
+some operation on its <code>char *s</code> parameter without actually modifying the
+characters pointed to by <code>s</code>. Passing <code>char const hello[] = "hello";</code> to
+<code>strfun</code> produces the warning
+   <pre>
+        passing `const char *' as argument 1 of `fun(char *)' discards const
+</pre>
+ A <code>const_cast</code> is the appropriate way to prevent the warning:
+                 <pre>
+        strfun(const_cast&lt;char *&gt;(hello));
+</pre>
+<p>
+<a name="l57"></a>
+<h3>3.5.3: The `reinterpret_cast'-operator</h3>
+    The third new-style cast is used to change the <em>interpretation</em> of
+information: the <code>reinterpret_cast</code>. It is somewhat reminiscent of the
+<code>static_cast</code>, but <code>reinterpret_cast</code> should only be used when it is
+<em>known</em> that the information as defined in fact is or can be interpreted as
+something completely different. Its syntax is:
+        <pre>
+        reinterpret_cast&lt;pointer type&gt;(pointer expression)
+</pre>
+<p>
+Think of the <code>reinterpret_cast</code> as a cast offering a poor-man's union:
+the same memory location may be interpreted in completely different ways.
+<p>
+The <code>reinterpret_cast</code> is used, for example, in combination with the
+<code>write</code> function that is available for <em>streams</em>. In <strong>C++</strong> streams are
+the preferred interface to, e.g., disk-files. The standard streams like
+<code>std::cin</code> and <code>std::cout</code> also are stream objects.
+<p>
+Streams intended for writing (`output streams' like <code>cout</code>) offer <code>write</code>
+members having the prototype
+        <pre>
+        write(char const *buffer, int length)
+</pre>
+ To write the value stored within a <code>double</code> variable to a stream in its
+un-interpreted binary form the stream's <code>write</code> member is used. However, as
+a <code>double *</code> and a <code>char *</code> point to variables using different and
+unrelated representations, a <code>static_cast</code> cannot be used. In this case a
+<code>reinterpret_cast</code> is required. To write the raw bytes of a variable
+<code>double value</code> to <code>cout</code> we use:
+        <pre>
+    cout.write(reinterpret_cast&lt;char const *&gt;(&amp;value), sizeof(double));
+</pre>
+<p>
+All casts are potentially dangerous, but the <code>reinterpret_cast</code> is the
+most dangerous of them all. Effectively we tell the compiler: back off, we
+know what we're doing, so stop fuzzing. All bets are off, and we'd better
+<em>do</em> know what we're doing in situations like these. As a case in point
+consider the following code:
+        <pre>
+    int value = 0x12345678;     // assume a 32-bits int
+
+    cout &lt;&lt; "Value's first byte has value: " &lt;&lt; hex &lt;&lt;
+            static_cast&lt;int&gt;(
+                *reinterpret_cast&lt;unsigned char *&gt;(&amp;value)
+                            );
+</pre>
+    The above code produces different results on little and big endian
+computers. Little endian computers show the value 78, big endian
+computers the value 12. Also note that the different representations used by
+little and big endian computers renders the previous example
+(<code>cout.write(...)</code>) non-portable over computers of different architectures.
+<p>
+As a <a name="an265"></a>rule of thumb: if circumstances arise in which casts <em>have</em> to be
+used, clearly document the reasons for their use in your code, making double
+sure that the cast does not eventually cause a program to misbehave. Also:
+avoid <code>reinterpret_casts</code> unless you <em>have</em> to use them.
+<p>
+<a name="l58"></a>
+<h3>3.5.4: The `dynamic_cast'-operator</h3>
+    Finally there is a new style cast that is used in combination with
+polymorphism (see chapter <a href="cplusplus14.html#POLYMORPHISM">14</a>). Its syntax is:
+                    <pre>
+        dynamic_cast&lt;type&gt;(expression)
+</pre>
+ Different from the <code>static_cast</code>, whose actions are completely determined
+<em>compile-time</em>, the <code>dynamic_cast</code>'s actions are determined <em>run-time</em> to
+convert a pointer to an object of some class (e.g., <code>Base</code>) to a pointer to
+an object of another class (e.g., <code>Derived</code>) which is found further down its
+so-called <em>class hierarchy</em> (this is also called <em>downcasting</em>).
+<p>
+At this point in the <em>Annotations</em> a <code>dynamic_cast</code> cannot yet be
+discussed extensively, but we return to this topic in section
+<a href="cplusplus14.html#DYNAMICCAST">14.6.1</a>.
+<p>
+<a name="l59"></a>
+<h3>3.5.5: Casting 'shared_ptr' objects</h3>
+    This section can safely be skipped without loss of continuity.
+<p>
+In the context of the class <code>shared_ptr</code>, which is covered in section
+<a href="cplusplus18.html#SHAREDPTR">18.4</a>, several more new-style casts are availble.  Actual coverage of
+these specialized casts is postponed until section <a href="cplusplus18.html#SHAREDCAST">18.4.5</a>.
+<p>
+These specialized casts are:
+    <ul>
+    <li><code>static_pointer_cast</code>, returning a <code>shared_ptr</code> to the base-class
+section of a derived class object;
+    <li><code>const_pointer_cast</code>, returing a <code>shared_ptr</code> to a non-const object
+from a <code>shared_ptr</code> to a constant object;
+    <li><code>dynamic_pointer_cast</code>, returning a <code>shared_ptr</code> to a derived class
+object from a <code>shared_ptr</code> to a base class object.
+    </ul>
+<p>
+<a name="l60"></a>
+<h2>3.6: Keywords and reserved names in C++</h2>
+<strong>C++</strong>'s  <a name="an266"></a>keywords are a superset of <strong>C</strong>'s  keywords. Here is a
+list of all keywords of the language:
+    
+        <pre>
+alignas  char32_t     enum     namespace        return        typedef  
+alignof  class        explicit new              short         typeid   
+and      compl        export   noexcept         signed        typename 
+and_eq   concept      extern   not              sizeof        union    
+asm      const        false    not_eq           static        unsigned 
+auto     const_cast   float    nullptr          static_assert using    
+axiom    constexpr    for      operator         static_cast   virtual  
+bitand   continue     friend   or               struct        void     
+bitor    decltype     goto     or_eq            switch        volatile 
+bool     default      if       private          template      wchar_t  
+break    delete       import   protected        this          while    
+case     do           inline   public           thread_local  xor      
+catch    double       int      register         throw         xor_eq   
+char     dynamic_cast long     reinterpret_cast true                   
+char16_t else         mutable  requires         try                    
+</pre>
+<p>
+Notes:
+    <ul>
+    <li> The <a name="an267"></a><code>export</code> keyword is no longer actively used by <strong>C++</strong>, but it
+is kept as a keyword, reserved for future use.
+    <li> the <a name="an268"></a><em>operator keywords</em>: <code>and, and_eq,
+bitand, bitor, compl, not, not_eq, or, or_eq, xor</code> and <code>xor_eq</code> are symbolic
+alternatives for, respectively, <code>&amp;&amp;, &amp;=, &amp;, |, ~, !, !=, ||, |=, ^</code> and
+<code>^=</code>.
+    <li> <strong>C++</strong> also recognizes the special identifiers <code>final</code> and
+<code>override</code>. These identifiers are special in the sense that they acquire
+special meanings when declaring classes or polymorphic functions. Section
+<a href="cplusplus14.html#FINAL">14.4</a> provides further details.
+    </ul>
+<p>
+Keywords can only be used for their intended purpose and cannot be used as
+names for other entities (e.g., variables, functions, class-names, etc.). In
+addition to keywords <a name="an269"></a>identifiers starting with an underscore and living in
+the <a name="an270"></a><em>global namespace</em> (i.e., not using any explicit namespace or using the
+mere <code>::</code> namespace specification) or living in the <em>std namespace</em> are
+ <a name="an271"></a>reserved identifiers in the sense that their use is a prerogative of the
+implementor.
+<p>
+
+<hr>
+<ul>
+    <li> <a href="cplusplus.html">Table of Contents</a>
+    <li> <a href="cplusplus02.html">Previous Chapter</a>
+    <li> <a href="cplusplus04.html">Next Chapter</a>
+</ul>
+<hr>
+</body>
+</html>
