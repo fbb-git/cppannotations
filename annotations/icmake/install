@@ -1,80 +1,33 @@
-void reqzip(int compress, string dest, string src)
+void install(string base)
 {
-    list files;
-    int idx;
-    string file;
+    g_installing = 1;
 
-    files = strtok(src, " ");
-    for (idx = sizeof(files); idx--; )
-    {
-        file = element(idx, files);
-        if (compress)
-            run("gzip -9 < " + file + " > " + dest + file + ".gz");
-        else
-            run("cp " + file + " " + dest + file);
-    }
-}
-    
+#ifdef DOC
+    logZip("", "README README.papersize COPYING README.legalese changelog",
+            base + DOC);
+    logZip("tmp/docs/txt", "cplusplus.txt", base + DOC);
 
-#define COMPRESS 1
+    logZip_r("tmp/docs", "html", "cplusplus.html.zip", base + DOC);
+    logZip_r("tmp/docs/latex", "cplusplus*.ps", "cplusplus.ps.zip", 
+                                                        base + DOC);
+    logZip_r("tmp/docs/latex", "cplusplus*.pdf", "cplusplus.pdf.zip", 
+                                                        base + DOC);
+    logZip_r("tmp/docs/latex", "* -x cplusplus*.pdf -x cplusplus*ps", 
+                "cplusplus.latex.zip", base + DOC);
+    #ifdef MAN
+        logZip("tmp/manhtml", "c++-annotations-man.html", base + DOC);
+    #endif
 
-void install(int compress, string root)
-{
-    if (root != "")
-    {
-        md(root);
-        root = chdir(root);
-    }
+    logInstall("contributions", "*.zip", base + DOC "/contrib");
+    logZip("contributions", "GGD.algorithm "
+                "chist.html chist.pdf chist.ps "
+                "java_cpp_keywords.html", base + DOC "/contrib");
+#endif
 
-    chdir(g_cwd);
+#ifdef MAN
+    logZip("tmp/man", "c++-annotations.7", base + MAN "/man7");
+#endif 
 
-    md(root + DOC);
-
-    md(root + MAN + "/man7");
-
-    reqzip(COMPRESS, root + DOC + "/", 
-            "README README.papersize COPYING README.legalese changelog");
-    chdir("tmp/man");
-    reqzip(COMPRESS, root + MAN + "/man7/", "c++-annotations.7");
-    chdir("../../tmp/docs/txt");
-    reqzip(compress, root + DOC + "/", "cplusplus.txt");
-
-    chdir(g_cwd);
-
-    if (compress)
-    {
-        chdir("tmp/docs");
-        run("zip -r " + root + DOC + "/cplusplus.html.zip  html");
-        run("zip " + root + DOC + "/cplusplus.ps.zip    latex/cplusplus*.ps");
-        run("zip " + root + DOC + "/cplusplus.pdf.zip   latex/cplusplus*.pdf");
-        run("zip -r " + root + DOC + "/cplusplus.latex.zip latex/*"
-                                    " -x cplusplus\*.pdf -x cplusplus\*ps");
-    }
-    else
-    {
-        chdir(g_cwd);
-        run("cp -r tmp/docs/html " + root + DOC);
-        run("cp -r tmp/docs/latex " + root + DOC);
-
-        chdir(root + DOC);
-        md("ps pdf");
-
-        run("mv latex/*.ps ps");
-        run("mv latex/*.pdf pdf");
-    }
-
-    chdir(g_cwd);
-
-    md(root + DOC + "/contrib");
-
-    run("cp contributions/*.zip " + root + DOC + "/contrib");
-    chdir("contributions");
-    reqzip(COMPRESS, root + DOC + "/contrib/", "GGD.algorithm");
-    
-    reqzip(compress, root + DOC + "/contrib/", 
-            "chist.html chist.pdf chist.ps java_cpp_keywords.html");
-    
     printf("\n  Installation completed\n");
-
-    exit(0);
+    writeLog();
 }

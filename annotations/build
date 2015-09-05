@@ -1,14 +1,38 @@
 #!/usr/bin/icmake -qt/tmp/cppannotations
 
+#define LOGENV "CPPANNOT"       
+
 #include "INSTALL.im"
 #include "compilers.im"
 
-#define ECHO_COMMANDS       1
+list    g_log;
+string  
+    g_logPath = getenv(LOGENV)[1],
+    g_logMark,          // unique-marker for g_log entries
+    g_cwd = chdir(".");         // current WD, including trailing /
 
-string
-    g_cwd;              // current WD
+int g_echo = ON;
+int g_installing;       // set to 1 by install.
+int g_lognr;            // unique-marker number counter for g_log entries
+
+
+#include "icmake/cuteoln"
+#include "icmake/backtick"
 
 #include "icmake/run"
+#include "icmake/mark"
+#include "icmake/md"
+
+#include "icmake/md5sum"
+#include "icmake/log"
+#include "icmake/logzipr"
+#include "icmake/logzip"
+
+#include "icmake/writelog"
+#include "icmake/findall"
+#include "icmake/loglink"
+#include "icmake/loginstall"
+
 #include "icmake/clean"
 #include "icmake/programs"
 #include "icmake/man"
@@ -22,16 +46,24 @@ string
 #include "icmake/verify"
 #include "icmake/github"
 
+#include "icmake/readlog"
+#include "icmake/remove"
+#include "icmake/removedir"
+#include "icmake/uninstall"
+
 void main(int argc, list argv, list envp)
 {
     string option;
 
-    echo(ECHO_COMMANDS);
+    if (argv[1] == "-q")
+    {
+        g_echo = OFF;
+        argv -= (list)"-q";
+    }
 
-    option = element(1, argv);
-    g_cwd = chdir(".");
+    echo(g_echo);
 
-    setLocations();     // from INSTALL.im
+    option = argv[1];
 
     if (option == "clean")
         clean(1);
@@ -82,19 +114,18 @@ void main(int argc, list argv, list envp)
     if (option == "github")
         github();
 
+    if (option == "uninstall")
+        uninstall();
+
     if (option == "install")
-        install(0, element(2, argv));
+        install(argv[2]);
 
-    if (option == "cinstall")
-        install(1, element(2, argv));
 
-    printf("Usage: build what [x]\n"
-        "Where `what' is one of:\n"
+    printf("Usage: build [-q] what\n"
+        "Where\n"
+        "   [-q]:   run quietly, do not show executed commands\n"
+        "`what' is one of:\n"
         "   clean           - clean up remnants of previous compilations\n"
-        "   cinstall <base> - to install the C++ Annotations in the "
-                                                                "locations\n"
-        "                     defined in the INSTALL.im file, optionally\n"
-        "                     below <base>\n"
         "   distclean       - clean remnants of locally run ./bin/ scripts\n"
         "\n"
         "   docs            - construct the C++ Annotations\n"
@@ -102,10 +133,9 @@ void main(int argc, list argv, list envp)
         "                     once before 'build docs'\n"
         "\n"
         "   examples        - compile all examples\n"
-        "   install <base>  - to install the C++ Annotations in the "
-                                                                "locations\n"
+        "   install [base]  - install the C++ Annotations in the locations\n"
         "                     defined in the INSTALL.im file, optionally\n"
-        "                     below <base>\n"
+        "                     below 'base'\n"
         "   html            - force the html construction\n"
         "   latex           - force the latex construction, (cf 'verify')\n"
         "   man             - build the manual page (requires Yodl)\n"
@@ -117,6 +147,7 @@ void main(int argc, list argv, list envp)
         "                     or undefined references in\n"
         "                     tmp/docs/latex/cplusplus.log\n"
         "   zips            - zip archives (after doc)\n"
+        "   uninstall       - remove installed files and empty directories\n"
         "   github          - prepare github's gh-pages update\n"
         "                     (internal use only)\n"
         "\n"

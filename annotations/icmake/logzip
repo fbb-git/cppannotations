@@ -1,0 +1,38 @@
+// names may be a series of files in src, not a wildcard.
+// if it's empty then all files in src are used.
+// the files are gzipped and logged in dest.
+// src and dest do not have to end in /
+
+void logZip(string src, string names, string dest)
+{
+    list files;
+    int idx;
+    string file;
+
+    chdir(g_cwd);
+
+    dest += "/";
+
+    md(dest);
+
+    if (src != "")
+        chdir(src);
+
+    if (names == "")
+        files = makelist("*");
+    else
+        files = strtok(names, " ");
+
+    for (idx = sizeof(files); idx--; )
+    {
+        file = files[idx];
+        run("gzip -n -9 < " + file + " > " + g_cwd + dest + file + ".gz");
+    }
+
+    chdir(g_cwd + dest);
+    for (idx = sizeof(files); idx--; )
+        log(files[idx] + ".gz");
+}
+
+
+

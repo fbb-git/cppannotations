@@ -1,0 +1,26 @@
+// assuming we're in g_cwd, all entries of type 'type' matching source/pattern
+// are returned w/o final \n
+
+list findAll(string type, string source, string pattern)
+{
+    string cmd;
+    list entries;
+    list ret;
+    int idx;
+
+    chdir(source);
+
+    cmd = "find ./ -mindepth 1 -maxdepth 1 -type " + type;
+
+    if (pattern != "")
+        pattern = "-name '" + pattern + "'";
+
+    entries = backtick(cmd + " " + pattern + " -printf \"%f\\n\"");
+
+    for (idx = sizeof(entries); idx--; )
+        ret += (list)cutEoln(entries[idx]);
+
+    chdir(g_cwd);
+
+    return ret;
+}

@@ -1,0 +1,42 @@
+// md: target should be a series of blank-delimited directories to be created
+//     If an element is a whildcard, the directory will always be created,
+//     using mkdir -p.
+//
+//     uses: run()
+
+// if the target directory does not exist it is created and its realpath is
+// logged.
+
+string g_lastLogged;
+
+void md(string target)
+{
+    int idx;
+    list paths;
+    string dir;
+
+    if (!exists(target))
+        run("mkdir -p " + target);
+    else if (((int)stat(target)[0] & S_IFDIR) == 0)
+    {
+        printf(target + " exists, but is not a directory\n");
+        exit(1);
+    }
+
+
+    if (g_installing)
+    {
+        target = cutEoln(backtick("realpath " + target)[0]);
+        if (target != g_lastLogged)
+        {
+            g_lastLogged = target;
+            mark();
+            g_log += (list)(g_logMark + " dir " + target);
+        }
+    }
+}
+
+
+
+
+
