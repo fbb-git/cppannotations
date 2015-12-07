@@ -1,0 +1,37 @@
+Consider classes derived from tt(std::istream) or tt(std::ostream). Such a
+class could be designed as follows:
+        verb(
+    class XIstream: public std::istream
+    {
+        public:
+            ...
+    };
+        )
+    Assuming that the tt(streambuf) to which tt(XIstream) interfaces is not
+yet available construction time, tt(XIstream) only offers default
+constructors. The class could, however, offer a member tt(void
+switchStream(std::streambuf *sb)) to provide tt(XIstream) objects with a
+tt(streambuf) to interface to. How to implement tt(switchStream)? We could
+simply call tt(rdbuf), passing it the pointer to the new streambuf may work,
+but the problem is that there may be an existing streambuf, which may have
+buffered some information that we don't want to lose.
+
+    Instead of using tt(rdbuf) the protected member tt(void) hi(init)
+tt(init(std::streambuf *sb)) should be used for switching to another streambuf
+in an existing stream.
+
+The tt(init) member expects a pointer to a streambuf which should be
+associated with the tt(istream) or tt(ostream) object. The tt(init) member
+properly ends any existing association before switching to the tt(streambuf)
+whose address is provided to tt(init).
+
+Assuming that the tt(streambuf) to which tt(switchStream)'s tt(sb) points
+persists, then tt(switchStream) could simply be implemented like this:
+        verb(
+    void switchStream(streambuf *sb)
+    {
+        init(sb);
+    }
+        )
+    No further actions are required. The tt(init) member ends the current
+association, and only then switches to using  tt(streambuf *sb).

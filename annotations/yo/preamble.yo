@@ -26,6 +26,8 @@ SUBST(AFFILIATION)(\
 setlatexfigureext(.eps)
 sethtmlfigureext(.gif)  COMMENT(While converting figures to .jpg)
 
+htmlstylesheet(cplusplus.css)
+
 IFDEF(latex)
 (\
         redef(XXsetlatexdocumentheader)(3)(\
@@ -257,3 +259,77 @@ IFDEF(html)(\
         +NOTRANS(</h5><br>)\
     )
 )()
+
+redef(XXsethtmldocumentheader)(3)(\
+    XXifnzero(XXhtmlfive)(NOTRANS(<!DOCTYPE html>))\
+    NOTRANS(<html><head>)XXnl()\
+    XXifnempty(XXhtmlmetacharset)
+    (\
+        NOTRANS(<meta charset=")\
+            SYMBOLVALUE(XXhtmlmetacharset)NOTRANS(">)XXnl()\
+        INTERNALINDEX(preset metacharset SYMBOLVALUE(XXhtmlmetacharset))\
+    )\
+    XXifnempty(ARG1)
+    (\
+        TYPEOUT(Document title: ARG1)\
+        NOTRANS(<title>)ARG1+NOTRANS(</title>)XXnl()\
+        INTERNALINDEX(preset title ARG1)\
+    )\
+    XXifnempty(XXheadopt)(\
+        SYMBOLVALUE(XXheadopt)\
+        INTERNALINDEX(preset headopt SYMBOLVALUE(XXheadopt))\
+    )\
+    XXifnzero(XXhtmlimgstyle)(\
+        htmlstyle(figure)(text-align: center)\
+        htmlstyle(img)(vertical-align: center)\
+    )
+    XXifnempty(XXhtmlstyleopt)(\
+        NOTRANS(<style type="text/css">)XXnl()\
+            EVAL(SYMBOLVALUE(XXhtmlstyleopt))\
+            NOTRANS(</style>)XXnl()\
+    )\
+    IFSTREQUAL(XXmailto)()(\
+        WARNING(no NOTRANS(mailto(..)) set, document will be without!)\
+    )(\
+        NOTRANS(<link rev="made" href="mailto:)\
+            SYMBOLVALUE(XXmailto)\
+            NOTRANS(">)XXnl()\
+    )\
+    XXifnempty(XXheadfile)(\
+        INTERNALINDEX(preset headfile SYMBOLVALUE(XXheadfile))\
+        EVAL(NOTRANS(includeverbatim+CHAR(40))\
+                SYMBOLVALUE(XXheadfile)CHAR(41))\
+    )
+    NOTRANS(</head>)\
+    XXnl()\
+    NOTRANS(<body)\
+    XXifnempty(XXbodyopt)(\
+        SYMBOLVALUE(XXbodyopt)\
+        INTERNALINDEX(set bodytagopt SYMBOLVALUE(XXbodyopt))\
+    )\
+    NOTRANS(>)\
+    XXnl()\
+    NOTRANS(<hr>)\
+    XXnl()\
+    NOTRANS(<h1 id="title">)ARG1+NOTRANS(</h1>)\
+    XXnl()\
+    XXifnempty(ARG2)
+    (\
+        NOTRANS(<h2 id="author">)ARG2+NOTRANS(</h2>)\
+        XXnl()\
+    )\
+    XXifnempty(XXaffilstring)
+    (\
+        XXnl()\
+        NOTRANS(<h2 id="affiliation">)SYMBOLVALUE(XXaffilstring)NOTRANS(</h2>)\
+    )\
+    XXifnempty(ARG3)
+    (\
+        NOTRANS(<h2 id="date">)ARG3+NOTRANS(</h2>)\
+        XXnl()\
+    )\
+    XXabstract()\
+    XXnl()\
+    XXsettitleclearpage()\
+    XXtableofcontents()\
+)
