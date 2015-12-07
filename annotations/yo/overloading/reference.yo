@@ -1,0 +1,122 @@
+In the previous section we saw that plain binary operators (like
+tt(operator+)) can be implemented very efficiently if the left-hand side
+operand is an anonymous temporary object, for which an rvalue-reference
+parameter is used. Moreover, by specifying an rvalue reference return type we
+can allow the compiler to use return value optimization for the returned
+temporary. 
+
+    But in cases where the tt(lhs) operand is a temporary 
+the tt(rhs) operand can directly be added to the tt(lhs)
+operand, and we don't need the additional temporary value, created by
+tt(operator+=) anymore. 
+
+Our implementation of tt(operator+=) thus far looks like this:
+    verb(
+    Binary &operator+=(Binary const &rhs)
+    {
+        Binary tmp(*this);
+        tmp.add(rhs);
+        swap(tmp);
+        return *this;
+    }
+        )
+    However, when implementing tt(operator+) we either already have a
+temporary object (when using tt(operator+(Binary &&lhs, ...)), or just created
+a temporary object (when using tt(operator+(Binary const &lhs, ...)). In our
+current implementation lots of additional temporaries are being constructed,
+each of them requiring a copy construction. E.g, in an expression like 
+        verb(
+    Binary{} + varB + varC + varD
+        )
+    a temporary is constructed when computing tt(Binary{} + varB), then
+another one for tt(Binary{} + varC), and yet one more for tt(Binary{} +
+varD). In addition, each addition also performs a swap, even though we already
+have a temporary (i.e., tt(Binary{}) in our hands. 
+
+    How to tell the compiler that we don't need these temporaries?
+
+    For that we need a way to inform the compiler that tt(operator+=)
+is either called by a standard lvalue left-hand side operand, or by an rvalue
+reference (i.e., temporary object). This can be realized using 
+    em(reference bindings)hi(reference binding) a.k.a.  
+    em(reference qualifiers)hi(reference qualifier). Reference bindings, which
+may be used by all member functions, not just by overloaded operators, consist
+of a reference token (tt(&)) or an rvalue reference token (tt(&&)) which is
+affixed immediately to the function's head (this applies to the declaration
+and the implementation alike). Functions provided with rvalue reference
+bindings are used when called by anonymous temporary objects (i.e., rvalues),
+whereas functions provided with lvalue reference bindings are used when called
+by other types of objects. Where appropriate the tt(const) qualifier can be
+applied in addition (although it wouldn't make much sense in combination with
+rvalue reference bindings, since rvalue references don't refer to tt(const)
+objects).
+
+    Now we're in a position to fine-tune our implementations of
+tt(operator+()). First we make a distinction between tt(operator+=) when
+called from a temporary and tt(operator+=) when
+called from another object. In the latter case we need a temporary, to which
+tt(rhs) is added:
+        verb(
+    Binary &operator+=(Binary const &rhs) &&
+    {
+        // directly add rhs to *this, 
+        return *this;
+    }
+    Binary &operator+=(Binary const &rhs) &
+    {
+        Binary tmp(*this);
+        std::move(tmp) += rhs;  // directly add rhs to tmp
+        swap(tmp);
+        return *this;
+    }
+        )
+
+    Next we look at the two implementations of tt(operator+). When using
+tt(Binary &&lhs) we can directly call tt(operator++() &&), otherwise we first
+create a temporary, and then call tt(operator+=() &&) from the temporary. 
+        verb(
+    Binary &&operator+(Binary &&lhs, Binary const &rhs)
+    {
+        return move(move(lhs) += rhs);
+    }
+    
+    Binary &&operator+(Binary const &lhs, Binary const &rhs)
+    {
+        Binary tmp(lhs);
+        return move(tmp) + rhs;
+    }
+        )
+    So, why do we still need tt(operator+=() &)? Well, only in situations
+where we want to add something to an existing tt(Binary) object.
+
+And this is what we call when using the above implementations for the
+expression tt(b1 + b2 + b3)
+        verb(
+    Copy constructor    = tmp(b1) 
+    Move +=             = tmp += b2
+    Move +=             = tmp += b3
+        )
+    It's even faster when the first operand already is a temporary (e.g.,
+tt(Binary{} + b2 + b3):
+        verb(
+    Move +=             = Binary{} += b2
+    Move +=             = Binary{} += b3
+        )
+    It might be illustrative to compare these actions to the ones shown in the
+previous section, using traditional implementations.
+
+    Summarizing:
+    itemization(
+    it() Reference bindings are used to inform the compiler for what type of
+references functions should be called;
+    it() Binary operators can capitalize on these functions to minimize the
+number of copy constructions that have to be performed;
+    it() By specifying rvalue references as return types of functions
+returning temporaries the compiler can apply additional return value
+optimizations. 
+    )
+
+
+
+
+

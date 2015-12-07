@@ -93,13 +93,13 @@ one of the arguments, e.g., tt(a + B(a)) allows the compiler to resolve
 the ambiguity to the first overloaded tt(+) operator.
     )
 
-    The next step is to implement the corresponding overloaded binary
-assignment operator, having the form tt(@=), with tt(@) being a binary
+    The next step is to implement the corresponding overloaded binary compound
+assignment operators, having the form tt(@=), where tt(@) represents a binary
 operator. As this operator em(always) has a left-hand operand which is an
 object of its own class, it is implemented as a true member
 function. Furthermore, the compound assignment operator should return a
-reference to the object to which the binary operation applies, as the
-object might be modified in the same statement. E.g.,
+reference to the object to which the binary operation applies, as the object
+might be modified in the same statement. E.g.,
     tt((s2 += s3) + " postfix"). Here is our second revision of the class
 tt(Binary), showing both the declaration of the plain binary operator and the
 corresponding compound assignment operator:
@@ -119,40 +119,86 @@ might throw. Example:
     }
         )
 
-    It's easy to implement the plain binary operator for classes offering
-the matching compound assignment operator: the tt(lhs) argument is
-copied into a tt(Binary tmp) to which the tt(rhs) operand is added. Then
-tt(tmp) is returned. The copy construction and two statements could be
-contracted into one single return statement, but then compilers usually aren't
-able to apply copy elision in this case. But
-copy elision em(is) usually used when the steps are taken separately:
+    It's easy to implement the plain binary operator for classes offering the
+matching compound assignment operator: the tt(lhs) argument is copied into a
+tt(Binary tmp) to which the tt(rhs) operand is added. Then tt(tmp) is
+returned. The copy construction and two statements could be contracted into
+one single return statement, but then compilers usually aren't able to apply
+copy elision in this case. But copy elision em(is) usually used when the steps
+are taken separately:
         verbinclude(-a examples/binary3.h)
 
     But wait! Remember the design principle for move-aware classes that was
 given in section ref(MOVEPRINCIPLE)? When implementing binary operators we're
-doing exactly that what was mentioned in that design principle. A temporay
+doing exactly what was mentioned in that design principle. A temporay
 object is constructed and the compound assignment operation is applied to the
-temporary object.
+temporary object. In the next section we'll have a look at how we can use this
+design principle to our advantage.
 
-    If the class tt(Binary) is a move-aware class then we can add a move-aware
-binary operator to our class at very little cost. The actual work is performed
-by the compound addition assignment operator, as described. However, this
-operator is called from the move-aware binary operator having prototype
+    If the class tt(Binary) is a move-aware class then we can add move-aware
+binary operators to our class. The actual work, as mentioned, is performed by
+the compound addition assignment operator. Applying the format of the
+traditional binary operator (receiving two const references) to the move-aware
+addition operator we get the following signature:
         verb(
-    Binary operator+(Binary &&ltmp, Binary const &rhs);
+    Binary operator+(Binary &&lhs, Binary const &rhs);
         )
-    The traditional binary operator's implementation now simply consists of
-two steps:
-        itemization(
-        it() A copy of the left-hand side operand is made using the class's
-copy constructor;
-        it() The move-aware binary operator is called, passing it the
-anonymized copy as its left-hand side operand and returning its result as the
-binary operator's result.
+    To implement this, we realize that we already have a temporary object, so
+we can return tt(lhs) after having added tt(rhs) to it. Since tt(lhs) already
+is a temporary, we can avoid a copy construction by wrapping the compund
+addition in a tt(std::move) call:
+        verb(
+    Binary operator+(Binary &&lhs, Binary const &rhs)
+    {
+        return std::move(lhs += rhs);
+    }
         )
+    When executing an expression like (all tt(Binary) objects) tt(b1 + b2 +
+b3) the following functions are called:
+        verb(
+    copy operator+          = b1 + b2 
+    Copy constructor        = tmp(b1) 
+    Copy +=                 = tmp += b2 
+    Copy constructor        = tmp2(tmp) 
+    += operation            = tmp2.add(b3), swap(tmp2) 
+    
+    move operator+          = tmp + b3 
+    Copy +=                 = tmp += b3 
+    Copy constructor        = tmp2(tmp) 
+    += operation            = tmp2.add(b3), swap(tmp2) 
+    
+    Move constructor        = return std::move(tmp) 
+        )
+    There's at least some gain: if the tt(std::move) wrap is omitted, then the
+copy constructor is called.
 
-    Here is the declaration and implementation of the traditional and
-move-aware compound addition assignment operator of the class tt(Binary) for
-tt(operator+):
+    But since we already have a temporary object, wouldn't it be nice if we
+could lure the compiler into using return value optimization? We can, by
+telling the compiler that tt(operator+'s) return value em(is) a temporary. We
+do that by explicitly stating that its return value is an rvalue reference:
+        verb(
+    Binary &&operator+(Binary &&lhs, Binary const &rhs)
+    {
+        return std::move(lhs += rhs);
+    }
+        )
+    And, realizing that our `traditional' binary operator also returns a
+temporary, we do the same for that operator:
+        verb(
+    Binary &&operator+(Binary const &lhs, Binary const &rhs)
+    {
+        Binary tmp(lhs);
+        return std::move(tmp += rhs);
+    }
+        )
+    Now the compiler applies return value optimization, and returns the
+temporaries, rather than constructing new objects, and the final call of the
+move constructor disappears.
 
-        verbinclude(-a examples/binary4.h)
+    But we're not there yet: in the next section we'll encounter possibilities
+for some additional and interesting  optimizations.
+
+
+
+
+
