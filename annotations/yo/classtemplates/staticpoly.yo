@@ -2,17 +2,21 @@ Chapter ref(POLYMORPHISM) introduced polymorphism. Polymorphism allows us to
 use a base class's interface to call implementations which are defined in
 derived classes. Traditionally this involves defining em(Vtables) for
 polymorphic classes, containing pointers to functions that can be overridden
-in derived classes.  Objects of polymorphic classes feature hidden pointers,
+in derived classes.  Objects of polymorphic classes harbor hidden pointers,
 pointing to their class's Vtables. This type of polymorphism is called
-emi(dynamic polymorphism), involving emi(late binding) as the function to call
-is determined run-time, rather than compile-time.
+emi(dynamic polymorphism), and it uses emi(late binding) as the function to
+call is determined run-time, rather than compile-time.
 
-In many programs, however, using dynamic polymorphism isn't really
-required. Usually the derived class objects that are passed to functions
-expecting base class references are invariants: at fixed locations in programs
-fixed class types are used to create objects. The polymorphic nature of these
-objects is used inside the functions that receive these objects, expecting
-references to their base classes.
+In many cases, however, dynamic polymorphism isn't really required. Usually
+the derived class objects that are passed to functions expecting base class
+references are invariants: at fixed locations in programs fixed class types
+are used to create objects. The polymorphic nature of these objects is used
+inside the functions that receive these objects, expecting references to their
+base classes. As an example consider reading information from a network
+socket. A class tt(SocketBuffer) is derived from tt(std::streambuf), and the
+tt(std::stream) receiving a pointer to the tt(SocketBuffer) merely uses
+tt(std::streambuf's) interface. However, the implementation, by using
+polymorphism, in fact communicates with functions defined in tt(SocketBuffer).
 
 The disadvantages of this scheme are that, firstly, inside the functions
 expecting references to polymorphic base classes execution is somewhat slowed
@@ -34,13 +38,13 @@ the abovementioned invariant holds. Static polymorphism, also called the
 additional examples of template meta programming).
 
 Whereas dynamic polymorphism is based on the concepts of em(vpointers,
-Vtables), and function overriding, static polymorphism capitalizes on the fact
-that function templates (c.q., member templates) are only compiled into
-executable code when they are actually called. This allows us to write code
-calling functions which are completely non-existent when we write our
-code. This phenomenon shouldn't worry us too much. After all, we use a
-comparable approach when calling a purely virtual function of an abstract base
-class. The function is really called, but which function will actually be
+Vtables), and em(function overriding), static polymorphism capitalizes on the
+fact that function templates (c.q., member templates) are only compiled into
+executable code when they are actually called. This allows us to write code in
+which functions are called which are completely non-existent at the time we
+write our code. This, however, shouldn't worry us too much. After all, we use
+a comparable approach when calling a purely virtual function of an abstract
+base class. The function is really called, but which function is eventually
 called is determined later in time. With dynamic polymorphism it is determined
 run-time, with static polymorphism it is determined compile-time.
 
@@ -52,8 +56,8 @@ This section contains several subsections.
     itemization(
     it() First, the syntax used with static polymorphism is introduced and
         illustrated;
-    it() Next, it is shown how  classes using dynamic polymorphism can be
-        converted into classes that use static polymorphism;
+    it() Next, it is shown how  classes that use dynamic polymorphism can be
+        converted to classes that use static polymorphism;
     it() Finally it is illustrated how static polymorphism can be used to
         reduce implementation effort. Static polymorphism allows us to
         implement only once what would have to be implemented repeatedly when

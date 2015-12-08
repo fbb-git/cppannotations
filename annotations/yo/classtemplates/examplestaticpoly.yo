@@ -1,19 +1,19 @@
 With static polymorphism a class template takes the role of a base class in
 dynamic polymorphism. This class template declares several members, which are
-comparable to the members of a polymorphic base class: they are either support
-members or they are interfacing to members overridden in derived classes.
+comparable to members of a polymorphic base class: they are either support
+members or they call members that are overridden in derived classes.
 
-With dynamic polymorphism these overriding members are the base class's
-virtual members. With static polymorphism there are no virtual
-members. Instead, the statically polymorphic base class (referred to as the
-`base class' below) declares a template type parameter (referred to as the
-`derived class type' below). Next, the base class's interfacing members call
-members of the derived class type.
+In the context of dynamic polymorphism these overridable members are the base
+class's virtual members. In the context of static polymorphism there are no
+virtual members. Instead, the statically polymorphic base class (referred to
+as the `base class' below) declares a em(template type parameter) (referred to
+as the `derived class type' below). Next, the base class's interfacing members
+call members of the derived class type.
 
-Here is an example of a simple class template which will be used as a base
-class. Its public interface consists of one member, and, different from
-dynamic polymorphism, there's no reference in the class's interface to any
-members showing polymorphic behavior:
+Here is a simple example: a class template acting as a base class. Its public
+interface consists of one member. But different from dynamic polymorphism
+there's no reference in the class's interface to any member showing
+polymorphic behavior (i.e, no `virtual' members are declared):
         verb(
     template <class Derived>
     struct Base
@@ -23,21 +23,24 @@ members showing polymorphic behavior:
         )
 
 Let's have a closer look at the member `tt(interface)'. This member is called
-by functions receiving a reference or pointer to the base class, and it calls
-members that must be available in the derived class type. Before we can call
-members of the derived class type an object of the derived class type must be
-available. This object is obtained through inheritance. The derived class type
-is going to be derived from the base class. Thus tt(Base's this) pointer is
-also tt(Derived's this) pointer.
+by functions receiving a reference or pointer to the base class, but it may
+call members that must be available in the derived class type at the point
+where tt(interface) is called. Before we can call members of the derived class
+type an object of the derived class type must be available. This object is
+obtained through inheritance. The derived class type is going to be derived
+from the base class. Thus tt(Base's this) pointer is also tt(Derived's this)
+pointer.
 
-When we have a tt(class Derived: public Base) then a tt(static_cast<Derived
-*>) can be used to cast a tt(Base *) that is actually pointing to a
-tt(Derived) object. A tt(dynamic_cast) of course doesn't apply, as we don't
-use dynamic polymorphism. A tt(static_cast) is appropriate since our
-tt(Base *) does in fact point to a tt(Derived) class object.
+Forget about polymorphism for a second: when we have a tt(class Derived:
+public Base) then (because of inheritance) a tt(static_cast<Derived *>) can be
+used to cast a tt(Base *) to a tt(Derived) object. A tt(dynamic_cast) of
+course doesn't apply, as we don't use dynamic polymorphism. But a
+tt(static_cast) is appropriate since our tt(Base *) em(does) in fact point to
+a tt(Derived) class object.
 
-Consequently, to call a tt(Derived) class member from within tt(interface) we
-can use the following implementation:
+So, to call a tt(Derived) class member from inside tt(interface) we
+can use the following implementation (remember that tt(Base) is a base class
+of tt(Derived):
         verb(
     template<class Derived>
     void Base<Derived>::interface()
@@ -45,19 +48,24 @@ can use the following implementation:
         static_cast<Derived *>(this)->polymorphic();
     }
         )
-    Interestingly, when the compiler is given this implementation it cannot
-determine whether tt(Derived) is actually derived from tt(Base). Neither can
-it determine whether the class tt(Derived) indeed offers a member
-tt(polymorphic). The compiler simply em(assumes) this to be true, in which
-case the provided implementation is syntactically correct. One of the core
-characteristics of using templates is that the implementation's viability is
-eventually determined at the function's point of instantiation (cf. section
-ref(TEMPFUNINST)).
+    It's remarkable that, when the compiler is given this implementation it
+cannot determine whether tt(Derived) is em(really) derived from
+tt(Base). Neither can it determine whether the class tt(Derived) indeed offers
+a member tt(polymorphic). The compiler simply em(assumes) this to be true. If
+so, then the provided implementation is syntactically correct. One of the
+key characteristics of using templates is that the implementation's viability
+is eventually determined at the function's point of instantiation (cf. section
+ref(TEMPFUNINST)). At that point the compiler will verify that, e.g., the
+function tt(polymorphic) really is available.
 
-    Consequently, in order to use the above scheme we must ensure that derived
-class types are actually derived from the base class and that the derived
-class types actually define a member `tt(polymorphic)'. The first requirement
-is satisfied using the emi(curiously recurring template pattern):
+    Thus, in order to use the above scheme we must ensure that 
+        itemization(
+        it() derived class type is actually derived from the base class and
+        it() that the derived class type defines a member
+            `tt(polymorphic)'. 
+        )
+    The first requirement is satisfied by using the 
+        emi(curiously recurring template pattern):
         verb(
     class First: public Base<First>
         )
@@ -66,11 +74,11 @@ which itself is instantiated for tt(First). This is acceptable, as the
 compiler already has determined that the type tt(First) exists. At this point
 that is all it needs.
 
-    The second requirement is satisfied by providing an implementation of the
-member tt(polymorphic). In chapter ref(POLYMORPHISM) we saw that virtual and
-overriding members belong to the class's private interface. Applying the same
-philosophy here, we put tt(polymorphic) in tt(First's) private interface,
-allowing its access by the base class by declaring 
+    The second requirement is simply satisfied by defining the member
+tt(polymorphic). In chapter ref(POLYMORPHISM) we saw that virtual and
+overriding members belong to the class's private interface. We can apply the
+same philosophy here, by placing tt(polymorphic) in tt(First's) private
+interface, allowing it to be accessed from the base class by declaring
         verb(
     friend void Base<First>::interface();
         )
@@ -87,7 +95,7 @@ tt(polymorphic's) implementation:
     };
     void First::polymorphic()
     {
-        std::cout << "polymorphic from First" << std::endl;
+        std::cout << "polymorphic from First\n";
     }
         )
     Note that the class tt(First) itself is not a class template: its members
@@ -102,7 +110,7 @@ could be implemented like this:
         verb(
     void Second::polymorphic()
     {
-        std::cout << "polymorphic from Second" << std::endl;
+        std::cout << "polymorphic from Second\n";
     }
         )
 
