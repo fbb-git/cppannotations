@@ -126,12 +126,14 @@ definition of the following function template:
     }
         )
     
-    Only at the point where this function is actually called will the compiler
-verify the viability of the generated code. In the following tt(main) function
-a tt(First) object is passed to tt(fun): tt(First) declares tt(interface)
+    Only where this function is actually called will the compiler verify the
+viability of the generated code. In the following tt(main) function a
+tt(First) object is passed to tt(fun): tt(First) declares tt(interface)
 through its base class, and tt(First::polymorphic) is called by
-tt(interface). Then a tt(Second) object is passed to tt(fun), and
-analogously tt(Second::polymorphic) is called:
+tt(interface). The compiler will at this point (i.e., where tt(fun) is called)
+check whether tt(first) indeed has a member tt(polymorphic). Next a tt(Second)
+object is passed to tt(fun), and here again the compiler checks whether
+tt(Second) has a member tt(Second::polymorphic):
         verb(
     int main()
     {
@@ -145,22 +147,24 @@ analogously tt(Second::polymorphic) is called:
 
     There are also downsides to 
         hi(static polymorphism: downsides) 
-    using static polymorphism. First, the sentence `a tt(Second) object is
-passed to tt(fun)' isn't really correct, since tt(fun) in tt(fun(first)) and
-tt(fun(second)) are different functions, not just calls of one function with
-different arguments. With static polymorphism every instantiation using its
-own template parameters results in completely new code once the template
+    using static polymorphism:
+        itemization(
+        it() First, the sentence `a tt(Second) object is passed to tt(fun)'
+isn't really correct, since tt(fun) is a function template the functions
+tt(fun) which are called in tt(fun(first)) and tt(fun(second)) are
+em(different) functions, not just calls of one function with different
+arguments. With static polymorphism every instantiation using its own template
+parameters results in completely new code which is generated when the template
 (e.g., tt(fun)) is instantiated. This is something to consider when creating
-statically polymorphic base classes. If the base class defines data members and
-member functions, and if these additional members are used by derived class
-types, then each member will have its own instantiation for each derived class
-type. This also represents i(code bloat), albeit of a different kind than
+statically polymorphic base classes. If the base class defines data members
+and member functions, and if these additional members are used by derived
+class types, then each member has its own instantiation for each derived class
+type. This also results in i(code bloat), albeit of a different kind than
 obeserved with dynamic polymorphism. This kind of code bloat can often be
-somewhat reduced by deriving the base class from its own (ordinary) base
-class, encapsulating all elements of the statically polymorphic base class that do
-not depend on its template type parameter.
-
-    Second, if different types of statically polymorphic objects are
+somewhat reduced by deriving the base class from its own (ordinary,
+non-template) base class, encapsulating all elements of the statically
+polymorphic base class that do not depend on its template type parameters.
+        it() Second, if different types of statically polymorphic objects are
 dynamically created then the types of the returned pointers are all different,
 as are the types of the pointers to their statically polymorphic base
 classes. These latter pointers are different because they are pointers to
