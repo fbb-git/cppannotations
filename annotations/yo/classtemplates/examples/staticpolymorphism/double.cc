@@ -6,11 +6,11 @@ template <class Derived>
 class Vehicle
 {
     public:
-        void mass() 
+        void mass()
         {
             static_cast<Derived *>(this)->vmass();
         }
-    
+
     // no need to implement vmass here, as it should be implemented
     // by derived classes.
 };
@@ -20,7 +20,7 @@ class Car: public Vehicle<Car>
     friend void Vehicle<Car>::mass();
 
     private:
-        void vmass() 
+        void vmass()
         {
             cout << "Car's vmass called\n";
         }
@@ -29,7 +29,7 @@ class Car: public Vehicle<Car>
 class Truck: public Car
 {
     private:
-        void vmass() 
+        void vmass()
         {
             cout << "Car's vmass called\n";
         }

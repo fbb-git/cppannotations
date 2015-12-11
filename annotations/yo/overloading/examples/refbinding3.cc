@@ -52,9 +52,3 @@ int main()
     cout << "========\n";
     Binary{} + Binary{} + Binary{};
 }
-
-
-
-
-
-

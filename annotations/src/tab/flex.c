@@ -1,3 +1,5 @@
+#define YY_NO_INPUT
+
 #line 2 "flex.c"
 
 #line 4 "flex.c"

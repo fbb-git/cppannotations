@@ -6,7 +6,7 @@ class VehicleBase
 {
     // original Vehicle members, not implementing the
     // redefinable interface, but used as a implementable rather than
-    // instantiatable part of the corresponding class template. 
+    // instantiatable part of the corresponding class template.
     // That's why it declares its corresponding class template a friend.
 
     template <class Derived>
@@ -29,7 +29,7 @@ class Vehicle: public VehicleBase
 class CarBase: public VehicleBase
 {
     // original Car members, not implementing the
-    // redefinable interface 
+    // redefinable interface
 
     int x = 1000;
     friend class Car;
@@ -48,7 +48,7 @@ class Car: public CarBase, public Vehicle<Car>
 class TruckBase: public CarBase
 {
     // original Truck members, not implementing the
-    // redefinable interface 
+    // redefinable interface
 
     friend class Truck;
 };

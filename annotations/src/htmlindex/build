@@ -34,9 +34,6 @@ string
     sources,                            // sources to be used
     wild,                               // wildcard of extension
     current;                            // contains name of current dir.
-/*
-                                O B J F I L E S . I M
-*/
 
 list objfiles(list files)
 {
@@ -46,7 +43,7 @@ list objfiles(list files)
     int
         i;
 
-    for (i = 0; i < sizeof(files); i++)
+    for (i = 0; i < listlen(files); i++)
     {
         file = element(i, files);           // determine element of the list
 
@@ -60,64 +57,6 @@ list objfiles(list files)
     }
     return (files);
 }
-/*
-                                 parser.im
-*/             
-
-void parser()
-{
-    chdir("parser/gramspec");
-    system("grambuild");
-    chdir("..");
-
-    if 
-    (
-        exists("grammar")
-        &&
-        "grammar" younger "parser.cc"
-    )                                   // new parser needed
-    {
-        exec("bisonc++", "-d", "-o", "parser.cc", "grammar");
-        printf("Note: the compilation of parser.cc may produce "
-               "several compiler warnings.\n");
-    }
-        
-    chdir("..");
-}
-/*
-                                 scanner.im
-*/             
-
-void scanner()
-{
-    chdir("scanner");
-    
-    if 
-    (                                           // new lexer needed
-        exists("lexer")
-        &&
-        (
-            "lexer" younger "yylex.cc"
-            ||
-            "../parser/parser.h" younger "yylex.cc" 
-        )
-    )
-    {
-        exec("flex++",
-#ifdef INTERACTIVE
-                    "-I", 
-#endif
-                    "-oyylex.cc", "lexer");
-                    
-        printf("Note: the compilation of yylex.cc may produce "
-               "several compiler warnings.\n");
-    }
-                    
-    chdir("..");
-}
-/*
-                                A L T E R E D . I M
-*/
 
 list altered(list files, string target)
 {
@@ -126,7 +65,7 @@ list altered(list files, string target)
     string
         file;
 
-    for (i = 0; i < sizeof(files); i++)     // try all elements of the list
+    for (i = 0; i < listlen(files); i++)     // try all elements of the list
     {
         file = element(i, files);           // use element i of the list
             
@@ -138,9 +77,6 @@ list altered(list files, string target)
     }
     return (files);                         // return the new list
 }
-/*
-                            F I L E L I S T . I M
-*/
 
 list file_list(string type, string library)
 {
@@ -153,9 +89,6 @@ list file_list(string type, string library)
 
     return (files);
 }
-/*
-                        L I N K . I M
-*/
 
 void link(string library, string exe)
 {
@@ -165,10 +98,6 @@ void link(string library, string exe)
     );
 }
 
-/*
-                            C C O M P I L E . I M
-*/
-
 void c_compile(list cfiles)
 {
     string nextfile;
@@ -177,7 +106,7 @@ void c_compile(list cfiles)
     if (!exists("o"))
         system("mkdir o");
                                                       
-    if (sizeof(cfiles))                 // files to compile ?
+    if (listlen(cfiles))                 // files to compile ?
     {
         printf(current, "\n");
         
@@ -190,9 +119,6 @@ void c_compile(list cfiles)
         }
     }
 }
-/*
-                            U P D A T E L I . I M
-*/
 
 void updatelib(string library)
 {
@@ -205,7 +131,7 @@ void updatelib(string library)
 
     objlist = makelist("*.o");
 
-    if (!sizeof(objlist))
+    if (!listlen(objlist))
         return;
 
     printf("\n");
@@ -230,9 +156,6 @@ void prefix_class(string class_id)
     for (i = 0; o_file = element(i, o_files); i++)
         exec("mv", o_file, class_id + o_file);
 }
-/*
-                                S T D C P P . I M
-*/
 
 void std_cpp(string library)
 {
@@ -244,25 +167,6 @@ void std_cpp(string library)
     c_compile(cfiles);                      // compile cpp-files
 }
 
-/*
-                                C P P M A K E . C
-
-    CPP files are processed by stdmake.
-
-    Arguments of CPPMAKE:
-
-    cpp_make(
-        string mainfile,    : name of the main .cpp file, or "" for library
-                              maintenance
-        string library,     : name of the local library to use/create
-                                (without lib prefix, .a suffix
-                                 if main is given here, libmain.a is created)
-        string exe,         : (path) name of the exe file to create
-        )
-
-    Both mainfile and library MUST be in the current directory
-*/
-
 void cpp_make(string mainfile, string library, string exe)
 {
     int
@@ -273,18 +177,6 @@ void cpp_make(string mainfile, string library, string exe)
     string
         cwd;
 
-#ifdef BISON++
-    CLASSES += "parser ";
-    if (exists("parser"))                  // subdir parser exists
-        parser(); 
-#endif
-
-#ifdef FLEX++
-    CLASSES += "scanner ";
-    if (exists("scanner"))                  // subdir scannerexists
-        scanner(); 
-#endif
-    
     setClasses();                           // remaining classes
 
     cwd = chdir(".");
@@ -293,7 +185,7 @@ void cpp_make(string mainfile, string library, string exe)
 
     classes = strtok(CLASSES, " ");         // list of classes
 
-    if (n = sizeof(classes))
+    if (n = listlen(classes))
         ofiles += " */o/*.o";               // set ofiles for no LIBRARY use
 
     wild = sources;
@@ -327,9 +219,7 @@ void cpp_make(string mainfile, string library, string exe)
     if (mainfile != "")                     // mainfile -> do link
         link(library, exe);
 }
-/*
-                        S E T L I B S . I M
-*/
+
 void setlibs()
 {       
     int
@@ -339,24 +229,18 @@ void setlibs()
         cut;
         
     cut = strtok(LIBS, " ");        // cut op libraries
-    n = sizeof(cut);
+    n = listlen(cut);
     for (index = 0; index < n; index++)
         libs += " -l" + element(index, cut);
     
-#ifdef FLEX++
-    libs += " -lfl";
-#endif
-    
     cut = strtok(LIBPATH, " ");     // cut up the paths
-    n = sizeof(cut);
+    n = listlen(cut);
     for (index = 0; index < n; index++)
         libpath += " -L" + element(index, cut);
 }
 
-
 void main()
 {
-
     echo(ECHO_REQUEST);
 
     sources = "*.cc";

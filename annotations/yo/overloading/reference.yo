@@ -21,8 +21,8 @@ Our implementation of tt(operator+=) thus far looks like this:
     }
         )
     However, when implementing tt(operator+) we either already have a
-temporary object (when using tt(operator+(Binary &&lhs, ...)), or just created
-a temporary object (when using tt(operator+(Binary const &lhs, ...)). In our
+temporary object (when using tt(operator+(Binary &&lhs, ...))), or just created
+a temporary object (when using tt(operator+(Binary const &lhs, ...))). In our
 current implementation lots of additional temporaries are being constructed,
 each of them requiring a copy construction. E.g, in an expression like 
         verb(
@@ -31,7 +31,7 @@ each of them requiring a copy construction. E.g, in an expression like
     a temporary is constructed when computing tt(Binary{} + varB), then
 another one for tt(Binary{} + varC), and yet one more for tt(Binary{} +
 varD). In addition, each addition also performs a swap, even though we already
-have a temporary (i.e., tt(Binary{}) in our hands. 
+have a temporary (i.e., tt(Binary{})) in our hands. 
 
     How to tell the compiler that we don't need these temporaries?
 
@@ -97,7 +97,7 @@ expression tt(b1 + b2 + b3)
     Move +=             = tmp += b3
         )
     It's even faster when the first operand already is a temporary (e.g.,
-tt(Binary{} + b2 + b3):
+tt(Binary{} + b2 + b3)):
         verb(
     Move +=             = Binary{} += b2
     Move +=             = Binary{} += b3
