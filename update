@@ -9,7 +9,7 @@ read yesno
 if [ "$yesno" == "y" ] ; then
     git co master
 
-    cd ${_product_}		    # check
+    cd ${_product_}                 # check
     ./build man
     ./build docs
 
@@ -17,11 +17,21 @@ if [ "$yesno" == "y" ] ; then
     ./build distclean
     cd ..    
     git co gh-pages
+
+    cp -r ../wip/changelog.txt ../wip/c++-annotations-man.html .
+    rm -r cppannotations
+    unzip ../wip/zips/cplusplus.html.zip
+
+    cp ../wip/*.zip ../../cppannotations-zip/
 fi
 
-cp -r ../wip/changelog.txt ../wip/c++-annotations-man.html .
-rm -r cppannotations
-unzip ../wip/zips/cplusplus.html.zip
+echo
+echo -n "Check index.yo: version and last 5 releases [y/n] ? "
+read yesno
+
+if [ "$yesno" == "y" ] ; then
+    emacs index.yo
+fi
 
 yodl2html index.yo || exit 1
 
@@ -34,14 +44,27 @@ echo -n "ci change to index.html etc., push the result and co master [y/n] ? "
 read yesno
 
 if [ "$yesno" == "y" ] ; then
-    echo -n "Enter the ci message: "
+    RELEASE=`head -n1 ../wip/version.yo | 
+                sed 's/SUBST(DOCVERSION)(\(.*\))/\1/'`
+
+    msgDefault="gh-pages for release ${RELEASE}"
+
+    echo -n "Enter the ci message [default: $msgDefault]"
+
     read msg;
 
-    RELEASE=`head -n1 ../wip/release.yo | 
-		sed 's/SUBST(_CurVers_)(\(.*\))/\1/'`
+    [ "$msg" == "" ] && msg=$msgDefault
     git ci -am "$msg"
     git push
     git co master
+
+    echo zip archives at ~/git/cppannotations-zip: 
+    echo git push and git tag in that directory to upload    
 fi
+
+
+
+
+
 
 
