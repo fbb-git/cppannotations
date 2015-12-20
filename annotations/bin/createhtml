@@ -1,6 +1,13 @@
-#!/bin/sh
+#!/bin/bash
 
 cd ../yo
+
+if [ "$1" == "kindle" ] ; then
+    echo "<style>"                                   > cplusplus.kindle
+    grep -v 'overflow-x\|max-width' cplusplus.css   >> cplusplus.kindle
+    echo "</style>"                                 >> cplusplus.kindle
+    KINDLE="-Dkindle"
+fi
 
 echo 1>&2 "
 Construct html files from `pwd`.
@@ -8,11 +15,15 @@ Converting .yo to .html
 "
 
 PATH=`pwd`/tmp/bin:$PATH
-yodl2html  --no-warnings -l3  cplusplus
+yodl2html  --no-warnings -l3  $KINDLE cplusplus
 
 if [ $? != 0 ] ; then
     echo html conversion failed 
     exit 1
+fi
+
+if [ "$1" == "kindle" ] ; then
+    rm cplusplus.kindle
 fi
 
 echo 1>&2 "
@@ -53,6 +64,14 @@ Removing <index ...> entries from cplusplusXX.html files.
 
 ../bin/patchhtmlindexentries
 
+
 echo 1>&2 "
 Ready to zip it up
+"
+
+[ "$1" != "kindle" ] && exit 0
+
+echo 1>&2 "The kindle conversion ignored the specifications
+    overflow-x max-width
+as they are not recognized/supported by kindle.
 "
