@@ -2,15 +2,15 @@
 using namespace std;
 
 template <typename Class>
-Class operator+(Class &&lhs, Class const &rhs)
+Class &&operator+(Class &&lhs, Class const &rhs)
 {
     cout << "operator+(Class &&lhs, Class const &rhs)\n";
 
-    return lhs += rhs;
+    return std::move(lhs += rhs);
 }
 
 template <typename Class>
-Class operator+(Class const &lhs, Class const &rhs)
+Class &&operator+(Class const &lhs, Class const &rhs)
 {
     cout << "operator+(Class const &, Class const &)\n";
 
@@ -19,13 +19,13 @@ Class operator+(Class const &lhs, Class const &rhs)
 }
 
 template <typename Class>
-Class operator-(Class &&lhs, Class const &rhs)
+Class &&operator-(Class &&lhs, Class const &rhs)
 {
-    return lhs -= rhs;
+    return std::move(lhs -= rhs);
 }
 
 template <typename Class>
-Class operator-(Class const &lhs, Class const &rhs)
+Class &&operator-(Class const &lhs, Class const &rhs)
 {
     Class tmp(lhs);
     return operator-(std::move(tmp), rhs);
@@ -42,15 +42,19 @@ class Class
         {
             cout << "Move constructor\n";
         }
+
+        Class &operator=(Class const &rhs) = default;
+
         Class &operator+=(Class const &rhs)
         {
             cout << "operator+=\n";
+            return *this;
         }
 };
 
 Class factory()
 {
-    return Class();
+    return Class{};
 }
 
 int main()
@@ -65,3 +69,7 @@ int main()
 //    result = lhs - rhs;   // this won't compile as operator-= hasn't been
                             // defined
 }
+
+
+
+
