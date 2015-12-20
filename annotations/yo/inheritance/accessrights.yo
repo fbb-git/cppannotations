@@ -57,11 +57,11 @@ extraction of the next random number. But it should also not be in
 tt(streambuf)'s public section, as that could easily result in unexpected
 behavior by tt(irand). Consider the following hypothetical example:
         verb(
-    RandBuf buffer;
-    istream irand(&buffer);
+    RandBuf randBuf;
+    istream irand(&randBuf);
 
     char buffer[] = "12";
-    buffer.setg(buffer, ...);   // setg public: buffer now contains 12
+    randBuf.setg(buffer, ...);  // setg public: buffer now contains 12
 
     size_t next;
     irand >> next;              // not a *random* value, but 12.
@@ -92,7 +92,7 @@ not part of a class's public interface.
 
 Avoid the temptation to declare em(data members) in a class's protected
 section: it's a sure sign of bad class design as it needlessly results in
-tight coupling of base and derived classes. the principle of i(data hiding)
+tight coupling of base and derived classes. The principle of i(data hiding)
 should not be abandoned now that the keyword tt(protected) has been
 introduced. If a derived class (but not other parts of the software) should
 be given access to its base class's data, use member functions:

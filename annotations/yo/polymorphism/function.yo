@@ -72,11 +72,11 @@ tt(vmass) to tt(Vehicle's) interface:
     class Vehicle
     {
         public:
-            int mass() const;
-            int si_mass() const;    // see below
+            size_t mass() const;
+            size_t si_mass() const;    // see below
 
         private:
-            virtual vmass() const;
+            virtual size_t vmass() const;
     };
             )
     Separating the user interface from the redefinable interface is a sensible
@@ -94,7 +94,7 @@ interface.
 might consider adding another accessor to tt(Vehicle), providing the
 tt(si_mass), simply implemented like this:
         verb(
-    int Vehicle::si_mass() const
+    size_t Vehicle::si_mass() const
     {
         return vmass();
     }
@@ -103,7 +103,7 @@ tt(si_mass), simply implemented like this:
 If tt(Vehicle) supports a member tt(d_massFactor) then its tt(mass) member can
 be implemented like this:
         verb(
-    int Vehicle::mass()
+    size_t Vehicle::mass()
     {
         return d_massFactor * si_mass();
     }
@@ -111,7 +111,7 @@ be implemented like this:
     tt(Vehicle) itself could define tt(vmass) so that it returns a token
 value. E.g.,
         verb(
-    int Vehicle::vmass()
+    size_t Vehicle::vmass()
     {
         return 0;
     }
@@ -119,20 +119,20 @@ value. E.g.,
 
     Now let's have a look at the class tt(Car). It is derived from
 tt(Vehicle), and it inherits tt(Vehicle's) user interface. It also has a data
-member tt(int d_mass), and it implements its own reusable interface:
+member tt(size_t d_mass), and it implements its own reusable interface:
         verb(
     class Car: public Vehicle
     {
         ...
         private:
-            int vmass() override;
+            size_t vmass() override;
     }
         )
         If tt(Car) constructors require us to specify the car's mass (stored
 in tt(d_mass)), then tt(Car) simply implements its tt(vmass) member like
 this:
         verb(
-    int Car::vmass() const
+    size_t Car::vmass() const
     {
         return d_mass;
     }
@@ -144,7 +144,7 @@ tt(Car) base class, the trailor's mass is passed to its tt(Vehicle d_trailor)
 data member. tt(Truck), too, overrides tt(vmass), this time returning the sum
 of its tractor and trailor masses:
         verb(
-    int Truck::vmass() const
+    size_t Truck::vmass() const
     {
         return Car::si_mass() + d_trailer.si_mass();
     }
