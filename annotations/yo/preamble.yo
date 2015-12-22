@@ -125,17 +125,17 @@ IFDEF(latex)
 
 DEFINEMACRO(linebreak)(0)(\
     IFDEF(latex)\
-        (latexcommand(\linebreak ))\
+        (NOTRANS(\linebreak ))\
         ())
 
 DEFINEMACRO(turl)(2)(\
     IFDEF(html)\
-        (htmlcommand(<a target=_top href="ARG2">)ARG1+htmlcommand(</a>))\
+        (NOTRANS(<a target=_top href="ARG2">)ARG1+NOTRANS(</a>))\
         (url(ARG1)(ARG2)))
 
 DEFINEMACRO(tlurl)(1)(\
     IFDEF(html)\
-        (htmlcommand(<a target=_top href="ARG1">)ARG1+htmlcommand(</a>))\
+        (NOTRANS(<a target=_top href="ARG1">)ARG1+NOTRANS(</a>))\
         (lurl(ARG1)))
 
 DEFINEMACRO(lshift)(0)(\
@@ -144,10 +144,6 @@ DEFINEMACRO(lshift)(0)(\
     )(\
         <<\
     )\
-)
-
-DEFINEMACRO(verbinsert)(1)(\
-    TYPEOUT(REPLACE VERBINSERT BY VERBINCLUDE - ARG1)\
 )
 
 redefinemacro(verbinclude)(1)(\
@@ -210,7 +206,48 @@ DEFINEMACRO(annotations)(0)(\
     bf(C++) Annotations\
 )
 
-def(x)(1)(IFDEF(html)(htmlcommand(<!--!)ARG1+htmlcommand(!-->))()ARG1)
+
+COMMENT(Begin used by threading/time.yo)
+DEFINEMACRO(nbsp)(0)(\
+IFDEF(html) (NOTRANS(&nbsp;))(\
+IFDEF(latex)(NOTRANS(~))(\
+             NOTRANS( ))))
+
+DEFINEMACRO(xcell)(1)(\
+IFDEF(html)(NOTRANS(<td colspan="3", class="lcell">)\
+            bf(ARG1)NOTRANS(</td>))\
+    (cells(3)(ARG1)))
+
+DEFINEMACRO(vlcell)(1)(\
+IFDEF(html)(NOTRANS(<td class="vlcell">)\
+        ARG1+NOTRANS(</td>))\
+    (cell(ARG1)))
+
+DEFINEMACRO(vrcell)(1)(\
+IFDEF(html)(NOTRANS(<td class="vrcell">)\
+        ARG1+NOTRANS(</td>))\
+    (cell(ARG1)))
+
+DEFINEMACRO(vcell)(1)(\
+IFDEF(html)(NOTRANS(<td class="vcell">)\
+            ARG1+NOTRANS(</td>))(cell(ARG1)))
+
+DEFINEMACRO(rcell)(1)(\
+IFDEF(html)(NOTRANS(<td class="rcell">)\
+    ARG1+NOTRANS(</td>))(cell(ARG1)))
+
+DEFINEMACRO(lcell)(1)(\
+IFDEF(html)(NOTRANS(<td class="lcell">)
+    ARG1+NOTRANS(</td>))(cell(ARG1)))
+
+DEFINEMACRO(rowthree)(3)(\
+    row(vrcell(%ARG1)cell(nbsp())vlcell(ARG2)cell(nbsp()nbsp())vlcell(ARG3))\
+)
+
+COMMENT(End used by threading/time.yo)
+
+
+def(x)(1)(IFDEF(html)(NOTRANS(<!--!)ARG1+NOTRANS(!-->))()ARG1)
 def(linkit)(2)(it()link(Chapter )(ARG1)ref(ARG1)link(: ARG2.)(ARG1))
 def(itt)(1)(it()tt(ARG1))
 
@@ -222,17 +259,17 @@ def(c)(1)(COMMENT(ARG1))
 def(hix)(1)(\
     IFDEF(html)(\
         label(an+USECOUNTER(htmlAnchor))\
-        htmlcommand(
+        NOTRANS(
 <index) \
         COUNTERVALUE(htmlAnchor) \
         ARG1\
-        +htmlcommand(>
+        +NOTRANS(>
 )\
     )(\
         IFDEF(latex)(\
-            latexcommand(\index{)\
+            NOTRANS(\index{)\
             ARG1\
-            +latexcommand(})\
+            +NOTRANS(})\
         )()\
     )\
 )
