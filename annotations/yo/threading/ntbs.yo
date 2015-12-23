@@ -11,10 +11,10 @@ passed to the function tt(to_time_t), returning a tt(std::time_t).
 
 Two functions are available for processing tt(std::time_t) values:
     itemization(
-    ithtq(localtime)(std::tm *localtime(std::time_t const *time))
+    ithtq(localtime)(std::tm *std::localtime(std::time_t const *time))
         (This function returns a pointer to a ti(std::tm) object holding the
 data that are used to display elements of the local time;)
-    ithtq(gmtime)(std::tm *gmtime(std::time_t const *time))
+    ithtq(gmtime)(std::tm *std::gmtime(std::time_t const *time))
         (This function returns a pointer to a ti(std::tm) object holding the
 data that are used to display i(UTC) (emi(universal time coordinated))
 elements;)
@@ -24,155 +24,31 @@ tt(localtime) and tt(gmtime) point is a single static object. Calling these
 functions from multiple threads should be protected by a tt(std::mutex).
 
 Actually displaying these time elements is left to the function 
-    hi(put_time)tt(Type std::put_time(std::tm const *time, char const *fmt)).
-The value that is returned by this function is unspecified, but it is
+    hi(put_time)tt(Type std::put_time(std::tm const *time, char const *fmt)),
+which is declared in the header tthi(iomanip). The following steps result in a 
+tt(std::tm)hi(tm: time struct) object whose address can be passed to
+tt(put_time): 
+    itemization(
+    it() A tt(chrono::time_point) object is obtained. E.g., the static
+function tt(chrono::time_point<system_clock>::now()) returns the current local
+time. This tt(time_point) object may be modified by adding or subtracting
+durations (using, e.g., tt(chrono::seconds) objects);
+    it() The static tt(system_clock::to_time_t) function expects a
+tt(chrono::time_point) and returns a tt(std::time_t) value;
+    it() The functions tt(localtime) or tt(gmtime) receive the address of the
+tt(time_t) value; their return value is a tt(std::tm *) which can directly be
+passed to tt(put_time).
+    )
+    The value that is returned by tt(std::put_time) is unspecified, but it is
 guaranteed to be insertable into tt(std::ostream) objects. The tt(char const
-*fmt) format string can contain text, as well as format specifiers to select
-which elements of the time should be displayed. Specifiers start with tt(%),
-to display a percent character write it twice: tt(%%). In addition to the
-standard escape sequences, tt(%n) can be used instead of tt(\n), and tt(%t)
-can be used instead of tt(\t). Other format specifiers are listed in the next
-table and select elements of the time:
+*fmt) format string can contain text, as well as format specifiers selecting
+elements of the time to be displayed. All of tt(put_time's) format specifiers
+are covered in the tables shown in the next section.
 
-center(
-    table(5)(NOTRANS(ccp{7.5cm}cp{2cm}))(
-rowline()
-row(xcell(Year specifiers))
-row(rcell(Specifier)cell()cell(Meaning)cell()lcell(std::tm field(s)))
-rowline()    
-rowthree(Y)(year as a 4 digit decimal number)(tm_year)
-rowthree(EY)(year in an alternative representation)(tm_year)
-rowthree(y)(last 2 digits of year as a decimal number
-            (range [00,99]))(tm_year)
-rowthree(Oy)(last 2 digits of year using an alternative numeric
-            system)(tm_year)
-rowthree(Ey)(year as offset from locale's alternative calendar
-            period %EC (locale-dependent))(tm_year)
-rowthree(C)(first 2 digits of year as a decimal number
-            (range [00,99]))(tm_year)
-rowthree(EC)(name of the base year (period) in the locale's
-            alternative representation)(tm_year)
-rowthree(G)(ISO 8601 week-based year, i.e. the year that contains
-            the specified week)(tm_year, tm_wday, tm_yday)
-rowthree(g)(last 2 digits of ISO 8601 week-based year
-            (range [00,99]))(tm_year, tm_wday, tm_yday)
-rowline()    
-)
+In the following example tt(using namespace std) is declared, but
+tt(using namespace chrono) isn't, to make explicit which elements are inside
+the namespace tt(chrono). In practice tt(using namespace chrono) will often be
+declared immediately after tt(using namespace std). 
 
-    table(5)(NOTRANS(ccp{7.5cm}cp{2cm}))(
-rowline()
-row(xcell(Month specifiers))
-row(rcell(Specifier)cell()cell(Meaning)cell()lcell(std::tm field(s)))
-rowline()    
-rowthree(b)(abbreviated month name, e.g. Oct)(tm_mon)
-rowthree(h)(synonym of b)(tm_mon)
-rowthree(B)(full month name, e.g. October)(tm_mon)
-rowthree(m)(month as a decimal number (range [01,12]))(tm_mon)
-rowthree(Om)(month using an alternative numeric system)(tm_mon)
-rowline()
-)
+    verbinclude(-a examples/timepoint.cc)
 
-    table(5)(NOTRANS(ccp{7.5cm}cp{2cm}))(
-rowline()
-row(xcell(Week specifiers))
-row(rcell(Specifier)cell()cell(Meaning)cell()lcell(std::tm field(s)))
-rowline()    
-rowthree(U)(week of the year as a decimal number (Sunday is the first day of
-            the week) (range [00,53]))(tm_year, tm_wday, tm_yday)
-rowthree(OU)(week of the year, as by %U, using an alternative numeric
-            system)(tm_year, tm_wday, tm_yday)
-rowthree(W)(week of the year as a decimal number (Monday is the first day of
-            the week) (range [00,53]))(tm_year, tm_wday, tm_yday)
-rowthree(OW)(week of the year, as by %W, using an alternative numeric
-            system)(tm_year, tm_wday, tm_yday)
-rowthree(V)(ISO 8601 week of the year (range [01,53]))(tm_year, tm_wday,
-            tm_yday)
-rowthree(OV)(week of the year, as by %V, using an alternative numeric
-            system)(tm_year, tm_wday, tm_yday)
-rowline()
-)
-
-    table(5)(NOTRANS(ccp{7.5cm}cp{2cm}))(
-rowline()
-row(xcell(Day of the year/month specifiers))
-row(rcell(Specifier)cell()cell(Meaning)cell()lcell(std::tm field(s)))
-rowline()    
-rowthree(j)(day of the year as a decimal number (range [001,366]))(tm_yday)
-rowthree(d)(day of the month as a decimal number (range [01,31]))(tm_mday)
-rowthree(Od)(zero-based day of the month using an alternative numeric
-            system)(tm_mday)
-rowthree(e)(day of the month as a decimal number (range [1,31]))(tm_mday)
-rowthree(Oe)(one-based day of the month using an alternative numeric
-            system)(tm_mday)
-rowline()
-)
-
-    table(5)(NOTRANS(ccp{7.5cm}cp{2cm}))(
-rowline()
-row(xcell(Day of the week specifiers))
-row(rcell(Specifier)cell()cell(Meaning)cell()lcell(std::tm field(s)))
-rowline()    
-row(xcell(Day of the week))
-rowthree(a)(abbreviated weekday name, e.g. Fri)(tm_wday)
-rowthree(A)(full weekday name, e.g. Friday)(tm_wday)
-rowthree(w)(weekday as a decimal number, where Sunday is 0 (range
-            [0-6]))(tm_wday)
-rowthree(Ow)(weekday, where Sunday is 0, using an alternative numeric
-            system)(tm_wday)
-rowthree(u)(weekday as a decimal number, where Monday is 1 (ISO 8601 format)
-            (range [1-7]))(tm_wday)
-rowthree(Ou)(weekday, where Monday is 1, using an alternative numeric
-            system)(tm_wday)
-rowline()    
-)
-
-    table(5)(NOTRANS(ccp{7.5cm}cp{2cm}))(
-rowline()
-row(xcell(Hour, minute, second specifiers))
-row(rcell(Specifier)cell()cell(Meaning)cell()lcell(std::tm field(s)))
-rowline()    
-rowthree(H)(hour as a decimal number, 24 hour clock (range [00-23]))(tm_hour)
-rowthree(OH)(hour from 24-hour clock using an alternative numeric
-            system)(tm_hour)
-rowthree(I)(hour as a decimal number, 12 hour clock (range [01,12]))(tm_hour)
-rowthree(OI)(hour from 12-hour clock using the alternative numeric
-            system)(tm_hour)
-rowthree(M)(minute as a decimal number (range [00,59]))(tm_min)
-rowthree(OM)(minute using an alternative numeric system)(tm_min)
-rowthree(S)(second as a decimal number (range [00,60]))(tm_sec)
-rowthree(OS)(second using an alternative numeric system)(tm_sec)
-rowline()
-)
-
-    table(5)(NOTRANS(ccp{7.5cm}cp{1cm}))(
-rowline()
-row(xcell(Additional specifiers))
-row(rcell(Specifier)cell()cell(Meaning)cell()lcell(std::tm field(s)))
-rowline()    
-row(xcell(Other specifiers))
-rowthree(c)(standard date and time string, e.g. Sun Oct 17 04:41:13 2010)(all
-        fields)
-rowthree(Ec)(alternative date and time string)(all fields)
-rowthree(x)(localized date representation)(all fields)
-rowthree(Ex)(alternative date representation)(all fields)
-rowthree(X)(localized time representation)(all fields)
-rowthree(EX)(alternative time representation)(all fields)
-rowthree(D)(equivalent to tt("%m/%d/%y"))(tm_mon, tm_mday, tm_year)
-rowthree(F)(equivalent to tt("%Y-%m-%d") (the ISO 8601 date format))(tm_mon,
-            tm_mday, tm_year)
-rowthree(r)(localized 12-hour clock time)(tm_hour, tm_min, tm_sec)
-rowthree(R)(equivalent to tt("%H:%M"))(tm_hour, tm_min)
-rowthree(T)(equivalent to tt("%H:%M:%S") (the ISO 8601 time format))(tm_hour,
-            tm_min, tm_sec)
-rowthree(p)(localized a.m. or p.m.)(tm_hour)
-rowthree(z)(offset from UTC in the ISO 8601 format (e.g. -0430; no characters
-            if time zone information is not available))(tm_isdst)
-rowthree(Z)(time zone name or abbreviation (no characters if time zone
-            information is not available))(tm_isdst) 
-rowline()
-))
-
-
-Here are some additional examples showing how tt(time_point) objects can be
-used:
-    verbinclude(-a -a examples/timepoint.cc)

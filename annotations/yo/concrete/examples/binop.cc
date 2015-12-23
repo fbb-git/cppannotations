@@ -69,7 +69,3 @@ int main()
 //    result = lhs - rhs;   // this won't compile as operator-= hasn't been
                             // defined
 }
-
-
-
-
