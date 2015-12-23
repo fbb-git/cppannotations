@@ -1,6 +1,6 @@
 <!DOCTYPE html><html><head>
 <meta charset="UTF-8">
-<title> C++ Annotations Version 10.4.1-pre </title>
+<title> C++ Annotations Version 10.5.0 </title>
 <link rel="stylesheet" type="text/css" href="cplusplus.css"><style type="text/css">
     figure {text-align: center;}
     img {vertical-align: center;}
@@ -520,7 +520,10 @@ included.
 <p>
 <a name="FORMATMEMBERS"></a><a name="l87"></a>
 <h4>6.3.2.1: Format modifying member functions</h4>
-        Several <em>member functions</em> are available manipulating the I/O <a name="an463"></a>formatting
+        #ifndef INCLUDED_FORMATMEMBERS_YO_
+#define INCLUDED_FORMATMEMBERS_YO_
+<p>
+Several <em>member functions</em> are available manipulating the I/O <a name="an463"></a>formatting
 flags. Instead of using the members listed below <em>manipulators</em> are often
 available that may directly be inserted into or extracted from streams. The
 available members are listed in alphabetical order, but the most important
@@ -574,11 +577,31 @@ cout &lt;&lt; 1.23 &lt;&lt; " " &lt;&lt; 12.3 &lt;&lt; " " &lt;&lt; 123.12 &lt;&
 // displays: 1.23 12.3 123 1.23e+03
 </pre>
         </blockquote>
-    <li> <a name="an472"></a><a name="SETF"></a><code>ios::fmtflags ios::setf(ios::fmtflags flags)</code>:
+    <li><a name="an472"></a><code>Type std::put_time(std::tm const *tm, char const *fmt)</code>:<blockquote><a name="an473"></a><a name="an474"></a>The function <code>put_time</code> can
+be used to display (elements of) the current time. Time elements are provided
+in a <a name="an475"></a><code>std::tm</code> object, and the way the time is displayed is defined by the
+<a name="an476"></a><em>format string</em> <code>fmt</code>. 
+<p>
+In the next example <code>put_time</code> is used to display the current date and
+time:
+        <pre>
+    #include &lt;iostream&gt;
+    #include &lt;ctime&gt;
+
+    int main()
+    {
+        std::time_t tm {time(0)};
+        std::cout &lt;&lt; std::put_time(std::localtime(&amp;tm), "%c") &lt;&lt; '\n';
+    }
+    // displays, e.g., Sun Dec 20 15:05:18 2015
+</pre>
+    The function <code>put_time</code>, as well as <code>std::localtime</code> and <code>gmtime</code> is
+described in more detail in section <a href="cplusplus20.html#TIME">20.1.5</a>.</blockquote>
+    <li> <a name="an477"></a><a name="SETF"></a><code>ios::fmtflags ios::setf(ios::fmtflags flags)</code>:
         <blockquote>sets one or more formatting flags (use the <code>bitor</code>
 operator to combine multiple flags). Already set flags are not affected. The
 <em>previous</em> set of flags is returned. Instead of using this member function
-the manipulator <a name="an473"></a><code>setiosflags</code> may be used. Examples are provided in the next
+the manipulator <a name="an478"></a><code>setiosflags</code> may be used. Examples are provided in the next
 section (<a href="cplusplus06.html#FORMATFLAGS">6.3.2.2</a>).</blockquote>
     <li><code>ios::fmtflags ios::setf(ios::fmtflags flags, ios::fmtflags mask)</code>:
             <blockquote>clears all flags mentioned in <code>mask</code> and sets the flags
@@ -594,11 +617,11 @@ cout.setf(ios::hex, ios::basefield);
 cout.setf(ios::scientific, ios::floatfield);
 </pre>
         </blockquote>
-    <li> <a name="an474"></a><a name="UNSETF"></a><code>ios::fmtflags ios::unsetf(fmtflags flags)</code>:
+    <li> <a name="an479"></a><a name="UNSETF"></a><code>ios::fmtflags ios::unsetf(fmtflags flags)</code>:
         <blockquote>the specified formatting flags are cleared (leaving the
 remaining flags unaltered) and returns the <em>previous</em> set of flags.  A
 request to unset an active default flag (e.g., <code>cout.unsetf(ios::dec)</code>)
-is ignored. Instead of this member function the manipulator <a name="an475"></a><code>resetiosflags</code>
+is ignored. Instead of this member function the manipulator <a name="an480"></a><code>resetiosflags</code>
 may also be used. Example:
         <pre>
 cout &lt;&lt; 12.24;              // displays  12.24
@@ -610,7 +633,7 @@ cout &lt;&lt; resetiosflags(ios::fixed);  // using manipulator rather
                                     // than unsetf
 </pre>
     </blockquote>
-    <li><a name="an476"></a><a name="an477"></a>
+    <li><a name="an481"></a><a name="an482"></a>
         <a name="WIDTH"></a><code>int ios::width() const</code>:
         <blockquote>the currently active output field width to use on the next
 insertion is returned. The default value is 0, meaning `as many characters as
@@ -619,7 +642,7 @@ needed to write the value'.</blockquote>
         <blockquote>the field width of the next insertion operation is set to
 <code>nchars</code>, returning the previously used field width. This setting is not
 persistent. It is reset to 0 after every insertion operation. Manipulator:
-<a name="an478"></a><code>std::setw(int)</code>. Example:
+<a name="an483"></a><code>std::setw(int)</code>. Example:
         <pre>
 cout.width(5);
 cout &lt;&lt; 12;                     // using 5 chars field width
@@ -628,13 +651,15 @@ cout &lt;&lt; setw(12) &lt;&lt; "hello";    // using 12 chars field width
     </blockquote>
     </ul>
 <p>
+#endif
+<p>
 <a name="FORMATFLAGS"></a><a name="l88"></a>
 <h4>6.3.2.2: Formatting flags</h4>
-        Most <a name="an479"></a><em>formatting flags</em> are related to outputting information. Information
+        Most <a name="an484"></a><em>formatting flags</em> are related to outputting information. Information
 can be written to output streams in basically two ways: using
- <a name="an480"></a><em>binary output</em> information is written directly to an output stream,
-without converting it first to some <a name="an481"></a>human-readable format and using
- <a name="an482"></a><em>formatted output</em> by which values stored in the computer's memory are
+ <a name="an485"></a><em>binary output</em> information is written directly to an output stream,
+without converting it first to some <a name="an486"></a>human-readable format and using
+ <a name="an487"></a><em>formatted output</em> by which values stored in the computer's memory are
 converted to human-readable text first. Formatting flags are used to define
 the way this conversion takes place. In this section all formatting flags are
 covered. Formatting flags may be (un)set using member functions, but often
@@ -645,8 +670,8 @@ manipulator.
 <strong>To display information in wide fields</strong>:
 <p>
 <ul>
-    <li> <a name="an483"></a><a name="an484"></a><code>ios::internal</code>:
-        <blockquote>to add <a name="an485"></a>fill characters (blanks by default) between the minus
+    <li> <a name="an488"></a><a name="an489"></a><code>ios::internal</code>:
+        <blockquote>to add <a name="an490"></a>fill characters (blanks by default) between the minus
 sign of negative numbers and the value itself. Other values and data types are
 right-adjusted. Manipulator: <code>std::internal</code>. Example:
         <pre>
@@ -656,7 +681,7 @@ cout &lt;&lt; internal;       // same, using the manipulator
 cout &lt;&lt; '\'' &lt;&lt; setw(5) &lt;&lt; -5 &lt;&lt; "'\n";  // displays '-   5'
 </pre>
         </blockquote>
-    <li><a name="an486"></a><code>ios::left</code>:<blockquote>to left-adjust values in fields that are wider than needed to display
+    <li><a name="an491"></a><code>ios::left</code>:<blockquote>to left-adjust values in fields that are wider than needed to display
 the values.  Manipulator: <code>std::left</code>. Example:
         <pre>
 cout.setf(ios::left, ios::adjustfield);
@@ -665,7 +690,7 @@ cout &lt;&lt; left;           // same, using the manipulator
 cout &lt;&lt; '\'' &lt;&lt; setw(5) &lt;&lt; "hi" &lt;&lt; "'\n";  // displays 'hi   '
 </pre>
         </blockquote>
-    <li><a name="an487"></a><code>ios::right</code>:<blockquote>to right-adjust values in fields that are wider than needed to
+    <li><a name="an492"></a><code>ios::right</code>:<blockquote>to right-adjust values in fields that are wider than needed to
 display the values.  Manipulator: <code>std::right</code>. This is the default.
 Example:
         <pre>
@@ -680,7 +705,7 @@ cout &lt;&lt; '\'' &lt;&lt; setw(5) &lt;&lt; "hi" &lt;&lt; "'\n";  // displays '
 <strong>Using various number representations</strong>:
 <p>
 <ul>
-    <li><a name="an488"></a><code>ios::dec</code>:<blockquote>to display integral values as decimal numbers. Manipulator:
+    <li><a name="an493"></a><code>ios::dec</code>:<blockquote>to display integral values as decimal numbers. Manipulator:
 <code>std::dec</code>. This is the default. Example:
         <pre>
 cout.setf(ios::dec, ios::basefield);
@@ -688,7 +713,7 @@ cout &lt;&lt; dec;            // same, using the manipulator
 cout &lt;&lt; 0x10;           // displays 16
 </pre>
         </blockquote>
-    <li><a name="an489"></a><code>ios::hex</code>:<blockquote>to display integral values as hexadecimal numbers. Manipulator:
+    <li><a name="an494"></a><code>ios::hex</code>:<blockquote>to display integral values as hexadecimal numbers. Manipulator:
 <code>std::hex</code>. Example:
         <pre>
 cout.setf(ios::hex, ios::basefield);
@@ -696,7 +721,7 @@ cout &lt;&lt; hex;            // same, using the manipulator
 cout &lt;&lt; 16;             // displays 10
 </pre>
         </blockquote>
-    <li><a name="an490"></a><code>ios::oct</code>:<blockquote>to display integral values as octal numbers. Manipulator:
+    <li><a name="an495"></a><code>ios::oct</code>:<blockquote>to display integral values as octal numbers. Manipulator:
 <code>std::oct</code>. Example:
         <pre>
 cout.setf(ios::oct, ios::basefield);
@@ -704,7 +729,7 @@ cout &lt;&lt; oct;            // same, using the manipulator
 cout &lt;&lt; 16;             // displays 20
 </pre>
         </blockquote>
-    <li><a name="an491"></a><code>std::setbase(int radix)</code>:<blockquote>This is a manipulator that can be used to change the number
+    <li><a name="an496"></a><code>std::setbase(int radix)</code>:<blockquote>This is a manipulator that can be used to change the number
 representation to decimal, hexadecimal or octal. Example:
         <pre>
 cout &lt;&lt; setbase(8);     // octal numbers, use 10 for
@@ -717,31 +742,31 @@ cout &lt;&lt; 16;             // displays 20
 <strong>Fine-tuning displaying values</strong>:
 <p>
 <ul>
-    <li><a name="an492"></a><code>ios::boolalpha</code>:<blockquote>logical values may be displayed as text using the text `<code>true</code>' for
+    <li><a name="an497"></a><code>ios::boolalpha</code>:<blockquote>logical values may be displayed as text using the text `<code>true</code>' for
 the <code>true</code> logical value, and `<code>false</code>' for the <code>false</code> logical value
 using <code>boolalpha</code>.  By default this flag is not set. Complementary flag:
 <code>ios::noboolalpha</code>. Manipulators: <code>std::boolalpha</code> and
-<a name="an493"></a><code>std::noboolalpha</code>.  Example:
+<a name="an498"></a><code>std::noboolalpha</code>.  Example:
         <pre>
 cout.setf(ios::boolalpha);
 cout &lt;&lt; boolalpha;      // same, using the manipulator
 cout &lt;&lt; (1 == 1);       // displays true
 </pre>
         </blockquote>
-    <li><a name="an494"></a><code>ios::showbase</code>:<blockquote>to display the numeric base of integral values. With hexadecimal
+    <li><a name="an499"></a><code>ios::showbase</code>:<blockquote>to display the numeric base of integral values. With hexadecimal
 values the <code>0x</code> prefix is used, with octal values the prefix <code>0</code>. For the
 (default) decimal value no particular prefix is used. Complementary flag:
 <code>ios::noshowbase</code>. Manipulators: <code>std::showbase</code> and
-<a name="an495"></a><code>std::noshowbase</code>. Example:
+<a name="an500"></a><code>std::noshowbase</code>. Example:
         <pre>
 cout.setf(ios::showbase);
 cout &lt;&lt; showbase;       // same, using the manipulator
 cout &lt;&lt; hex &lt;&lt; 16;      // displays 0x10
 </pre>
         </blockquote>
-    <li><a name="an496"></a><code>ios::showpos</code>:<blockquote>to display the <code>+</code> sign with positive decimal (only)
+    <li><a name="an501"></a><code>ios::showpos</code>:<blockquote>to display the <code>+</code> sign with positive decimal (only)
 values. Complementary flag:<br/><code>ios::noshowpos</code>.  Manipulators:
-<code>std::showpos</code> and <a name="an497"></a><code>std::noshowpos</code>. Example:
+<code>std::showpos</code> and <a name="an502"></a><code>std::noshowpos</code>. Example:
         <pre>
 cout.setf(ios::showpos);
 cout &lt;&lt; showpos;            // same, using the manipulator
@@ -750,9 +775,9 @@ cout.unsetf(ios::showpos);  // Undo showpos
 cout &lt;&lt; 16;                 // displays 16
 </pre>
         </blockquote>
-    <li><a name="an498"></a><code>ios::uppercase</code>:<blockquote>to display letters in hexadecimal values using capital
+    <li><a name="an503"></a><code>ios::uppercase</code>:<blockquote>to display letters in hexadecimal values using capital
 letters. Complementary flag: <code>ios::nouppercase</code>.  Manipulators:
-<code>std::uppercase</code> and <a name="an499"></a><code>std::nouppercase</code>.  By default lower
+<code>std::uppercase</code> and <a name="an504"></a><code>std::nouppercase</code>.  By default lower
 case letters are used. Example:
         <pre>
 cout.setf(ios::uppercase);
@@ -766,7 +791,7 @@ cout &lt;&lt; hex &lt;&lt; showbase &lt;&lt;
 <strong>Displaying floating point numbers</strong>
 <p>
 <ul>
-    <li><a name="an500"></a><a name="an501"></a><a name="an502"></a>
+    <li><a name="an505"></a><a name="an506"></a><a name="an507"></a>
         <code>ios::fixed</code>:
         <blockquote>to display real values using a fixed decimal point (e.g., 12.25
 rather than 1.225e+01), the <code>fixed</code> formatting flag is used. It can be used
@@ -789,7 +814,7 @@ cout &lt;&lt; 3.0 &lt;&lt; " " &lt;&lt; 3.01 &lt;&lt; " " &lt;&lt; 3.001 &lt;&lt
 3.001 (likewise -3.0005 becomes -3.001). First setting precision and then
 <code>fixed</code> has the same effect.
         </blockquote>
-    <li><a name="an503"></a><code>ios::scientific</code>:<blockquote>to display real values in <a name="an504"></a><em>scientific notation</em> (e.g., 1.24e+03).
+    <li><a name="an508"></a><code>ios::scientific</code>:<blockquote>to display real values in <a name="an509"></a><em>scientific notation</em> (e.g., 1.24e+03).
 Manipulator: <code>std::scientific</code>.  Example:
         <pre>
 cout.setf(ios::scientific, ios::floatfield);
@@ -797,10 +822,10 @@ cout &lt;&lt; scientific;         // same, using the manipulator
 cout &lt;&lt; 12.25;              // displays 1.22500e+01
 </pre>
         </blockquote>
-    <li><a name="an505"></a><code>ios::showpoint</code>:<blockquote>to display a trailing decimal point <em>and</em> trailing decimal zeros
+    <li><a name="an510"></a><code>ios::showpoint</code>:<blockquote>to display a trailing decimal point <em>and</em> trailing decimal zeros
 when real numbers are displayed. Complementary flag:
 <code>ios::noshowpoint</code>. Manipulators: <code>std::showpoint</code>,
- <a name="an506"></a><code>std::noshowpoint</code>. Example:
+ <a name="an511"></a><code>std::noshowpoint</code>. Example:
         <pre>
 cout &lt;&lt; fixed &lt;&lt; setprecision(3);   // 3 digits behind .
 
@@ -826,7 +851,7 @@ cout &lt;&lt; 16.0 &lt;&lt; ", " &lt;&lt; 16.1;
 <strong>Handling white space and flushing streams</strong>
 <p>
 <ul>
-    <li><a name="an507"></a><code>std::endl</code>:<blockquote>manipulator inserting a newline character and flushing the
+    <li><a name="an512"></a><code>std::endl</code>:<blockquote>manipulator inserting a newline character and flushing the
 stream. Often flushing the stream is not required and doing so would
 needlessly slow down I/O processing. Consequently, using <code>endl</code> should be
 avoided (in favor of inserting <code>'\n'</code>) unless flusing the stream is
@@ -837,10 +862,10 @@ in section <a href="cplusplus06.html#IOS">6.3</a>). Example:
 cout &lt;&lt; "hello" &lt;&lt; endl;    // prefer: &lt;&lt; '\n';
 </pre>
         </blockquote>
-    <li><a name="an508"></a><code>std::ends</code>:<blockquote>manipulator inserting a 0-byte into a stream. It is usually used in
+    <li><a name="an513"></a><code>std::ends</code>:<blockquote>manipulator inserting a 0-byte into a stream. It is usually used in
 combination with memory-streams (cf. section <a href="cplusplus06.html#OSTRINGSTREAM">6.4.3</a>).
         </blockquote>
-    <li><a name="an509"></a><code>std::flush</code>:<blockquote>a stream may be flushed using this member. Often flushing the stream
+    <li><a name="an514"></a><code>std::flush</code>:<blockquote>a stream may be flushed using this member. Often flushing the stream
 is not required and doing so would needlessly slow down I/O
 processing. Consequently, using <code>flush</code> should be avoided unless it is
 explicitly required to do so. Note that streams are automatically flushed when
@@ -850,7 +875,7 @@ the program terminates or when a stream is `tied' to another stream
 cout &lt;&lt; "hello" &lt;&lt; flush;    // avoid if possible.
 </pre>
         </blockquote>
-    <li><a name="an510"></a><code>ios::skipws</code>:<blockquote>leading <a name="an511"></a>white space characters (blanks, tabs, newlines, etc.) are
+    <li><a name="an515"></a><code>ios::skipws</code>:<blockquote>leading <a name="an516"></a>white space characters (blanks, tabs, newlines, etc.) are
 skipped when a value is extracted from a stream. This is the default.  If the
 flag is not set, leading white space characters are not skipped.
 Manipulator: <code>std::skipws</code>. Example:
@@ -863,14 +888,14 @@ int value;
 cin &gt;&gt; value;           // skips initial blanks
 </pre>
         </blockquote>
-    <li><a name="an512"></a><code>ios::unitbuf</code>:<blockquote>the stream for which this flag is set flushes its buffer after
+    <li><a name="an517"></a><code>ios::unitbuf</code>:<blockquote>the stream for which this flag is set flushes its buffer after
 every output operation Often flushing a stream is not required and doing so
 would needlessly slow down I/O processing. Consequently, setting <code>unitbuf</code>
 should be avoided unless flusing the stream is explicitly intended. Note that
 streams are automatically flushed when the program terminates or when a stream
 is `tied' to another stream (cf. <code>tie</code> in section <a href="cplusplus06.html#IOS">6.3</a>).  Complementary
 flag: <code>ios::nounitbuf</code>. Manipulators: <code>std::unitbuf</code>,
-<a name="an513"></a><code>std::nounitbuf</code>. Example:
+<a name="an518"></a><code>std::nounitbuf</code>. Example:
         <pre>
 cout.setf(ios::unitbuf);
 cout &lt;&lt; unitbuf;            // same, using the manipulator
@@ -878,7 +903,7 @@ cout &lt;&lt; unitbuf;            // same, using the manipulator
 cout.write("xyz", 3);       // flush follows write.
 </pre>
         </blockquote>
-    <li><a name="an514"></a><code>std::ws</code>:<blockquote>manipulator removing all <a name="an515"></a>white space characters
+    <li><a name="an519"></a><code>std::ws</code>:<blockquote>manipulator removing all <a name="an520"></a>white space characters
 (blanks, tabs, newlines, etc.) at the current file position. White space are
 removed if present even if the flag <code>ios::noskipws</code> has been set.
 Example (assume the input contains 4 blank characters followed by the
@@ -892,9 +917,9 @@ cin.get();      // returns 'X'
 <p>
 <a name="l89"></a>
 <h2>6.4: Output</h2>
-In <strong>C++</strong> output is primarily based on the <a name="an516"></a><code>std::ostream</code>
+In <strong>C++</strong> output is primarily based on the <a name="an521"></a><code>std::ostream</code>
 class. The <code>ostream</code> class defines the basic operators and members inserting
-information into streams: the <a name="an517"></a><em>insertion operator</em> (&lt;&lt;), and special
+information into streams: the <a name="an522"></a><em>insertion operator</em> (&lt;&lt;), and special
 members like <code>write</code> writing unformatted information to streams.
 <p>
 The class <code>ostream</code> acts as <em>base class</em> for several other classes, all
@@ -902,21 +927,21 @@ offering the functionality of the <code>ostream</code> class, but adding their o
 specialties. In the upcoming sections the following classes are discussed:
     <ul>
     <li> The class <code>ostream</code>, offering the basic output facilities;
-    <li> The class <a name="an518"></a><code>ofstream</code>, allowing us to write files
-(comparable to <strong>C</strong>'s <a name="an519"></a> <code>fopen(filename, "w")</code>);
-    <li> The class <a name="an520"></a><code>ostringstream</code>, allowing us to write information to
-memory (comparable to <strong>C</strong>'s <a name="an521"></a><code>sprintf</code> function).
+    <li> The class <a name="an523"></a><code>ofstream</code>, allowing us to write files
+(comparable to <strong>C</strong>'s <a name="an524"></a> <code>fopen(filename, "w")</code>);
+    <li> The class <a name="an525"></a><code>ostringstream</code>, allowing us to write information to
+memory (comparable to <strong>C</strong>'s <a name="an526"></a><code>sprintf</code> function).
     </ul>
 <p>
 <a name="OSTREAM"></a><a name="l90"></a>
 <h3>6.4.1: Basic output: the class `ostream'</h3>
-    The class <a name="an522"></a><code>ostream</code> defines basic output facilities. The <a name="an523"></a><code>cout</code>, <a name="an524"></a><code>clog</code>
-and <a name="an525"></a><code>cerr</code> objects are all <code>ostream</code> objects. All facilities related to
+    The class <a name="an527"></a><code>ostream</code> defines basic output facilities. The <a name="an528"></a><code>cout</code>, <a name="an529"></a><code>clog</code>
+and <a name="an530"></a><code>cerr</code> objects are all <code>ostream</code> objects. All facilities related to
 output as defined by the <code>ios</code> class are also available in the <code>ostream</code>
 class.
 <p>
 We may define <code>ostream</code> objects using the following
- <a name="an526"></a><em>ostream constructor</em>:
+ <a name="an531"></a><em>ostream constructor</em>:
     <ul>
     <li><code>std::ostream object(std::streambuf *sb)</code>:
         <blockquote>this constructor creates an <code>ostream</code> object which is a
@@ -928,7 +953,7 @@ defined for us and interfaces to the standard output stream using a
 (also predefined) <code>streambuf</code> object handling the actual interfacing.
 <p>
 It <em>is</em>, however, possible to define an <code>ostream</code> object passing it
- <a name="an527"></a> a 0-pointer. Such an object cannot be
+ <a name="an532"></a> a 0-pointer. Such an object cannot be
 used for insertions (i.e., it raises its <code>ios::bad</code> flag when something
 is inserted into it), but it may be given a <code>streambuf</code> later. Thus it may
 be preliminary constructed, suspending its use until an appropriate
@@ -936,18 +961,18 @@ be preliminary constructed, suspending its use until an appropriate
     </blockquote>
     </ul>
     To define the <code>ostream</code> class in <strong>C++</strong> sources, the
-    <a name="an528"></a><code>&lt;ostream&gt;</code> header file must be included. To use the predefined
-<code>ostream</code> objects (<code>std::cin, std::cout</code> etc.) the <a name="an529"></a><code>&lt;iostream&gt;</code> header
+    <a name="an533"></a><code>&lt;ostream&gt;</code> header file must be included. To use the predefined
+<code>ostream</code> objects (<code>std::cin, std::cout</code> etc.) the <a name="an534"></a><code>&lt;iostream&gt;</code> header
 file must be included.
 <p>
 <a name="l91"></a>
 <h4>6.4.1.1: Writing to `ostream' objects</h4>
-        The class <a name="an530"></a><code>ostream</code> supports both formatted and <a name="an531"></a><em>binary output</em>.
+        The class <a name="an535"></a><code>ostream</code> supports both formatted and <a name="an536"></a><em>binary output</em>.
 <p>
-The <a name="an532"></a><em>insertion operator</em> (&lt;&lt;) is used to insert values in
+The <a name="an537"></a><em>insertion operator</em> (&lt;&lt;) is used to insert values in
 a type safe way into <code>ostream</code> objects.  This is called
-    <a name="an533"></a>formatted output, as binary values which are stored in the computer's
-memory are converted to human-readable <a name="an534"></a>ASCII characters according to
+    <a name="an538"></a>formatted output, as binary values which are stored in the computer's
+memory are converted to human-readable <a name="an539"></a>ASCII characters according to
 certain formatting rules.
 <p>
 The insertion operator points to the <code>ostream</code> object to
@@ -971,22 +996,22 @@ Each operator returns the <code>ostream</code> object into which the information
 has been inserted, and can thus immediately be followed by the next insertion.
 <p>
 Streams lack facilities for formatted output like <strong>C</strong>'s
-<a name="an535"></a><code>printf</code> and <a name="an536"></a><code>vprintf</code> functions. Although it is not difficult to
+<a name="an540"></a><code>printf</code> and <a name="an541"></a><code>vprintf</code> functions. Although it is not difficult to
 implement these facilities in the world of streams, <code>printf</code>-like
 functionality is hardly ever required in <strong>C++</strong> programs. Furthermore, as it
 is potentially type-<em>unsafe</em>, it might be better to avoid this functionality
 completely.
 <p>
-When <a name="an537"></a> binary files must be written, normally no
+When <a name="an542"></a> binary files must be written, normally no
 text-formatting is used or required: an <code>int</code> value should be written as a
-series of raw bytes, not as a series of <a name="an538"></a>ASCII numeric characters 0 to
+series of raw bytes, not as a series of <a name="an543"></a>ASCII numeric characters 0 to
 9. The following member functions of <code>ostream</code> objects may be used to
 write `binary files':
     <ul>
-    <li><a name="an539"></a><code>ostream&amp; put(char c)</code>:<blockquote>to write a single character to the output stream. Since a character
+    <li><a name="an544"></a><code>ostream&amp; put(char c)</code>:<blockquote>to write a single character to the output stream. Since a character
 is a byte, this member function could also be used for writing a single
 character to a text-file.</blockquote>
-     <li><a name="an540"></a><code>ostream&amp; write(char const *buffer, int length)</code>:<blockquote>to write at most <code>length</code> bytes, stored in the <code>char const
+     <li><a name="an545"></a><code>ostream&amp; write(char const *buffer, int length)</code>:<blockquote>to write at most <code>length</code> bytes, stored in the <code>char const
 *buffer</code> to the <code>ostream</code> object. Bytes are written as they are stored
 in the buffer, no formatting is done whatsoever. Note that the first argument
 is a <code>char const *</code>: a <em>type cast</em> is required to write any other
@@ -998,7 +1023,7 @@ out.write(reinterpret_cast&lt;char const *&gt;(&amp;x), sizeof(int));
 </pre>
         </blockquote>
     The bytes written by the above <code>write</code> call are written to the
-<code>ostream</code> in an order depending on the <a name="an541"></a><em>endian</em><em>-ness</em> of the
+<code>ostream</code> in an order depending on the <a name="an546"></a><em>endian</em><em>-ness</em> of the
 underlying hardware. Big-endian computers write the most significant byte(s)
 of multi-byte values first, little-endian computers first write the least
 significant byte(s).
@@ -1006,38 +1031,38 @@ significant byte(s).
 <p>
 <a name="OSTREAMPOS"></a><a name="l92"></a>
 <h4>6.4.1.2: `ostream' positioning</h4>
-        Although not every <code>ostream</code> object supports <a name="an542"></a>repositioning, they usually
+        Although not every <code>ostream</code> object supports <a name="an547"></a>repositioning, they usually
 do. This means that it is possible to rewrite a section of the stream which
 was written earlier. Repositioning is frequently used in database applications
 where it must be possible to access the information in the database at random.
 <p>
 The current position can be obtained and modified using the following members:
     <ul>
-    <li><a name="an543"></a><code>ios::pos_type tellp()</code>:<blockquote>the current (absolute) position in the file where the next
+    <li><a name="an548"></a><code>ios::pos_type tellp()</code>:<blockquote>the current (absolute) position in the file where the next
 write-operation to the stream will take place is returned.</blockquote>
-    <li><a name="an544"></a><code>ostream &amp;seekp(ios::off_type step, ios::seekdir org)</code>:<blockquote>modifies a stream's actual position. The function expects an
-<a name="an545"></a><code>off_type</code> <code>step</code> representing the number of bytes the current stream
+    <li><a name="an549"></a><code>ostream &amp;seekp(ios::off_type step, ios::seekdir org)</code>:<blockquote>modifies a stream's actual position. The function expects an
+<a name="an550"></a><code>off_type</code> <code>step</code> representing the number of bytes the current stream
 position is moved with respect to <code>org</code>. The <code>step</code> value
 may be negative, zero or positive.
 <p>
 The origin of the step, <code>org</code> is a value in the
-<a name="an546"></a><code>ios::seekdir</code> enumeration. Its values are:
+<a name="an551"></a><code>ios::seekdir</code> enumeration. Its values are:
         <ul>
-        <li><a name="an547"></a><code>ios::beg</code>:<blockquote>the stepsize is computed relative to the beginning of the
+        <li><a name="an552"></a><code>ios::beg</code>:<blockquote>the stepsize is computed relative to the beginning of the
 stream. This value is used by default.
             </blockquote>
-        <li><a name="an548"></a><code>ios::cur</code>:<blockquote>the stepsize is computed relative to the current position of the
+        <li><a name="an553"></a><code>ios::cur</code>:<blockquote>the stepsize is computed relative to the current position of the
 stream (as returned by <code>tellp</code>).
             </blockquote>
-        <li><a name="an549"></a><code>ios::end</code>:<blockquote>the stepsize is interpreted relative to the current end position
+        <li><a name="an554"></a><code>ios::end</code>:<blockquote>the stepsize is interpreted relative to the current end position
 of the stream.</blockquote>
     </ul>
     It is OK to
- <a name="an550"></a><a name="an551"></a>
+ <a name="an555"></a><a name="an556"></a>
     seek or write beyond the last file position.  Writing bytes to a location
 beyond <code>EOF</code> will pad the intermediate bytes with 0-valued bytes:
-<a name="an552"></a>null-bytes.
-    Seeking before <code>ios::beg</code> raises the <a name="an553"></a><code>ios::fail</code> flag.
+<a name="an557"></a>null-bytes.
+    Seeking before <code>ios::beg</code> raises the <a name="an558"></a><code>ios::fail</code> flag.
         </blockquote>
     </ul>
 <p>
@@ -1048,16 +1073,16 @@ beyond <code>EOF</code> will pad the intermediate bytes with 0-valued bytes:
 an internal buffer is filled during the write-operations, and when full it
 is flushed.
 <p>
-The stream's <a name="an554"></a>internal buffer can be flushed under program control:
+The stream's <a name="an559"></a>internal buffer can be flushed under program control:
     <ul>
-    <li><a name="an555"></a><code>ostream&amp; flush()</code>:<blockquote>any buffered information stored internally by the <code>ostream</code> object
+    <li><a name="an560"></a><code>ostream&amp; flush()</code>:<blockquote>any buffered information stored internally by the <code>ostream</code> object
 is flushed to the device to which the <code>ostream</code> object interfaces. A stream
 is flushed automatically when:
         <ul>
         <li> the object ceases to exist;
         <li> the <code>endl</code> or <code>flush</code> <em>manipulators</em> (see section
             <a href="cplusplus06.html#FORMATFLAGS">6.3.2.2</a>) are inserted into an <code>ostream</code> object;
-        <li> a stream supporting the <a name="an556"></a><code>close</code>-operation is explicitly closed
+        <li> a stream supporting the <a name="an561"></a><code>close</code>-operation is explicitly closed
 (e.g., a <code>std::ofstream</code> object, cf. section <a href="cplusplus06.html#OFSTREAM">6.4.2</a>).
 <p>
 </ul>
@@ -1066,16 +1091,16 @@ is flushed automatically when:
 <p>
 <a name="OFSTREAM"></a><a name="l94"></a>
 <h3>6.4.2: Output to files: the class `ofstream'</h3>
-    The <a name="an557"></a><code>std::ofstream</code> class is derived from the <code>ostream</code> class:
+    The <a name="an562"></a><code>std::ofstream</code> class is derived from the <code>ostream</code> class:
 it has the same capabilities as the <code>ostream</code> class, but can be used to
-<a name="an558"></a>access files or <a name="an559"></a>create files for writing.
+<a name="an563"></a>access files or <a name="an564"></a>create files for writing.
 <p>
 In order to use the <code>ofstream</code> class  in <strong>C++</strong> sources, the
-    <a name="an560"></a><code>&lt;fstream&gt;</code> header file must be included. Including <code>fstream</code> does not
+    <a name="an565"></a><code>&lt;fstream&gt;</code> header file must be included. Including <code>fstream</code> does not
 automatically make available the standard streams <code>cin</code>, <code>cout</code> and
-<code>cerr</code>. Include <a name="an561"></a><code>iostream</code> to declare these standard streams.
+<code>cerr</code>. Include <a name="an566"></a><code>iostream</code> to declare these standard streams.
 <p>
-The following <a name="an562"></a> constructors are available for
+The following <a name="an567"></a> constructors are available for
 <code>ofstream</code> objects:
     <ul>
     <li><code>ofstream object</code>:
@@ -1094,7 +1119,7 @@ ofstream out("/tmp/scratch");
             </blockquote>
     </ul>
     It is not possible to open an <code>ofstream</code> using a
- <a name="an563"></a><em>file descriptor</em>. The reason for this is (apparently) that file
+ <a name="an568"></a><em>file descriptor</em>. The reason for this is (apparently) that file
 descriptors are not universally available over different operating systems.
 Fortunately, file descriptors can be used (indirectly) with a
 <code>std::streambuf</code> object (and in some implementations: with a
@@ -1105,7 +1130,7 @@ section <a href="cplusplus14.html#FILEBUF">14.8.2</a>.
 Instead of directly associating an <code>ofstream</code> object with a file, the
 object can be constructed first, and opened later.
     <ul>
-        <li><a name="an564"></a><code>void open(char const *name,
+        <li><a name="an569"></a><code>void open(char const *name,
                             ios::openmode mode = ios::out)</code>:<blockquote>associates an <code>ofstream</code> object with an actual file. If the
 <code>ios::fail</code> flag was set before calling <code>open</code> and opening succeeds the
 flag is cleared. Opening an already open stream fails. To reassociate a stream
@@ -1118,17 +1143,17 @@ out.open("/tmp/out2");
 out &lt;&lt; "world\n";
 </pre>
         </blockquote>
-        <li><a name="an565"></a><code>void close()</code>:<blockquote>closes the <code>ofstream</code> object. The function sets the <a name="an566"></a><code>ios::fail</code>
+        <li><a name="an570"></a><code>void close()</code>:<blockquote>closes the <code>ofstream</code> object. The function sets the <a name="an571"></a><code>ios::fail</code>
 flag of the closed object. Closing the file flushes any buffered information
 to the associated file. A file is automatically closed when the associated
 <code>ofstream</code> object ceases to exist.
         </blockquote>
-        <li><a name="an567"></a><code>bool is_open() const</code>:<blockquote>assume a stream was properly constructed, but it has not yet been
+        <li><a name="an572"></a><code>bool is_open() const</code>:<blockquote>assume a stream was properly constructed, but it has not yet been
 attached to a file. E.g., the statement <code>ofstream ostr</code> was executed. When
 we now check its status through <code>good()</code>, a non-zero (i.e., <em>OK</em>) value is
 returned.  The `good' status here indicates that the stream object has been
 constructed properly. It doesn't mean the file is also open. To test whether a
-stream is actually open, <code>is_open</code> should be called. If it returns <a name="an568"></a><code>true</code>,
+stream is actually open, <code>is_open</code> should be called. If it returns <a name="an573"></a><code>true</code>,
 the stream is open. Example:
         <pre>
     #include &lt;fstream&gt;
@@ -1158,33 +1183,33 @@ the stream is open. Example:
 <p>
 <a name="OUTPUTMODES"></a><a name="l95"></a>
 <h4>6.4.2.1: Modes for opening stream objects</h4>
-        The following <a name="an569"></a>file modes or <a name="an570"></a>file flags are available when constructing
+        The following <a name="an574"></a>file modes or <a name="an575"></a>file flags are available when constructing
 or opening <code>ofstream</code> (or <code>istream</code>, see section <a href="cplusplus06.html#IFSTREAM">6.5.2</a>)
-objects. The values are of type <a name="an571"></a><code>ios::openmode</code>. Flags may be
+objects. The values are of type <a name="an576"></a><code>ios::openmode</code>. Flags may be
 combined using the <code>bitor</code> operator.
         <ul>
-        <li><a name="an572"></a><code>ios::app</code>:<blockquote>reposition the stream to its end before every output command (see
+        <li><a name="an577"></a><code>ios::app</code>:<blockquote>reposition the stream to its end before every output command (see
 also <code>ios::ate</code> below). The
 file is created if it doesn't yet exist. When opening a stream in this mode
 any existing contents of the file are kept.</blockquote>
-        <li><a name="an573"></a><code>ios::ate</code>:<blockquote>start initially at the end of the file.  Note that any existing
+        <li><a name="an578"></a><code>ios::ate</code>:<blockquote>start initially at the end of the file.  Note that any existing
 contents are <em>only</em> kept if some other flag tells the object to do so. For
 example <code>ofstream out("gone", ios::ate)</code> <em>rewrites</em> the file <code>gone</code>,
 because the implied <code>ios::out</code> causes the rewriting. If rewriting of an
 existing file should be prevented, the <code>ios::in</code>
-        <a name="an574"></a><a name="an575"></a>
+        <a name="an579"></a><a name="an580"></a>
     mode should be specified too. However, when <code>ios::in</code> is specified the
 file must already exist. The <code>ate</code> mode only initially positions the file at
 the end of file position. After that information may be written in the middle
 of the file using <code>seekp</code>. When the <code>app</code> mode is used information is
 <em>only</em> written at end of file (effectively ignoring <code>seekp</code> operations).</blockquote>
-        <li><a name="an576"></a><code>ios::binary</code>:<blockquote>open a file in <a name="an577"></a>binary mode (used on systems
-distinguishing text- and binary files, like <a name="an578"></a>MS-Windows).
+        <li><a name="an581"></a><code>ios::binary</code>:<blockquote>open a file in <a name="an582"></a>binary mode (used on systems
+distinguishing text- and binary files, like <a name="an583"></a>MS-Windows).
         </blockquote>
-        <li><a name="an579"></a><code>ios::in</code>:<blockquote>open the file for reading. The file must exist.</blockquote>
-        <li><a name="an580"></a><code>ios::out</code>:<blockquote>open the file for writing. Create it if it doesn't yet exist. If
-it exists, the <a name="an581"></a>file is rewritten.</blockquote>
-        <li><a name="an582"></a><code>ios::trunc</code>:<blockquote>start initially with an empty file.  Any existing contents of the
+        <li><a name="an584"></a><code>ios::in</code>:<blockquote>open the file for reading. The file must exist.</blockquote>
+        <li><a name="an585"></a><code>ios::out</code>:<blockquote>open the file for writing. Create it if it doesn't yet exist. If
+it exists, the <a name="an586"></a>file is rewritten.</blockquote>
+        <li><a name="an587"></a><code>ios::trunc</code>:<blockquote>start initially with an empty file.  Any existing contents of the
 file are lost.</blockquote>
         </ul>
     The following combinations of file flags have special meanings:
@@ -1203,15 +1228,15 @@ operator may nevertheless be used here is answered in a later chapter
 <p>
 <a name="OSTRINGSTREAM"></a><a name="l96"></a>
 <h3>6.4.3: Output to memory: the class `ostringstream'</h3>
-    To <a name="an583"></a> write information to memory using <code>stream</code>
-facilities, <a name="an584"></a><code>std::ostringstream</code> objects should be used.
+    To <a name="an588"></a> write information to memory using <code>stream</code>
+facilities, <a name="an589"></a><code>std::ostringstream</code> objects should be used.
 As the class <code>ostringstream</code> is derived from the class <code>ostream</code> all
 <code>ostream</code>'s facilities are available to <code>ostringstream</code> objects as
 well. To use and define <code>ostringstream</code> objects the header file
-<a name="an585"></a><code>&lt;sstream&gt;</code> must be included. In addition the class <code>ostringstream</code> offers
+<a name="an590"></a><code>&lt;sstream&gt;</code> must be included. In addition the class <code>ostringstream</code> offers
 the following constructors and members:
     <ul>
-        <li><a name="an586"></a><code>ostringstream ostr(string const &amp;init,
+        <li><a name="an591"></a><code>ostringstream ostr(string const &amp;init,
                 ios::openmode mode = ios::out)</code>:<blockquote>when specifying <code>openmode</code> as <code>ios::ate</code>, the
 <code>ostringstream</code> object is initialized by the <code>string init</code> and remaining
 insertions are appended to the contents of the <code>ostringstream</code> object.
@@ -1224,7 +1249,7 @@ information stored in the object so far (using <code>ios::app</code>). Example:
 std::ostringstream out;
 </pre>
         </blockquote>
-        <li><a name="an587"></a><code>std::string str() const</code>:<blockquote>a copy of the string that is stored inside the <code>ostringstream</code>
+        <li><a name="an592"></a><code>std::string str() const</code>:<blockquote>a copy of the string that is stored inside the <code>ostringstream</code>
             object is returned.</blockquote>
         <li><code>void str(std::string const &amp;str)</code>:
         <blockquote>the current object is reinitialized with new initial contents.</blockquote>
@@ -1233,7 +1258,7 @@ std::ostringstream out;
 several values are inserted into the object. Then, the text contained by the
 <code>ostringstream</code> object is stored in a <code>std::string</code>, whose length and
 contents are thereupon printed.  Such <code>ostringstream</code> objects are most often
-used for doing `type to string'<a name="an588"></a> conversions,
+used for doing `type to string'<a name="an593"></a> conversions,
 like converting <code>int</code> values to text. Formatting flags can be used with
 <code>ostringstreams</code> as well, as they are part of the <code>ostream</code> class.
 <p>
@@ -1281,9 +1306,9 @@ Here is an example showing an <code>ostringstream</code> object being used:
 <p>
 <a name="l97"></a>
 <h2>6.5: Input</h2>
-In <strong>C++</strong> <a name="an589"></a>input is primarily based on the <a name="an590"></a><code>std::istream</code>
+In <strong>C++</strong> <a name="an594"></a>input is primarily based on the <a name="an595"></a><code>std::istream</code>
 class. The <code>istream</code> class defines the basic operators and members
-extracting information from streams: the <a name="an591"></a><em>extraction operator</em> (&gt;&gt;),
+extracting information from streams: the <a name="an596"></a><em>extraction operator</em> (&gt;&gt;),
 and special members like <code>istream::read</code> reading unformatted
 information from streams.
 <p>
@@ -1292,41 +1317,41 @@ offering the functionality of the <code>istream</code> class, but adding their o
 specialties. In the upcoming sections the following classes are discussed:
     <ul>
     <li> The class <code>istream</code>, offering the basic facilities for doing input;
-    <li> The class <a name="an592"></a><code>ifstream</code>, allowing us to read files
-(comparable to <strong>C</strong>'s <a name="an593"></a> <code>fopen(filename, "r")</code>);
-    <li> The class <a name="an594"></a><code>istringstream</code>, allowing us to read information from
+    <li> The class <a name="an597"></a><code>ifstream</code>, allowing us to read files
+(comparable to <strong>C</strong>'s <a name="an598"></a> <code>fopen(filename, "r")</code>);
+    <li> The class <a name="an599"></a><code>istringstream</code>, allowing us to read information from
 text that is not stored on files (streams) but in memory (comparable to
-<strong>C</strong>'s <a name="an595"></a><code>sscanf</code> function).
+<strong>C</strong>'s <a name="an600"></a><code>sscanf</code> function).
     </ul>
 <p>
 <a name="ISTREAM"></a><a name="l98"></a>
 <h3>6.5.1: Basic input: the class `istream'</h3>
-    The class <a name="an596"></a><code>istream</code> defines basic input facilities. The <a name="an597"></a><code>cin</code> object, is
+    The class <a name="an601"></a><code>istream</code> defines basic input facilities. The <a name="an602"></a><code>cin</code> object, is
 an <code>istream</code> object.  All facilities related to input as defined by the
 <code>ios</code> class are also available in the <code>istream</code> class.
 <p>
 We may define <code>istream</code> objects using the following
- <a name="an598"></a><em>istream constructor</em>:
+ <a name="an603"></a><em>istream constructor</em>:
     <ul>
         <li><code>istream object(streambuf *sb)</code>:
             <blockquote>this constructor can be used to construct a wrapper around
 an existing <code>std::streambuf</code> object. Similarly to <code>ostream</code> objects,
 <code>istream</code> objects may be defined by passing it initially
- <a name="an599"></a> a 0-pointer. See section <a href="cplusplus06.html#OSTREAM">6.4.1</a> for
+ <a name="an604"></a> a 0-pointer. See section <a href="cplusplus06.html#OSTREAM">6.4.1</a> for
 a discussion, see also section <a href="cplusplus14.html#STREAMINIT">14.8.3</a>, and see chapter <a href="cplusplus24.html#CONCRETE">24</a>
 for examples.
     </blockquote>
     </ul>
     To define the <code>istream</code> class in <strong>C++</strong> sources, the
-    <a name="an600"></a><code>&lt;istream&gt;</code> header file must be included. To use the predefined
-<code>istream</code> object <a name="an601"></a><code>cin</code>, the <a name="an602"></a><code>&lt;iostream&gt;</code> header file must be included.
+    <a name="an605"></a><code>&lt;istream&gt;</code> header file must be included. To use the predefined
+<code>istream</code> object <a name="an606"></a><code>cin</code>, the <a name="an607"></a><code>&lt;iostream&gt;</code> header file must be included.
 <p>
 <a name="ISTREAMREAD"></a><a name="l99"></a>
 <h4>6.5.1.1: Reading from `istream' objects</h4>
         The class <code>istream</code> supports both formatted and unformatted
-    <a name="an603"></a><em>binary input</em>.  The <a name="an604"></a><em>extraction operator</em> (<a name="an605"></a><code>operator&gt;&gt;</code>) is
-used to extract values in a <a name="an606"></a>type safe way from <code>istream</code> objects.  This
-is called <a name="an607"></a>formatted input, whereby human-readable <a name="an608"></a>ASCII characters are
+    <a name="an608"></a><em>binary input</em>.  The <a name="an609"></a><em>extraction operator</em> (<a name="an610"></a><code>operator&gt;&gt;</code>) is
+used to extract values in a <a name="an611"></a>type safe way from <code>istream</code> objects.  This
+is called <a name="an612"></a>formatted input, whereby human-readable <a name="an613"></a>ASCII characters are
 converted, according to certain formatting rules, to binary values.
 <p>
 The extraction operator points to the objects or variables which receive new
@@ -1349,7 +1374,7 @@ variables can be extracted from <code>istream</code> objects. There is an overlo
 &gt;&gt; available for the extraction of an <code>int</code>, of a <code>double</code>, of a
 string, of an array of characters, possibly to a pointer, etc. etc.. String or
 character array extraction
-    <a name="an609"></a> <a name="an610"></a>
+    <a name="an614"></a> <a name="an615"></a>
     by default first skips all white space characters, and then extracts
 all consecutive non-white space characters. Once an extraction operator has
 been processed the <code>istream</code> object from which the information was extracted
@@ -1357,20 +1382,20 @@ is returned and it can immediately be used for additional <code>istream</code>
 operations that appear in the same expression.
 <p>
 Streams lack facilities for formatted input (as used by, e.g., <strong>C</strong>'s
-<a name="an611"></a><code>scanf</code> and <a name="an612"></a><code>vscanf</code> functions). Although it is not difficult to add these
+<a name="an616"></a><code>scanf</code> and <a name="an617"></a><code>vscanf</code> functions). Although it is not difficult to add these
 facilities to the world of streams, <code>scanf</code>-like functionality is hardly
 ever required in <strong>C++</strong> programs. Furthermore, as it is potentially
 type-<em>unsafe</em>, it might be better to avoid formatted input completely.
 <p>
-When <a name="an613"></a> binary files must be read, the information should
+When <a name="an618"></a> binary files must be read, the information should
 normally not be formatted: an <code>int</code> value should be read as a series of
-unaltered bytes, not as a series of <a name="an614"></a>ASCII numeric characters 0 to 9. The
+unaltered bytes, not as a series of <a name="an619"></a>ASCII numeric characters 0 to 9. The
 following member functions for reading information from <code>istream</code> objects
 are available:
     <ul>
-        <li><a name="an615"></a><code>int gcount() const</code>:<blockquote>the number of characters read from the input stream
+        <li><a name="an620"></a><code>int gcount() const</code>:<blockquote>the number of characters read from the input stream
 by the last unformatted input operation is returned.</blockquote>
-        <li><a name="an616"></a><code>int get()</code>:<blockquote>the next available single character is returned
+        <li><a name="an621"></a><code>int get()</code>:<blockquote>the next available single character is returned
 as an unsigned <code>char</code> value using an <code>int</code> return type.
 <code>EOF</code> is returned if no more character are available.</blockquote>
         <li><code>istream &amp;get(char &amp;ch)</code>:<blockquote>the next single character read from the input stream is
@@ -1390,7 +1415,7 @@ delimiter was not encountered after reading <code>len - 1</code> characters.
 It is OK to specifiy an 0-valued character delimiter: this way NTB strings
 may be read from a (binary) file.
         </blockquote>
-        <li><a name="an617"></a><code>istream&amp; getline(char *buffer, int len, char delim = '\n')</code>:<blockquote>this member function operates analogously to the <code>get</code> member
+        <li><a name="an622"></a><code>istream&amp; getline(char *buffer, int len, char delim = '\n')</code>:<blockquote>this member function operates analogously to the <code>get</code> member
 function, but <code>getline</code> removes <code>delim</code> from the stream if it is actually
 encountered. The delimiter itself, if encountered, is <em>not</em> stored in the
 <code>buffer</code>. If <code>delim</code> was <em>not</em> found (before reading <code>len - 1</code>
@@ -1399,14 +1424,14 @@ true. Realize that the <code>std::string</code> class also offers a function
 <code>std::getline</code> which is generally preferred over this <code>getline</code> member
 function that is described here (see section <a href="cplusplus05.html#STRINGMEMBERS">5.2.4</a>).
             </blockquote>
-        <li><a name="an618"></a><code>istream&amp; ignore()</code>:<blockquote>one character is skipped from the input stream.</blockquote>
+        <li><a name="an623"></a><code>istream&amp; ignore()</code>:<blockquote>one character is skipped from the input stream.</blockquote>
         <li><code>istream&amp; ignore(int n)</code>:<blockquote><code>n</code> characters are skipped from the input stream.</blockquote>
         <li><code>istream&amp; ignore(int n, int delim)</code>:<blockquote>at most <code>n</code> characters are skipped but skipping characters
 stops after having removed <code>delim</code> from the input stream.</blockquote>
-        <li><a name="an619"></a><code>int peek()</code>:<blockquote>this function returns the next available input character,
+        <li><a name="an624"></a><code>int peek()</code>:<blockquote>this function returns the next available input character,
 but does not actually remove the character from the input stream. <code>EOF</code>
 is returned if no more characters are available.</blockquote>
-        <li><a name="an620"></a><code>istream&amp; putback(char ch)</code>:<blockquote>The character <code>ch</code> is `pushed back' into the input stream, to
+        <li><a name="an625"></a><code>istream&amp; putback(char ch)</code>:<blockquote>The character <code>ch</code> is `pushed back' into the input stream, to
 be read again as the next available character. <code>EOF</code> is returned if this
 is not allowed. Normally, it is OK to put back one character. Example:
             <pre>
@@ -1417,67 +1442,67 @@ cin.putback('X');
 cout &lt;&lt; static_cast&lt;char&gt;(cin.get());
 </pre>
             </blockquote>
-        <li><a name="an621"></a><code>istream &amp;read(char *buffer, int len)</code>:<blockquote>At most <code>len</code> bytes are read from the input stream into the
+        <li><a name="an626"></a><code>istream &amp;read(char *buffer, int len)</code>:<blockquote>At most <code>len</code> bytes are read from the input stream into the
 buffer. If <code>EOF</code> is encountered first, fewer bytes are read, with the
 member function <code>eof</code> returning <code>true</code>. This function is commonly used
 when reading <em>binary</em> files. Section <a href="cplusplus06.html#IFSTREAM">6.5.2</a> contains an example in
 which this member function is used. The member function <code>gcount()</code> may be
 used to determine the number of characters that were retrieved by <code>read</code>.
             </blockquote>
-        <li><a name="an622"></a><code>istream&amp; readsome(char *buffer, int len)</code>:<blockquote>at most <code>len</code> bytes are read from the input stream into the
+        <li><a name="an627"></a><code>istream&amp; readsome(char *buffer, int len)</code>:<blockquote>at most <code>len</code> bytes are read from the input stream into the
 buffer. All available characters are read into the buffer, but if <code>EOF</code>
 is encountered, fewer bytes are read, without setting the <code>ios::eofbit</code>
 or <code>ios::failbit</code>.
         </blockquote>
-        <li><a name="an623"></a><code>istream &amp;unget()</code>:<blockquote>the last character that was read from the stream is put back.</blockquote>
+        <li><a name="an628"></a><code>istream &amp;unget()</code>:<blockquote>the last character that was read from the stream is put back.</blockquote>
     </ul>
 <p>
 <a name="ISTREAMPOS"></a><a name="l100"></a>
 <h4>6.5.1.2: `istream' positioning</h4>
-        Although not every <code>istream</code> object supports <a name="an624"></a>repositioning, some do. This
+        Although not every <code>istream</code> object supports <a name="an629"></a>repositioning, some do. This
 means that it is possible to read the same section of a stream
-repeatedly. Repositioning is frequently used in <a name="an625"></a><em>database applications</em>
+repeatedly. Repositioning is frequently used in <a name="an630"></a><em>database applications</em>
 where it must be possible to access the information in the database randomly.
 <p>
 The current position can be obtained and modified using the following members:
     <ul>
-    <li><a name="an626"></a><code>ios::pos_type tellg()</code>:<blockquote><a name="an627"></a>the stream's current (absolute) position where the
+    <li><a name="an631"></a><code>ios::pos_type tellg()</code>:<blockquote><a name="an632"></a>the stream's current (absolute) position where the
 stream's next read-operation will take place is returned.</blockquote>
-    <li><a name="an628"></a><code>istream &amp;seekg(ios::off_type step, ios::seekdir org)</code>:<blockquote>modifies a stream's actual position. The function expects an
-<a name="an629"></a><code>off_type</code> <code>step</code> representing the number of bytes the current stream
+    <li><a name="an633"></a><code>istream &amp;seekg(ios::off_type step, ios::seekdir org)</code>:<blockquote>modifies a stream's actual position. The function expects an
+<a name="an634"></a><code>off_type</code> <code>step</code> representing the number of bytes the current stream
 position is moved with respect to <code>org</code>. The <code>step</code> value may be negative,
 zero or positive.
 <p>
 The origin of the step, <code>org</code> is a value in the
-<a name="an630"></a><code>ios::seekdir</code> enumeration. Its values are:
+<a name="an635"></a><code>ios::seekdir</code> enumeration. Its values are:
         <ul>
-        <li><a name="an631"></a><code>ios::beg</code>:<blockquote>the stepsize is computed relative to the beginning of the
+        <li><a name="an636"></a><code>ios::beg</code>:<blockquote>the stepsize is computed relative to the beginning of the
 stream. This value is used by default.
             </blockquote>
-        <li><a name="an632"></a><code>ios::cur</code>:<blockquote>the stepsize is computed relative to the current position of the
+        <li><a name="an637"></a><code>ios::cur</code>:<blockquote>the stepsize is computed relative to the current position of the
 stream (as returned by <code>tellp</code>).
             </blockquote>
-        <li><a name="an633"></a><code>ios::end</code>:<blockquote>the stepsize is interpreted relative to the current end position
+        <li><a name="an638"></a><code>ios::end</code>:<blockquote>the stepsize is interpreted relative to the current end position
 of the the stream.</blockquote>
     </ul>
-    It is OK to <a name="an634"></a> seek beyond the last file
-position.  Seeking before <code>ios::beg</code> raises the <a name="an635"></a><code>ios::failbit</code>
+    It is OK to <a name="an639"></a> seek beyond the last file
+position.  Seeking before <code>ios::beg</code> raises the <a name="an640"></a><code>ios::failbit</code>
 flag.
         </blockquote>
     </ul>
 <p>
 <a name="IFSTREAM"></a><a name="l101"></a>
 <h3>6.5.2: Input from files: the class `ifstream'</h3>
-    The <a name="an636"></a><code>std::ifstream</code> class is derived from the <code>istream</code> class:
+    The <a name="an641"></a><code>std::ifstream</code> class is derived from the <code>istream</code> class:
 it has the same capabilities as the <code>istream</code> class, but can be used to
-<a name="an637"></a>access files  for reading.
+<a name="an642"></a>access files  for reading.
 <p>
 In order to use the <code>ifstream</code> class  in <strong>C++</strong> sources, the
-    <a name="an638"></a><code>&lt;fstream&gt;</code> header file must be included. Including <code>fstream</code> does not
+    <a name="an643"></a><code>&lt;fstream&gt;</code> header file must be included. Including <code>fstream</code> does not
 automatically make available the standard streams <code>cin</code>, <code>cout</code> and
-<code>cerr</code>. Include <a name="an639"></a><code>iostream</code> to declare these standard streams.
+<code>cerr</code>. Include <a name="an644"></a><code>iostream</code> to declare these standard streams.
 <p>
-The following <a name="an640"></a> constructors are available for
+The following <a name="an645"></a> constructors are available for
 <code>ifstream</code> objects:
     <ul>
     <li><code>ifstream object</code>:
@@ -1499,7 +1524,7 @@ ifstream in("/tmp/input");
 Instead of directly associating an <code>ifstream</code> object with a file, the
 object can be constructed first, and opened later.
     <ul>
-        <li><a name="an641"></a><code>void open(char const *name,
+        <li><a name="an646"></a><code>void open(char const *name,
                             ios::openmode mode = ios::in)</code>:<blockquote>associates an <code>ifstream</code> object with an actual file. If the
 <code>ios::fail</code> flag was set before calling <code>open</code> and opening succeeds the
 flag is cleared. Opening an already open stream fails. To reassociate a stream
@@ -1512,17 +1537,17 @@ in.open("/tmp/in2");
 in &gt;&gt; anotherVariable;
 </pre>
         </blockquote>
-        <li><a name="an642"></a><code>void close()</code>:<blockquote>closes the <code>ifstream</code> object. The function sets the <a name="an643"></a><code>ios::fail</code>
+        <li><a name="an647"></a><code>void close()</code>:<blockquote>closes the <code>ifstream</code> object. The function sets the <a name="an648"></a><code>ios::fail</code>
 flag of the closed object. Closing the file flushes any buffered information
 to the associated file. A file is automatically closed when the associated
 <code>ifstream</code> object ceases to exist.
         </blockquote>
-        <li><a name="an644"></a><code>bool is_open() const</code>:<blockquote>assume a stream was properly constructed, but it has not yet been
+        <li><a name="an649"></a><code>bool is_open() const</code>:<blockquote>assume a stream was properly constructed, but it has not yet been
 attached to a file. E.g., the statement <code>ifstream ostr</code> was executed. When
 we now check its status through <code>good()</code>, a non-zero (i.e., <em>OK</em>) value is
 returned.  The `good' status here indicates that the stream object has been
 constructed properly. It doesn't mean the file is also open. To test whether a
-stream is actually open, <code>is_open</code> should be called. If it returns <a name="an645"></a><code>true</code>,
+stream is actually open, <code>is_open</code> should be called. If it returns <a name="an650"></a><code>true</code>,
 the stream is open.  Also see the example in section <a href="cplusplus06.html#OFSTREAM">6.4.2</a>. The
 following example  illustrates reading from a binary file (see also section
 <a href="cplusplus06.html#ISTREAMREAD">6.5.1.1</a>):
@@ -1545,15 +1570,15 @@ following example  illustrates reading from a binary file (see also section
 <p>
 <a name="ISTRINGSTREAM"></a><a name="l102"></a>
 <h3>6.5.3: Input from memory: the class `istringstream'</h3>
-    To <a name="an646"></a> read information from memory using
-<code>stream</code> facilities, <a name="an647"></a><code>std::istringstream</code> objects should
+    To <a name="an651"></a> read information from memory using
+<code>stream</code> facilities, <a name="an652"></a><code>std::istringstream</code> objects should
 be used.  As the class <code>istringstream</code> is derived from the class <code>istream</code>
 all <code>istream</code>'s facilities are available to <code>istringstream</code> objects as
 well. To use and define <code>istringstream</code> objects the header file
-<a name="an648"></a><code>&lt;sstream&gt;</code> must be included. In addition the class <code>istringstream</code> offers
+<a name="an653"></a><code>&lt;sstream&gt;</code> must be included. In addition the class <code>istringstream</code> offers
 the following constructors and members:
     <ul>
-        <li><a name="an649"></a><code>istringstream istr(string const &amp;init,
+        <li><a name="an654"></a><code>istringstream istr(string const &amp;init,
                 ios::openmode mode = ios::in)</code>:<blockquote>the object is initialized with <code>init</code>'s contents</blockquote>
         <li><code>istringstream istr(ios::openmode mode = ios::in)</code>
         (this constructor is usually used as the default
@@ -1562,12 +1587,12 @@ the following constructors and members:
 std::istringstream in;
 </pre>
         )
-        <li><a name="an650"></a><code>void str(std::string const &amp;str)</code>:<blockquote>the current object is reinitialized with new initial contents.</blockquote>
+        <li><a name="an655"></a><code>void str(std::string const &amp;str)</code>:<blockquote>the current object is reinitialized with new initial contents.</blockquote>
     </ul>
     The following example illustrates the use of the <code>istringstream</code> class:
 several values are extracted from the object. Such <code>istringstream</code> objects
-are most often used for doing `string to type'<a name="an651"></a>
-conversions, like converting text to <code>int</code> values (cf. <strong>C</strong>'s <a name="an652"></a><code>atoi</code>
+are most often used for doing `string to type'<a name="an656"></a>
+conversions, like converting text to <code>int</code> values (cf. <strong>C</strong>'s <a name="an657"></a><code>atoi</code>
 function). Formatting flags can be used with <code>istringstreams</code> as well, as
 they are part of the <code>istream</code> class.  In the example note especially the
 use of the member <code>seekg</code>:
@@ -1601,9 +1626,9 @@ use of the member <code>seekg</code>:
 <p>
 <a name="CPSTREAM"></a><a name="l103"></a>
 <h3>6.5.4: Copying streams</h3>
-    Usually, files are copied <a name="an653"></a> either by reading a source file
+    Usually, files are copied <a name="an658"></a> either by reading a source file
 character by character or line by line. The basic <em>mold</em> to process streams
- <a name="an654"></a> is as follows:
+ <a name="an659"></a> is as follows:
         <ul>
             <li> Continuous loop:
             <ol>
@@ -1645,7 +1670,7 @@ Contraction is possible here by combining <code>get</code> with the
         break;
 </pre>
     Even so, this would still follow the basic rule:
- `<a name="an655"></a>read first, test later'.
+ `<a name="an660"></a>read first, test later'.
 <p>
 Simply copying a file isn't required very often. More often a situation is
 encountered where a file is processed up to a certain point, followed by plain
@@ -1653,7 +1678,7 @@ copying the file's remaining information. The next program illustrates
 this. Using <code>ignore</code> to skip the first line (for the sake of the example it
 is assumed that the first line is at most 80 characters long), the second
 statement uses yet another overloaded version of the &lt;&lt;-operator, in
-which a <a name="an656"></a><code>streambuf</code> pointer <a name="an657"></a> is inserted into
+which a <a name="an661"></a><code>streambuf</code> pointer <a name="an662"></a> is inserted into
 a stream. As the member <code>rdbuf</code> returns a stream's <code>streambuf *</code>, we have
 a simple means of inserting a stream's contents into an <code>ostream</code>:
         <pre>
@@ -1673,16 +1698,16 @@ object. Consequently it can be used with all specializations of the
 <p>
 <a name="COUPLING"></a><a name="l104"></a>
 <h3>6.5.5: Coupling streams</h3>
-    Ostream objects <a name="an658"></a> can be <em>coupled</em> to <a name="an659"></a><code>ios</code> objects
-using the <a name="an660"></a><code>tie</code> member function. Tying results in flushing the <code>ostream</code>'s
-buffer whenever an <a name="an661"></a>input or <a name="an662"></a>output operation is performed on the <code>ios</code>
-object to which the <code>ostream</code> object is tied.  By default <a name="an663"></a><code>cout</code> is tied
-to <a name="an664"></a><code>cin</code> (using <code>cin.tie(cout)</code>).  This tie means that whenever an
+    Ostream objects <a name="an663"></a> can be <em>coupled</em> to <a name="an664"></a><code>ios</code> objects
+using the <a name="an665"></a><code>tie</code> member function. Tying results in flushing the <code>ostream</code>'s
+buffer whenever an <a name="an666"></a>input or <a name="an667"></a>output operation is performed on the <code>ios</code>
+object to which the <code>ostream</code> object is tied.  By default <a name="an668"></a><code>cout</code> is tied
+to <a name="an669"></a><code>cin</code> (using <code>cin.tie(cout)</code>).  This tie means that whenever an
 operation on <code>cin</code> is requested, <code>cout</code> is flushed first. To break the
 tie, <code>ios::tie(0)</code> can be called. In the example: <code>cin.tie(0)</code>.
 <p>
-Another useful coupling of streams is shown by the tie between <a name="an665"></a><code>cerr</code> and
-<a name="an666"></a><code>cout</code>. Because of the tie standard output and error messages written to the
+Another useful coupling of streams is shown by the tie between <a name="an670"></a><code>cerr</code> and
+<a name="an671"></a><code>cout</code>. Because of the tie standard output and error messages written to the
 screen are shown in sync with the time at which they were generated:
     <pre>
     #include &lt;iostream&gt;
@@ -1710,7 +1735,7 @@ screen are shown in sync with the time at which they were generated:
 </pre>
 <p>
 An alternative way to couple streams is to make streams use a common
-<code>streambuf</code> object. This can be implemented using the <a name="an667"></a>
+<code>streambuf</code> object. This can be implemented using the <a name="an672"></a>
 <code>ios::rdbuf(streambuf *)</code> member function. This way two streams can use,
 e.g. their own formatting, one stream can be used for input, the other for
 output, and redirection using the stream library rather than operating
@@ -1750,17 +1775,17 @@ designed for stream classes. Here is an example:
 <p>
 <a name="REDIR"></a><a name="l107"></a>
 <h3>6.6.2: Redirecting streams</h3>
-    Using <a name="an668"></a><code>ios::rdbuf</code> streams can be forced to share their
+    Using <a name="an673"></a><code>ios::rdbuf</code> streams can be forced to share their
 <code>streambuf</code> objects. Thus information written to one
 stream is actually written to another stream; a phenomenon normally
-called <a name="an669"></a><em>redirection</em>. Redirection is commonly implemented at the
+called <a name="an674"></a><em>redirection</em>. Redirection is commonly implemented at the
 operating system level, and sometimes that is still necessary (see
 section <a href="cplusplus24.html#REDIRECTION">24.2.3</a>).
 <p>
 A common situation where redirection is useful is when error messages should
 be written to file rather than to the standard error stream, usually indicated
-by its <a name="an670"></a>file descriptor number 2. In the <a name="an671"></a>Unix operating system using the
-<a name="an672"></a><code>bash</code> shell, this can be realized as follows:
+by its <a name="an675"></a>file descriptor number 2. In the <a name="an676"></a>Unix operating system using the
+<a name="an677"></a><code>bash</code> shell, this can be realized as follows:
         <pre>
     program 2&gt;/tmp/error.log
 </pre>
@@ -1849,16 +1874,16 @@ the redirection has been terminated.
 <a name="FSTREAM"></a><a name="l108"></a>
 <h3>6.6.3: Reading AND Writing streams</h3>
     In order to both read and write to a stream
-    <a name="an673"></a> an <a name="an674"></a><code>std::fstream</code> object must be
+    <a name="an678"></a> an <a name="an679"></a><code>std::fstream</code> object must be
 created.  As with <code>ifstream</code> and <code>ofstream</code> objects, its constructor
 receives the name of the file to be opened:
         <pre>
         fstream inout("iofile", ios::in | ios::out);
 </pre>
-    Note the use of the constants <a name="an675"></a><code>ios::in</code> and <a name="an676"></a><code>ios::out</code>,
+    Note the use of the constants <a name="an680"></a><code>ios::in</code> and <a name="an681"></a><code>ios::out</code>,
 indicating that the file must be opened for both reading and writing. Multiple
 mode indicators may be used, concatenated by the <code>bitor</code> operator.
-Alternatively, instead of <code>ios::out</code>, <a name="an677"></a><code>ios::app</code> could have been
+Alternatively, instead of <code>ios::out</code>, <a name="an682"></a><code>ios::app</code> could have been
 used and mere writing would become appending (at the end of the file).
 <p>
 Reading and writing to the same file is always a bit awkward: what to do
@@ -1904,17 +1929,17 @@ the following approach:
 <p>
 Under this approach if the first construction attempt fails <code>fname</code>
 doesn't exist yet. But then <code>open</code> can be attempted using the
-<a name="an678"></a><code>ios::trunc</code> flag. If the file already existed, the construction
-would have succeeded. By specifying <a name="an679"></a><code>ios::ate</code> when defining <code>rw</code>,
+<a name="an683"></a><code>ios::trunc</code> flag. If the file already existed, the construction
+would have succeeded. By specifying <a name="an684"></a><code>ios::ate</code> when defining <code>rw</code>,
 the initial read/write action would by default have taken place at
 <code>EOF</code>.
 <p>
-Under <a name="an680"></a> <a name="an681"></a> <strong>DOS</strong>-like operating systems that use the
-multiple character sequence <code>\r\n</code> to separate lines in <a name="an682"></a>text files the
-flag <a name="an683"></a><code>ios::binary</code> is required to process <a name="an684"></a>binary files ensuring
+Under <a name="an685"></a> <a name="an686"></a> <strong>DOS</strong>-like operating systems that use the
+multiple character sequence <code>\r\n</code> to separate lines in <a name="an687"></a>text files the
+flag <a name="an688"></a><code>ios::binary</code> is required to process <a name="an689"></a>binary files ensuring
 that <code>\r\n</code> combinations are processed as two characters. In general,
 <code>ios::binary</code> should be specified when binary (non-text) files are to be
-processed. By default files are opened as text files. <a name="an685"></a>Unix operating
+processed. By default files are opened as text files. <a name="an690"></a>Unix operating
 systems do not distinguish text files from binary files.
 <p>
 With <code>fstream</code> objects, combinations of file flags are used to make sure
@@ -1977,7 +2002,7 @@ processing may continue. E.g.,
 sizes, and where locations and sizes of pieces of information are known. For
 example, the following program adds text lines to a (possibly existing)
 file. It can also be used to retrieve a particular line, given its
-order-number in the file. A <a name="an686"></a><em>binary file</em> <code>index</code> allows for the quick
+order-number in the file. A <a name="an691"></a><em>binary file</em> <code>index</code> allows for the quick
 retrieval of the location of lines.
         <pre>
     #include &lt;iostream&gt;
@@ -2142,7 +2167,7 @@ used). When  <code>streambuf</code> objects are used, either an
 object, or an <code>ostream</code> object is associated with the
 <code>streambuf</code> object of another <code>istream</code> object. Here is the previous
 program again, now using
-    <a name="an687"></a> <em>associated streams</em>:
+    <a name="an692"></a> <em>associated streams</em>:
         <pre>
     #include &lt;iostream&gt;
     #include &lt;fstream&gt;
@@ -2204,8 +2229,8 @@ program again, now using
 In this example
     <ul>
     <li> the streams associated with the <code>streambuf</code> objects of existing
-streams are not <a name="an688"></a><code>ifstream</code> or <a name="an689"></a><code>ofstream</code> objects but basic <a name="an690"></a><code>istream</code> and
-<a name="an691"></a><code>ostream</code> objects.
+streams are not <a name="an693"></a><code>ifstream</code> or <a name="an694"></a><code>ofstream</code> objects but basic <a name="an695"></a><code>istream</code> and
+<a name="an696"></a><code>ostream</code> objects.
     <li> The <code>streambuf</code> object is not defined by an <code>ifstream</code> or
 <code>ofstream</code> object. Instead it is defined outside of the streams, using
 a <code>filebuf</code> (cf. section <a href="cplusplus14.html#FILEBUF">14.8.2</a>) and constructions like:
