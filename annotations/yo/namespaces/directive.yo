@@ -19,3 +19,32 @@ if tt(cos) is em(not) defined in the tt(CppAnnotations) namespace, the
 standard tt(cos) function will be used. The tt(using) directive does not
 document as clearly as the tt(using) declaration what entity will actually be
 used. Therefore use caution when applying the tt(using) directive.
+
+Namespace declarations are context sensitive: when a tt(using namespace)
+declaration is specified inside a compound statement then the declaration is
+valid until the compound statement's closing curly bracket has been
+encountered. In the next example a string tt(first) is defined without
+explicit specfying tt(std::string), but once the compound statement has ended
+the scope of the tt(using namespace std) declaration has also ended, and so
+tt(std::) is required once again when defining tt(second):
+        verb(
+    #include <string>
+    int main()
+    {
+        {
+            using namespace std;
+            string first;
+        }
+        std::string second;
+    }
+        )
+    A tt(using namespace) directive cannot be used within the
+declaration block of a class- or enumeration-type. E.g., the following example
+won't compile:
+        verb(
+    struct Namespace
+    {
+        using namespace std;      // won't compile
+    };
+        )
+    
