@@ -4,6 +4,7 @@
 #include <stack>
 #include <string>
 #include <iostream>
+#include <iomanip>
 
 #include <bobcat/arg>
 
@@ -75,13 +76,9 @@ try
         {
             ++line;
 
-            for
-            (
-                string::iterator pos = text.begin(); pos != text.end();
-                ++pos
-            )
+            for (char ch: text)
             {
-                switch (*pos)
+                switch (ch)
                 {
                     case '(':
                         linenr.push(line);
@@ -89,7 +86,7 @@ try
                     case ')':
                         if (linenr.empty())
                         {
-                            header(argv[idx]);
+                            header(arg[idx]);
                             cout << "\tExtra closepar in line " << line
                                  << endl;
                             ok = false;
@@ -100,14 +97,16 @@ try
                 }
             }
         }
+
         while (!linenr.empty())
         {
-            header(argv[idx]);
+            header(arg[idx]);
             cout << "\tUnbalanced openpar in line " << linenr.top() << endl;
             linenr.pop();
             ok = false;
         }
     }
+
     return ok ? 0 : 1;
 }
 catch(exception const &e)
