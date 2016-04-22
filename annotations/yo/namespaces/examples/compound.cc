@@ -14,7 +14,7 @@ int main()
     using namespace std;        // but here is OK
 
     string text;
-    
+
     Namespace ns;
 
     cout << ns.text();
