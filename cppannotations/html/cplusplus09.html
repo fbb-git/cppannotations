@@ -1,6 +1,6 @@
 <!DOCTYPE html><html><head>
 <meta charset="UTF-8">
-<title> C++ Annotations Version 10.5.0 </title>
+<title> C++ Annotations Version 10.5.1 </title>
 <link rel="stylesheet" type="text/css" href="cplusplus.css"><style type="text/css">
     figure {text-align: center;}
     img {vertical-align: center;}
@@ -14,113 +14,113 @@
     <li> <a href="cplusplus10.html">Next Chapter</a>
 </ul>
 <hr>
-<a name="MEMORY"></a><a name="l146"></a>
-<h1>Chapter 9: Classes And Memory Allocation</h1>
-In contrast to the set of functions that handle <a name="an834"></a>memory allocation in <strong>C</strong>
-(i.e., <a name="an835"></a><code>malloc</code> etc.), memory allocation in <strong>C++</strong> is handled by
-the operators <a name="an836"></a><code>new</code> and <a name="an837"></a><code>delete</code>.
-Important differences between <code>malloc</code> and <code>new</code> are:
+<a name="MEMORY"></a><a name="l145"></a>
+<h1 >Chapter 9: Classes And Memory Allocation</h1>
+In contrast to the set of functions that handle <a name="an822"></a>memory allocation in <strong >C</strong>
+(i.e., <a name="an823"></a><code >malloc</code> etc.), memory allocation in <strong >C++</strong> is handled by
+the operators <a name="an824"></a><code >new</code> and <a name="an825"></a><code >delete</code>.
+Important differences between <code >malloc</code> and <code >new</code> are:
     <ul>
-    <li> The function <code>malloc</code> doesn't `know' what the allocated memory
-will be used for. E.g., when memory for <code>int</code>s is allocated, the programmer
+    <li> The function <code >malloc</code> doesn't `know' what the allocated memory
+will be used for. E.g., when memory for <code >int</code>s is allocated, the programmer
 must supply the correct expression using a multiplication by
-<code>sizeof(int)</code>. In contrast, <code>new</code> requires a type to be specified; the
-<a name="an838"></a><code>sizeof</code> expression is implicitly handled by the compiler. Using <code>new</code> is
-therefore <a name="an839"></a><em>type safe</em>.
-    <li> Memory allocated by <code>malloc</code> is initialized by <a name="an840"></a><code>calloc</code>,
+<code >sizeof(int)</code>. In contrast, <code >new</code> requires a type to be specified; the
+<a name="an826"></a><code >sizeof</code> expression is implicitly handled by the compiler. Using <code >new</code> is
+therefore <a name="an827"></a><em >type safe</em>.
+    <li> Memory allocated by <code >malloc</code> is initialized by <a name="an828"></a><code >calloc</code>,
 initializing the allocated characters to a configurable initial value.  This
-is not very useful when objects are available. As operator <code>new</code> knows about
+is not very useful when objects are available. As operator <code >new</code> knows about
 the type of the allocated entity it may (and will) call the constructor of an
 allocated class type object. This constructor may be also supplied with
 arguments.
-    <li> All <strong>C</strong>-allocation functions must be inspected for
-<a name="an841"></a><code>NULL</code>-returns. This is not required anymore when <code>new</code> is used. In fact,
-<code>new</code>'s behavior when confronted with failing memory allocation is
-configurable through the use of a <em>new_handler</em> (cf. section
+    <li> All <strong >C</strong>-allocation functions must be inspected for
+<a name="an829"></a><code >NULL</code>-returns. This is not required anymore when <code >new</code> is used. In fact,
+<code >new</code>'s behavior when confronted with failing memory allocation is
+configurable through the use of a <em >new_handler</em> (cf. section
 <a href="cplusplus09.html#NEWHANDLER">9.2.2</a>).
     </ul>
-    A comparable relationship exists between <a name="an842"></a><code>free</code> and <code>delete</code>:
-<code>delete</code> makes sure that when an object is deallocated, its
+    A comparable relationship exists between <a name="an830"></a><code >free</code> and <code >delete</code>:
+<code >delete</code> makes sure that when an object is deallocated, its
 destructor is automatically called.
 <p>
 The automatic calling of constructors and destructors when objects are created
 and destroyed has consequences which we shall discuss in this chapter. Many
-problems encountered during <strong>C</strong> program development are caused by incorrect
-memory allocation or <a name="an843"></a>memory leaks: memory is not allocated, not
-freed, not initialized, boundaries are overwritten, etc..  <strong>C++</strong> does not
-`magically' solve these problems, but it <em>does</em> provide us with tools to
+problems encountered during <strong >C</strong> program development are caused by incorrect
+memory allocation or <a name="an831"></a>memory leaks: memory is not allocated, not
+freed, not initialized, boundaries are overwritten, etc..  <strong >C++</strong> does not
+`magically' solve these problems, but it <em >does</em> provide us with tools to
 prevent these kinds of problems.
 <p>
-As a consequence of <code>malloc</code> and friends becoming deprecated
-the very frequently used <a name="an844"></a><code>str...</code> functions, like
-<a name="an845"></a><code>strdup</code>, that are all <code>malloc</code> based, should be avoided in
-<strong>C++</strong> programs. Instead, the facilities of the <code>string</code> class and
-operators <code>new</code> and <code>delete</code> should be used.
+As a consequence of <code >malloc</code> and friends becoming deprecated
+the very frequently used <a name="an832"></a><code >str...</code> functions, like
+<a name="an833"></a><code >strdup</code>, that are all <code >malloc</code> based, should be avoided in
+<strong >C++</strong> programs. Instead, the facilities of the <code >string</code> class and
+operators <code >new</code> and <code >delete</code> should be used.
 <p>
 Memory allocation procedures influence the way classes dynamically allocating
 their own memory should be designed. Therefore, in this chapter these topics
-are discussed in addition to discussions about operators <code>new</code> and
-<code>delete</code>. We'll first cover the peculiarities of operators <code>new</code> and
-<code>delete</code>, followed by a discussion about:
+are discussed in addition to discussions about operators <code >new</code> and
+<code >delete</code>. We'll first cover the peculiarities of operators <code >new</code> and
+<code >delete</code>, followed by a discussion about:
     <ul>
     <li> the destructor: the member function that's called when an object
 ceases to exist;
     <li> the assignment operator, allowing us to assign an object to another
 object of its own class;
-    <li> the <code>this</code> pointer, allowing explicit references to the object for
+    <li> the <code >this</code> pointer, allowing explicit references to the object for
 which a member function was called;
     <li> the copy constructor: the constructor creating a copy of an object;
     <li> the move constructor: a constructor creating an object from
 an anonymous temporary object.
     </ul>
 <p>
-<a name="l147"></a>
-<h2>9.1: Operators `new' and `delete'</h2>
-<strong>C++</strong> defines two operators to allocate memory and to return it to the
-`<a name="an846"></a>common pool'. These operators are, respectively <a name="an847"></a><code>new</code> and <a name="an848"></a><code>delete</code>.
+<a name="l146"></a>
+<h2 >9.1: Operators `new' and `delete'</h2>
+<strong >C++</strong> defines two operators to allocate memory and to return it to the
+`<a name="an834"></a>common pool'. These operators are, respectively <a name="an835"></a><code >new</code> and <a name="an836"></a><code >delete</code>.
 <p>
-Here is a simple example illustrating their use. An <code>int</code> pointer variable
-points to memory allocated by operator <code>new</code>. This memory is later released
-by operator <code>delete</code>.
+Here is a simple example illustrating their use. An <code >int</code> pointer variable
+points to memory allocated by operator <code >new</code>. This memory is later released
+by operator <code >delete</code>.
         <pre>
     int *ip = new int;
     delete ip;
 </pre>
 <p>
-Here are some characteristics of operators <code>new</code> and <code>delete</code>:
+Here are some characteristics of operators <code >new</code> and <code >delete</code>:
     <ul>
-    <li> <code>new</code> and <code>delete</code> are <em>operators</em> and therefore do not
-require parentheses, as required for <em>functions</em> like <code>malloc</code> and
-<code>free</code>;
-    <li> <code>new</code> returns a pointer to the kind of memory that's asked for by
-its operand (e.g., it returns a pointer to an <code>int</code>);
-    <li> <code>new</code> uses a <em>type</em> as its operand, which has the important
+    <li> <code >new</code> and <code >delete</code> are <em >operators</em> and therefore do not
+require parentheses, as required for <em >functions</em> like <code >malloc</code> and
+<code >free</code>;
+    <li> <code >new</code> returns a pointer to the kind of memory that's asked for by
+its operand (e.g., it returns a pointer to an <code >int</code>);
+    <li> <code >new</code> uses a <em >type</em> as its operand, which has the important
 benefit that the correct amount of memory, given the type of the object to be
 allocated, is made available;
-    <li> as a consequence, <code>new</code> is a <a name="an849"></a>type safe operator as it always
+    <li> as a consequence, <code >new</code> is a <a name="an837"></a>type safe operator as it always
 returns a pointer to the type that was mentioned as its operand. In addition,
 the type of the receving pointer
-must match the type specified with operator <code>new</code>;
-    <li> <code>new</code> may fail, but this is normally of <em>no</em> concern to the
-programmer. In particular, the program does <em>not</em> have to test the success
-of the memory allocation, as is required for <code>malloc</code> and
-friends. Section <a href="cplusplus09.html#NEWHANDLER">9.2.2</a> delves into this aspect of <code>new</code>;
-    <li> <code>delete</code> returns <code>void</code>;
-    <li> for each call to <code>new</code> a matching <code>delete</code> should eventually be
-executed, lest a <a name="an850"></a>memory leak occurs;
-    <li> <code>delete</code> can safely operate on a <a name="an851"></a>0-pointer (doing nothing);
-    <li> otherwise <code>delete</code> must only be used to return memory allocated
-by <code>new</code>. It should <em>not</em> be used to return memory allocated by
-<code>malloc</code> and friends.
-    <li> in <strong>C++</strong> <a name="an852"></a>malloc and friends are <em>deprecated</em> and should be
+must match the type specified with operator <code >new</code>;
+    <li> <code >new</code> may fail, but this is normally of <em >no</em> concern to the
+programmer. In particular, the program does <em >not</em> have to test the success
+of the memory allocation, as is required for <code >malloc</code> and
+friends. Section <a href="cplusplus09.html#NEWHANDLER">9.2.2</a> delves into this aspect of <code >new</code>;
+    <li> <code >delete</code> returns <code >void</code>;
+    <li> for each call to <code >new</code> a matching <code >delete</code> should eventually be
+executed, lest a <a name="an838"></a>memory leak occur;
+    <li> <code >delete</code> can safely operate on a <a name="an839"></a>0-pointer (doing nothing);
+    <li> otherwise <code >delete</code> must only be used to return memory allocated
+by <code >new</code>. It should <em >not</em> be used to return memory allocated by
+<code >malloc</code> and friends.
+    <li> in <strong >C++</strong> <a name="an840"></a>malloc and friends are <em >deprecated</em> and should be
 avoided.
     </ul>
 <p>
-Operator <code>new</code> can be used to <a name="an853"></a>allocate primitive types but also to
- <a name="an854"></a><a name="an855"></a>allocate objects. When a primitive type
-or a <code>struct</code> type without a constructor is allocated the allocated
-memory is <em>not</em> guaranteed to be initialized to 0, but an
-<a name="an856"></a>initialization expression may be provided:
+Operator <code >new</code> can be used to <a name="an841"></a>allocate primitive types but also to
+ <a name="an842"></a><a name="an843"></a>allocate objects. When a primitive type
+or a <code >struct</code> type without a constructor is allocated the allocated
+memory is <em >not</em> guaranteed to be initialized to 0, but an
+<a name="an844"></a>initialization expression may be provided:
         <pre>
     int *v1 = new int;          // not guaranteed to be initialized to 0
     int *v1 = new int();        // initialized to 0
@@ -129,8 +129,8 @@ memory is <em>not</em> guaranteed to be initialized to 0, but an
 </pre>
     When a class-type object is allocated, the arguments of its constructor
 (if any) are specified immediately following the type specification in the
-<code>new</code> expression and the object is initialized by to the thus specified
-constructor. For example, to allocate <code>string</code> objects the following
+<code >new</code> expression and the object is initialized by to the thus specified
+constructor. For example, to allocate <code >string</code> objects the following
 statements could be used:
         <pre>
     string *s1 = new string;            // uses the default constructor
@@ -138,90 +138,90 @@ statements could be used:
     string *s3 = new string(4, ' ');    // initializes to 4 blanks.
 </pre>
 <p>
-In addition to using <code>new</code> to allocate memory for a single entity or an
-array of entities there is also a variant that allocates <a name="an857"></a><em>raw memory</em>:
- <a name="an858"></a><code>operator new(sizeInBytes)</code>. Raw memory is returned as a <code>void *</code>. Here
-<code>new</code> allocates a block of memory for unspecified purpose. Although raw
+In addition to using <code >new</code> to allocate memory for a single entity or an
+array of entities there is also a variant that allocates <a name="an845"></a><em >raw memory</em>:
+ <a name="an846"></a><code >operator new(sizeInBytes)</code>. Raw memory is returned as a <code >void *</code>. Here
+<code >new</code> allocates a block of memory for unspecified purpose. Although raw
 memory may consist of multiple characters it should not be interpreted as an
-array of characters. Since raw memory returned by <code>new</code> is returned as a
-<code>void *</code> its return value can be assigned to a <code>void *</code> variable. More
-often it is assigned to a <code>char *</code> variable, using a cast. Here is an
+array of characters. Since raw memory returned by <code >new</code> is returned as a
+<code >void *</code> its return value can be assigned to a <code >void *</code> variable. More
+often it is assigned to a <code >char *</code> variable, using a cast. Here is an
 example:
         <pre>
     char *chPtr = static_cast&lt;char *&gt;(operator new(numberOfBytes));
 </pre>
  The use of raw memory is frequently encountered in combination with the
-<em>placement new</em> operator, discussed in section <a href="cplusplus09.html#PLACEMENT">9.1.5</a>.
+<em >placement new</em> operator, discussed in section <a href="cplusplus09.html#PLACEMENT">9.1.5</a>.
 <p>
-<a name="NEWARRAY"></a><a name="l148"></a>
-<h3>9.1.1: Allocating arrays</h3>
-    Operator <a name="an859"></a><code>new[]</code> is used to <a name="an860"></a>allocate arrays. The generic notation
-<code>new[]</code> is used in the <strong>C++</strong> Annotations. Actually, the number of elements to be
+<a name="NEWARRAY"></a><a name="l147"></a>
+<h3 >9.1.1: Allocating arrays</h3>
+    Operator <a name="an847"></a><code >new[]</code> is used to <a name="an848"></a>allocate arrays. The generic notation
+<code >new[]</code> is used in the <strong >C++</strong> Annotations. Actually, the number of elements to be
 allocated must be specified between the square brackets and it must, in turn,
-be <em>prefixed</em> by the type of the entities that must be allocated. Example:
+be <em >prefixed</em> by the type of the entities that must be allocated. Example:
         <pre>
     int *intarr = new int[20];          // allocates 20 ints
     string *stringarr = new string[10]; // allocates 10 strings.
 </pre>
-    Operator <code>new</code> is a different operator than operator <code>new[]</code>. A
+    Operator <code >new</code> is a different operator than operator <code >new[]</code>. A
 consequence of this difference is discussed in the next section
 (<a href="cplusplus09.html#DELETEARRAY">9.1.2</a>).
 <p>
-Arrays allocated by operator <code>new[]</code> are called
- <a name="an861"></a><a name="an862"></a><em>dynamic arrays</em>.  They are constructed during the
+Arrays allocated by operator <code >new[]</code> are called
+ <a name="an849"></a><a name="an850"></a><em >dynamic arrays</em>.  They are constructed during the
 execution of a program, and their lifetime may exceed the lifetime of the
 function in which they were created. Dynamically allocated arrays may last for
 as long as the program runs.
 <p>
-When <code>new[]</code> is used to allocate an array of primitive values or an
-array of objects, <code>new[]</code> must be specified with a type and an (unsigned)
+When <code >new[]</code> is used to allocate an array of primitive values or an
+array of objects, <code >new[]</code> must be specified with a type and an (unsigned)
 expression between its square brackets. The type and expression together are
 used by the compiler to determine the required size of the block of memory to
-make available. When <code>new[]</code> is used the array's elements are stored
+make available. When <code >new[]</code> is used the array's elements are stored
 consecutively in memory. An array index expression may thereafter be used to
-access the array's individual elements: <code>intarr[0]</code> represents the first
-<code>int</code> value, immediately followed by <code>intarr[1]</code>, and so on until the last
-element (<code>intarr[19]</code>).
- <a name="an863"></a>With non-class types (primitive types, <code>struct</code>
-types without constructors) the block of memory returned by operator <code>new[]</code>
-is <em>not</em> guaranteed to be initialized to 0.
+access the array's individual elements: <code >intarr[0]</code> represents the first
+<code >int</code> value, immediately followed by <code >intarr[1]</code>, and so on until the last
+element (<code >intarr[19]</code>).
+ <a name="an851"></a>With non-class types (primitive types, <code >struct</code>
+types without constructors) the block of memory returned by operator <code >new[]</code>
+is <em >not</em> guaranteed to be initialized to 0.
 <p>
-When operator <code>new[]</code> is used to allocate arrays of objects their
-constructors are automatically used. Consequently <code>new string[20]</code> results
-in a block of 20 <em>initialized</em> <code>string</code> objects. When allocating arrays of
+When operator <code >new[]</code> is used to allocate arrays of objects their
+constructors are automatically used. Consequently <code >new string[20]</code> results
+in a block of 20 <em >initialized</em> <code >string</code> objects. When allocating arrays of
 objects the class's
-  <a name="an864"></a><em>default constructor</em> is used to initialize each individual object in
+  <a name="an852"></a><em >default constructor</em> is used to initialize each individual object in
 turn. A non-default constructor cannot be called, but often it is possible to
 work around that as discussed in section <a href="cplusplus13.html#NONDEFINIT">13.8</a>.
 <p>
-The expression between brackets of operator <code>new[]</code> represents the
-number of elements of the array to allocate. The <strong>C++</strong> standard allows
-allocation of <a name="an865"></a> 0-sized arrays. The statement
- <a name="an866"></a><code>new int[0]</code> is correct <strong>C++</strong>. However, it is also
+The expression between brackets of operator <code >new[]</code> represents the
+number of elements of the array to allocate. The <strong >C++</strong> standard allows
+allocation of <a name="an853"></a> 0-sized arrays. The statement
+ <a name="an854"></a><code >new int[0]</code> is correct <strong >C++</strong>. However, it is also
 pointless and confusing and should be avoided. It is pointless as it doesn't
 refer to any element at all, it is confusing as the returned pointer has a
 useless non-0 value. A pointer intending to point to an array of values should
 be initialized (like any pointer that isn't yet pointing to memory) to 0,
-allowing for expressions like <code>if (ptr) ...</code>
+allowing for expressions like <code >if (ptr) ...</code>
 <p>
-Without using operator <code>new[]</code>, arrays of variable sizes can also be
+Without using operator <code >new[]</code>, arrays of variable sizes can also be
 constructed as
- <a name="an867"></a><a name="an868"></a><em>local arrays</em>. Such arrays are not dynamic arrays and
+ <a name="an855"></a><a name="an856"></a><em >local arrays</em>. Such arrays are not dynamic arrays and
 their lifetimes are restricted to the lifetime of the block in which they were
 defined.
 <p>
-Once allocated, all arrays <a name="an869"></a> have fixed sizes. There is no
-<em>simple</em> way to enlarge or shrink arrays. <strong>C++</strong> has no operator
-`<a name="an870"></a><code>renew</code>'. Section <a href="cplusplus09.html#ENLARGEARRAY">9.1.3</a> illustrates how to <a name="an871"></a>
+Once allocated, all arrays <a name="an857"></a> have fixed sizes. There is no
+<em >simple</em> way to enlarge or shrink arrays. <strong >C++</strong> has no operator
+`<a name="an858"></a><code >renew</code>'. Section <a href="cplusplus09.html#ENLARGEARRAY">9.1.3</a> illustrates how to <a name="an859"></a>
 enlarge arrays.
 <p>
-<a name="DELETEARRAY"></a><a name="l149"></a>
-<h3>9.1.2: Deleting arrays</h3>
+<a name="DELETEARRAY"></a><a name="l148"></a>
+<h3 >9.1.2: Deleting arrays</h3>
     Dynamically allocated arrays are deleted using operator
- <a name="an872"></a><code>delete[]</code>. It expects a pointer to a block of memory, previously allocated
-by operator <a name="an873"></a><code>new[]</code>.
+ <a name="an860"></a><code >delete[]</code>. It expects a pointer to a block of memory, previously allocated
+by operator <a name="an861"></a><code >new[]</code>.
 <p>
-When operator <code>delete[]</code>'s operand is a pointer to an array of objects
+When operator <code >delete[]</code>'s operand is a pointer to an array of objects
 two actions are performed:
     <ul>
     <li> First, the class's destructor is called for each of the objects in
@@ -238,24 +238,24 @@ string objects:
     delete[] sp;
 </pre>
     No special action is performed if a dynamically allocated array of
-primitive typed values is deleted. Following <code>int *it = new int[10]</code> the
-statement <code>delete[] it</code> simply returns the memory pointed at by <code>it</code>.
+primitive typed values is deleted. Following <code >int *it = new int[10]</code> the
+statement <code >delete[] it</code> simply returns the memory pointed at by <code >it</code>.
 Realize that, as a pointer is a primitive type, deleting a dynamically
-allocated array of pointers to objects does <em>not</em> result in the proper
+allocated array of pointers to objects does <em >not</em> result in the proper
 destruction of the objects the array's elements point at. So, the following
-example results in a <a name="an874"></a><em>memory leak</em>:
+example results in a <a name="an862"></a><em >memory leak</em>:
         <pre>
     string **sp = new string *[5];
     for (size_t idx = 0; idx != 5; ++idx)
         sp[idx] = new string;
     delete[] sp;            // MEMORY LEAK !
 </pre>
-    In this example the only action performed by <code>delete[]</code> is to return an
+    In this example the only action performed by <code >delete[]</code> is to return an
 area the size of five pointers to strings to the common pool.
 <p>
-Here's how the destruction in such cases <em>should</em> be performed:
+Here's how the destruction in such cases <em >should</em> be performed:
     <ul>
-    <li> Call <code>delete</code> for each of the array's elements;
+    <li> Call <code >delete</code> for each of the array's elements;
     <li> Delete the array itself
     </ul>
     Example:
@@ -269,15 +269,15 @@ to be returned not only the pointer must be available but also the number of
 elements it contains. This can easily be accomplished by storing pointer and
 number of elements in a simple class and then using an object of that class.
 <p>
-Operator <code>delete[]</code> is a different operator than operator
-<code>delete</code>. The <a name="an875"></a>rule of thumb is: if <a name="an876"></a><code>new[]</code> was used, also use
-<code>delete[]</code>.
+Operator <code >delete[]</code> is a different operator than operator
+<code >delete</code>. The <a name="an863"></a>rule of thumb is: if <a name="an864"></a><code >new[]</code> was used, also use
+<code >delete[]</code>.
 <p>
-<a name="ENLARGEARRAY"></a><a name="l150"></a>
-<h3>9.1.3: Enlarging arrays</h3>
-    Once allocated, all arrays have fixed <a name="an877"></a> sizes.
-There is no simple way to enlarge or shrink arrays. <strong>C++</strong> has no
- <a name="an878"></a><code>renew</code> operator. The basic steps to take when enlarging an array are the
+<a name="ENLARGEARRAY"></a><a name="l149"></a>
+<h3 >9.1.3: Enlarging arrays</h3>
+    Once allocated, all arrays have fixed <a name="an865"></a> sizes.
+There is no simple way to enlarge or shrink arrays. <strong >C++</strong> has no
+ <a name="an866"></a><code >renew</code> operator. The basic steps to take when enlarging an array are the
 following:
     <ul>
     <li> Allocate a new block of memory of larger size;
@@ -311,8 +311,8 @@ dynamically allocated arrays. Example:
 <p>
 The procedure to enlarge shown in the example also has several drawbacks.
     <ul>
-    <li> The new array requires <code>newsize</code> constructors to be called;
-    <li> Having initialized the strings in the new array, <code>oldsize</code> of them
+    <li> The new array requires <code >newsize</code> constructors to be called;
+    <li> Having initialized the strings in the new array, <code >oldsize</code> of them
 are immediately reassigned to the corresponding values in the original array;
     <li> All the objects in the old arrays are destroyed.
     </ul>
@@ -323,22 +323,22 @@ initialization) or raw memory in combination with the
  <a href="cplusplus09.html#PLACEMENT">placement new operator</a> could be used (an array of objects
 remains available, no destruction, no superfluous construction).
 <p>
-<a name="l151"></a>
-<h3>9.1.4: Managing `raw' memory</h3>
-    As we've seen operator <code>new</code> allocates the memory for an object and
+<a name="l150"></a>
+<h3 >9.1.4: Managing `raw' memory</h3>
+    As we've seen operator <code >new</code> allocates the memory for an object and
 subsequently initializes that object by calling one of its
-constructors. Likewise, operator <code>delete</code> calls an object's destructor and
-subsequently returns the memory allocated by operator <code>new</code> to the common
+constructors. Likewise, operator <code >delete</code> calls an object's destructor and
+subsequently returns the memory allocated by operator <code >new</code> to the common
 pool.
 <p>
-In the next section we'll encounter another use of <code>new</code>, allowing us to
-initialize objects in so-called <a name="an879"></a><em>raw memory</em>: memory merely consisting of
+In the next section we'll encounter another use of <code >new</code>, allowing us to
+initialize objects in so-called <a name="an867"></a><em >raw memory</em>: memory merely consisting of
 bytes that have been made available by either static or dynamic allocation.
 <p>
 Raw memory is made available by
- <a name="an880"></a> <code>operator new(sizeInBytes)</code>. This should not be
+ <a name="an868"></a> <code >operator new(sizeInBytes)</code>. This should not be
 interpreted as an array of any kind but just a series of memory locations that
-were dynamically made available. <code>operator new</code> returns a <code>void *</code> so a
+were dynamically made available. <code >operator new</code> returns a <code >void *</code> so a
 (static) cast is required to use it as memory of some type. Here are two
 examples:
         <pre>
@@ -347,75 +347,75 @@ examples:
                                 // room for 5 strings
     string *sp = static_cast&lt;string *&gt;(operator new(5 * sizeof(string)));
 </pre>
- As <code>operator new</code> has no concept of data types the size of the intended
+ As <code >operator new</code> has no concept of data types the size of the intended
 data type must be specified when allocating raw memory for a certain number of
-objects of an intended type. The use of <code>operator new</code> therefore somewhat
-resembles the use of <a name="an881"></a><code>malloc</code>.
+objects of an intended type. The use of <code >operator new</code> therefore somewhat
+resembles the use of <a name="an869"></a><code >malloc</code>.
 <p>
-The counterpart of <code>operator new</code> is <a name="an882"></a><code>operator delete</code>. <code>Operator
-delete</code> expects a <code>void *</code> (so a pointer to any type can be passed to
+The counterpart of <code >operator new</code> is <a name="an870"></a><code >operator delete</code>. <code >Operator
+delete</code> expects a <code >void *</code> (so a pointer to any type can be passed to
 it). The pointer is interpreted as a pointer to raw memory which is returned
 to the common pool without any further action. In particular, no destructors
-are called by <code>operator delete</code>. The use of <code>operator delete</code> therefore
-resembles the use of <a name="an883"></a><code>free</code>. To return the memory pointed at by the
-abovementioned variables <code>ip</code> and <code>sp</code> <code>operator delete</code> should be used:
+are called by <code >operator delete</code>. The use of <code >operator delete</code> therefore
+resembles the use of <a name="an871"></a><code >free</code>. To return the memory pointed at by the
+abovementioned variables <code >ip</code> and <code >sp</code> <code >operator delete</code> should be used:
         <pre>
                     // delete raw memory allocated by operator new
     operator delete(ip);
     operator delete(sp);
 </pre>
 <p>
-<a name="PLACEMENT"></a><a name="l152"></a>
-<h3>9.1.5: The `placement new' operator</h3>
-    A remarkable form of operator <code>new</code> is called the <a name="an884"></a><em>placement new</em>
- <a name="an885"></a> operator. Before using placement <code>new</code> the <a name="an886"></a><code>&lt;memory&gt;</code>
+<a name="PLACEMENT"></a><a name="l151"></a>
+<h3 >9.1.5: The `placement new' operator</h3>
+    A remarkable form of operator <code >new</code> is called the <a name="an872"></a><em >placement new</em>
+ <a name="an873"></a> operator. Before using placement <code >new</code> the <a name="an874"></a><code >&lt;memory&gt;</code>
 header file must be included.
 <p>
-Placement <code>new</code> is passed an existing block of memory into which <code>new</code>
+Placement <code >new</code> is passed an existing block of memory into which <code >new</code>
 initializes an object or value.  The block of memory should be large enough to
 contain the object, but apart from that there are no further requirements. It
 is easy to determine how much memory is used by en entity (object or variable)
-of type <code>Type</code>: the
- <a name="an887"></a><code>sizeof</code> operator returns the number of bytes used by an <code>Type</code> entity.
+of type <code >Type</code>: the
+ <a name="an875"></a><code >sizeof</code> operator returns the number of bytes used by an <code >Type</code> entity.
 <p>
 Entities may of course dynamically allocate memory for their own use.
 Dynamically allocated memory, however, is not part of the entity's memory
 `footprint' but it is always made available externally to the entity
-itself. This is why <code>sizeof</code> returns the same value when applied to
-different <code>string</code> objects that return different length and capacity values.
+itself. This is why <code >sizeof</code> returns the same value when applied to
+different <code >string</code> objects that return different length and capacity values.
 <p>
-The placement <code>new</code> operator uses the following syntax (using <code>Type</code> to
+The placement <code >new</code> operator uses the following syntax (using <code >Type</code> to
 indicate the used data type):
         <pre>
     Type *new(void *memory) Type(arguments);
 </pre>
-    Here, <code>memory</code> is a block of memory of at least <code>sizeof(Type)</code> bytes
-and <code>Type(arguments)</code> is any constructor of the class <code>Type</code>.
+    Here, <code >memory</code> is a block of memory of at least <code >sizeof(Type)</code> bytes
+and <code >Type(arguments)</code> is any constructor of the class <code >Type</code>.
 <p>
-The placement <code>new</code> operator is useful in situations where classes set
-aside memory to be used later. This is used, e.g., by <code>std::string</code> to
-change its capacity. Calling <code>string::reserve</code> may enlarge that capacity
+The placement <code >new</code> operator is useful in situations where classes set
+aside memory to be used later. This is used, e.g., by <code >std::string</code> to
+change its capacity. Calling <code >string::reserve</code> may enlarge that capacity
 without making memory beyond the string's length immediately available to the
-<code>string</code> object's users. But the object itself <em>may</em> use its additional
-memory. E.g, when information is added to a <code>string</code> object it can draw
+<code >string</code> object's users. But the object itself <em >may</em> use its additional
+memory. E.g, when information is added to a <code >string</code> object it can draw
 memory from its capacity rather than performing a reallocation for each single
 character that is added to its contents.
 <p>
-Let's apply that philosophy to a class <code>Strings</code> storing <code>std::string</code>
-objects. The class defines a <code>string *d_memory</code> accessing the memory holding
-its <code>d_size</code> string objects as well as <code>d_capacity - d_size</code> reserved
-memory. Assuming that a default constructor initializes <code>d_capacity</code> to 1,
-doubling <code>d_capacity</code> whenever an additional <code>string</code> must be stored, the
+Let's apply that philosophy to a class <code >Strings</code> storing <code >std::string</code>
+objects. The class defines a <code >string *d_memory</code> accessing the memory holding
+its <code >d_size</code> string objects as well as <code >d_capacity - d_size</code> reserved
+memory. Assuming that a default constructor initializes <code >d_capacity</code> to 1,
+doubling <code >d_capacity</code> whenever an additional <code >string</code> must be stored, the
 class must support the following essential operations:
     <ul>
     <li> doubling its capacity when all its spare memory (e.g., made available
-by <code>reserve</code>) has been consumed;
-    <li> adding another <code>string</code> object
+by <code >reserve</code>) has been consumed;
+    <li> adding another <code >string</code> object
     <li> properly deleting the installed strings and memory when a
-<code>Strings</code> object ceases to exist.
+<code >Strings</code> object ceases to exist.
     </ul>
-    The private member <code>void Strings::reserve</code> is called when the current
-capacity must be enlarged to <code>d_capacity</code>. It operates as follows:
+    The private member <code >void Strings::reserve</code> is called when the current
+capacity must be enlarged to <code >d_capacity</code>. It operates as follows:
     First new, raw, memory is allocated (line 1). This memory is in no way
 initialized with strings. Then the available strings in the old memory are
 copied into the newly allocated raw memory using placement new (line 2). Next,
@@ -434,10 +434,10 @@ void Strings::reserve()
 }
 </pre>
 <p>
-The member <code>append</code> adds another <code>string</code> object to a <code>Strings</code>
-object. A (public) member <code>reserve(request)</code> (enlarging <code>d_capacity</code> if
-necessary and if enlarged calling <code>reserve()</code>) ensures that the <code>String</code>
-object's capacity is sufficient. Then placement <code>new</code> is used to install the
+The member <code >append</code> adds another <code >string</code> object to a <code >Strings</code>
+object. A (public) member <code >reserve(request)</code> (enlarging <code >d_capacity</code> if
+necessary and if enlarged calling <code >reserve()</code>) ensures that the <code >String</code>
+object's capacity is sufficient. Then placement <code >new</code> is used to install the
 latest string into the raw memory's appropriate location:
     <pre>
 void Strings::append(std::string const &amp;next)
@@ -448,35 +448,35 @@ void Strings::append(std::string const &amp;next)
 }
 </pre>
 <p>
-At the end of the <code>String</code> object's lifetime, and during enlarging
+At the end of the <code >String</code> object's lifetime, and during enlarging
 operations all currently used dynamically allocated memory must be
-returned. This is made the responsibility of the member <code>destroy</code>, which is
-called by the class's destructor and by <code>reserve()</code>. More about the
+returned. This is made the responsibility of the member <code >destroy</code>, which is
+called by the class's destructor and by <code >reserve()</code>. More about the
 destructor itself in <a href="cplusplus09.html#DESTRUCTOR">the next section</a>, but the
-implementation of the support member <code>destroy</code> is discussed below.
+implementation of the support member <code >destroy</code> is discussed below.
 <p>
-With placement <code>new</code> an interesting situation is encountered. Objects,
+With placement <code >new</code> an interesting situation is encountered. Objects,
 possibly themselves allocating memory, are installed in memory that may or may
 not have been allocated dynamically, but that is usually not completely filled
-with such objects. So a simple <code>delete[]</code> can't be used.  On the other hand,
-a <code>delete</code> for each of the objects that <em>are</em> available can't be used
-either, since those <code>delete</code> operations would also try to delete the memory
+with such objects. So a simple <code >delete[]</code> can't be used.  On the other hand,
+a <code >delete</code> for each of the objects that <em >are</em> available can't be used
+either, since those <code >delete</code> operations would also try to delete the memory
 of the objects themselves, which wasn't dynamically allocated.
 <p>
 This peculiar situation is solved in a peculiar way, only encountered in
-cases where placement <code>new</code> is used: memory allocated by objects initialized
-using placement <code>new</code> is returned by
-        <a name="an888"></a>
-    <em>explicitly</em> calling the object's destructor.  The destructor is
+cases where placement <code >new</code> is used: memory allocated by objects initialized
+using placement <code >new</code> is returned by
+        <a name="an876"></a>
+    <em >explicitly</em> calling the object's destructor.  The destructor is
 declared as a member having as its name the class name preceded by a tilde,
-not using any arguments. So, <code>std::string</code>'s destructor is named
-<code>~string</code>. An object's destructor <em>only</em> returns memory allocated by the
-object itself and, despite of its name, does <em>not</em> destroy its object.  Any
-memory allocated by the <em>strings</em> stored in our class <code>Strings</code> is
+not using any arguments. So, <code >std::string</code>'s destructor is named
+<code >~string</code>. An object's destructor <em >only</em> returns memory allocated by the
+object itself and, despite of its name, does <em >not</em> destroy its object.  Any
+memory allocated by the <em >strings</em> stored in our class <code >Strings</code> is
 therefore properly destroyed by explicitly calling their
-destructors. Following this <code>d_memory</code> is back to its initial status: it
+destructors. Following this <code >d_memory</code> is back to its initial status: it
 again points to raw memory. This raw memory is then returned to the common
-pool by <code>operator delete</code>:
+pool by <code >operator delete</code>:
     <pre>
 void Strings::destroy()
 {
@@ -489,9 +489,9 @@ void Strings::destroy()
 <p>
 So far, so good. All is well as long as we're using but one object. What
 about allocating an array of objects? Initialization is performed as usual.
-But as with <code>delete</code>, <code>delete[]</code> cannot be called when the buffer was
+But as with <code >delete</code>, <code >delete[]</code> cannot be called when the buffer was
 allocated statically. Instead, when multiple objects were initialized using
-placement <code>new</code> in combination with a statically allocated
+placement <code >new</code> in combination with a statically allocated
 buffer all the objects' destructors must be called explicitly, as in the
 following example:
         <pre>
@@ -504,17 +504,17 @@ following example:
         sp[idx].~string();
 </pre>
 <p>
-<a name="DESTRUCTOR"></a><a name="l153"></a>
-<h2>9.2: The destructor</h2>
-Comparable to the constructor, classes may define a <a name="an889"></a><em>destructor</em>.  This
+<a name="DESTRUCTOR"></a><a name="l152"></a>
+<h2 >9.2: The destructor</h2>
+Comparable to the constructor, classes may define a <a name="an877"></a><em >destructor</em>.  This
 function is the constructor's counterpart in the sense that it is invoked when
 an object ceases to exist. A destructor is usually called automatically, but
 that's not always true. The destructors of dynamically allocated objects are
 not automatically activated, but in addition to that: when a program is
-interrupted by an <a name="an890"></a><code>exit</code> call, only the destructors of
+interrupted by an <a name="an878"></a><code >exit</code> call, only the destructors of
 already initialized global objects are called.  In that situation destructors
-of objects defined <em>locally</em> by functions are also <em>not</em> called. This is
-one (good) reason for avoiding <code>exit</code> in <strong>C++</strong> programs.
+of objects defined <em >locally</em> by functions are also <em >not</em> called. This is
+one (good) reason for avoiding <code >exit</code> in <strong >C++</strong> programs.
 <p>
 Destructors obey the following syntactical requirements:
     <ul>
@@ -534,9 +534,9 @@ Destructors obey the following syntactical requirements:
     By convention the constructors are declared first. The destructor is
 declared next, to be followed by other member functions.
 <p>
-A destructor's <a name="an891"></a> main task is to ensure that
+A destructor's <a name="an879"></a> main task is to ensure that
 memory allocated by an object is properly returned when the object ceases to
-exist. Consider the following interface of the class <code>Strings</code>:
+exist. Consider the following interface of the class <code >Strings</code>:
         <pre>
     class Strings
     {
@@ -572,14 +572,14 @@ its constructors are defined as follows:
     }
 </pre>
 <p>
-As objects of the class <code>Strings</code> allocate memory a destructor is
+As objects of the class <code >Strings</code> allocate memory a destructor is
 clearly required. Destructors may or may not be called automatically, but note
-that destructors are <em>only</em> called (or, in the case of dynamically allocated
+that destructors are <em >only</em> called (or, in the case of dynamically allocated
 objects: should only be called) for fully constructed objects.
 <p>
-<strong>C++</strong> considers objects `fully constructed' once at least one of its
-constructors could normally complete. It used to be <em>the</em> constructor, but
-as <strong>C++</strong> supports constructor delegation, multiple constructors can be
+<strong >C++</strong> considers objects `fully constructed' once at least one of its
+constructors could normally complete. It used to be <em >the</em> constructor, but
+as <strong >C++</strong> supports constructor delegation, multiple constructors can be
 activated for a single object; hence `at least one constructor'.  The
 remaining rules apply to fully constructed objects;
     <ul>
@@ -590,17 +590,17 @@ called just before the function terminates.
     <li> Destructors of static or global objects are called when the program
 itself terminates.
     <li> The destructor of a dynamically allocated object is called by
-<code>delete</code> using the object's address as its operand;
+<code >delete</code> using the object's address as its operand;
     <li> The destructors of a dynamically allocated array of objects are
-called by <code>delete[]</code> using the address of the array's first element as its
+called by <code >delete[]</code> using the address of the array's first element as its
 operand;
-    <li> The destructor of an object initialized by placement <code>new</code> is
+    <li> The destructor of an object initialized by placement <code >new</code> is
 activated  by explicitly calling the object's destructor.
     </ul>
     The destructor's task is to ensure that all memory that is
 dynamically allocated and controlled only by the object
-itself is returned. The task of the <code>Strings</code>'s
-destructor would therefore be to delete the memory to which <code>d_string</code>
+itself is returned. The task of the <code >Strings</code>'s
+destructor would therefore be to delete the memory to which <code >d_string</code>
 points. Its implementation is:
         <pre>
     Strings::~Strings()
@@ -609,16 +609,16 @@ points. Its implementation is:
     }
 </pre>
 <p>
-The next example shows <code>Strings</code> at work. In <code>process</code>
-a <code>Strings store</code> is created, and its data are displayed. It returns a
-dynamically allocated <code>Strings</code> object to <code>main</code>. A
-<code>Strings *</code> receives the address of the allocated object and deletes the
-object again. Another <code>Strings</code> object is then created in a block of
-memory made available locally in <code>main</code>, and an
-    <a name="an892"></a>explicit call to <code>~Strings</code> is required
+The next example shows <code >Strings</code> at work. In <code >process</code>
+a <code >Strings store</code> is created, and its data are displayed. It returns a
+dynamically allocated <code >Strings</code> object to <code >main</code>. A
+<code >Strings *</code> receives the address of the allocated object and deletes the
+object again. Another <code >Strings</code> object is then created in a block of
+memory made available locally in <code >main</code>, and an
+    <a name="an880"></a>explicit call to <code >~Strings</code> is required
 to return the memory allocated by that object. In the example only once a
-<code>Strings</code> object is automatically destroyed: the local <code>Strings</code>
-object defined by <code>process</code>. The other two <code>Strings</code> objects require
+<code >Strings</code> object is automatically destroyed: the local <code >Strings</code>
+object defined by <code >process</code>. The other two <code >Strings</code> objects require
 explicit actions to prevent memory leaks.
         <pre>
     #include "strings.h"
@@ -650,37 +650,37 @@ explicit actions to prevent memory leaks.
     }
 </pre>
 <p>
-<a name="DELETEPTRS"></a><a name="l154"></a>
-<h3>9.2.1: Object pointers revisited</h3>
-        Operators <code>new</code> and <code>delete</code> are used when an object or variable is
-allocated. One of the advantages of the operators <code>new</code> and
-<code>delete</code> over functions like <a name="an893"></a><code>malloc</code> and <a name="an894"></a><code>free</code> is that <code>new</code> and
-<code>delete</code> call the corresponding object constructors and destructors.
+<a name="DELETEPTRS"></a><a name="l153"></a>
+<h3 >9.2.1: Object pointers revisited</h3>
+        Operators <code >new</code> and <code >delete</code> are used when an object or variable is
+allocated. One of the advantages of the operators <code >new</code> and
+<code >delete</code> over functions like <a name="an881"></a><code >malloc</code> and <a name="an882"></a><code >free</code> is that <code >new</code> and
+<code >delete</code> call the corresponding object constructors and destructors.
 <p>
-The allocation of an object by operator <code>new</code> is a two-step
+The allocation of an object by operator <code >new</code> is a two-step
 process. First the memory for the object itself is allocated. Then its
 constructor is called, initializing the object. Analogously to the
 construction of an object, the destruction is also a two-step process: first,
 the destructor of the class is called deleting the memory controlled by the
 object. Then the memory used by the object itself is freed.
 <p>
-Dynamically allocated arrays of objects can also be handled by <code>new</code> and
-<code>delete</code>. When allocating an array of objects using operator <code>new</code> the
+Dynamically allocated arrays of objects can also be handled by <code >new</code> and
+<code >delete</code>. When allocating an array of objects using operator <code >new</code> the
 default constructor is called for each object in the array. In cases like this
-operator <a name="an895"></a><code>delete[]</code> must be used to ensure that the destructor is called for
+operator <a name="an883"></a><code >delete[]</code> must be used to ensure that the destructor is called for
 each of the objects in array.
 <p>
-However, the addresses returned by <code>new Type</code> and <code>new Type[size]</code>
-are of identical types, in both cases a <code>Type *</code>. Consequently it cannot be
+However, the addresses returned by <code >new Type</code> and <code >new Type[size]</code>
+are of identical types, in both cases a <code >Type *</code>. Consequently it cannot be
 determined by the type of the pointer whether a pointer to dynamically
 allocated memory points to a single entity or to an array of entities.
 <p>
-What happens if <code>delete</code> rather than <code>delete[]</code> is used? Consider the
-following situation, in which the destructor <code>~Strings</code> is modified so
-that it tells us that it is called.  In a <code>main</code> function an array of two
-<code>Strings</code> objects is allocated by <code>new</code>, to be deleted by <code>delete
-[]</code>. Next, the same actions are repeated, albeit that the <code>delete</code> operator
-is called without <code>[]</code>:
+What happens if <code >delete</code> rather than <code >delete[]</code> is used? Consider the
+following situation, in which the destructor <code >~Strings</code> is modified so
+that it tells us that it is called.  In a <code >main</code> function an array of two
+<code >Strings</code> objects is allocated by <code >new</code>, to be deleted by <code >delete
+[]</code>. Next, the same actions are repeated, albeit that the <code >delete</code> operator
+is called without <code >[]</code>:
         <pre>
     #include &lt;iostream&gt;
     #include "strings.h"
@@ -714,25 +714,25 @@ Strings destructor called
 </pre>
 <p>
 From the generated output, we see that the destructors of the individual
-<code>Strings</code> objects are called when <code>delete[]</code> is used, while only the
-first object's destructor is called if the <code>[]</code> is omitted.
+<code >Strings</code> objects are called when <code >delete[]</code> is used, while only the
+first object's destructor is called if the <code >[]</code> is omitted.
 <p>
-Conversely, if <code>delete[]</code> is called in a situation where <code>delete</code>
+Conversely, if <code >delete[]</code> is called in a situation where <code >delete</code>
 should have been called the results are unpredictable, and the program will
 most likely crash. This problematic behavior is caused by the way the run-time
 system stores information about the size of the allocated array (usually right
-<em>before</em> the array's first element). If a single object is allocated the
+<em >before</em> the array's first element). If a single object is allocated the
 array-specific information is not available, but it is nevertheless assumed
-present by <code>delete[]</code>. Thus this latter operator encounters bogus values in
+present by <code >delete[]</code>. Thus this latter operator encounters bogus values in
 the memory locations just before the array's first element. It then dutifully
 interprets the value it encounters there as size information, usually causing
 the program to fail.
 <p>
-If no destructor is defined, a <a name="an896"></a><em>trivial destructor</em> is defined by the
+If no destructor is defined, a <a name="an884"></a><em >trivial destructor</em> is defined by the
 compiler. The trivial destructor ensures that the destructors of composed
-objects (as well as the destructors of <em>base classes</em> if a class is a
+objects (as well as the destructors of <em >base classes</em> if a class is a
 derived class, cf. chapter <a href="cplusplus13.html#INHERITANCE">13</a>) are called. This has serious
-implications: objects allocating memory create memory leaks <a name="an897"></a>
+implications: objects allocating memory create memory leaks <a name="an885"></a>
 unless precautionary measures are taken (by defining an appropriate
 destructor). Consider the following program:
         <pre>
@@ -756,25 +756,25 @@ destructor). Consider the following program:
     }
 </pre>
 <p>
-This program produces no output at all. Why is this? The variable <code>ptr</code>
+This program produces no output at all. Why is this? The variable <code >ptr</code>
 is defined as a pointer to a pointer. The dynamically allocated array
 therefore consists of pointer variables and pointers are of a primitive type.
 No destructors exist for  primitive typed variables. Consequently only the
-array itself is returned, and no <code>Strings</code> destructor is called.
+array itself is returned, and no <code >Strings</code> destructor is called.
 <p>
-Of course, we don't want this, but require the <code>Strings</code> objects
-pointed to by the elements of <code>ptr</code> to be deleted too. In this case we have
+Of course, we don't want this, but require the <code >Strings</code> objects
+pointed to by the elements of <code >ptr</code> to be deleted too. In this case we have
 two options:
     <ul>
-    <li> In a for-statement visit all the elements of the <code>ptr</code> array,
-calling <code>delete</code> for each of the array's elements. This procedure was
+    <li> In a for-statement visit all the elements of the <code >ptr</code> array,
+calling <code >delete</code> for each of the array's elements. This procedure was
 demonstrated in the previous section.
-    <li> A <a name="an898"></a>wrapper class is designed around a pointer (to, e.g., an object
-of some class, like <code>Strings</code>).  Rather than using a pointer to a
-pointer to <code>Strings</code> objects a pointer to an array of wrapper-class
-objects is used. As a result <code>delete[] ptr</code> calls the destructor of each of
-the wrapper class objects, in turn calling the <code>Strings</code> destructor for
-their <code>d_strings</code> members. Example:
+    <li> A <a name="an886"></a>wrapper class is designed around a pointer (to, e.g., an object
+of some class, like <code >Strings</code>).  Rather than using a pointer to a
+pointer to <code >Strings</code> objects a pointer to an array of wrapper-class
+objects is used. As a result <code >delete[] ptr</code> calls the destructor of each of
+the wrapper class objects, in turn calling the <code >Strings</code> destructor for
+their <code >d_strings</code> members. Example:
         <pre>
     #include &lt;iostream&gt;
     using namespace std;
@@ -829,29 +829,29 @@ their <code>d_strings</code> members. Example:
 <p>
 </ul>
 <p>
-<a name="NEWHANDLER"></a><a name="l155"></a>
-<h3>9.2.2: The function set_new_handler()</h3>
-    The <strong>C++</strong> run-time system ensures that when memory allocation fails an
+<a name="NEWHANDLER"></a><a name="l154"></a>
+<h3 >9.2.2: The function set_new_handler()</h3>
+    The <strong >C++</strong> run-time system ensures that when memory allocation fails an
 error function is activated. By default this function throws a
-  <a name="an899"></a><a name="an900"></a><em>bad_alloc</em> exception (see section
+  <a name="an887"></a><a name="an888"></a><em >bad_alloc</em> exception (see section
 <a href="cplusplus10.html#STDEXC">10.8</a>), terminating the program. Therefore it is not necessary to check
-the return value of operator <code>new</code>. Operator <code>new</code>'s default behavior may
+the return value of operator <code >new</code>. Operator <code >new</code>'s default behavior may
 be modified in various ways. One way to modify its behavior is to redefine the
 function that's called when memory allocation fails. Such a function
 must comply with the following requirements:
     <ul>
     <li> it has no parameters;
-    <li> its return type is <code>void</code>.
+    <li> its return type is <code >void</code>.
     </ul>
 <p>
 A redefined error function might, e.g., print a message and terminate
 the program. The user-written error function becomes part of the allocation
-system through the function <a name="an901"></a><code>set_new_handler</code>.
+system through the function <a name="an889"></a><code >set_new_handler</code>.
 <p>
 Such an error function is illustrated below&nbsp;( This implementation
-applies to the <a name="an902"></a>Gnu <strong>C/C++</strong> requirements. Actually using the program given
+applies to the <a name="an890"></a>Gnu <strong >C/C++</strong> requirements. Actually using the program given
 in the next example is not advised, as it probably enormously slows down your
-computer due to the resulting use of the operating system's <a name="an903"></a><em>swap area</em>.):
+computer due to the resulting use of the operating system's <a name="an891"></a><em >swap area</em>.):
         <pre>
     #include &lt;iostream&gt;
     #include &lt;string&gt;
@@ -885,22 +885,22 @@ when memory allocation fails, and the program is terminated.  Memory
 allocation may fail in indirectly called code as well, e.g., when constructing
 or using streams or when strings are duplicated by low-level functions.
 <p>
-So far for the theory. On some systems the `<a name="an904"></a>out of memory' condition
+So far for the theory. On some systems the `<a name="an892"></a>out of memory' condition
 may actually never be reached, as the operating system may interfere before
-the <a name="an905"></a>run-time support system gets a chance to stop the program (see also
+the <a name="an893"></a>run-time support system gets a chance to stop the program (see also
     <a href="http://www.linuxdevcenter.com/pub/a/linux/2006/11/30/linux-out-of-memory.html">this link</a>).
 <p>
-The standard <strong>C</strong> functions allocating memory (like <a name="an906"></a><code>strdup</code>, <a name="an907"></a><code>malloc</code>,
-<a name="an908"></a><code>realloc</code> etc.) do not trigger the <code>new</code> handler when memory allocation
-fails and should be avoided in <strong>C++</strong> programs.
+The standard <strong >C</strong> functions allocating memory (like <a name="an894"></a><code >strdup</code>, <a name="an895"></a><code >malloc</code>,
+<a name="an896"></a><code >realloc</code> etc.) do not trigger the <code >new</code> handler when memory allocation
+fails and should be avoided in <strong >C++</strong> programs.
 <p>
-<a name="ASSIGNMENT"></a><a name="l156"></a>
-<h2>9.3: The assignment operator</h2>
-In <strong>C++</strong> struct and class type objects  can be directly assigned new values
-in the same way as this is possible in <strong>C</strong>.  The default
+<a name="ASSIGNMENT"></a><a name="l155"></a>
+<h2 >9.3: The assignment operator</h2>
+In <strong >C++</strong> struct and class type objects  can be directly assigned new values
+in the same way as this is possible in <strong >C</strong>.  The default
 action of such an assignment for non-class type data members is a straight
 byte-by-byte copy from one data member to another.  For now we'll use the
-following simple class <code>Person</code>: <a name="an909"></a>
+following simple class <code >Person</code>: <a name="an897"></a>
         <pre>
     class Person
     {
@@ -922,12 +922,12 @@ following simple class <code>Person</code>: <a name="an909"></a>
         return strcpy(new char [strlen(src) + 1], src);
     }
 </pre>
-    <code>Person</code>'s data members are initialized to zeroes or to copies of the
-NTB strings passed to <code>Person</code>'s constructor, using some variant of
-<a name="an910"></a><code>strdup</code>. The allocated memory is eventually returned by <code>Person</code>'s
+    <code >Person</code>'s data members are initialized to zeroes or to copies of the
+NTB strings passed to <code >Person</code>'s constructor, using some variant of
+<a name="an898"></a><code >strdup</code>. The allocated memory is eventually returned by <code >Person</code>'s
 destructor.
 <p>
-Now consider the consequences of using <code>Person</code> objects in the following
+Now consider the consequences of using <code >Person</code> objects in the following
 example:
         <pre>
     void tmpPerson(Person const &amp;person)
@@ -936,63 +936,65 @@ example:
         tmp = person;
     }
 </pre>
-    Here's what happens when <code>tmpPerson</code> is called:
+    Here's what happens when <code >tmpPerson</code> is called:
     <ul>
-    <li> it expects a reference to a <code>Person</code> as its parameter <code>person</code>.
-    <li> it defines a local object <code>tmp</code>, whose data members are initialized
+    <li> it expects a reference to a <code >Person</code> as its parameter <code >person</code>.
+    <li> it defines a local object <code >tmp</code>, whose data members are initialized
 to zeroes.
-    <li> the object referenced by <code>person</code> is copied to <code>tmp</code>:
-<code>sizeof(Person)</code> number of bytes are copied from <code>person</code> to <code>tmp</code>.
+    <li> the object referenced by <code >person</code> is copied to <code >tmp</code>:
+<code >sizeof(Person)</code> number of bytes are copied from <code >person</code> to <code >tmp</code>.
     </ul>
     Now a potentially dangerous situation has been created.  The actual values
-in <code>person</code> are <em>pointers</em>, pointing to allocated memory.  After the
-assignment this memory is addressed by two objects: <code>person</code> <em>and</em>
-<code>tmp</code>.
+in <code >person</code> are <em >pointers</em>, pointing to allocated memory.  After the
+assignment this memory is addressed by two objects: <code >person</code> <em >and</em>
+<code >tmp</code>.
     <ul>
     <li> The potentially dangerous situation develops into an acutely
-dangerous situation once the function <code>tmpPerson</code> terminates: <code>tmp</code> is
-destroyed. The destructor of the class <code>Person</code> releases the memory pointed
-to by the fields <code>d_name</code>, <code>d_address</code> and <code>d_phone</code>: unfortunately,
-this memory is also pointed at by <code>person</code>....
+dangerous situation once the function <code >tmpPerson</code> terminates: <code >tmp</code> is
+destroyed. The destructor of the class <code >Person</code> releases the memory pointed
+to by the fields <code >d_name</code>, <code >d_address</code> and <code >d_phone</code>: unfortunately,
+this memory is also pointed at by <code >person</code>....
     </ul>
     This problematic assignment is illustrated in Figure <a href="cplusplus09.html#badassign">4</a>.
 <p>
-<a name="badassign"></a><p><figure><img src="memory/badassign.gif" alt="Figure 4 is shown here."/><br/>
-<figcaption>Figure 4: Private data and public interface functions of the class Person,
+<p><a name="badassign"></a><figure >
+<img src="memory/badassign.gif" >
+<figcaption >Figure 4: Private data and public interface functions of the class Person,
         using byte-by-byte assignment</figcaption>
 </figure></p>
 
 <p>
-Having executed <code>tmpPerson</code>, the object referenced by <code>person</code> now
-contains <a name="an911"></a>pointers to deleted memory.
+Having executed <code >tmpPerson</code>, the object referenced by <code >person</code> now
+contains <a name="an899"></a>pointers to deleted memory.
 <p>
 This is undoubtedly not a desired effect of using a function like
-<code>tmpPerson</code>.  The deleted memory is likely to be reused by subsequent
-allocations. The pointer members of <code>person</code> have effectively become
- <a name="an912"></a><em>wild pointers</em>, as they don't point to allocated
+<code >tmpPerson</code>.  The deleted memory is likely to be reused by subsequent
+allocations. The pointer members of <code >person</code> have effectively become
+ <a name="an900"></a><em >wild pointers</em>, as they don't point to allocated
 memory anymore. In general it can be concluded that
-    <div style="text-align: center"><em>every class containing pointer data members is a potential
+    <div style="text-align: center"><em >every class containing pointer data members is a potential
         candidate for trouble</em>.</div>
     Fortunately, it is possible to prevent these troubles, as discussed next.
 <p>
-<a name="OVERLOADASSIGN"></a><a name="l157"></a>
-<h3>9.3.1: Overloading the assignment operator</h3>
-    Obviously, the right way to assign one <code>Person</code> object to another, is
-<strong>not</strong> to copy the contents of the object bytewise. A better way is to
+<a name="OVERLOADASSIGN"></a><a name="l156"></a>
+<h3 >9.3.1: Overloading the assignment operator</h3>
+    Obviously, the right way to assign one <code >Person</code> object to another, is
+<strong >not</strong> to copy the contents of the object bytewise. A better way is to
 make an equivalent object. One having its own allocated  memory containing
 copies of the original strings.
 <p>
-The way to <a name="an913"></a> assign a <code>Person</code> object to another is
+The way to <a name="an901"></a> assign a <code >Person</code> object to another is
 illustrated in Figure <a href="cplusplus09.html#rightass">5</a>.
-    <a name="rightass"></a><p><figure><img src="memory/rightass.gif" alt="Figure 5 is shown here."/><br/>
-<figcaption>Figure 5: Private data and public interface functions of the class Person,
+    <p><a name="rightass"></a><figure >
+<img src="memory/rightass.gif" >
+<figcaption >Figure 5: Private data and public interface functions of the class Person,
      using the `correct' assignment.</figcaption>
 </figure></p>
 
-    There are several ways to assign a <code>Person</code> object to another.  One way
+    There are several ways to assign a <code >Person</code> object to another.  One way
 would be to define a special member function to handle the assignment. The
 purpose of this member function would be to create a copy of an object having
-its own <code>name</code>, <code>address</code> and <code>phone</code> strings.  Such a member function
+its own <code >name</code>, <code >address</code> and <code >phone</code> strings.  Such a member function
 could be:
         <pre>
     void Person::assign(Person const &amp;other)
@@ -1008,7 +1010,7 @@ could be:
         d_phone   = strdupnew(other.d_phone);
     }
 </pre>
-    Using <code>assign</code> we could rewrite the offending function <code>tmpPerson</code>:
+    Using <code >assign</code> we could rewrite the offending function <code >tmpPerson</code>:
         <pre>
     void tmpPerson(Person const &amp;person)
     {
@@ -1026,57 +1028,57 @@ assignment operator. The original problem (assignment produces wild pointers)
 is still not solved. Since it is hard to `strictly adhere to a rule' a way to
 solve the original problem is of course preferred.
 <p>
-Fortunately a solution exists using <em>operator overloading</em>: the
-possibility <strong>C++</strong> offers to redefine the actions of an operator in a given
+Fortunately a solution exists using <em >operator overloading</em>: the
+possibility <strong >C++</strong> offers to redefine the actions of an operator in a given
 context. Operator overloading was briefly mentioned earlier, when the
 operators &lt;&lt; and &gt;&gt; were redefined to be used with streams (like
-<code>cin</code>, <code>cout</code> and <code>cerr</code>), see section <a href="cplusplus03.html#CoutCinCerr">3.1.4</a>.
+<code >cin</code>, <code >cout</code> and <code >cerr</code>), see section <a href="cplusplus03.html#CoutCinCerr">3.1.4</a>.
 <p>
 Overloading the assignment operator is probably the most common form of
-operator overloading in <strong>C++</strong>. A word of warning is appropriate, though.
-The fact that <strong>C++</strong> allows <a name="an914"></a>operator overloading does not mean that this
+operator overloading in <strong >C++</strong>. A word of warning is appropriate, though.
+The fact that <strong >C++</strong> allows <a name="an902"></a>operator overloading does not mean that this
 feature should indiscriminately be used. Here's what you should keep in mind:
     <ul>
     <li> operator overloading should be used in situations where an operator
 has a defined action, but this default action has undesired side effects in a
 given context. A clear example is the above assignment operator in the
-context of the class <code>Person</code>.
+context of the class <code >Person</code>.
     <li> operator overloading can be used in situations where the operator is
 commonly applied and no surprise is introduced when it's redefined. An example
 where operator overloading is appropriately used is found in the class
-<code>std::string</code>: assiging one string object to another provides the
+<code >std::string</code>: assiging one string object to another provides the
 destination string with a copy of the contents of the source string. No
 surprises here.
     <li> in all other cases a member function should be defined instead of
 redefining an operator.
         </ul>
     An operator should simply do what it is designed to do. The phrase that's
-often encountered in the context of operator overloading is <em>do as the
-<code>int</code>s do</em>. The way operators behave when applied to <code>int</code>s is what is
+often encountered in the context of operator overloading is <em >do as the
+<code >int</code>s do</em>. The way operators behave when applied to <code >int</code>s is what is
 expected, all other implementations probably cause surprises and confusion.
 Therefore, overloading the insertion (&lt;&lt;) and extraction (&gt;&gt;)
 operators in the context of streams is probably ill-chosen: the stream
 operations have nothing in common with bitwise shift operations.
 <p>
-<a name="l158"></a>
+<a name="l157"></a>
 <h4>9.3.1.1: The member 'operator=()'</h4>
     To add operator overloading to  a class, the class interface is simply
-provided  with a (usually <em>public</em>) member function naming the particular
+provided  with a (usually <em >public</em>) member function naming the particular
 operator. That member function is thereupon implemented.
 <p>
-To overload the assignment operator <code>=</code>, a member <code>operator=(Class const
+To overload the assignment operator <code >=</code>, a member <code >operator=(Class const
 &amp;rhs)</code> is added to the class interface.  Note that the function name consists
-of two parts: the keyword <a name="an915"></a><code>operator</code>, followed by the operator itself.  When
-we augment a class interface with a member function <code>operator=</code>, then that
-operator is <em>redefined</em> for the class, which prevents the default operator
+of two parts: the keyword <a name="an903"></a><code >operator</code>, followed by the operator itself.  When
+we augment a class interface with a member function <code >operator=</code>, then that
+operator is <em >redefined</em> for the class, which prevents the default operator
 from being used. In the <a href="cplusplus09.html#OVERLOADASSIGN">previous section</a> the function
-<code>assign</code> was provided to solve the problems resulting from using the
+<code >assign</code> was provided to solve the problems resulting from using the
 default assignment operator. Rather than using an ordinary member
-function <strong>C++</strong> commonly uses a dedicated operator generalizing the
+function <strong >C++</strong> commonly uses a dedicated operator generalizing the
 operator's default behavior to the class in which it is defined.
 <p>
-The <code>assign</code> member mentioned before may be redefined as follows (the member
-<code>operator=</code> presented below is a first, rather unsophisticated, version of
+The <code >assign</code> member mentioned before may be redefined as follows (the member
+<code >operator=</code> presented below is a first, rather unsophisticated, version of
 the overloaded assignment operator.  It will shortly be improved):
         <pre>
     class Person
@@ -1100,8 +1102,8 @@ the overloaded assignment operator.  It will shortly be improved):
     }
 </pre>
     This member's actions are similar to those of the previously mentioned
-member <code>assign</code>, but this member is automatically called when the assignment
-operator <code>=</code> is used. Actually there are <em>two</em> ways to
+member <code >assign</code>, but this member is automatically called when the assignment
+operator <code >=</code> is used. Actually there are <em >two</em> ways to
 call overloaded operators as shown in the next example:
         <pre>
     void tmpPerson(Person const &amp;person)
@@ -1114,7 +1116,7 @@ call overloaded operators as shown in the next example:
 </pre>
     Overloaded operators are seldom called explicitly, but explicit calls must
 be used (rather than using the plain operator syntax) when you explicitly
-<em>want</em> to call the overloaded operator from a pointer to an object (it is
+<em >want</em> to call the overloaded operator from a pointer to an object (it is
 also possible to dereference the pointer first and then use the plain operator
 syntax, see the next example):
         <pre>
@@ -1129,24 +1131,24 @@ syntax, see the next example):
     }
 </pre>
 <p>
-<a name="l159"></a>
-<h2>9.4: The `this' pointer</h2>
+<a name="l158"></a>
+<h2 >9.4: The `this' pointer</h2>
 A member function of a given class is always called in combination with an
 object of its class. There is always an implicit `substrate' for the function
-to act on. <strong>C++</strong> defines a keyword, <a name="an916"></a><code>this</code>, to reach this substrate.
+to act on. <strong >C++</strong> defines a keyword, <a name="an904"></a><code >this</code>, to reach this substrate.
 <p>
-The <code>this</code> keyword is a pointer variable that always contains the
+The <code >this</code> keyword is a pointer variable that always contains the
 address
- <a name="an917"></a> <a name="an918"></a> of the object for which the member
-function was called. The <code>this</code> pointer is implicitly declared by each
-member function (whether <code>public, protected</code>, or <code>private</code>). The <code>this</code>
+ <a name="an905"></a> <a name="an906"></a> of the object for which the member
+function was called. The <code >this</code> pointer is implicitly declared by each
+member function (whether <code >public, protected</code>, or <code >private</code>). The <code >this</code>
 ponter is a constant pointer to an object of the member function's
-class. For example, the members of the class <code>Person</code> implicitly declare:
+class. For example, the members of the class <code >Person</code> implicitly declare:
         <pre>
     extern Person *const this;
 </pre>
-    A member function like <code>Person::name</code> could be implemented in two ways:
-with or without using the <code>this</code> pointer:
+    A member function like <code >Person::name</code> could be implemented in two ways:
+with or without using the <code >this</code> pointer:
         <pre>
     char const *Person::name() const    // implicitly using `this'
     {
@@ -1158,32 +1160,32 @@ with or without using the <code>this</code> pointer:
         return this-&gt;d_name;
     }
 </pre>
-    The <code>this</code> pointer is seldom explicitly used, but situations do exist
-where the <code>this</code> pointer is actually required (cf. chapter
+    The <code >this</code> pointer is seldom explicitly used, but situations do exist
+where the <code >this</code> pointer is actually required (cf. chapter
 <a href="cplusplus16.html#PointMembers">16</a>).
 <p>
-<a name="l160"></a>
-<h3>9.4.1: Sequential assignments and this</h3>
-        <strong>C++</strong>'s syntax allows for <a name="an919"></a> sequential
+<a name="l159"></a>
+<h3 >9.4.1: Sequential assignments and this</h3>
+        <strong >C++</strong>'s syntax allows for <a name="an907"></a> sequential
 assignments, with the assignment operator associating from right to left. In
 statements like:
         <pre>
     a = b = c;
 </pre>
-    the expression <code>b = c</code> is evaluated first, and its result in turn is
-assigned to <code>a</code>.
+    the expression <code >b = c</code> is evaluated first, and its result in turn is
+assigned to <code >a</code>.
 <p>
 The implementation of the overloaded assignment operator we've encountered
-thus far does not permit such constructions, as it returns <code>void</code>.
+thus far does not permit such constructions, as it returns <code >void</code>.
 <p>
-This imperfection can easily be remedied using the <code>this</code> pointer. The
+This imperfection can easily be remedied using the <code >this</code> pointer. The
 overloaded assignment operator expects a reference to an object of its
-class. It can also <em>return</em> a reference to an object of its class. This
+class. It can also <em >return</em> a reference to an object of its class. This
 reference can then be used as an argument in sequential assignments.
 <p>
 The overloaded assignment operator commonly returns a reference to the
-current object (i.e., <code>*this</code>).  The next version of the overloaded
-assignment operator for the class <code>Person</code> thus becomes:
+current object (i.e., <code >*this</code>).  The next version of the overloaded
+assignment operator for the class <code >Person</code> thus becomes:
         <pre>
     Person &amp;Person::operator=(Person const &amp;other)
     {
@@ -1199,23 +1201,23 @@ assignment operator for the class <code>Person</code> thus becomes:
         return *this;
     }
 </pre>
-    Overloaded operators may themselves be overloaded. Consider the <code>string</code>
-class, having overloaded assignment operators <code>operator=(std::string const
+    Overloaded operators may themselves be overloaded. Consider the <code >string</code>
+class, having overloaded assignment operators <code >operator=(std::string const
 &amp;rhs), operator=(char const *rhs)</code>, and several more overloaded
 versions. These additional overloaded versions are there to handle different
 situations which are, as usual, recognized by their argument types. These
 overloaded versions all follow the same mold: when necessary dynamically
 allocated memory controlled by the object is deleted; new values are assigned
-using the overloaded operator's parameter values and <code>*this</code> is returned.
+using the overloaded operator's parameter values and <code >*this</code> is returned.
 <p>
-<a name="COPYCONS"></a><a name="l161"></a>
-<h2>9.5: The copy constructor: initialization vs. assignment</h2>
-Consider the class <code>Strings</code>, introduced in section <a href="cplusplus09.html#DESTRUCTOR">9.2</a>,
+<a name="COPYCONS"></a><a name="l160"></a>
+<h2 >9.5: The copy constructor: initialization vs. assignment</h2>
+Consider the class <code >Strings</code>, introduced in section <a href="cplusplus09.html#DESTRUCTOR">9.2</a>,
 once again. As it contains several primitive type data members as well as a
 pointer to dynamically allocated memory it needs a constructor, a destructor,
 and an overloaded assignment operator. In fact the class offers two
 constructors: in addition to the default constructor it offers a constructor
-expecting a <code>char const *const *</code> and a <code>size_t</code>.
+expecting a <code >char const *const *</code> and a <code >size_t</code>.
 <p>
 Now consider the following code fragment. The statement references are
 discussed following the example:
@@ -1230,23 +1232,23 @@ discussed following the example:
     }
 </pre>
     <ul>
-    <li> At 1 we see  an <a name="an920"></a>initialization.  The object
-<code>s1</code> is initialized using <code>main</code>'s parameters: <code>Strings</code>'s second
+    <li> At 1 we see  an <a name="an908"></a>initialization.  The object
+<code >s1</code> is initialized using <code >main</code>'s parameters: <code >Strings</code>'s second
 constructor is used.
-    <li> At 2 <code>Strings</code>'s <a name="an921"></a><em>default constructor</em> is used, initializing
-an empty <code>Strings</code> object.
-    <li> At 3 yet another <code>Strings</code> object is created, using a
-constructor accepting an existing <code>Strings</code> object. This form of
+    <li> At 2 <code >Strings</code>'s <a name="an909"></a><em >default constructor</em> is used, initializing
+an empty <code >Strings</code> object.
+    <li> At 3 yet another <code >Strings</code> object is created, using a
+constructor accepting an existing <code >Strings</code> object. This form of
 initializations has not yet been discussed. It is called a
- <a name="an922"></a> <em>copy construction</em> and the constructor performing the
-initialization is called the <em>copy constructor</em>. Copy constructions are also
+ <a name="an910"></a> <em >copy construction</em> and the constructor performing the
+initialization is called the <em >copy constructor</em>. Copy constructions are also
 encountered in the following form:
         <pre>
     Strings s3 = s1;
 </pre>
-    This is a <em>construction</em> and therefore an <em>initialization</em>. It is not
-an <em>assignment</em> as an assignment needs a left-hand operand that has already
-been defined. <strong>C++</strong> allows the assignment syntax to be used for constructors
+    This is a <em >construction</em> and therefore an <em >initialization</em>. It is not
+an <em >assignment</em> as an assignment needs a left-hand operand that has already
+been defined. <strong >C++</strong> allows the assignment syntax to be used for constructors
 having only one parameter. It is somewhat deprecated, though.
     <li> At 4 we see a plain assignment.
     </ul>
@@ -1257,14 +1259,14 @@ argument list.
 The copy constructor encountered here is new. It does not result in a
 compilation error even though it hasn't been declared in the class
 interface. This takes us to the following rule:
-    <blockquote>
+    <blockquote >
     A copy constructor is (almost) always available, even if it isn't declared
     in the class's interface.
     </blockquote>
     The reason for the `(almost)' is given in section <a href="cplusplus09.html#MOVECONS">9.7.1</a>.
 <p>
 The copy constructor made available by the compiler is also called the
-<a name="an923"></a>trivial copy constructor. Its use can easily be suppressed (using the <code>=
+<a name="an911"></a>trivial copy constructor. Its use can easily be suppressed (using the <code >=
 delete</code> idiom). The trivial copy constructor performs a byte-wise copy
 operation of the existing object's primitive data to the newly created object,
 calls copy constructors to intialize the object's class data members from
@@ -1275,21 +1277,21 @@ base classes.
 Consequently, in the above example the trivial copy constructor is
 used. As it performs a byte-by-byte copy operation of the object's
 primitive type data members that is exactly what happens at statement 3.
-By the time <code>s3</code> ceases to exist its destructor deletes its array of
-strings. Unfortunately <code>d_string</code> is of a primitive data type and so it also
-deletes <code>s1</code>'s data. Once again we encounter wild pointers as a result of an
+By the time <code >s3</code> ceases to exist its destructor deletes its array of
+strings. Unfortunately <code >d_string</code> is of a primitive data type and so it also
+deletes <code >s1</code>'s data. Once again we encounter wild pointers as a result of an
 object going out of scope.
 <p>
 The remedy is easy: instead of using the trivial copy constructor a copy
 constructor must explicitly be added to the class's interface and its
 definition must prevent the wild pointers, comparably to the way this was
 realized in the overloaded assignment operator. An object's dynamically
-allocated memory is <em>duplicated</em>, so that it contains its own allocated
+allocated memory is <em >duplicated</em>, so that it contains its own allocated
 data. The copy constructor is simpler than the overloaded assignment operator
 in that it doesn't have to delete previously allocated memory. Since the
 object is going to be created no previously allocated memory already exists.
 <p>
-<code>Strings</code>'s copy constructor can be implemented as follows:
+<code >Strings</code>'s copy constructor can be implemented as follows:
         <pre>
     Strings::Strings(Strings const &amp;other)
     :
@@ -1306,7 +1308,7 @@ another object of its class. Apart from the plain copy construction that we
 encountered thus far, here are other situations where the copy constructor is
 used:
     <ul>
-    <li> it is used when a function defines a <a name="an924"></a> class type
+    <li> it is used when a function defines a <a name="an912"></a> class type
 value parameter rather than a pointer or a reference. The function's argument
 initializes the function's parameter using the copy constructor. Example:
     <pre>
@@ -1330,17 +1332,17 @@ Strings copy(Strings const &amp;store)
 }
 </pre>
     </ul>
-    Here <code>store</code> is used to initialize <code>copy</code>'s return value. The returned
-<code>Strings</code> object is a temporary, anonymous object that may be
-immediately used by code calling <code>copy</code> but no assumptions can be made about
+    Here <code >store</code> is used to initialize <code >copy</code>'s return value. The returned
+<code >Strings</code> object is a temporary, anonymous object that may be
+immediately used by code calling <code >copy</code> but no assumptions can be made about
 its lifetime thereafter.
 <p>
-<a name="CopyDestroy"></a><a name="l162"></a>
-<h2>9.6: Revising the assignment operator</h2>
+<a name="CopyDestroy"></a><a name="l161"></a>
+<h2 >9.6: Revising the assignment operator</h2>
  The overloaded assignment operator has characteristics also encountered with
 the copy constructor and the destructor:
     <ul>
-    <li> The <em>copying of (private) data</em> occurs (1) in the copy constructor
+    <li> The <em >copying of (private) data</em> occurs (1) in the copy constructor
 and (2) in the overloaded assignment function.
     <li> Allocated memory is deleted (1) in the overloaded assignment function
 and (2) in the destructor.
@@ -1374,18 +1376,18 @@ like this:
         return *this;
     }
 </pre>
-    You may think the optimization <code>operator=(String tmp)</code> is attractive,
+    You may think the optimization <code >operator=(String tmp)</code> is attractive,
 but let's postpone that for a little while (at least until section <a href="cplusplus09.html#MOVE">9.7</a>).
 <p>
 Now that we've done the copying part, what about the deleting part? And
 isn't there another slight problem as well? After all we copied all right, but
-not into our intended (current, <code>*this</code>) object.
+not into our intended (current, <code >*this</code>) object.
 <p>
-At this point it's time to introduce <em>swapping</em>. Swapping two variables
+At this point it's time to introduce <em >swapping</em>. Swapping two variables
 means that the two variables exchange their values. We'll discuss swapping in
 detail in the next section, but let's for now assume that we've added a member
-<code>swap(Strings &amp;other)</code> to our class <code>Strings</code>. This allows us to
-complete <code>String</code>'s <code>operator=</code> implementation:
+<code >swap(Strings &amp;other)</code> to our class <code >Strings</code>. This allows us to
+complete <code >String</code>'s <code >operator=</code> implementation:
         <pre>
     Strings &amp;operator=(Strings const &amp;other)
     {
@@ -1394,15 +1396,15 @@ complete <code>String</code>'s <code>operator=</code> implementation:
         return *this;
     }
 </pre>
-    This implementation of <code>operator=</code> is generic: it can be applied to
+    This implementation of <code >operator=</code> is generic: it can be applied to
 every class whose objects are swappable. How does it work?
     <ul>
-    <li> The information in the <code>other</code> object is used to initialize a
-local <code>tmp</code> object. This takes care of the copying part of the assignment
+    <li> The information in the <code >other</code> object is used to initialize a
+local <code >tmp</code> object. This takes care of the copying part of the assignment
 operator;
-    <li> Calling <code>swap</code> ensures that the current object receives its new
-values (with <code>tmp</code> receiving the current object's original values);
-    <li> When <code>operator=</code> terminates its local <code>tmp</code> object ceases to
+    <li> Calling <code >swap</code> ensures that the current object receives its new
+values (with <code >tmp</code> receiving the current object's original values);
+    <li> When <code >operator=</code> terminates its local <code >tmp</code> object ceases to
 exist and its destructor is called. As it by now contains the data previously
 owned by the current object, the current object's original data are now
 destroyed, effectively completing the destruction part of the assignment
@@ -1410,16 +1412,16 @@ operation.
     </ul>
     Nice?
 <p>
-<a name="l163"></a>
-<h3>9.6.1: Swapping</h3>
-    Many classes (e.g., <code>std::string</code>) offer <a name="an925"></a><code>swap</code> members allowing us to
-swap two of their objects. The <em>Standard Template Library</em> (STL, cf. chapter
+<a name="l162"></a>
+<h3 >9.6.1: Swapping</h3>
+    Many classes (e.g., <code >std::string</code>) offer <a name="an913"></a><code >swap</code> members allowing us to
+swap two of their objects. The <em >Standard Template Library</em> (STL, cf. chapter
 <a href="cplusplus18.html#STL">18</a>) offers various functions related to swapping. There is even a
-<code>swap</code> <em>generic algorithm</em> (cf. section <a href="cplusplus19.html#SWAP">19.1.61</a>), which is commonly
-implemented using the assignment operator. When implementing a <code>swap</code> member
-for our class <code>Strings</code> it could be used, provided that all of <code>String</code>'s
-data members can be swapped. As this is true (<em>why</em> this is true is
-discussed shortly) we can augment <code>class Strings</code> with a <code>swap</code> member:
+<code >swap</code> <em >generic algorithm</em> (cf. section <a href="cplusplus19.html#SWAP">19.1.61</a>), which is commonly
+implemented using the assignment operator. When implementing a <code >swap</code> member
+for our class <code >Strings</code> it could be used, provided that all of <code >String</code>'s
+data members can be swapped. As this is true (<em >why</em> this is true is
+discussed shortly) we can augment <code >class Strings</code> with a <code >swap</code> member:
         <pre>
     void Strings::swap(Strings &amp;other)
     {
@@ -1427,29 +1429,30 @@ discussed shortly) we can augment <code>class Strings</code> with a <code>swap</
         swap(d_size, other.d_size);
     }
 </pre>
-    Having added this member to <code>Strings</code> the copy-and-swap implementation
-of <code>String::operator=</code> can now be used.
+    Having added this member to <code >Strings</code> the copy-and-swap implementation
+of <code >String::operator=</code> can now be used.
 <p>
-When two variables (e.g., <code>double one</code> and <code>double two</code>) are swapped,
-each one holds the other one's value after the swap. So, if <code>one == 12.50</code>
-and <code>two == -3.14</code> then after <code>swap(one, two) one == -3.14</code> and <code>two ==
+When two variables (e.g., <code >double one</code> and <code >double two</code>) are swapped,
+each one holds the other one's value after the swap. So, if <code >one == 12.50</code>
+and <code >two == -3.14</code> then after <code >swap(one, two) one == -3.14</code> and <code >two ==
 12.50</code>.
 <p>
 Variables of primitive data types (pointers and the built-in types) can be
-swapped, class-type objects can be swapped if their classes offer a <code>swap</code>
+swapped, class-type objects can be swapped if their classes offer a <code >swap</code>
 member.
 <p>
 So should we provide our classes with a swap member, and if so, how should
 it be implemented?
 <p>
-The above example (<code>Strings::swap</code>) shows the standard way to implement
-a <code>swap</code> member: each of its data members are swapped in turn. But there are
+The above example (<code >Strings::swap</code>) shows the standard way to implement
+a <code >swap</code> member: each of its data members are swapped in turn. But there are
 situations where a class cannot implement a swap member this way, even if the
 class only defines data members of primitive data types. Consider the
 situation depicted in figure <a href="cplusplus09.html#SWAPLIST">6</a>.
 <p>
-<a name="SWAPLIST"></a><p><figure><img src="memory/fswap.gif" alt="Figure 6 is shown here."/><br/>
-<figcaption>Figure 6: Swapping a linked list</figcaption>
+<p><a name="SWAPLIST"></a><figure >
+<img src="memory/fswap.gif" >
+<figcaption >Figure 6: Swapping a linked list</figcaption>
 </figure></p>
 
 <p>
@@ -1462,19 +1465,20 @@ the next object. The basic organization of such a class looks like this:
         ...
     };
 </pre>
-    Initially four objects have their <code>d_next</code> pointer set to the next
+    Initially four objects have their <code >d_next</code> pointer set to the next
 object: 1 to 2, 2 to 3, 3 to 4. This is shown in the upper half of the
 figure. At the bottom half it is shown what happens if objects 2 and 3 are
-swapped: 3's <code>d_next</code> point is now at object 2, which still points to 4; 2's
-<code>d_next</code> pointer points to 3's address, but 2's <code>d_next</code> is now at object
+swapped: 3's <code >d_next</code> point is now at object 2, which still points to 4; 2's
+<code >d_next</code> pointer points to 3's address, but 2's <code >d_next</code> is now at object
 3, which is therefore pointing to itself. Bad news!
 <p>
 Another situation where swapping of objects goes wrong happens with classes
 having data members pointing or referring to data members of the same
 object. Such a situation is shown in figure <a href="cplusplus09.html#SWAPSELF">7</a>.
 <p>
-<a name="SWAPSELF"></a><p><figure><img src="memory/fswap2.gif" alt="Figure 7 is shown here."/><br/>
-<figcaption>Figure 7: Swapping objects with self-referential data</figcaption>
+<p><a name="SWAPSELF"></a><figure >
+<img src="memory/fswap2.gif" >
+<figcaption >Figure 7: Swapping objects with self-referential data</figcaption>
 </figure></p>
 
 <p>
@@ -1500,10 +1504,10 @@ data members would point to information outside of the two objects (e.g., if
 they would point to dynamically allocated memory) then the simple swapping
 would succeed.
 <p>
-However, the difficulty encountered with swapping <code>SelfRef</code> objects does not
-imply that two <code>SelfRef</code> objects cannot be swapped; it only means that we
-must be careful when designing <code>swap</code> members. Here is an implementation of
-<code>SelfRef::swap</code>:
+However, the difficulty encountered with swapping <code >SelfRef</code> objects does not
+imply that two <code >SelfRef</code> objects cannot be swapped; it only means that we
+must be careful when designing <code >swap</code> members. Here is an implementation of
+<code >SelfRef::swap</code>:
         <pre>
     void SelfRef::swap(SelfRef &amp;other)
     {
@@ -1511,28 +1515,28 @@ must be careful when designing <code>swap</code> members. Here is an implementat
     }
 </pre>
     In this implementation swapping leaves the self-referential data member
-as-is, and merely swaps the remaining data. A similar <code>swap</code> member could be
+as-is, and merely swaps the remaining data. A similar <code >swap</code> member could be
 designed for the linked list shown in figure <a href="cplusplus09.html#SWAPLIST">6</a>.
 <p>
-<a name="FSWAP"></a><a name="l164"></a>
+<a name="FSWAP"></a><a name="l163"></a>
 <h4>9.6.1.1: Fast swapping</h4>
-            As we've seen with placement <code>new</code> objects can be constructed in blocks
-of memory of <code>sizeof(Class)</code> bytes large. And so, two objects of the same
-class each occupy <code>sizeof(Class)</code> bytes.
+            As we've seen with placement <code >new</code> objects can be constructed in blocks
+of memory of <code >sizeof(Class)</code> bytes large. And so, two objects of the same
+class each occupy <code >sizeof(Class)</code> bytes.
 <p>
 If objects of our class can be swapped, and if our class's data members do
 not refer to data actually involved in the swapping operation then a very fast
 swapping method that is based on the fact that we know how large our objects
 are  can be implemented.
 <p>
-In this fast-swap method we merely swap the contents of the <code>sizeof(Class)</code>
+In this fast-swap method we merely swap the contents of the <code >sizeof(Class)</code>
 bytes. This procedure may be applied to classes whose objects may be swapped
 using a member-by-member swapping operation and can (in practice, although
 this probabaly overstretches the allowed operations as described by the
-<strong>C++</strong> ANSI/ISO standard) also be used in classes having reference data
-members. It simply defines a buffer of <code>sizeof(Class)</code> bytes and performs a
-circular <a name="an926"></a><code>memcpy</code> operation. Here is its implementation for a hypothetical
-class <code>Class</code>. It results in very fast swapping:
+<strong >C++</strong> ANSI/ISO standard) also be used in classes having reference data
+members. It simply defines a buffer of <code >sizeof(Class)</code> bytes and performs a
+circular <a name="an914"></a><code >memcpy</code> operation. Here is its implementation for a hypothetical
+class <code >Class</code>. It results in very fast swapping:
         <pre>
     #include &lt;cstring&gt;
 
@@ -1546,10 +1550,10 @@ class <code>Class</code>. It results in very fast swapping:
 </pre>
 <p>
 Here is a simple example of a class defining a reference data member and
-offering a <code>swap</code> member implemented like the one above. The reference data
-members are initialized to external streams. After running the program <code>one</code>
-contains two <em>hello to 1</em> lines, <code>two</code> contains two <em>hello to 2</em> lines
-(for brevity all members of <code>Reference</code> are defined inline):
+offering a <code >swap</code> member implemented like the one above. The reference data
+members are initialized to external streams. After running the program <code >one</code>
+contains two <em >hello to 1</em> lines, <code >two</code> contains two <em >hello to 2</em> lines
+(for brevity all members of <code >Reference</code> are defined inline):
 <p>
 <pre>
     #include &lt;fstream&gt;
@@ -1598,22 +1602,22 @@ contains two <em>hello to 1</em> lines, <code>two</code> contains two <em>hello 
 Fast swapping should only be used for self-defined classes for which it can be
 proven that fast-swapping does not corrupt its objects, when swapped.
 <p>
-<a name="MOVE"></a><a name="l165"></a>
-<h2>9.7: Moving data</h2>
-Traditionally, <strong>C++</strong> offered two ways to assign the information pointed to
-by a data member of a temporary object to an <em>lvalue</em> object. Either a copy
+<a name="MOVE"></a><a name="l164"></a>
+<h2 >9.7: Moving data</h2>
+Traditionally, <strong >C++</strong> offered two ways to assign the information pointed to
+by a data member of a temporary object to an <em >lvalue</em> object. Either a copy
 constructor or reference counting had to be used. In addition to these two
-methods <strong>C++</strong> now also supports <a name="an927"></a><em>move semantics</em>, allowing <em>transfer</em>
+methods <strong >C++</strong> now also supports <a name="an915"></a><em >move semantics</em>, allowing <em >transfer</em>
 of the data pointed to by a temporary object to its destination.
 <p>
 Moving information is based on the concept of anonymous (temporary)
-data. Temporary values are returned by functions like <code>operator-()</code> and
-<code>operator+(Type const &amp;lhs, Type const &amp;rhs)</code>, and in general by functions
+data. Temporary values are returned by functions like <code >operator-()</code> and
+<code >operator+(Type const &amp;lhs, Type const &amp;rhs)</code>, and in general by functions
 returning their results `by value' instead of returning references or
 pointers.
 <p>
 Anonymous values are always short-lived. When the returned values are
-primitive types (<code>int, double</code>, etc.) nothing special happens, but if a
+primitive types (<code >int, double</code>, etc.) nothing special happens, but if a
 class-type object is returned by value then its destructor can be called
 immediately following the function call that produced the value. In any case,
 the value itself becomes inaccessible immediately after the call. Of course, a
@@ -1623,9 +1627,9 @@ ends its status as a temporary value.
 <p>
 In this section we concentrate on anonymous temporary values and show how they
 can be used to improve the efficiency of object construction and assignment.
-These special construction and assignment methods are known as <em>move
-construction</em> and <em>move assignment</em>. Classes supporting move operations are
-called <a name="an928"></a><em>move-aware</em>.
+These special construction and assignment methods are known as <em >move
+construction</em> and <em >move assignment</em>. Classes supporting move operations are
+called <a name="an916"></a><em >move-aware</em>.
 <p>
 Classes allocating their own memory usually benefit from becoming
 move-aware. But a class does not have to use dynamic memory allocation before
@@ -1633,28 +1637,28 @@ it can benefit from move operations. Most classes using composition (or
 inheritance where the base class uses composition) can benefit from move
 operations as well.
 <p>
-Movable parameters for class <code>Class</code> take the form <code>Class &amp;&amp;tmp</code>. The
-parameter is a <em>rvalue reference</em>, and a rvalue reference only binds to an
+Movable parameters for class <code >Class</code> take the form <code >Class &amp;&amp;tmp</code>. The
+parameter is a <em >rvalue reference</em>, and a rvalue reference only binds to an
 anonymous temporary value. The compiler is required to call functions offering
 movable parameters whenever possible. This happens when the class defines
-functions supporting <code>Class &amp;&amp;</code> parameters and an anonymous temporary value
+functions supporting <code >Class &amp;&amp;</code> parameters and an anonymous temporary value
 is passed to such functions. Once a temporary value has a name (which already
-happens inside functions defining <code>Class const &amp;</code> or <code>Class &amp;&amp;tmp</code>
+happens inside functions defining <code >Class const &amp;</code> or <code >Class &amp;&amp;tmp</code>
 parameters as within such functions the names of these parameters are
-available) it is no longer an <em>anonymous</em> temporary value, and within such
+available) it is no longer an <em >anonymous</em> temporary value, and within such
 functions the compiler no longer calls functions expecting anonymous
 temporary values when the parameters are used as arguments.
 <p>
 The next example (using inline member implementations for brevity) illustrates
 what happens if a non-const object, a temporary object and a const object are
-passed to functions <code>fun</code> for which these kinds of parameters were
-defined. Each of these functions call a function <code>gun</code> for which these kinds
-of parameters were also defined. The first time <code>fun</code> is called it (as
-expected) calls <code>gun(Class &amp;)</code>. Then <code>fun(Class &amp;&amp;)</code> is called as its
-argument is an anonymous (temporary) object. However, inside <code>fun</code> the
+passed to functions <code >fun</code> for which these kinds of parameters were
+defined. Each of these functions call a function <code >gun</code> for which these kinds
+of parameters were also defined. The first time <code >fun</code> is called it (as
+expected) calls <code >gun(Class &amp;)</code>. Then <code >fun(Class &amp;&amp;)</code> is called as its
+argument is an anonymous (temporary) object. However, inside <code >fun</code> the
 anonymous value has received a name, and so it isn't anonymous
-anymore. Consequently, <code>gun(Class &amp;)</code> is called once again. Finally
-<code>fun(Class const &amp;)</code> is called, and (as expected) <code>gun(Class const &amp;)</code> is
+anymore. Consequently, <code >gun(Class &amp;)</code> is called once again. Finally
+<code >fun(Class const &amp;)</code> is called, and (as expected) <code >gun(Class const &amp;)</code> is
 now called.
     <pre>
 #include &lt;iostream&gt;
@@ -1708,17 +1712,17 @@ int main()
 </pre>
 <p>
 Generally it is pointless to define a
- <a name="an929"></a> function having an 
- <a name="an930"></a>rvalue reference return type. The compiler decides whether or not to use
+ <a name="an917"></a> function having an 
+ <a name="an918"></a>rvalue reference return type. The compiler decides whether or not to use
 an overloaded member expecting an rvalue reference on the basis of the
 provided argument. If it is an anonymous temporary it calls the function
 defining the rvalue reference parameter, if such a function is available. A
-rvalue reference return type is used, e.g., with the <code>std::move</code> call, to
+rvalue reference return type is used, e.g., with the <code >std::move</code> call, to
 keep the rvalue reference nature of its argument, which is known to be a
 temporary anonymous object. Such a situation can be exploited also in a
 situation where a temporary object is passed to (and returned from) a function
 which must be able to modify the temporary object. The alternative, passing a
-<code>const &amp;</code>, is less attractive as it requires a <code>const_cast</code> before the
+<code >const &amp;</code>, is less attractive as it requires a <code >const_cast</code> before the
 object can be modified. Here is an example:
         <pre>
     std::string &amp;&amp;doubleString(std::string &amp;&amp;tmp)
@@ -1731,23 +1735,23 @@ object can be modified. Here is an example:
         <pre>
     std::cout &lt;&lt; doubleString(std::string("hello "));
 </pre>
-    to insert <code>hello hello </code> into <code>cout</code>.
+    to insert <code >hello hello </code> into <code >cout</code>.
 <p>
 The compiler, when selecting a function to call applies a fairly simple
 algorithm, and also considers copy elision. This is covered shortly (section
 <a href="cplusplus09.html#RVO">9.8</a>).
 <p>
-<a name="MOVECONS"></a><a name="l166"></a>
-<h3>9.7.1: The move constructor (dynamic data)</h3>
-    Our class <code>Strings</code> has, among other members a data member <code>string
-*d_string</code>. Clearly, <code>Strings</code> should define a copy constructor, a
+<a name="MOVECONS"></a><a name="l165"></a>
+<h3 >9.7.1: The move constructor (dynamic data)</h3>
+    Our class <code >Strings</code> has, among other members a data member <code >string
+*d_string</code>. Clearly, <code >Strings</code> should define a copy constructor, a
 destructor and an overloaded assignment operator.
 <p>
-Now consider the following function <code>loadStrings(std::istream &amp;in)</code>
-extracting the strings for a <code>Strings</code> object from <code>in</code>. Next, the
-<code>Strings</code> object filled by <code>loadStrings</code> is returned by value. The
-function <code>loadStrings</code> returns a temporary object, which can then used to
-initialize an external <code>Strings</code> object:
+Now consider the following function <code >loadStrings(std::istream &amp;in)</code>
+extracting the strings for a <code >Strings</code> object from <code >in</code>. Next, the
+<code >Strings</code> object filled by <code >loadStrings</code> is returned by value. The
+function <code >loadStrings</code> returns a temporary object, which can then used to
+initialize an external <code >Strings</code> object:
         <pre>
     Strings loadStrings(std::istream &amp;in)
     {
@@ -1758,14 +1762,14 @@ initialize an external <code>Strings</code> object:
     // usage:
     Strings store(loadStrings(cin));
 </pre>
-    In this example two full copies of a <code>Strings</code> object are required:
+    In this example two full copies of a <code >Strings</code> object are required:
     <ul>
-    <li> initializing <code>loadString</code>'s value return type from its local
-<code>Strings ret</code> object;
-    <li> initializing <code>store</code> from <code>loadString</code>'s return value
+    <li> initializing <code >loadString</code>'s value return type from its local
+<code >Strings ret</code> object;
+    <li> initializing <code >store</code> from <code >loadString</code>'s return value
     </ul>
     We can improve the above procedure by defining a
- <a name="an931"></a><em>move constructor</em>.  Here is the declaration of the <code>Strings</code> class move
+ <a name="an919"></a><em >move constructor</em>.  Here is the declaration of the <code >Strings</code> class move
 constructor:
         <pre>
     Strings(Strings &amp;&amp;tmp);
@@ -1776,12 +1780,12 @@ to assign the values of pointer data members to their own pointer data members
 without requiring them to make a copy of the source's data. Next, the
 temporary's pointer value is set to zero to prevent its destructor from
 destroying data now owned by the just constructed object. The move constructor
-has <em>grabbed</em> or
- <a name="an932"></a> <em>stolen</em> the data from the temporary object. This is
+has <em >grabbed</em> or
+ <a name="an920"></a> <em >stolen</em> the data from the temporary object. This is
 OK as the temporary object cannot be referred to again (as it is anonymous, it
 cannot be accessed by other code) and the temporary objects cease to
 exist shortly after the constructor's call. Here is the implementation of
-<code>Strings</code> move constructor:
+<code >Strings</code> move constructor:
         <pre>
     Strings::Strings(Strings &amp;&amp;tmp)
     :
@@ -1794,16 +1798,16 @@ exist shortly after the constructor's call. Here is the implementation of
 </pre>
 <p>
 In section <a href="cplusplus09.html#COPYCONS">9.5</a> it was stated that the copy constructor is almost
-    <a name="an933"></a>
-always available. <em>Almost</em> always as the declaration of a move constructor
+    <a name="an921"></a>
+always available. <em >Almost</em> always as the declaration of a move constructor
 suppresses the default availability of the copy constructor. The default copy
-constructor is also suppressed if a <em>move assignment operator</em> is declared
+constructor is also suppressed if a <em >move assignment operator</em> is declared
 (cf. section <a href="cplusplus09.html#MOVEASS">9.7.3</a>).
 <p>
-The following example shows a simple class <code>Class</code>, declaring a move
-constructor. In the <code>main</code> function following the class interface a
-<code>Class</code> object is defined which is then passed to the constructor of a
-second <code>Class</code> object. Compilation fails with the compiler reporting:
+The following example shows a simple class <code >Class</code>, declaring a move
+constructor. In the <code >main</code> function following the class interface a
+<code >Class</code> object is defined which is then passed to the constructor of a
+second <code >Class</code> object. Compilation fails with the compiler reporting:
         <pre>
     error: cannot bind 'Class' lvalue to 'Class&amp;&amp;'
     error:   initializing argument 1 of 'Class::Class(Class&amp;&amp;)'
@@ -1825,7 +1829,7 @@ int main()
 }
 </pre>
 <p>
-The cure is easy: after declaring a (possibly <code>default</code>) copy
+The cure is easy: after declaring a (possibly <code >default</code>) copy
 constructor the error disappears:
         <pre>
 class Class
@@ -1844,8 +1848,8 @@ int main()
 }
 </pre>
 <p>
-<a name="l167"></a>
-<h3>9.7.2: The move constructor (composition)</h3>
+<a name="l166"></a>
+<h3 >9.7.2: The move constructor (composition)</h3>
         Classes not using pointer members pointing to memory controlled by its
 objects (and not having base classes doing so, see chapter <a href="cplusplus13.html#INHERITANCE">13</a>)
 may also  benefit from overloaded members expecting rvalue references. The
@@ -1853,12 +1857,12 @@ class benefits from move operations when one or more of the composed data
 members themselves support move operations.
 <p>
 Move operations cannot be implemented if the class type of a composed data
-member does not support moving or copying. Currently, <code>stream</code> classes fall
+member does not support moving or copying. Currently, <code >stream</code> classes fall
 into this category.
 <p>
-An example of a move-aware class is the class <code>std:string</code>. A class
-<code>Person</code> could use composition by defining <code>std::string d_name</code> and
-<code>std::string d_address</code>. Its move constructor would then have the following
+An example of a move-aware class is the class <code >std:string</code>. A class
+<code >Person</code> could use composition by defining <code >std::string d_name</code> and
+<code >std::string d_address</code>. Its move constructor would then have the following
 prototype:
         <pre>
     Person(Person &amp;&amp;tmp);
@@ -1873,19 +1877,19 @@ incorrect:
         d_address(tmp.d_address)
     {}
 </pre>
-    It is incorrect as it <code>string</code>'s copy constructors rather than
-<code>string</code>'s move constructors are called. If you're wondering why this
-happens then remember that move operations are <em>only</em> performed for
+    It is incorrect as it <code >string</code>'s copy constructors rather than
+<code >string</code>'s move constructors are called. If you're wondering why this
+happens then remember that move operations are <em >only</em> performed for
 anonymous objects. To the compiler anything having a name isn't anonymous. And
-so, by implication, having available a rvalue reference does <em>not</em> mean that
-we're referring to an anonymous object. But we <em>know</em> that the move
+so, by implication, having available a rvalue reference does <em >not</em> mean that
+we're referring to an anonymous object. But we <em >know</em> that the move
 constructor is only called for anonymous arguments. To use the corresponding
-<code>string</code> move operations we have to inform the compiler that we're talking
+<code >string</code> move operations we have to inform the compiler that we're talking
 about anonymous data members as well. For this a cast could be used (e.g.,
-<code>static_cast&lt;Person &amp;&amp;&gt;(tmp)</code>), but the C++-0x standard provides the
+<code >static_cast&lt;Person &amp;&amp;&gt;(tmp)</code>), but the C++-0x standard provides the
 function
- <a name="an934"></a><code>std::move</code> to <a name="an935"></a>anonymize a named object. The correct implementation of
-<code>Person</code>'s move construction is, therefore:
+ <a name="an922"></a><code >std::move</code> to <a name="an923"></a>anonymize a named object. The correct implementation of
+<code >Person</code>'s move construction is, therefore:
         <pre>
     Person::Person(Person &amp;&amp;tmp)
     :
@@ -1893,8 +1897,9 @@ function
         d_address( std::move(tmp.d_address) )
     {}
 </pre>
-    The function <code>std::move</code> is (indirectly) declared by many header files.
-If no header is already declaring <code>std::move</code> then include <a name="an936"></a><code>utility</code>.
+    The function <code >std::move</code><a name="an924"></a> is (indirectly) declared by many header
+files.  If no header is already declaring <code >std::move</code> then include
+<a name="an925"></a><code >utility</code>.
 <p>
 When a class using composition not only contains class type data members
 but also other types of data (pointers, references, primitive data types),
@@ -1904,7 +1909,7 @@ pointers may use move operations as discussed in the previous section.
 <p>
 The compiler never calls move operations for variables having names.  Let's
 consider the implications of this by looking at the next example, assuming
-<code>Class</code> offers a move constructor and a copy constructor:
+<code >Class</code> offers a move constructor and a copy constructor:
         <pre>
     Class factory();
 
@@ -1923,21 +1928,21 @@ consider the implications of this by looking at the next example, assuming
 </pre>
     <ul>
     <li> At 1 function a is called. At first sight this might be surprising,
-but <code>fun</code>'s argument is not an <em>anonymous</em> temporary object but a
-<em>named</em> temporary object.
+but <code >fun</code>'s argument is not an <em >anonymous</em> temporary object but a
+<em >named</em> temporary object.
     </ul>
-    Realizing that <code>fun(tmp)</code> might be called twice the compiler's choice is
-understandable. If <code>tmp</code>'s data would have been grabbed at the first call,
-the second call would receive <code>tmp</code> without any data. But at the last call
-we might know that  <code>tmp</code> is never used again and so we might like to ensure
-that <code>fun(Class &amp;&amp;)</code> is called. For this, once again, <code>std::move</code> is used:
+    Realizing that <code >fun(tmp)</code> might be called twice the compiler's choice is
+understandable. If <code >tmp</code>'s data would have been grabbed at the first call,
+the second call would receive <code >tmp</code> without any data. But at the last call
+we might know that  <code >tmp</code> is never used again and so we might like to ensure
+that <code >fun(Class &amp;&amp;)</code> is called. For this, once again, <code >std::move</code> is used:
         <pre>
     fun(std::move(tmp));            // last call!
 </pre>
 <p>
-<a name="MOVEASS"></a><a name="l168"></a>
-<h3>9.7.3: Move-assignment</h3>
-    In addition to the overloaded assignment operator a <a name="an937"></a><em>move assignment</em>
+<a name="MOVEASS"></a><a name="l167"></a>
+<h3 >9.7.3: Move-assignment</h3>
+    In addition to the overloaded assignment operator a <a name="an926"></a><em >move assignment</em>
 operator may be implemented for classes supporting move operations. In this
 case, if the class supports swapping the implementation is surprisingly
 simple. No copy construction is required and the move assignment operator can
@@ -1950,9 +1955,9 @@ simply be implemented like this:
     }
 </pre>
     If swapping is not supported then the assignment can be performed for each
-of the data members in turn, using <code>std::move</code> as shown in the previous
-section with a class <code>Person</code>. Here is an example showing how to do this
-with that class  <code>Person</code>:
+of the data members in turn, using <code >std::move</code> as shown in the previous
+section with a class <code >Person</code>. Here is an example showing how to do this
+with that class  <code >Person</code>:
         <pre>
     Person &amp;operator=(Person &amp;&amp;tmp)
     {
@@ -1965,14 +1970,14 @@ with that class  <code>Person</code>:
 operator suppresses the default availability of the copy constructor. It is
 made available again by declaring the copy constructor in the class's
 interface (and of course by providing an explicit implementation or by using
-the <code>= default</code> default implementation).
+the <code >= default</code> default implementation).
 <p>
-<a name="REVISEDASS"></a><a name="l169"></a>
-<h3>9.7.4: Revising the assignment operator (part II)</h3>
+<a name="REVISEDASS"></a><a name="l168"></a>
+<h3 >9.7.4: Revising the assignment operator (part II)</h3>
     Now that we've familiarized ourselves with the overloaded assignment operator
 and the move-assignment, let's once again have a look at their
-implementations for a class <code>Class</code>, supporting swapping through its
-<code>swap</code> member. Here is the generic implementation of the overloaded
+implementations for a class <code >Class</code>, supporting swapping through its
+<code >swap</code> member. Here is the generic implementation of the overloaded
 assignment operator:
         <pre>
     Class &amp;operator=(Class const &amp;other)
@@ -1992,8 +1997,8 @@ assignment operator:
 </pre>
     They look remarkably similar in the sense that the overloaded assignment
 operator's code is identical to the move-assignment operator's code once a
-copy of the <code>other</code> object is available. Since the overloaded assignment
-operator's <code>tmp</code> object really is nothing but a temporary <code>Class</code> object
+copy of the <code >other</code> object is available. Since the overloaded assignment
+operator's <code >tmp</code> object really is nothing but a temporary <code >Class</code> object
 we can use this fact by implementing the overloaded assignment operator in
 terms of the move-assignment. Here is a second revision of the overloaded
 assignment operator:
@@ -2005,19 +2010,19 @@ assignment operator:
     }
 </pre>
 <p>
-<a name="l170"></a>
-<h3>9.7.5: Moving and the destructor</h3>
-        Once a class becomes a <a name="an938"></a><em>move-aware</em> class one should realize that its
+<a name="l169"></a>
+<h3 >9.7.5: Moving and the destructor</h3>
+        Once a class becomes a <a name="an927"></a><em >move-aware</em> class one should realize that its
 destructor still performs its job as implemented. Consequently, when moving
 pointer values from a temporary source to a destination the move constructor
 should make sure that the temporary's pointer value is set to zero, to prevent
 doubly freeing memory.
 <p>
 If a class defines pointers to pointer data members there usually is not
-only a pointer that is moved, but also a <code>size_t</code> defining the number of
+only a pointer that is moved, but also a <code >size_t</code> defining the number of
 elements in the array of pointers.
 <p>
-Once again, consider the class <code>Strings</code>. Its destructor is implemented
+Once again, consider the class <code >Strings</code>. Its destructor is implemented
 like this:
         <pre>
     Strings::~Strings()
@@ -2028,10 +2033,10 @@ like this:
     }
 </pre>
     The move constructor (and other move operations!) must realize that the
-destructor not only deletes <code>d_string</code>, but also considers <code>d_size</code>. A
-member implementing move operations should therefore not only set <code>d_string</code>
-to zero but also <code>d_size</code>. The previously shown move constructor for
-<code>Strings</code> is therefore incorrect. Its improved implementation is:
+destructor not only deletes <code >d_string</code>, but also considers <code >d_size</code>. A
+member implementing move operations should therefore not only set <code >d_string</code>
+to zero but also <code >d_size</code>. The previously shown move constructor for
+<code >Strings</code> is therefore incorrect. Its improved implementation is:
         <pre>
     Strings::Strings(Strings &amp;&amp;tmp)
     :
@@ -2043,26 +2048,26 @@ to zero but also <code>d_size</code>. The previously shown move constructor for
         tmp.d_size = 0;
     }
 </pre>
-    If operations by the destructor all depend on <code>d_string</code> having a
+    If operations by the destructor all depend on <code >d_string</code> having a
 non-zero value then variations of the above approach are of course
-possible. The move operations merely could decide to set <code>d_memory</code> to 0,
-and then test whether <code>d_memory == 0</code> in the destructor (and if so, end the
-destructor's actions), saving some <code>d_size</code> assignments.
+possible. The move operations merely could decide to set <code >d_memory</code> to 0,
+and then test whether <code >d_memory == 0</code> in the destructor (and if so, end the
+destructor's actions), saving some <code >d_size</code> assignments.
 <p>
-<a name="l171"></a>
-<h3>9.7.6: Move-only classes</h3>
+<a name="l170"></a>
+<h3 >9.7.6: Move-only classes</h3>
     Classes may very well allow move semantics without offering copy
 semantics. Most stream classes belong to this category. Extending their
 definition with move semantics greatly enhances their usability. Once move
 semantics becomes available for such classes, so called
- <a name="an939"></a><em>factory functions</em> (functions returning an object constructed by the
+ <a name="an928"></a><em >factory functions</em> (functions returning an object constructed by the
 function) can easily be implemented. E.g.,
         <pre>
     // assume char *filename
     ifstream inStream(openIstream(filename));
 </pre>
-    For this example to work an <code>ifstream</code> constructor must offer a move
-constructor. This ensures that only one object refers to the open <code>istream</code>.
+    For this example to work an <code >ifstream</code> constructor must offer a move
+constructor. This ensures that only one object refers to the open <code >istream</code>.
 <p>
 Once classes offer move semantics their objects can also safely be stored
 in standard containers (cf. chapter <a href="cplusplus12.html#CONTAINERS">12</a>). When such containers
@@ -2072,8 +2077,8 @@ classes suppress copy semantics containers storing objects of move-only
 classes implement the correct behavior in that it is impossible to assign such
 containers to each other.
 <p>
-<a name="l172"></a>
-<h3>9.7.7: Default move constructors and assignment operators</h3>
+<a name="l171"></a>
+<h3 >9.7.7: Default move constructors and assignment operators</h3>
     As we've seen, classes by default offer a copy constructor and assignment
 operator. These class members are implemented so as to provide basic support:
 data members of primitive data types are copied byte-by-byte, but for class
@@ -2090,7 +2095,7 @@ default copy constructor is suppressed by declarations of either the move
 constructor or the move assignment operator.
 <p>
 If default implementations should be available in these cases, it's easy to
-add them to the class by adding <code>= default</code> to the appropriate constructor
+add them to the class by adding <code >= default</code> to the appropriate constructor
 and assignment operator declarations.
 <p>
 Here is an example of a class offering all defaults: constructor, copy
@@ -2103,9 +2108,9 @@ operator:
         Mov d_mov;
     };
 </pre>
-    Assuming that <code>Mov</code> is a class offering move operations in addition
+    Assuming that <code >Mov</code> is a class offering move operations in addition
 to the standard deep copy operations, then the following actions are performed
-on the destination's <code>d_mov</code> and <code>d_x</code>:
+on the destination's <code >d_mov</code> and <code >d_x</code>:
         <pre>
     Defaults factory();
 
@@ -2124,7 +2129,7 @@ on the destination's <code>d_mov</code> and <code>d_x</code>:
     }
 </pre>
 <p>
-If, however, <code>Defaults</code> declares at least one constructor (it could be
+If, however, <code >Defaults</code> declares at least one constructor (it could be
 the copy constructor) and one assignment operator, then only those members and
 the copy constructor remain available. E.g.:
 <p>
@@ -2153,7 +2158,7 @@ the copy constructor remain available. E.g.:
                                         Mov &amp;&amp;tmp)
     }
 </pre>
-    To reestablish the defaults, append <code>= default</code> to the appropriate
+    To reestablish the defaults, append <code >= default</code> to the appropriate
 declarations:
         <pre>
     class Defaults
@@ -2175,11 +2180,11 @@ declarations:
 of primitive types byte-by-byte from the source object to the destination
 object. This is likely to cause problems with pointer type data members.
 <p>
-The <a name="an940"></a><code>= default</code> suffix can only be used when declaring constructors or
+The <a name="an929"></a><code >= default</code> suffix can only be used when declaring constructors or
 assignment operators in the class's public section.
 <p>
-<a name="MOVEPRINCIPLE"></a><a name="l173"></a>
-<h3>9.7.8: Moving: implications for class design</h3>
+<a name="MOVEPRINCIPLE"></a><a name="l172"></a>
+<h3 >9.7.8: Moving: implications for class design</h3>
     Here are some general rules to apply when designing classes offering value
 semantics (i.e., classes whose objects can be used to initialize other
 objectes of their class and that can be asssigned to other objects of their
@@ -2199,18 +2204,18 @@ is pointless.
     </ul>
 <p>
 In the previous sections we've also encountered an important  design
-        <a name="an941"></a>
+        <a name="an930"></a>
     principle that can be applied to move-aware classes:
-    <blockquote>
-    <em>Whenever a member of a class receives a <code>const &amp;</code> to an object of its
+    <blockquote >
+    <em >Whenever a member of a class receives a <code >const &amp;</code> to an object of its
 own class and creates a copy of that object to perform its actual actions on,
 then that function's implementation can be implemented by an overloaded
 function expecting an rvalue reference.</em>
     </blockquote>
-    The former function can now call the latter by passing <code>std::move(tmp)</code>
+    The former function can now call the latter by passing <code >std::move(tmp)</code>
 to it. The advantages of this design principle should be clear: there is only
 one implementation of the actual actions, and the class automatically becomes
-<em>move-aware</em> with respect to the involved function.
+<em >move-aware</em> with respect to the involved function.
 <p>
 We've seen an initial example of the use of this principle in section
 <a href="cplusplus09.html#REVISEDASS">9.7.4</a>. Of course, the principle cannot be applied to the copy
@@ -2218,8 +2223,8 @@ constructor itself, as you need a copy constructor to make a copy. The copy-
 and move constructors must always be implemented independently from each
 other.
 <p>
-<a name="RVO"></a><a name="l174"></a>
-<h2>9.8: Copy Elision and Return Value Optimization</h2>
+<a name="RVO"></a><a name="l173"></a>
+<h2 >9.8: Copy Elision and Return Value Optimization</h2>
 When the compiler selects a member function (or constructor) it applies a
 simple set of rules, matching arguments with parameter types.
 <p>
@@ -2236,25 +2241,25 @@ called. In the following selection procedure we may assume, without loss of
 generality, that this ambiguity does not occur and that all parameter types
 are reference parameters.
 <p>
-Parameter types matching a function's argument of type <code>T</code> if the argument
+Parameter types matching a function's argument of type <code >T</code> if the argument
 is:
     <ul>
-    <li> a <em>named</em>  argument (an lvalue or a named rvalue)
+    <li> a <em >named</em>  argument (an lvalue or a named rvalue)
         <div style="text-align: center">
     <table>
 
         <td colspan=3><hr/></td>
 
         
-<tr>
-<td> </td>  <td colspan=2 style="text-align: center">the argument is:</td>
+<tr >
+<td > </td>  <td colspan=2 style="text-align: center" >the argument is:</td>
  
 </tr>
 
         
-<tr>
+<tr >
 
-            <td> </td>  <td> non-const</td>  <td> const</td>
+            <td > </td>  <td > non-const</td>  <td > const</td>
 
          
 </tr>
@@ -2262,16 +2267,16 @@ is:
         <td colspan=3><hr/></td>
 
         
-<tr>
+<tr >
 
-            <td> Use the topmost</td> <td> (T &amp;)</td>
+            <td > Use the topmost</td> <td > (T &amp;)</td>
          
 </tr>
 
         
-<tr>
+<tr >
 
-            <td> available function</td> <td> (T const &amp;)</td>  <td> (T const &amp;)</td>
+            <td > available function</td> <td > (T const &amp;)</td>  <td > (T const &amp;)</td>
 
          
 </tr>
@@ -2281,27 +2286,27 @@ is:
     
 </table>
         </div>
-        Example: for an <code>int x</code> argument a function <code>fun(int &amp;)</code> is
-selected rather than a function <code>fun(int const &amp;)</code>. If no <code>fun(int &amp;)</code> is
-available the <code>fun(int const &amp;)</code> function is used. If neither is available
-(and <code>fun int</code> hasn't been defined instead) the compiler reports an error.
+        Example: for an <code >int x</code> argument a function <code >fun(int &amp;)</code> is
+selected rather than a function <code >fun(int const &amp;)</code>. If no <code >fun(int &amp;)</code> is
+available the <code >fun(int const &amp;)</code> function is used. If neither is available
+(and <code >fun int</code> hasn't been defined instead) the compiler reports an error.
 <p>
-<li> an <em>anonymous</em> argument (an anonymous temporary or a literal value)
+<li> an <em >anonymous</em> argument (an anonymous temporary or a literal value)
         <div style="text-align: center">
     <table>
 
         <td colspan=3><hr/></td>
 
         
-<tr>
-<td> </td>  <td colspan=2 style="text-align: center">the argument is:</td>
+<tr >
+<td > </td>  <td colspan=2 style="text-align: center" >the argument is:</td>
  
 </tr>
 
         
-<tr>
+<tr >
 
-            <td> </td> <td> non-const</td>  <td> const</td>
+            <td > </td> <td > non-const</td>  <td > const</td>
 
          
 </tr>
@@ -2309,24 +2314,24 @@ available the <code>fun(int const &amp;)</code> function is used. If neither is 
         <td colspan=3><hr/></td>
 
         
-<tr>
+<tr >
 
-            <td> Use the topmost</td> <td> (T &amp;&amp;)</td>
+            <td > Use the topmost</td> <td > (T &amp;&amp;)</td>
          
 </tr>
 
         
-<tr>
+<tr >
 
-            <td> available function</td> <td> (T const &amp;&amp;)</td>  <td> (T const &amp;&amp;)</td>
+            <td > available function</td> <td > (T const &amp;&amp;)</td>  <td > (T const &amp;&amp;)</td>
 
          
 </tr>
 
         
-<tr>
+<tr >
 
-            <td> available function</td> <td> (T const &amp;)</td>  <td> (T const &amp;)</td>
+            <td > available function</td> <td > (T const &amp;)</td>  <td > (T const &amp;)</td>
 
          
 </tr>
@@ -2335,22 +2340,22 @@ available the <code>fun(int const &amp;)</code> function is used. If neither is 
 
         
 </table></div>
-        Example: when the return value of an <code>int arg()</code> function is passed
-to a function <code>fun</code> for which various overloaded versions are available
-<code>fun(int &amp;&amp;)</code> is selected. If this function is unavailable but <code>fun(int
+        Example: when the return value of an <code >int arg()</code> function is passed
+to a function <code >fun</code> for which various overloaded versions are available
+<code >fun(int &amp;&amp;)</code> is selected. If this function is unavailable but <code >fun(int
 const &amp;)</code> is, then the latter function is used.  If none of these two
 functions is available the compiler reports an error.
         </ul>
-    The tables show that eventually <em>all</em> arguments can be used with a
-function specifying a <code>T const &amp;</code> parameter. For <em>anonymous</em> arguments a
-similar <em>catch all</em> is available having a higher priority: <code>T const &amp;&amp;</code>
+    The tables show that eventually <em >all</em> arguments can be used with a
+function specifying a <code >T const &amp;</code> parameter. For <em >anonymous</em> arguments a
+similar <em >catch all</em> is available having a higher priority: <code >T const &amp;&amp;</code>
 matches all anonymous arguments. Functions having this signature are normally
 not defined as their implementations are (should be) identical to the
-implementations of the functions expecting a <code>T const &amp;</code> parameter. Since
-the temporary can apparently not be modified a function defining a <code>T const
+implementations of the functions expecting a <code >T const &amp;</code> parameter. Since
+the temporary can apparently not be modified a function defining a <code >T const
 &amp;&amp;</code> parameter has no alternative but to copy the temporary's resources. As
-this task is already performed by functions expecting a <code>T const &amp;</code>, there
-is no need for implenting functions expecting <code>T const &amp;&amp;</code> parameters.
+this task is already performed by functions expecting a <code >T const &amp;</code>, there
+is no need for implenting functions expecting <code >T const &amp;&amp;</code> parameters.
 <p>
 As we've seen the move constructor grabs the information from a temporary
 for its own use. That is OK as the temporary is going to be destroyed after
@@ -2359,11 +2364,11 @@ modified.
 <p>
 Having defined appropriate copy and/or move constructors it may be
 somewhat surprising to learn that the compiler may decide to stay clear of a
-copy or move operation. After all making <em>no</em> copy and <em>not</em> moving is
+copy or move operation. After all making <em >no</em> copy and <em >not</em> moving is
 more efficient than copying or moving.
 <p>
 The option the compiler has to avoid making copies (or perform move
-operations) is called <a name="an942"></a><em>copy elision</em> or <a name="an943"></a><em>return value optimization</em>. In
+operations) is called <a name="an931"></a><em >copy elision</em> or <a name="an932"></a><em >return value optimization</em>. In
 all situations where copy or move constructions are appropriate the compiler
 may apply copy elision. Here are the rules. In sequence the compiler considers
 the following options, stopping once an option can be selected:
@@ -2391,36 +2396,36 @@ be encountered:
     gun(fun());         // 3
 </pre>
     <ul>
-    <li> At 1 <code>ret</code> may never exist. Instead of using <code>ret</code> and copying
-<code>ret</code> eventually to <code>fun</code>'s return value it may directly use the area used
-to contain <code>fun</code>'s return value.
-    <li> At 2 <code>fun</code>'s return value may never exist. Instead of defining an
-area containing <code>fun</code>'s return value and copying that return value to
-<code>elide</code> the compiler may decide to use <code>elide</code> to create <code>fun</code>'s return
+    <li> At 1 <code >ret</code> may never exist. Instead of using <code >ret</code> and copying
+<code >ret</code> eventually to <code >fun</code>'s return value it may directly use the area used
+to contain <code >fun</code>'s return value.
+    <li> At 2 <code >fun</code>'s return value may never exist. Instead of defining an
+area containing <code >fun</code>'s return value and copying that return value to
+<code >elide</code> the compiler may decide to use <code >elide</code> to create <code >fun</code>'s return
 value in.
-    <li> At 3 the compiler may decide to do the same for gun's <code>par</code>
-parameter: <code>fun</code>'s return value is directly created in <code>par</code>'s area, thus
-eliding the copy operation from <code>fun</code>'s return value to <code>par</code>.
+    <li> At 3 the compiler may decide to do the same for gun's <code >par</code>
+parameter: <code >fun</code>'s return value is directly created in <code >par</code>'s area, thus
+eliding the copy operation from <code >fun</code>'s return value to <code >par</code>.
     </ul>
 <p>
-<a name="POD"></a><a name="l175"></a>
-<h2>9.9: Plain Old Data</h2>
-<strong>C++</strong> inherited the struct concept from <strong>C</strong> and extended it with the class
-concept. Structs are still used in <strong>C++</strong>, mainly to store and pass around
+<a name="POD"></a><a name="l174"></a>
+<h2 >9.9: Plain Old Data</h2>
+<strong >C++</strong> inherited the struct concept from <strong >C</strong> and extended it with the class
+concept. Structs are still used in <strong >C++</strong>, mainly to store and pass around
 aggregates of different data types. A commonly term for these structs is
-<a name="an944"></a><em>plain old data</em> (<a name="an945"></a>pod). Plain old data is commonly used in <strong>C++</strong>
-programs to aggregate data. E.g., when a function needs to return a <code>double,
-bool</code> and <code>std::string</code> these three different data types may be aggregated
-using a <code>struct</code> that merely exists to pass along values. Data protection
-and functionality is hardly ever an issue. For such cases <strong>C</strong> and <strong>C++</strong>
-use <code>structs</code>. But as a <strong>C++</strong> <code>struct</code> is just a <code>class</code> with special
+<a name="an933"></a><em >plain old data</em> (<a name="an934"></a>pod). Plain old data is commonly used in <strong >C++</strong>
+programs to aggregate data. E.g., when a function needs to return a <code >double,
+bool</code> and <code >std::string</code> these three different data types may be aggregated
+using a <code >struct</code> that merely exists to pass along values. Data protection
+and functionality is hardly ever an issue. For such cases <strong >C</strong> and <strong >C++</strong>
+use <code >structs</code>. But as a <strong >C++</strong> <code >struct</code> is just a <code >class</code> with special
 access rights some members (constructors, destructor, overloaded assignment
 operator) may implicitly be defined. The plain old data capitalizes on this
 concept by requiring that its definition remains as simple as possible. Pod is
 considered any class or struct having the following characteristics:
     <ul>
-    <li> it has a <a name="an946"></a>trivial default constructor.<br/>
-       If a type has some <a name="an947"></a><em>trivial member</em> then the type (or its base
+    <li> it has a <a name="an935"></a>trivial default constructor.<br/>
+       If a type has some <a name="an936"></a><em >trivial member</em> then the type (or its base
         class(es), cf. chapter <a href="cplusplus13.html#INHERITANCE">13</a>) does not explicitly define
         that member. Rather, it is supplied by the compiler. A trivial default
         constructor leaves all its non-class data members unitialized and
@@ -2429,25 +2434,25 @@ considered any class or struct having the following characteristics:
         at all (nor does/do its base class/classes). It may also define the
         default constructor using the default constructor syntax introduced in
         section <a href="cplusplus07.html#DEFAULTED">7.6</a>;
-    <li> it has a <a name="an948"></a>trivial copy constructor.<br/>
+    <li> it has a <a name="an937"></a>trivial copy constructor.<br/>
        A trivial copy constructor byte-wise copies the non-class data members
         from the provided existing class object and uses copy constructors
         to initialize its base class(es) and class
         data members with the information found in the provided existing class
         object;
-    <li> it has a <a name="an949"></a>trivial overloaded assignment operator.<br/>
+    <li> it has a <a name="an938"></a>trivial overloaded assignment operator.<br/>
        A trivial assignment operator performs a byte-wise copy of the
         non-class data members of the provided right-hand class object and
         uses overloaded assignment operators to assign new values to its class
         data members using the corresponding members of the provided
         right-hand class object;
-    <li> it has a <a name="an950"></a>trivial destructor.<br/>
+    <li> it has a <a name="an939"></a>trivial destructor.<br/>
        A trivial destructor calls the destructors of its base class(es) and
         class-type data members;
-    <li> it has a <a name="an951"></a><em>standard layout</em>.
+    <li> it has a <a name="an940"></a><em >standard layout</em>.
     </ul>
 <p>
-A <em>standard-layout</em> class or struct
+A <em >standard-layout</em> class or struct
     <ul>
     <li> has only non-static data members that are themselves showing
         the standard-layout;
@@ -2456,7 +2461,7 @@ A <em>standard-layout</em> class or struct
     </ul>
 <p>
 Furthermore, in the context of class derivation (cf. chapters
-<a href="cplusplus14.html#POLYMORPHISM">14</a> and <a href="cplusplus13.html#INHERITANCE">13</a>), a <a name="an952"></a><em>standard-layout</em> class or
+<a href="cplusplus14.html#POLYMORPHISM">14</a> and <a href="cplusplus13.html#INHERITANCE">13</a>), a <a name="an941"></a><em >standard-layout</em> class or
 struct:
     <ul>
     <li> has only base classes that themselves show the standard-layout;
@@ -2467,12 +2472,12 @@ struct:
     <li> has no virtual members.
     </ul>
 <p>
-<a name="l176"></a>
-<h2>9.10: Conclusion</h2>
+<a name="l175"></a>
+<h2 >9.10: Conclusion</h2>
 Four important extensions to classes were introduced in this chapter: the
 destructor, the copy constructor, the move constructor and
 the overloaded assignment operator. In addition the importance of
-<em>swapping</em>, especially in combination with the overloaded assignment
+<em >swapping</em>, especially in combination with the overloaded assignment
 operator, was stressed.
 <p>
 Classes having pointer data members, pointing to dynamically allocated memory
@@ -2487,13 +2492,13 @@ objects doing dynamic memory allocation.
 <p>
 A simple conclusion is therefore that classes whose objects allocate memory
 controlled by themselves must at least implement a
-<em>destructor</em>, an <em>overloaded assignment operator</em> and a
- <em>copy constructor</em>. Implementing a <em>move constructor</em> remains
-optional, but it allows us to use <em>factory functions</em> with classes <em>not</em>
+<em >destructor</em>, an <em >overloaded assignment operator</em> and a
+ <em >copy constructor</em>. Implementing a <em >move constructor</em> remains
+optional, but it allows us to use <em >factory functions</em> with classes <em >not</em>
 allowing copy construction and/or assignment.
 <p>
 In the end, assuming the availability of at least a copy or move constructor,
-the compiler might avoid them using <em>copy elision</em>. The compiler is free to
+the compiler might avoid them using <em >copy elision</em>. The compiler is free to
 use copy elision wherever possible; it is, however, never a requirement. The
 compiler may therefore always decide not to use copy elision.  In all
 situations where otherwise a copy or move constructor would have been used the

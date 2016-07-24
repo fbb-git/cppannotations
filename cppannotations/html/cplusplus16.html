@@ -1,6 +1,6 @@
 <!DOCTYPE html><html><head>
 <meta charset="UTF-8">
-<title> C++ Annotations Version 10.5.0 </title>
+<title> C++ Annotations Version 10.5.1 </title>
 <link rel="stylesheet" type="text/css" href="cplusplus.css"><style type="text/css">
     figure {text-align: center;}
     img {vertical-align: center;}
@@ -14,21 +14,21 @@
     <li> <a href="cplusplus17.html">Next Chapter</a>
 </ul>
 <hr>
-<a name="PointMembers"></a><a name="l301"></a>
-<h1>Chapter 16: Classes Having Pointers To Members</h1>
-Classes having <code>pointer data members</code> have been discussed in detail in
+<a name="PointMembers"></a><a name="l300"></a>
+<h1 >Chapter 16: Classes Having Pointers To Members</h1>
+Classes having <code >pointer data members</code> have been discussed in detail in
 chapter <a href="cplusplus09.html#MEMORY">9</a>.  Classes defining pointer data-members deserve some
 special attention, as they usually require the definitions of copy
 constructors, overloaded assignment operators and destructors
 <p>
 Situations exist where we do not need a pointer to an object but rather a
- <a name="an1966"></a>pointer to members of a class. Pointers to members can profitably be used
+ <a name="an1953"></a>pointer to members of a class. Pointers to members can profitably be used
 to configure the behavior of objects of classes. Depending on which member a
 pointer to a member points to objects will show certain behavior.
 <p>
 Although pointers to members have their use, polymorphism can frequently be
 used to realize comparable behavior. Consider a class having a member
-<code>process</code> performing one of a series of alternate behaviors. Instead of
+<code >process</code> performing one of a series of alternate behaviors. Instead of
 selecting the behavior of choice at object construction time the class could
 use the interface of some (abstract) base class, passing an object of some
 derived class to its constructor and could thus configure its behavior. This
@@ -43,10 +43,10 @@ on the other hand ease of access to a class's data members. In this chapter
 we'll concentrate on pointers to members, investigating what these pointers
 have to offer.
 <p>
-<a name="l302"></a>
-<h2>16.1: Pointers to members: an example</h2>
+<a name="l301"></a>
+<h2 >16.1: Pointers to members: an example</h2>
     Knowing how pointers to variables and objects are used does not intuitively
-lead to the concept of <em>pointers to members</em> <a name="an1967"></a>. Even if
+lead to the concept of <em >pointers to members</em> <a name="an1954"></a>. Even if
 the return types and parameter types of member functions are taken into
 account, surprises can easily be encountered.  For example, consider the
 following class:
@@ -59,50 +59,50 @@ following class:
             char const *get() const;
     };
 </pre>
-    For this class, it is not possible to let <code>char const *(*d_sp)() const</code>
-point to the <code>String::get</code> member function as <code>d_sp</code> cannot be given the
-address of the member function <code>get</code>.
+    For this class, it is not possible to let <code >char const *(*d_sp)() const</code>
+point to the <code >String::get</code> member function as <code >d_sp</code> cannot be given the
+address of the member function <code >get</code>.
 <p>
-One of the reasons why this doesn't work is that the variable <code>d_sp</code> has
-<a name="an1968"></a><a name="an1969"></a>global scope (it is a pointer to <em>a</em> function, not a
-pointer to a function within <code>String</code>), while the member function <code>get</code> is
-defined within the <code>String</code> class, and thus has <code>class scope</code>. The fact
-that <code>d_sp</code> is a data member of the class <code>String</code> is irrelevant
-here. According to <code>d_sp</code>'s definition, it points to a function living
-somewhere <em>outside</em> of the class.
+One of the reasons why this doesn't work is that the variable <code >d_sp</code> has
+<a name="an1955"></a><a name="an1956"></a>global scope (it is a pointer to <em >a</em> function, not a
+pointer to a function within <code >String</code>), while the member function <code >get</code> is
+defined within the <code >String</code> class, and thus has <code >class scope</code>. The fact
+that <code >d_sp</code> is a data member of the class <code >String</code> is irrelevant
+here. According to <code >d_sp</code>'s definition, it points to a function living
+somewhere <em >outside</em> of the class.
 <p>
 Consequently, to define a pointer to a member (either data or function, but
 usually a function) of a class, the scope of the pointer must indicate
-<a name="an1970"></a><a name="an1971"></a>class scope.  Doing so, a pointer to the member
-<code>String::get</code> is defined like this:
+<a name="an1957"></a><a name="an1958"></a>class scope.  Doing so, a pointer to the member
+<code >String::get</code> is defined like this:
         <pre>
     char const *(String::*d_sp)() const;
 </pre>
-    So, by prefixing the <code>*d_sp</code> pointer data member by <code>String::</code>, it is
-defined as a pointer in the context of the class <code>String</code>. According to its
-definition it is <em>a pointer to a function in the class <code>String</code>, not
+    So, by prefixing the <code >*d_sp</code> pointer data member by <code >String::</code>, it is
+defined as a pointer in the context of the class <code >String</code>. According to its
+definition it is <em >a pointer to a function in the class <code >String</code>, not
 expecting arguments, not modifying its object's data, and returning a pointer
 to constant characters</em>.
 <p>
-<a name="l303"></a>
-<h2>16.2: Defining  pointers to members</h2>
-    Pointers <a name="an1972"></a> to members are defined by prefixing
+<a name="l302"></a>
+<h2 >16.2: Defining  pointers to members</h2>
+    Pointers <a name="an1959"></a> to members are defined by prefixing
 the normal pointer notation with the appropriate class plus scope resolution
-operator. Therefore, in the previous section, we used <code>char const *
-(String::*d_sp)() const</code> to indicate that <code>d_sp</code>
+operator. Therefore, in the previous section, we used <code >char const *
+(String::*d_sp)() const</code> to indicate that <code >d_sp</code>
     <ul>
-    <li> is a pointer (<code>*d_sp</code>);
-    <li> points to something in the class <code>String</code> (<code>String::*d_sp</code>);
-    <li> is a pointer to a <code>const</code> function, returning a <code>char const *</code>
-            (<code>char const * (String::*d_sp)() const</code>).
+    <li> is a pointer (<code >*d_sp</code>);
+    <li> points to something in the class <code >String</code> (<code >String::*d_sp</code>);
+    <li> is a pointer to a <code >const</code> function, returning a <code >char const *</code>
+            (<code >char const * (String::*d_sp)() const</code>).
     </ul>
 <p>
 The prototype of a matching function is therefore:
         <pre>
     char const *String::somefun() const;
 </pre>
- which is any <code>const</code> parameterless function in the class
-<code>String</code>, returning a <code>char const *</code>.
+ which is any <code >const</code> parameterless function in the class
+<code >String</code>, returning a <code >char const *</code>.
 <p>
 When defining pointers to members the standard procedure for constructing
 pointers to functions can still be applied:
@@ -112,7 +112,7 @@ function's header, including the function's  class name):
         <pre>
 char const * ( String::somefun ) () const
 </pre>
-    <li> Put a pointer (a star (<code>*</code>)) character immediately before the
+    <li> Put a pointer (a star (<code >*</code>)) character immediately before the
 function name itself:
         <pre>
 char const * ( String:: * somefun ) () const
@@ -123,8 +123,8 @@ char const * (String::*d_sp)() const
 </pre>
     </ul>
 <p>
-Here is another example, defining <a name="an1973"></a> a pointer
-to a data member. Assume the class <code>String</code> contains a <code>string d_text</code>
+Here is another example, defining <a name="an1960"></a> a pointer
+to a data member. Assume the class <code >String</code> contains a <code >string d_text</code>
 member. How to construct a pointer to this member? Again we follow standard
 procedure:
     <ul>
@@ -132,7 +132,7 @@ procedure:
         <pre>
 std::string (String::d_text)
 </pre>
-    <li> Put a pointer (a star (<code>*</code>)) character immediately before the
+    <li> Put a pointer (a star (<code >*</code>)) character immediately before the
 variable-name itself:
         <pre>
 std::string (String::*d_text)
@@ -147,7 +147,7 @@ string String::*tp
 </pre>
     </ul>
 <p>
-Alternatively, a very simple <a name="an1974"></a>rule of thumb is
+Alternatively, a very simple <a name="an1961"></a>rule of thumb is
     <ul>
     <li> Define a normal (i.e., global) pointer variable,
     <li> Prefix the class name to the pointer character, once you point to
@@ -162,7 +162,7 @@ something inside a class
     char const * (String::*sp)() const;
 </pre>
     Nothing forces us to define pointers to members in their target
-(<code>String</code>) classes. Pointers to members <em>may</em> be defined in their target
+(<code >String</code>) classes. Pointers to members <em >may</em> be defined in their target
 classes (so they become data members), or in another class, or as a local
 variable or as a global variable. In all these cases the pointer to member
 variable can be given the address of the kind of member it points to. The
@@ -171,17 +171,17 @@ without requiring the existence an object of the pointer's target class.
 <p>
 Initializing or assigning an address to such a pointer merely indicates to
 which member the pointer points. This can be considered some kind of
- <a name="an1975"></a><em>relative address</em>; relative to the object for which the function is
+ <a name="an1962"></a><em >relative address</em>; relative to the object for which the function is
 called. No object is required when pointers to members are initialized or
 assigned. While it is allowed to initialize or assign a pointer to member, it
-is (of course) not possible to <em>call</em> those members without specifying an
+is (of course) not possible to <em >call</em> those members without specifying an
 object of the correct type.
 <p>
-In the following example <a name="an1976"></a>
-    <a name="an1977"></a> initialization of and assignment to
+In the following example <a name="an1963"></a>
+    <a name="an1964"></a> initialization of and assignment to
 pointers to members is illustrated (for illustration purposes all members of
-the class <code>PointerDemo</code> are defined <code>public</code>). In the example itself the
-<code>&amp;</code>-operator is used to determine the addresses of the members. These
+the class <code >PointerDemo</code> are defined <code >public</code>). In the example itself the
+<code >&amp;</code>-operator is used to determine the addresses of the members. These
 operators as well as the class-scopes are required. Even when used inside
 member implementations:
         <pre>
@@ -211,30 +211,30 @@ member implementations:
 <p>
 This involves nothing special. The difference with pointers at
 global scope is that we're now restricting ourselves to the scope of the
-<code>PointerDemo</code> class. Because of this restriction, all <em>pointer</em>
+<code >PointerDemo</code> class. Because of this restriction, all <em >pointer</em>
 definitions and all variables whose addresses are used must be given the
-<code>PointerDemo</code> class scope.
+<code >PointerDemo</code> class scope.
 <p>
-Pointers to members can also be used with <code>virtual</code>
-        <a name="an1978"></a>
+Pointers to members can also be used with <code >virtual</code>
+        <a name="an1965"></a>
     member functions. No special syntax is required when pointing to virtual
 members. Pointer construction, initialization and assignment is done
 identically to the way it is done with non-virtual members.
 <p>
-<a name="l304"></a>
-<h2>16.3: Using pointers to members</h2>
+<a name="l303"></a>
+<h2 >16.3: Using pointers to members</h2>
     Using pointers to members to call a member function requires the existence of
 an object of the class of the members to which the pointer to member refers
-to.  With pointers operating at global scope, the dereferencing operator <code>*</code>
-is used.  With pointers to objects the <a name="an1979"></a>field selector operator operating on
-pointers (<a name="an1980"></a><code>-&gt;</code>) or the field selector operating operating on objects (<code>.</code>)
+to.  With pointers operating at global scope, the dereferencing operator <code >*</code>
+is used.  With pointers to objects the <a name="an1966"></a>field selector operator operating on
+pointers (<a name="an1967"></a><code >-&gt;</code>) or the field selector operating operating on objects (<code >.</code>)
 can be used to select appropriate members.
 <p>
 To use a pointer to member in combination with an object the
-    <a name="an1981"></a>pointer to member field selector (<a name="an1982"></a><code>.*</code>) must be specified.  To use a
+    <a name="an1968"></a>pointer to member field selector (<a name="an1969"></a><code >.*</code>) must be specified.  To use a
 pointer to a member via a pointer to an object the `pointer to member field
-selector through a pointer to an object' (<a name="an1983"></a><code>-&gt;*</code>) must be specified. These
-two operators combine the notions of a field selection (the <code>.</code> and <code>-&gt;</code>
+selector through a pointer to an object' (<a name="an1970"></a><code >-&gt;*</code>) must be specified. These
+two operators combine the notions of a field selection (the <code >.</code> and <code >-&gt;</code>
 parts) to reach the appropriate field in an object and of dereferencing: a
 dereference operation is used to reach the function or variable the pointer to
 member points to.
@@ -279,38 +279,38 @@ pointers to member functions and pointers to data members:
 <p>
 We note:
     <ul>
-    <li> At (1) a <code>PointerDemo</code> object and a pointer to such an
+    <li> At (1) a <code >PointerDemo</code> object and a pointer to such an
 object is defined.
-    <li> At (2) we specify an object (and hence the <code>.*</code> operator) to reach
-the member <code>valuePtr</code> points to. This member is given a value.
+    <li> At (2) we specify an object (and hence the <code >.*</code> operator) to reach
+the member <code >valuePtr</code> points to. This member is given a value.
     <li> At (3) the same member is assigned another value, but this time using
-the pointer to a <code>PointerDemo</code> object. Hence we use the <code>-&gt;*</code> operator.
-    <li> At (4) the <code>.*</code> and <code>-&gt;*</code> are used once again, this time to call
+the pointer to a <code >PointerDemo</code> object. Hence we use the <code >-&gt;*</code> operator.
+    <li> At (4) the <code >.*</code> and <code >-&gt;*</code> are used once again, this time to call
 a function through a pointer to member. As the function argument list
 has a higher priority than the pointer to member field selector
-operator, the latter <em>must</em> be protected by parentheses.
+operator, the latter <em >must</em> be protected by parentheses.
     </ul>
     Pointers to members can be used profitably in situations where a class has
 a member that behaves differently depending on a configuration
-setting. Consider once again the class <code>Person</code> from section
-<a href="cplusplus09.html#ASSIGNMENT">9.3</a>. <code>Person</code> defines data members holding a person's name,
-address and phone number. Assume we want to construct a <code>Person</code>
+setting. Consider once again the class <code >Person</code> from section
+<a href="cplusplus09.html#ASSIGNMENT">9.3</a>. <code >Person</code> defines data members holding a person's name,
+address and phone number. Assume we want to construct a <code >Person</code>
 database of employees.  The employee database can be queried, but depending on
 the kind of person querying the database either the name, the name and phone
 number or all stored information about the person is made available. This
-implies that a member function like <code>address</code> must return something like
-`<code>&lt;not available&gt;</code>' in cases where the person querying the database is not
+implies that a member function like <code >address</code> must return something like
+`<code >&lt;not available&gt;</code>' in cases where the person querying the database is not
 allowed to see the person's address, and the actual address in other cases.
 <p>
 The employee database is opened specifying an argument reflecting the
 status of the employee who wants to make some queries. The status could
-reflect his or her position in the organization, like <code>BOARD</code>,
-<code>SUPERVISOR</code>, <code>SALESPERSON</code>, or <code>CLERK</code>. The first two categories are
-allowed to see all information about the employees, a <code>SALESPERSON</code> is
-allowed to see the employee's phone numbers, while the <code>CLERK</code> is only
+reflect his or her position in the organization, like <code >BOARD</code>,
+<code >SUPERVISOR</code>, <code >SALESPERSON</code>, or <code >CLERK</code>. The first two categories are
+allowed to see all information about the employees, a <code >SALESPERSON</code> is
+allowed to see the employee's phone numbers, while the <code >CLERK</code> is only
 allowed to verify whether a person is actually a member of the organization.
 <p>
-We now construct a member <code>string personInfo(char const *name)</code> in the
+We now construct a member <code >string personInfo(char const *name)</code> in the
 database class. A standard implementation of this class could be:
         <pre>
     string PersonData::personInfo(char const *name)
@@ -332,19 +332,19 @@ database class. A standard implementation of this class could be:
         }
     }
 </pre>
-    Although it doesn't take much time, the <code>switch</code> must nonetheless be
-evaluated every time <code>personInfo</code> is called. Instead of using a switch, we
-could define a member <code>d_infoPtr</code> as a pointer to a member function of the
-class <code>PersonData</code> returning a <code>string</code> and expecting a pointer to a
-<code>Person</code> as its argument.
+    Although it doesn't take much time, the <code >switch</code> must nonetheless be
+evaluated every time <code >personInfo</code> is called. Instead of using a switch, we
+could define a member <code >d_infoPtr</code> as a pointer to a member function of the
+class <code >PersonData</code> returning a <code >string</code> and expecting a pointer to a
+<code >Person</code> as its argument.
 <p>
 Instead of evaluating the switch this pointer can be used to point to
-<code>allInfo</code>, <code>noPhone</code> or <code>nameOnly</code>. Furthermore, the member function
-the pointer points to will be known by the time the <code>PersonData</code>
+<code >allInfo</code>, <code >noPhone</code> or <code >nameOnly</code>. Furthermore, the member function
+the pointer points to will be known by the time the <code >PersonData</code>
 object is constructed and so its value needs to be determined only once (at
 the PersonData object's construction time).
 <p>
-Having initialized <code>d_infoPtr</code> the <code>personInfo</code> member function is now
+Having initialized <code >d_infoPtr</code> the <code >personInfo</code> member function is now
 implemented simply as:
         <pre>
     string PersonData::personInfo(char const *name)
@@ -355,15 +355,15 @@ implemented simply as:
     }
 </pre>
 <p>
-The member <code>d_infoPtr</code> is defined as follows (within the class
-<code>PersonData</code>, omitting other members):
+The member <code >d_infoPtr</code> is defined as follows (within the class
+<code >PersonData</code>, omitting other members):
         <pre>
     class PersonData
     {
         string (PersonData::*d_infoPtr)(Person *p);
     };
 </pre>
-    Finally, the constructor initializes <code>d_infoPtr</code>. This could be realized
+    Finally, the constructor initializes <code >d_infoPtr</code>. This could be realized
 using a simple switch:
         <pre>
     PersonData::PersonData(PersonData::EmployeeCategory cat)
@@ -384,31 +384,31 @@ using a simple switch:
     }
 </pre>
     Note how addresses of member functions are determined. The class
-<code>PersonData</code> scope <em>must</em> be specified, even though we're already inside
-a member function of the class <code>PersonData</code>.
+<code >PersonData</code> scope <em >must</em> be specified, even though we're already inside
+a member function of the class <code >PersonData</code>.
 <p>
 An example using pointers to data members is provided in section
-<a href="cplusplus19.html#STABSORT">19.1.60</a>, in the context of the <code>stable_sort</code> generic algorithm.
+<a href="cplusplus19.html#STABSORT">19.1.60</a>, in the context of the <code >stable_sort</code> generic algorithm.
 <p>
-<a name="l305"></a>
-<h2>16.4: Pointers to static members</h2>
-    Static <a name="an1984"></a> members of a class can be used without having
+<a name="l304"></a>
+<h2 >16.4: Pointers to static members</h2>
+    Static <a name="an1971"></a> members of a class can be used without having
 available an object of their class. Public static members can be called like
 free functions, albeit that their class names must be specified when they are
 called.
 <p>
-Assume a class <code>String</code> has a public static member function
-<code>count</code>, returning the number of string objects created so
-far. Then, without using any <code>String</code> object the function
-<code>String::count</code> may be called:
+Assume a class <code >String</code> has a public static member function
+<code >count</code>, returning the number of string objects created so
+far. Then, without using any <code >String</code> object the function
+<code >String::count</code> may be called:
         <pre>
     void fun()
     {
         cout &lt;&lt; String::count() &lt;&lt; '\n';
     }
 </pre>
-    <em>Public</em> static members can be called like free functions (but see also
-section <a href="cplusplus08.html#CALLINGCONVENTION">8.2.1</a>).  <em>Private</em> static members can only be
+    <em >Public</em> static members can be called like free functions (but see also
+section <a href="cplusplus08.html#CALLINGCONVENTION">8.2.1</a>).  <em >Private</em> static members can only be
 called within the context of their class, by their class's member or friend
 functions.
 <p>
@@ -427,10 +427,10 @@ members. Example:
     }
 </pre>
 <p>
-<a name="l306"></a>
-<h2>16.5: Pointer sizes</h2>
+<a name="l305"></a>
+<h2 >16.5: Pointer sizes</h2>
     An interesting characteristic of pointers to members is that their sizes
- <a name="an1985"></a><a name="an1986"></a> differ from
+ <a name="an1972"></a><a name="an1973"></a> differ from
 those of `normal' pointers. Consider the following little program:
         <pre>
     #include &lt;string&gt;
@@ -476,10 +476,10 @@ confusion in statements like:
         <pre>
     printf("%p", &amp;X::fun);
 </pre>
-    Of course, <code>printf</code> is likely not the right tool to produce the
-value of these <strong>C++</strong> specific pointers. The values of these pointers can be
-inserted into streams when a <code>union</code>, reinterpreting the 8-byte pointers as
-a series of size_t <code>char</code> values, is used:
+    Of course, <code >printf</code> is likely not the right tool to produce the
+value of these <strong >C++</strong> specific pointers. The values of these pointers can be
+inserted into streams when a <code >union</code>, reinterpreting the 8-byte pointers as
+a series of size_t <code >char</code> values, is used:
         <pre>
     #include &lt;string&gt;
     #include &lt;iostream&gt;

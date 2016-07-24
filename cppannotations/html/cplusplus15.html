@@ -1,6 +1,6 @@
 <!DOCTYPE html><html><head>
 <meta charset="UTF-8">
-<title> C++ Annotations Version 10.5.0 </title>
+<title> C++ Annotations Version 10.5.1 </title>
 <link rel="stylesheet" type="text/css" href="cplusplus.css"><style type="text/css">
     figure {text-align: center;}
     img {vertical-align: center;}
@@ -14,33 +14,33 @@
     <li> <a href="cplusplus16.html">Next Chapter</a>
 </ul>
 <hr>
-<a name="Friends"></a><a name="l298"></a>
-<h1>Chapter 15: Friends</h1>
-In all examples discussed up to now, we've seen that <code>private</code> members are
-only accessible by the members of their class. This is <em>good</em>, as it
-enforces <a name="an1955"></a>encapsulation and <a name="an1956"></a>data hiding. By encapsulating functionality
+<a name="Friends"></a><a name="l297"></a>
+<h1 >Chapter 15: Friends</h1>
+In all examples discussed up to now, we've seen that <code >private</code> members are
+only accessible by the members of their class. This is <em >good</em>, as it
+enforces <a name="an1942"></a>encapsulation and <a name="an1943"></a>data hiding. By encapsulating functionality
 within a class we prevent that a class exposes multiple responsibilities; by
-hiding data we promote a class's <a name="an1957"></a>data integrity and we prevent that other
-parts of the software become <a name="an1958"></a>implementation dependent on the data that
+hiding data we promote a class's <a name="an1944"></a>data integrity and we prevent that other
+parts of the software become <a name="an1945"></a>implementation dependent on the data that
 belong to a class.
 <p>
-In this (very) short chapter we introduce the <a name="an1959"></a><code>friend</code> keyword and the
+In this (very) short chapter we introduce the <a name="an1946"></a><code >friend</code> keyword and the
 principles that underly its use. The bottom line being that by using the
-<code>friend</code> keyword functions are granted access to a class's <code>private</code>
+<code >friend</code> keyword functions are granted access to a class's <code >private</code>
 members. Even so, this does not imply that the principle of data hiding is
-abandoned when the <code>friend</code> keyword is used.
+abandoned when the <code >friend</code> keyword is used.
 <p>
 In this chapter the topic of
-    <a name="an1960"></a>friendship among classes is not discussed. Situations in which it is
+    <a name="an1947"></a>friendship among classes is not discussed. Situations in which it is
 natural to use friendship among classes are discussed in chapters
 <a href="cplusplus17.html#NESTEDCLASSES">17</a> and <a href="cplusplus21.html#TEMPLATES">21</a> and such situations are natural
 extensions of the way friendship is handled for functions.
 <p>
 There should be a well-defined conceptual reason for declaring friendship
-(i.e., using the <code>friend</code> keyword). The traditionally offered definition of
-the <a name="an1961"></a> class concept usually looks something like
+(i.e., using the <code >friend</code> keyword). The traditionally offered definition of
+the <a name="an1948"></a> class concept usually looks something like
 this:
-    <blockquote><em>A class is a set of data together with the functions that operate
+    <blockquote ><em >A class is a set of data together with the functions that operate
         on that set of data.</em></blockquote>
 <p>
 As we've seen in chapter <a href="cplusplus11.html#OVERLOADING">11</a> some functions have to be defined
@@ -56,18 +56,18 @@ functions using available public member functions. This approach was used,
 e.g., in section <a href="cplusplus11.html#EXTRACTORS">11.2</a>. Another approach applies the definition of
 the class concept to those functions. By stating that those functions in fact
 belong to the class they should be given direct access to the data members of
-objects. This is accomplished by the <code>friend</code> keyword.
+objects. This is accomplished by the <code >friend</code> keyword.
 <p>
 As a general principle
-    <a name="an1962"></a> we state that all functions
+    <a name="an1949"></a> we state that all functions
 operating on the data of objects of a class that are declared in the same file
 as the class interface itself belong to that class and may be granted direct
 access to the class's data members.
 <p>
-<a name="FriendsFriendfun"></a><a name="l299"></a>
-<h2>15.1: Friend functions</h2>
+<a name="FriendsFriendfun"></a><a name="l298"></a>
+<h2 >15.1: Friend functions</h2>
         In section <a href="cplusplus11.html#EXTRACTORS">11.2</a> the insertion operator of the class
-<code>Person</code> (cf. section <a href="cplusplus09.html#ASSIGNMENT">9.3</a>) was implemented like this:
+<code >Person</code> (cf. section <a href="cplusplus09.html#ASSIGNMENT">9.3</a>) was implemented like this:
         <pre>
     ostream &amp;operator&lt;&lt;(ostream &amp;out, Person const &amp;person)
     {
@@ -78,11 +78,11 @@ access to the class's data members.
                 "Phone:   " &lt;&lt; person.phone();
     }
 </pre>
- <code>Person</code> objects can now be inserted into streams.
+ <code >Person</code> objects can now be inserted into streams.
 <p>
 However, this implementation required three member functions to be called,
 which may be considered a source of inefficiency. An improvement would be
-reached by defining a member <code>Person::insertInto</code> and let <code>operator&lt;&lt;</code>
+reached by defining a member <code >Person::insertInto</code> and let <code >operator&lt;&lt;</code>
 call that function.  These two functions could be defined as follows:
         <pre>
     std::ostream &amp;operator&lt;&lt;(std::ostream &amp;out, Person const &amp;person)
@@ -97,24 +97,24 @@ call that function.  These two functions could be defined as follows:
                    "Phone:   " &lt;&lt; d_phone;
     }
 </pre>
-    As <code>insertInto</code> is a member function it has direct access to the
+    As <code >insertInto</code> is a member function it has direct access to the
 object's data members so no additional member functions must be called when
-inserting <code>person</code> into <code>out</code>.
+inserting <code >person</code> into <code >out</code>.
 <p>
-The next step consists of realizing that <code>insertInto</code> is only defined
-for the benefit of <code>operator&lt;&lt;</code>, and that <code>operator&lt;&lt;</code>, as it is declared
-in the header file containing <code>Person</code>'s class interface should be
-considered a function belonging to the class <code>Person</code>. The member
-<code>insertInto</code> can therefore be omitted when <code>operator&lt;&lt;</code> is declared as a
+The next step consists of realizing that <code >insertInto</code> is only defined
+for the benefit of <code >operator&lt;&lt;</code>, and that <code >operator&lt;&lt;</code>, as it is declared
+in the header file containing <code >Person</code>'s class interface should be
+considered a function belonging to the class <code >Person</code>. The member
+<code >insertInto</code> can therefore be omitted when <code >operator&lt;&lt;</code> is declared as a
 friend.
 <p>
 Friend functions must be declared as friends in the class interface. These
-<a name="an1963"></a> <em>friend declarations</em> are not <em>member</em>
-functions, and so they are independent of the class's <code>private, protected</code>
-and <code>public</code> sections. Friend declaration may be placed anywhere in the
+<a name="an1950"></a> <em >friend declarations</em> are not <em >member</em>
+functions, and so they are independent of the class's <code >private, protected</code>
+and <code >public</code> sections. Friend declaration may be placed anywhere in the
 class interface. Convention dictates that friend declaractions are listed
-directly at the top of the class interface. The class <code>Person</code>, using
-<code>friend</code> declaration for its extraction and insertion operators starts like
+directly at the top of the class interface. The class <code >Person</code>, using
+<code >friend</code> declaration for its extraction and insertion operators starts like
 this:
         <pre>
     class Person
@@ -125,7 +125,7 @@ this:
         // previously shown interface (data and functions)
     };
 </pre>
-    The insertion operator may now directly access a <code>Person</code> object's data
+    The insertion operator may now directly access a <code >Person</code> object's data
 members:
         <pre>
     std::ostream &amp;operator&lt;&lt;(std::ostream &amp;out, Person const &amp;person)
@@ -142,13 +142,13 @@ class's interface. This also clearly indicates the class designer's intent:
 the friend functions are declared by the class, and can thus be considered
 functions belonging to the class.
 <p>
-<a name="l300"></a>
-<h2>15.2: Extended friend declarations</h2>
-    <strong>C++</strong> has added 
-    <a name="an1964"></a><em>extended friend</em> <em>declarations</em>
-    <a name="an1965"></a>
+<a name="l299"></a>
+<h2 >15.2: Extended friend declarations</h2>
+    <strong >C++</strong> has added 
+    <a name="an1951"></a><em >extended friend</em> <em >declarations</em>
+    <a name="an1952"></a>
         to the language. When a class is declared as a friend, then the
-<code>class</code> keyword no longer has to be provided. E.g.,
+<code >class</code> keyword no longer has to be provided. E.g.,
         <pre>
     class Friend;                   // declare a class
     typedef Friend FriendType;      // and a typedef for it
@@ -160,9 +160,9 @@ functions belonging to the class.
     };
 </pre>
 In the pre-C++11 standards the friend declaration required an explicit
-<code>class</code>; e.g., <code>friend class Friend</code>.
+<code >class</code>; e.g., <code >friend class Friend</code>.
 <p>
-The explicit use of <code>class</code> remains required if the compiler hasn't seen
+The explicit use of <code >class</code> remains required if the compiler hasn't seen
 the friend's name yet. E.g.,
         <pre>
     class Class1
