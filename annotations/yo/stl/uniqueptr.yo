@@ -61,18 +61,28 @@ pointer.
 allocated tt(Derived) class object can be assigned to a tt(unique_ptr<Base>),
 without having to define a virtual destructor for tt(Base). The tt(Base *)
 pointer that is returned by the tt(unique_ptr) object can simply be cast
-statically to tt(Derived), as shown in the following example:
+statically to tt(Derived), and tt(Derived's) destructor is automatically
+called as well, if the tt(unique_ptr) definition is provided with a
+em(deleter) function address. This is illustrated in the next example:
         verb(
     class Base
     { ... };
     class Derived: public Base
     {
-        // assume Derived has a member void process()
+        ...
+        public:
+            // assume Derived has a member void process()
+   
+            static void deleter(Base *bp);
     };
+    void Derived::deleter(Base *bp)
+    {
+        delete static_cast<Derived *>(bp);
+    }
     int main()
     {
-        shared_ptr<Base> bp(new Derived);
-        static_cast<Derived *>(bp)->process(); // OK!
+        unique_ptr<Base, void (*)(Base *)> bp(new Derived, &Derived::deleter);
+        static_cast<Derived *>(bp.get())->process(); // OK!
 
     } // here ~Derived is called: no polymorphism required.
         )
