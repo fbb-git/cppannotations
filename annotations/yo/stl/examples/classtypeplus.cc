@@ -14,12 +14,12 @@
         size_t d_seconds;
         public:
             Time(size_t hours, size_t minutes, size_t seconds);
-            Time &operator+=(Time const &rValue);
+            Time &operator+=(Time const &rhs);
     };
-    Time &&operator+(Time const &lValue, Time const &rValue)
+    Time &&operator+(Time const &lhs, Time const &rhs)
     {
-        Time ret(lValue);
-        return std::move(ret += rValue);
+        Time ret(lhs);
+        return std::move(ret += rhs);
     }
     Time::Time(size_t hours, size_t minutes, size_t seconds)
     :
@@ -28,12 +28,12 @@
         d_minutes(minutes),
         d_seconds(seconds)
     {}
-    Time &Time::operator+=(Time const &rValue)
+    Time &Time::operator+=(Time const &rhs)
     {
-        d_seconds   += rValue.d_seconds;
-        d_minutes   += rValue.d_minutes   + d_seconds / 60;
-        d_hours     += rValue.d_hours     + d_minutes / 60;
-        d_days      += rValue.d_days      + d_hours   / 24;
+        d_seconds   += rhs.d_seconds;
+        d_minutes   += rhs.d_minutes   + d_seconds / 60;
+        d_hours     += rhs.d_hours     + d_minutes / 60;
+        d_days      += rhs.d_days      + d_hours   / 24;
         d_seconds   %= 60;
         d_minutes   %= 60;
         d_hours     %= 24;
