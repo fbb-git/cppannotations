@@ -7,6 +7,8 @@ if an object of that class is in a usable state and tt(false) if not.
 Since the type tt(bool) is an arithmetic type this could result in unexpected
 or unintended behavior. Consider:
         verb(
+    void process(bool value);
+
     class StreamHandler
     {
         public:
@@ -27,9 +29,32 @@ or unintended behavior. Consider:
     In this example tt(process) unintentionally receives the value returned by
 tt(operator bool) using the implicit conversion from tt(bool) to tt(int).
 
-With tt(explicit) conversion operators implicit conversions like the one shown
-in the example are prevented and such conversion operators can only be used
-in situations where the converted type is explicitly required. E.g., in the
-condition sections of tt(if) or repetition statements where a tt(bool) value
-is expected. In such cases an tt(explicit operator bool()) conversion operator
-would automatically be used.
+When defining tt(explicit) conversion operators implicit conversions like the
+one shown in the example are prevented. Such conversion operators can only be
+used in situations where the converted type is explicitly required (as in the
+condition clauses of tt(if) or tt(while) statements), or is explicitly
+requested using a tt(static_cast). To declare an explicit bool conversion
+operator in class tt(StreamHandler)'s interface replace the above declaration
+by:
+    verb(
+        explicit operator bool() const;
+    )
+    
+
+Since the C++14 standard tt(istreams) define an 
+    tt(explicit operator bool() const). As a consequence:
+    verb(
+    while (cin.get(ch)) // compiles OK
+        ;
+
+    bool fun1()
+    {
+        return cin;     // 'bool = istream' won't compile as 
+    }                   // istream defines 'explicit operator bool'
+
+    bool fun1()
+    {
+        return static_cast<bool>(cin); // compiles OK
+    }
+        )
+
