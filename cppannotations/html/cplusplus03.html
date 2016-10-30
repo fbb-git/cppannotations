@@ -1,6 +1,6 @@
 <!DOCTYPE html><html><head>
 <meta charset="UTF-8">
-<title> C++ Annotations Version 10.5.1 </title>
+<title> C++ Annotations Version 10.6.0 </title>
 <link rel="stylesheet" type="text/css" href="cplusplus.css"><style type="text/css">
     figure {text-align: center;}
     img {vertical-align: center;}
@@ -744,7 +744,7 @@ void printperson (Person const &amp;p)
 
 }
                             // get a person by indexvalue
-Person const &amp;person(int index)
+Person const &amp;personIdx(int index)
 {
     return person[index];   // a reference is returned,
 }                           // not a copy of person[index]
@@ -756,7 +756,7 @@ int main()
     printperson (boss);     // no pointer is passed,
                             // so variable won't be
                             // altered by the function
-    printperson(person(5));
+    printperson(personIdx(5));
                             // references, not copies
                             // are passed here
 }
@@ -829,7 +829,7 @@ types. <strong >C++</strong> introduces a new reference type called an
 The name <em >rvalue</em> reference is derived from assignment statements, where the
 variable to the left of the assignment operator is called an <a name="an164"></a><em >lvalue</em> and
 the expression to the right of the assignment operator is called an
-<a name="an165"></a><em >rvalue</em>. Rvalues are often temporary (or anonymous) values, like values
+<a name="an165"></a><em >rvalue</em>. Rvalues are often temporary, anonymous values, like values
 returned by functions.
 <p>
 In this parlance the <strong >C++</strong> reference should be considered an
@@ -1006,11 +1006,109 @@ the pointer value is simply moved to its new owner;
 memory anymore the memory leak is prevented.
     </ul>
 <p>
-Rvalue references for <code >*this</code> and initialization of class
-objects by rvalues are not yet supported by the <code >g++</code> compiler.
-<p>
 <a name="l38"></a>
-<h3 >3.3.3: Strongly typed enumerations</h3>
+<h3 >3.3.3: Lvalues, rvalues and more</h3>
+    Although this section contains forward references to chapters <a href="cplusplus05.html#String">5</a>,
+<a href="cplusplus07.html#Classes">7</a>, and <a href="cplusplus16.html#PointMembers">16</a>, its topic best fits the current
+chapter. This section can be skipped without loss of continuity, and you might
+consider returning to it once you're familiar with the contents of these
+future chapters.
+<p>
+Historically, the <strong >C</strong> programming language distinguished between
+<em >lvalues</em> and <em >rvalues</em>. The terminology was based on
+assignment expressions, where the value to the left of the assignment operator
+receives a value (e.g., it referred to a location in memory where a value
+could be written into, like a variable), while the value to the right of the
+assignment operator only had to represent a value (it could be a temporary
+variable, a constant value or the value stored in a variable):
+        <pre>
+    lvalue = rvalue;
+</pre>
+<p>
+<strong >C++</strong> adds to this basic distinction several new ways of referring to
+values: 
+    <ul>
+    <li><code >lvalue</code>: an <a name="an172"></a><em >lvalue</em> in <strong >C++</strong> has the same meaning as in
+        <strong >C</strong>. It refers to a location where a value can be stored, like a
+        variable, a reference to a variable, or a dereferenced pointer.
+    <li><code >xvalue</code>: an <a name="an173"></a><em >xvalue</em> indicates an <a name="an174"></a><em >expiring value</em>. An expiring
+        value refers to an <em >object</em> (cf. chapter <a href="cplusplus07.html#Classes">7</a>) just before
+        its lifetime ends. Such objects normally have to make sure that
+        resources they own (like dynamically allocated memory) also cease to
+        exist, but such resources may, just before the object's lifetime ends,
+        be moved to another location, thus preventing their destruction.
+    <li><code >gvalue</code>: a <a name="an175"></a><em >gvalue</em> is a <a name="an176"></a><em >generalized lvalue</em>. A generalized
+        lvalue refers to anything that may receive a value. It is either an
+        lvalue or an xvalue.
+    <li><code >prvalue</code>: a <a name="an177"></a><em >prvalue</em> is a <a name="an178"></a><em >pure rvalue</em>: a literal value (like
+        <code >1.2e3</code>) or an immutable object (e.g., the value returned from a
+        function returning a constant <code >std::string</code> (cf. chapter
+        <a href="cplusplus05.html#String">5</a>))
+    </ul>
+<p>
+An expression's value is an xvalue if it is:
+    <ul>
+    <li> the value returned by a function returning an rvalue reference to an
+            object;
+    <li> an object that is cast to an rvalue reference;
+    <li> an expression accessing a non-static class data member whose object
+            is 
+        <ul>
+        <li> an xvalue, or
+        <li> a <code >.*</code> (pointer-to-member) expression (cf. chapter
+            <a href="cplusplus16.html#PointMembers">16</a>) in which the left-hand side operand is an
+            xvalue and the right-hand side operand is a pointer to a data
+            member.
+        </ul>
+        The effect of this rule is that named rvalue references are treated as
+            lvalues and anonymous rvalue references to objects are treated as
+            xvalues.<br/>
+        Rvalue references to functions are treated as lvalues whether
+            anonymous or not.
+    </ul>
+<p>
+Here is a small example. Consider this simple struct:
+        <pre>
+    struct Demo 
+    {
+        int d_value;
+    };
+</pre>
+    In addition we have these function declarations and definitions:
+    <pre>
+    Demo &amp;&amp;operator+(Demo const &amp;lhs, Demo const &amp;rhs);
+    Demo &amp;&amp;factory();
+
+    Demo demo;
+    Demo &amp;&amp;rref = static_cast&lt;Demo &amp;&amp;&gt;(demo);
+</pre>
+<p>
+Expressions like
+        <pre>
+    factory();
+    factory().d_value;
+    static_cast&lt;Demo &amp;&amp;&gt;(demo);
+    demo + demo
+</pre>
+    are xvalues. However, the expression
+        <pre>
+    rref;
+</pre>
+    is an lvalue.
+<p>
+In many situations it's not particularly important to know what kind of gvalue
+or what kind of rvalue is actually used. In the <strong >C++</strong> Annotations the term
+<a name="an179"></a><em >lhs</em> (<a name="an180"></a>left hand side) is frequently used to indicate an operand that's
+written to the left of a binary operator, while the term <a name="an181"></a><em >rhs</em> 
+    (<a name="an182"></a>right hand side) is frequently used to indicate an operand that's
+written to the right of a binary operator. Lhs and rhs operands could actually
+be gvalues (e.g., when representing ordinary variables), but they could also
+be prvalues (e.g., numeric values added together using the addition
+operator). Whether or not lhs and rhs operands are glvalues can always be
+determined from the context in which they are used.
+<p>
+<a name="l39"></a>
+<h3 >3.3.4: Strongly typed enumerations</h3>
     Enumeration values in <strong >C++</strong> are in fact <code >int</code> values, thereby bypassing
 type safety. E.g., values of different enumeration types may  be
 compared for (in)equality, albeit through a (static) type cast.
@@ -1021,7 +1119,7 @@ enumeration is defined. As a consequence, two enumerations having the same
 scope cannot have identical names.
 <p>
 Such problems are solved by defining
-    <em >enum classes</em>. An <a name="an172"></a><em >enum class</em> can be defined as in the following
+    <em >enum classes</em>. An <a name="an183"></a><em >enum class</em> can be defined as in the following
 example:
         <pre>
     enum class SafeEnum
@@ -1045,7 +1143,7 @@ provided as well. E.g., <code >OK</code> is not defined, <code >CharEnum::OK</co
 <p>
 Using the data type specification (noting that it defaults to <code >int</code>) it
 is possible to use enum class forward declarations.
-        <a name="an173"></a>
+        <a name="an184"></a>
     E.g.,
         <pre>
     enum Enum1;                 // Illegal: no size available
@@ -1056,7 +1154,7 @@ is possible to use enum class forward declarations.
 </pre>
 <p>
 A sequence of symbols of a strongly typed enumeration can also be
-indicated in a <code >switch</code> using the <a name="an174"></a>ellipsis syntax, as shown in the next
+indicated in a <code >switch</code> using the <a name="an185"></a>ellipsis syntax, as shown in the next
 example:
         <pre>
     SafeEnum enumValue();
@@ -1073,9 +1171,9 @@ example:
     }
 </pre>
 <p>
-<a name="l39"></a>
-<h3 >3.3.4: Initializer lists</h3>
-    The <strong >C</strong> language defines the <a name="an175"></a>initializer list as a list of values enclosed
+<a name="l40"></a>
+<h3 >3.3.5: Initializer lists</h3>
+    The <strong >C</strong> language defines the <a name="an186"></a>initializer list as a list of values enclosed
 by curly braces, possibly themselves containing initializer lists. In <strong >C</strong>
 these initializer lists are commonly used to initialize arrays and structs.
 <p>
@@ -1085,7 +1183,7 @@ the values used in the initializer list. Initializer lists in <strong >C++</stro
 like their counterparts in <strong >C</strong>, recursive, so they can also be used with
 multi-dimensional arrays, structs and classes.
 <p>
-Before using the <code >initializer_list</code> the <a name="an176"></a><code >&lt;initializer_list&gt;</code> header file
+Before using the <code >initializer_list</code> the <a name="an187"></a><code >&lt;initializer_list&gt;</code> header file
 must be included.
 <p>
 Like in <strong >C</strong>, initializer lists consist of a list of values surrounded by
@@ -1131,9 +1229,9 @@ modified. However, their <em >size</em> and values may be retrieved using their
 Initializer lists can also be used to initialize objects of classes
 (cf. section <a href="cplusplus07.html#UNIFORMINIT">7.5</a>).
 <p>
-<a name="AUTO"></a><a name="l40"></a>
-<h3 >3.3.5: Type inference using `auto'</h3>
-    The keyword <a name="an177"></a><code >auto</code> can be used to simplify type definitions of variables and
+<a name="AUTO"></a><a name="l41"></a>
+<h3 >3.3.6: Type inference using `auto'</h3>
+    The keyword <a name="an188"></a><code >auto</code> can be used to simplify type definitions of variables and
 return types of functions if  the compiler is able to determine the proper
 types of such variables or functions.
 <p>
@@ -1158,7 +1256,7 @@ reduces rather than improves the clarity of the code):
 </pre>
 <p>
 Here are some examples where using <code >auto</code> <em >is</em> useful.
-In chapter <a href="cplusplus05.html#String">5</a> the <a name="an178"></a><em >iterator</em> concept is introduced (see also
+In chapter <a href="cplusplus05.html#String">5</a> the <a name="an189"></a><em >iterator</em> concept is introduced (see also
 chapters <a href="cplusplus12.html#CONTAINERS">12</a> and <a href="cplusplus18.html#STL">18</a>). Iterators sometimes have long type
 definitions, like
         <pre>
@@ -1183,11 +1281,11 @@ those variables using <code >iter</code> the <code >auto</code> keyword can be u
 </pre>
 <p>
 Merely using <code >auto</code> always results in a non-reference type. If <code >auto</code>
-should refer to a reference type, <a name="an179"></a><code >auto &amp;&amp;</code> should be used.
+should refer to a reference type, <a name="an190"></a><code >auto &amp;&amp;</code> should be used.
 <p>
 If <code >start</code> can't be initialized immediately using an existing
 variable the type of a well known variable or function can be used in
-combination with the <a name="an180"></a><code >decltype</code> keyword, as in:
+combination with the <a name="an191"></a><code >decltype</code> keyword, as in:
         <pre>
     decltype(iter) start;
     decltype(begin()) spare;
@@ -1221,7 +1319,7 @@ a pointer to an array of 10 <code >int</code>s looks like this:
     int (*intArrPtr())[10];
 </pre>
     Such a declaration is fairly complex. E.g., among other complexities it
-requires `protection of the pointer'<a name="an181"></a> using parentheses
+requires `protection of the pointer'<a name="an192"></a> using parentheses
 in combination with the function's parameter list. In situations like these
 the specification of the return type can be postponed using the <code >auto</code>
 return type, followed by the specification of the function's return type after
@@ -1234,7 +1332,7 @@ Using <code >auto</code> to declare the above function, the declaration becomes:
     auto intArrPtr() -&gt; int (*)[10];
 </pre>
     A return type specification using <code >auto</code> is called a
-        <a name="an182"></a><em >late-specified return type</em>.
+        <a name="an193"></a><em >late-specified return type</em>.
 <p>
 The <code >auto</code> keyword can also be used to defined types that are related to
 the actual <code >auto</code> associated type. Here are some examples:
@@ -1273,8 +1371,8 @@ recursive call. E.g.,
 </pre>
     </ul>
 <p>
-<a name="l41"></a>
-<h3 >3.3.6: Defining types and 'using' declarations</h3>
+<a name="l42"></a>
+<h3 >3.3.7: Defining types and 'using' declarations</h3>
     In <strong >C++</strong> <code >typedef</code> is commonly used to define shorthand notations for
 complex types. Assume we want to define a shorthand for `a pointer to a
 function expecting a double and an int, and returning an unsigned long long
@@ -1314,7 +1412,7 @@ in fact a pointer, slightly change the <code >typedef</code>:
 typedefs are usually embedded in header files which are then included by
 multiple source files in which the typedefs should be used.
 <p>
-In addition to <code >typedef</code> <strong >C++</strong> offers the <a name="an183"></a><code >using</code> keyword to
+In addition to <code >typedef</code> <strong >C++</strong> offers the <a name="an194"></a><code >using</code> keyword to
 associate a type and and identifier. In practice <code >typedef</code> and <code >using</code> can
 be used interchangeably. The <code >using</code> keyword arguably result in more
 readable type definitions. Consider the following three (equivalent)
@@ -1331,14 +1429,14 @@ typedef unsigned long long int FUN(double, int);
 using FUN = unsigned long long int (double, int);
 </pre>
     <li> An alternative construction, using a late-specified return type
-        (cf. section <a href="cplusplus03.html#AUTO">3.3.5</a>):
+        (cf. section <a href="cplusplus03.html#AUTO">3.3.6</a>):
     <pre>
 using FUN = auto (double, int) -&gt; unsigned long long int;
 </pre>
     </ul>
 <p>
-<a name="l42"></a>
-<h3 >3.3.7: Range-based for-loops</h3>
+<a name="l43"></a>
+<h3 >3.3.8: Range-based for-loops</h3>
     The <strong >C++</strong> for-statement is identical to <strong >C</strong>'s for-statement:
         <pre>
     for (init; cond; inc)
@@ -1351,8 +1449,8 @@ offers the <code >std::for_each</code> generic algorithm (cf. section <a href="c
 <p>
 In addition to the traditional syntax <strong >C++</strong> adds new syntax for the
 <code >for</code>-statement: the
-    <a name="an184"></a><em >range-based for-loop</em>. This new syntax can be used to process all
-element of a <a name="an185"></a>range in turn. Three types of ranges are distinguished:
+    <a name="an195"></a><em >range-based for-loop</em>. This new syntax can be used to process all
+element of a <a name="an196"></a>range in turn. Three types of ranges are distinguished:
         <ul>
         <li> Plain arrays (e.g., <code >int array[10]</code>);
         <li> Initializer lists;
@@ -1361,14 +1459,14 @@ element of a <a name="an185"></a>range in turn. Three types of ranges are distin
         <li> Any other type offering <code >begin()</code> and <code >end()</code> functions
             returning so-called <em >iterators</em> (cf. section <a href="cplusplus18.html#ITERATORS">18.2</a>).
         </ul>
-    Here the following additional <a name="an186"></a>for-statement syntax is available:
+    Here the following additional <a name="an197"></a>for-statement syntax is available:
         <pre>
     // assume int array[30]
     for (auto &amp;element: array)
         statement
 </pre>
     The part to the left of the colon is called the
-    <a name="an187"></a><em >for range declaration</em>. The declared variable (<code >element</code>) is a
+    <a name="an198"></a><em >for range declaration</em>. The declared variable (<code >element</code>) is a
 formal name; use any identifier you like. The variable is only
 available within the nested statement, and it refers to (or is a copy of) each
 of the elements of the range, from the first element up to the last.
@@ -1415,12 +1513,12 @@ combination with the number of elements, range-based for loops can also be
 used, but require a little help. Section <a href="cplusplus24.html#RANGER">24.5</a> describes a generic
 approach to using range based for loops in such cases.
 <p>
-<a name="l43"></a>
-<h3 >3.3.8: Raw String Literals</h3>
+<a name="l44"></a>
+<h3 >3.3.9: Raw String Literals</h3>
     Standard ASCII-C strings are delimited by double quotes, supporting
- <a name="an188"></a> escape sequences like <code >\n, \\</code> and <code >\"</code>. In some
+ <a name="an199"></a> escape sequences like <code >\n, \\</code> and <code >\"</code>. In some
 cases it is useful to avoid escaping strings (e.g., in the context of XML). To
-this end, <strong >C++</strong> offers <a name="an189"></a> <em >raw string literals</em>.
+this end, <strong >C++</strong> offers <a name="an200"></a> <em >raw string literals</em>.
 <p>
 Raw string literals start with an <code >R</code>, followed by a double quote, followed
 by a label (which is an arbitrary sequence of characters not equal to
@@ -1437,31 +1535,31 @@ within the first raw string literal defines three characters: a backslash, a
 blank character and a double quote. The second example shows a raw string
 defined between the markers <code >"delimiter(</code> and <code >)delimiter"</code>.
 <p>
-<a name="l44"></a>
-<h3 >3.3.9: Binary constants</h3>
-    In addition to hexadecimal <a name="an190"></a> integral constants
-(starting with <a name="an191"></a>0x), octal integral <a name="an192"></a> constants (starting
-with <a name="an193"></a>0), and decimal integral <a name="an194"></a> constants (starting
-with one of the digits 1..9), <em >binary</em> integral <a name="an195"></a>
-constants can be defined using the prefixes <a name="an196"></a>0b or <a name="an197"></a>0B. E.g., to represent
+<a name="l45"></a>
+<h3 >3.3.10: Binary constants</h3>
+    In addition to hexadecimal <a name="an201"></a> integral constants
+(starting with <a name="an202"></a>0x), octal integral <a name="an203"></a> constants (starting
+with <a name="an204"></a>0), and decimal integral <a name="an205"></a> constants (starting
+with one of the digits 1..9), <em >binary</em> integral <a name="an206"></a>
+constants can be defined using the prefixes <a name="an207"></a>0b or <a name="an208"></a>0B. E.g., to represent
 the (decimal) value 5 the notation <code >0b101</code> can also be used. Formally binary
 constants are supported by <strong >C++</strong> since the C++14 standard, but compilers
 usually supported this well before implementing this  standard.
 <p>
-The binary constants come in handy in the context of, e.g., <a name="an198"></a>bit-flags, as
+The binary constants come in handy in the context of, e.g., <a name="an209"></a>bit-flags, as
 it immediately shows which bit-fields are set, while other notations are less
 informative.
 <p>
-<a name="l45"></a>
-<h3 >3.3.10: Attributes</h3>
-    Attributes <a name="an199"></a> are compiler directives that are inserted into source
+<a name="l46"></a>
+<h3 >3.3.11: Attributes</h3>
+    Attributes <a name="an210"></a> are compiler directives that are inserted into source
 files to inform the compiler of some peculiarity of the code (variable or
 function) following the attribute.
 <p>
 The C++ standard defines the following attributes:
 <p>
 <ul>
-    <li><a name="an200"></a><code >[[noreturn]]</code>:<blockquote ><code >[[noreturn]]</code> indicates that the function does not
+    <li><a name="an211"></a><code >[[noreturn]]</code>:<blockquote ><code >[[noreturn]]</code> indicates that the function does not
 return. <code >[[noreturn]]'s</code> behavior is undefined if the function declared with
 this attribute actually returns. The following standard functions have this
 attribute: <code >std::_Exit, std::abort, std::exit, std::quick_exit,
@@ -1478,11 +1576,11 @@ attribute:
     }
 </pre>
         </blockquote>
-    <li><a name="an201"></a><code >[[carries_dependency]]</code>:<blockquote >This attribute is currently not yet covered by the <strong >C++</strong> Annotations. At
+    <li><a name="an212"></a><code >[[carries_dependency]]</code>:<blockquote >This attribute is currently not yet covered by the <strong >C++</strong> Annotations. At
 this point in the <strong >C++</strong> Annotations it can safely be ignored.
     
     </blockquote>
-    <li><a name="an202"></a><code >[[deprecated]]</code>:<blockquote >This attribute (and its alternative form
+    <li><a name="an213"></a><code >[[deprecated]]</code>:<blockquote >This attribute (and its alternative form
 <code >[[deprecated("reason")]]</code>) is available since the C++14 standard.  It
 indicates that the use of the name or entity declared with this attribute is
 allowed, but discouraged for some reason. This attribute can be used for
@@ -1513,17 +1611,17 @@ warning showing the text between the double quotes, e.g.,
     </blockquote>
 </ul>
 <p>
-<a name="l46"></a>
+<a name="l47"></a>
 <h2 >3.4: New language-defined data types</h2>
-In <strong >C</strong> the following <a name="an203"></a>built-in data types are available: <code >void, char,
+In <strong >C</strong> the following <a name="an214"></a>built-in data types are available: <code >void, char,
 short, int, long, float</code> and <code >double</code>. <strong >C++</strong> extends these built-in types
-with several additional built-in types: the types <a name="an204"></a><code >bool</code>, <a name="an205"></a><code >wchar_t</code>,
-<a name="an206"></a><code >long long</code> and <a name="an207"></a><code >long double</code> (Cf. <a name="an208"></a>ANSI/ISO draft (1995),
+with several additional built-in types: the types <a name="an215"></a><code >bool</code>, <a name="an216"></a><code >wchar_t</code>,
+<a name="an217"></a><code >long long</code> and <a name="an218"></a><code >long double</code> (Cf. <a name="an219"></a>ANSI/ISO draft (1995),
 par. 27.6.2.4.1 for examples of these very long types).  The type
- <a name="an209"></a><code >long long</code> is merely a double-long <code >long</code> datatype. The type
- <a name="an210"></a><code >long double</code> is merely a double-long <code >double</code> datatype. These built-in
+ <a name="an220"></a><code >long long</code> is merely a double-long <code >long</code> datatype. The type
+ <a name="an221"></a><code >long double</code> is merely a double-long <code >double</code> datatype. These built-in
 types as well as pointer variables are called
- <a name="an211"></a><em >primitive types</em><a name="an212"></a> in the <strong >C++</strong> Annotations.
+ <a name="an222"></a><em >primitive types</em><a name="an223"></a> in the <strong >C++</strong> Annotations.
 <p>
 There is a subtle issue to be aware of when converting applications developed
 for 32-bit architectures to 64-bit architectures. When converting 32-bit
@@ -1545,36 +1643,36 @@ Traditionally, however, <strong >C</strong> doesn't support them, hence they are
 here.
 <p>
 Now that these new types are introduced, let's refresh your memory about
-<em >letters</em> that can be used in <a name="an213"></a><em >literal constants</em> of various
- <a name="an214"></a> types. They are:
+<em >letters</em> that can be used in <a name="an224"></a><em >literal constants</em> of various
+ <a name="an225"></a> types. They are:
     <ul>
-    <li> <a name="an215"></a><code >b</code> or <code >B</code>: in addition to its use to indicate a hexadecimal
-value, it can also be used to define a <a name="an216"></a><em >binary constant</em>. E.g., <code >0b101</code>
+    <li> <a name="an226"></a><code >b</code> or <code >B</code>: in addition to its use to indicate a hexadecimal
+value, it can also be used to define a <a name="an227"></a><em >binary constant</em>. E.g., <code >0b101</code>
 equals the decimal value 5. The <code >0b</code> prefix can be used to specify binary
 constants starting with the C++14 standard.
-    <li> <a name="an217"></a><code >E</code> or <code >e</code>: <a name="an218"></a> the
-<a name="an219"></a><em >exponentiation</em> character in floating point literal values. For example:
+    <li> <a name="an228"></a><code >E</code> or <code >e</code>: <a name="an229"></a> the
+<a name="an230"></a><em >exponentiation</em> character in floating point literal values. For example:
 <code >1.23E+3</code>. Here, <code >E</code> should be pronounced (and interpreted) as: <em >times 10
 to the power</em>. Therefore, <code >1.23E+3</code> represents the value <code >1230</code>.
-    <li> <a name="an220"></a><code >F</code> <a name="an221"></a> can be used as <em >postfix</em> to a
+    <li> <a name="an231"></a><code >F</code> <a name="an232"></a> can be used as <em >postfix</em> to a
 non-integral numeric constant to indicate a value of type <code >float</code>, rather
 than <code >double</code>, which is the default. For example: <code >12.F</code> (the dot
 transforms 12 into a floating point value); <code >1.23E+3F</code> (see the previous
 example. <code >1.23E+3</code> is a <code >double</code> value, whereas <code >1.23E+3F</code> is a
 <code >float</code> value).
-    <li> <a name="an222"></a><code >L</code> <a name="an223"></a> can be used as <em >prefix</em> to
+    <li> <a name="an233"></a><code >L</code> <a name="an234"></a> can be used as <em >prefix</em> to
 indicate a character string whose elements are <code >wchar_t</code>-type
 characters. For example: <code >L"hello world"</code>.
-    <li> <code >L</code> <a name="an224"></a> can be used as <em >postfix</em> to an
+    <li> <code >L</code> <a name="an235"></a> can be used as <em >postfix</em> to an
 integral value to indicate a value of type <code >long</code>, rather than <code >int</code>,
 which is the default. Note that there is no letter indicating a <code >short</code>
 type. For that a <code >static_cast&lt;short&gt;()</code> must be used.
-    <li> <a name="an225"></a><code >p</code>, to specify the power <a name="an226"></a> in
+    <li> <a name="an236"></a><code >p</code>, to specify the power <a name="an237"></a> in
 hexadecimal floating point numbers.  E.g. <code >0x10p4</code>. The exponent itself is
 read as a decimal constant and can therefore not start with 0x. The exponent
 part is interpreted as a power of 2. So <code >0x10p2</code> is (decimal) equal to 64:
 <code >16 * 2^2</code>.
-    <li> <a name="an227"></a><code >U</code> <a name="an228"></a> can be used as <em >postfix</em> to an
+    <li> <a name="an238"></a><code >U</code> <a name="an239"></a> can be used as <em >postfix</em> to an
 integral value to indicate an <code >unsigned</code>  value, rather than an <code >int</code>.
 It may also be combined with the postfix <code >L</code> to produce an <code >unsigned long
 int</code> value.
@@ -1582,13 +1680,13 @@ int</code> value.
     And, of course: the <code >x</code> and <code >a</code> until <code >f</code> characters can be used to
 specify hexadecimal constants (optionally using capital letters).
 <p>
-<a name="BOOL"></a><a name="l47"></a>
+<a name="BOOL"></a><a name="l48"></a>
 <h3 >3.4.1: The data type `bool'</h3>
         The type <code >bool</code> represents boolean (logical) values, for which the (now
-reserved) constants <a name="an229"></a><code >true</code> and <a name="an230"></a><code >false</code> may be used. Except for these
+reserved) constants <a name="an240"></a><code >true</code> and <a name="an241"></a><code >false</code> may be used. Except for these
 reserved values, integral values may also be assigned to variables of type
 <code >bool</code>, which are then implicitly converted to <code >true</code> and <code >false</code>
-according to the following <a name="an231"></a>conversion rules (assume <code >intValue</code> is an
+according to the following <a name="an242"></a>conversion rules (assume <code >intValue</code> is an
 <code >int</code>-variable, and <code >boolValue</code> is a <code >bool</code>-variable):
         <pre>
         // from int to bool:
@@ -1627,7 +1725,7 @@ the return value 1 is appealing, as it allows constructions like
     if (exists("myfile"))
         cout &lt;&lt; "myfile exists";
 </pre>
-    On the other hand, many system functions (like <a name="an232"></a><code >access</code>, <a name="an233"></a><code >stat</code>, and
+    On the other hand, many system functions (like <a name="an243"></a><code >access</code>, <a name="an244"></a><code >stat</code>, and
 many other) return 0 to indicate a successful operation, reserving other
 values to indicate various types of errors.
 <p>
@@ -1639,9 +1737,9 @@ its various symbolic constants. Only when the function returns a conceptually
 meaningful integral value (like the sum of two <code >int</code> values), let the
 function return an <code >int</code> value.
 <p>
-<a name="WCHAR"></a><a name="l48"></a>
+<a name="WCHAR"></a><a name="l49"></a>
 <h3 >3.4.2: The data type `wchar_t'</h3>
-    The <a name="an234"></a><code >wchar_t</code> type is an extension of the <code >char</code> built-in type, to accomodate
+    The <a name="an245"></a><code >wchar_t</code> type is an extension of the <code >char</code> built-in type, to accomodate
 <em >wide</em> character values (but see also the next section).  The <code >g++</code>
 compiler reports <code >sizeof(wchar_t)</code> as 4, which easily accomodates all 65,536
 different <em >Unicode</em> character values.
@@ -1651,17 +1749,17 @@ Note that <strong >Java</strong>'s <code >char</code> data type is somewhat comp
 other hand, <strong >Java</strong>'s <code >byte</code> data type is comparable to <strong >C++</strong>'s <code >char</code>
 type: one byte. Confusing?
 <p>
-<a name="UNICODE"></a><a name="l49"></a>
+<a name="UNICODE"></a><a name="l50"></a>
 <h3 >3.4.3: Unicode encoding</h3>
     In <strong >C++</strong> string literals can be defined as NTB strings.  Prepending an NTBS
 by <code >L</code> (e.g., <code >L"hello"</code>) defines a <code >wchar_t</code> string literal.
 <p>
 <strong >C++</strong> also supports 8, 16 and 32 bit
-<a name="an235"></a>Unicode encoded strings. Furthermore, two new data types are introduced:
+<a name="an246"></a>Unicode encoded strings. Furthermore, two new data types are introduced:
 <code >char16_t</code> and <code >char32_t</code> storing, respectively, a
-<a name="an236"></a><code >UTF-16</code> and <a name="an237"></a><code >UTF-32</code> unicode value.
+<a name="an247"></a><code >UTF-16</code> and <a name="an248"></a><code >UTF-32</code> unicode value.
 <p>
-In addition, a <code >char</code> type variable is large enough to contain any <a name="an238"></a><code >UTF-8</code>
+In addition, a <code >char</code> type variable is large enough to contain any <a name="an249"></a><code >UTF-8</code>
 unicode value as well (i.e., it remains an 8-bit value).
 <p>
 String literals for the various types of unicode encodings (and
@@ -1671,7 +1769,7 @@ associated variables) can be defined as follows:
     char16_t utf16[] = u"This is UTF-16 encoded.";
     char32_t utf32[] = U"This is UTF-32 encoded.";
 </pre>
-    Alternatively, unicode constants may be defined using the <a name="an239"></a><code >\u</code> escape
+    Alternatively, unicode constants may be defined using the <a name="an250"></a><code >\u</code> escape
 sequence, followed by a hexadecimal value. Depending on the type of the
 unicode variable (or constant) a <code >UTF-8, UTF-16</code> or <code >UTF-32</code> value is
 used. E.g.,
@@ -1683,41 +1781,41 @@ used. E.g.,
     Unicode strings can be delimited by double quotes but raw string literals
 can also be used.
 <p>
-<a name="l50"></a>
+<a name="l51"></a>
 <h3 >3.4.4: The data type `long long int'</h3>
-    <strong >C++</strong> also supports the type <a name="an240"></a><code >long long int</code>. On 32 bit systems it has at
+    <strong >C++</strong> also supports the type <a name="an251"></a><code >long long int</code>. On 32 bit systems it has at
 least 64 usable bits.
 <p>
-<a name="l51"></a>
+<a name="l52"></a>
 <h3 >3.4.5: The data type `size_t'</h3>
-    The <a name="an241"></a><code >size_t</code> type is not really a built-in primitive data type, but a data
-type that is promoted by <a name="an242"></a><strong >POSIX</strong> as a typename to be used for non-negative
+    The <a name="an252"></a><code >size_t</code> type is not really a built-in primitive data type, but a data
+type that is promoted by <a name="an253"></a><strong >POSIX</strong> as a typename to be used for non-negative
 integral values answering questions like `how much' and `how many', in which
-case it should be used instead of <a name="an243"></a><code >unsigned int</code>. It is not a specific
+case it should be used instead of <a name="an254"></a><code >unsigned int</code>. It is not a specific
 <strong >C++</strong> type, but also available in, e.g., <strong >C</strong>. Usually it is defined
 implictly when a (any) system header file is included. The header file
-`officially' defining <code >size_t</code> in the context of <strong >C++</strong> is <a name="an244"></a><code >cstddef</code>.
+`officially' defining <code >size_t</code> in the context of <strong >C++</strong> is <a name="an255"></a><code >cstddef</code>.
 <p>
 Using <code >size_t</code> has the advantage of being a <em >conceptual</em> type, rather than
 a standard type that is then modified by a modifier. Thus, it improves
 the self-documenting value of source code.
 <p>
 Sometimes functions explictly require <code >unsigned int</code> to be used. E.g., on
-<a name="an245"></a><code >amd</code>-architectures the <a name="an246"></a>X-windows function <a name="an247"></a><code >XQueryPointer</code> explicitly
+<a name="an256"></a><code >amd</code>-architectures the <a name="an257"></a>X-windows function <a name="an258"></a><code >XQueryPointer</code> explicitly
 requires a pointer to an <code >unsigned int</code> variable as one of its arguments. In
 such situations a pointer to a <code >size_t</code> variable can't be used, but the
 address of an <code >unsigned int</code> must be provided. Such situations are
 exceptional, though.
 <p>
-Other useful bit-represented types also exists. E.g., <a name="an248"></a><code >uint32_t</code> is
-guaranteed to hold 32-bits unsigned values. Analogously, <a name="an249"></a><code >int32_t</code> holds
+Other useful bit-represented types also exists. E.g., <a name="an259"></a><code >uint32_t</code> is
+guaranteed to hold 32-bits unsigned values. Analogously, <a name="an260"></a><code >int32_t</code> holds
 32-bits signed values. Corresponding types exist for 8, 16 and 64 bits
-values. These types are defined in the header file <a name="an250"></a><code >cstdint</code>.
+values. These types are defined in the header file <a name="an261"></a><code >cstdint</code>.
 <p>
-<a name="l52"></a>
+<a name="l53"></a>
 <h3 >3.4.6: Digit separators</h3>
     To improve the readability of large numbers 
-    <em >digit separators</em><a name="an251"></a> for integer and floating point
+    <em >digit separators</em><a name="an262"></a> for integer and floating point
 literals. The digit separator is a single quote which may be inserted between
 digits of such literals to enhance human readability. Multiple digit
 separators may be used, but only one separator can be inserted between
@@ -1729,7 +1827,7 @@ successive digits. E.g.,
     1''23       // won't compile either
 </pre>
 <p>
-<a name="CPPCASTS"></a><a name="l53"></a>
+<a name="CPPCASTS"></a><a name="l54"></a>
 <h2 >3.5: A new syntax for casts</h2>
 Traditionally, <strong >C</strong> offers the following <em >cast</em> syntax:
             <pre>
@@ -1744,19 +1842,19 @@ the sensibility of the cast. Facilities which are not offered by the classic
 <strong >C</strong>-style cast.
 <p>
 A cast should not be confused with the often used
-    <a name="an252"></a><em >constructor notation</em>:
+    <a name="an263"></a><em >constructor notation</em>:
         <pre>
     typename(expression)
 </pre>
  the constructor notation is not a cast, but a request to the compiler to
 construct an (anonymous) variable of type <code >typename</code> from <code >expression</code>.
 <p>
-If casts are really necessary one of several <a name="an253"></a><em >new-style casts</em> should be
+If casts are really necessary one of several <a name="an264"></a><em >new-style casts</em> should be
 used. These new-style casts are introduced in the upcoming sections.
 <p>
-<a name="l54"></a>
+<a name="l55"></a>
 <h3 >3.5.1: The `static_cast'-operator</h3>
-    The <a name="an254"></a><code >static_cast&lt;type&gt;(expression)</code> is used to convert
+    The <a name="an265"></a><code >static_cast&lt;type&gt;(expression)</code> is used to convert
 `conceptually comparable or related types' to each other. Here as well as in
 other <strong >C++</strong> style casts <code >type</code> is the type to which the type of
 <code >expression</code> should be cast.
@@ -1784,7 +1882,7 @@ used by the destination type.
 <p>
 Also note that the division is put outside of the cast expression. If the
 division is performed within the cast's <code >expression</code> (as in
-<code >static_cast&lt;double&gt;(x / y)</code>) an <a name="an255"></a><em >integer division</em> has already been
+<code >static_cast&lt;double&gt;(x / y)</code>) an <a name="an266"></a><em >integer division</em> has already been
 performed <em >before</em> the cast has had a chance to convert the type of an
 operand to <code >double</code>.
 <p>
@@ -1844,7 +1942,7 @@ signed type. To call <code >tolower</code> using an available <code >char ch</co
 </pre>
     </ul>
 <p>
-<a name="l55"></a>
+<a name="l56"></a>
 <h3 >3.5.2: The `const_cast'-operator</h3>
     The <code >const</code> keyword has been given a special place in casting. Normally
 anything <code >const</code> is <code >const</code> for a good reason. Nonetheless situations
@@ -1853,7 +1951,7 @@ situations the <code >const_cast</code> should be used. Its syntax is:
                      <pre>
         const_cast&lt;type&gt;(expression)
 </pre>
- A <a name="an256"></a><code >const_cast&lt;type&gt;(expression)</code> expression is used to undo the
+ A <a name="an267"></a><code >const_cast&lt;type&gt;(expression)</code> expression is used to undo the
 <code >const</code> attribute of a (pointer) type.
 <p>
 The need for a <code >const_cast</code> may occur in combination with functions from
@@ -1870,7 +1968,7 @@ characters pointed to by <code >s</code>. Passing <code >char const hello[] = "h
         strfun(const_cast&lt;char *&gt;(hello));
 </pre>
 <p>
-<a name="l56"></a>
+<a name="l57"></a>
 <h3 >3.5.3: The `reinterpret_cast'-operator</h3>
     The third new-style cast is used to change the <em >interpretation</em> of
 information: the <code >reinterpret_cast</code>. It is somewhat reminiscent of the
@@ -1923,12 +2021,12 @@ computers the value 12. Also note that the different representations used by
 little and big endian computers renders the previous example
 (<code >cout.write(...)</code>) non-portable over computers of different architectures.
 <p>
-As a <a name="an257"></a>rule of thumb: if circumstances arise in which casts <em >have</em> to be
+As a <a name="an268"></a>rule of thumb: if circumstances arise in which casts <em >have</em> to be
 used, clearly document the reasons for their use in your code, making double
 sure that the cast does not eventually cause a program to misbehave. Also:
 avoid <code >reinterpret_casts</code> unless you <em >have</em> to use them.
 <p>
-<a name="l57"></a>
+<a name="l58"></a>
 <h3 >3.5.4: The `dynamic_cast'-operator</h3>
     Finally there is a new style cast that is used in combination with
 polymorphism (see chapter <a href="cplusplus14.html#POLYMORPHISM">14</a>). Its syntax is:
@@ -1945,7 +2043,7 @@ At this point in the <em >Annotations</em> a <code >dynamic_cast</code> cannot y
 discussed extensively, but we return to this topic in section
 <a href="cplusplus14.html#DYNAMICCAST">14.6.1</a>.
 <p>
-<a name="l58"></a>
+<a name="l59"></a>
 <h3 >3.5.5: Casting 'shared_ptr' objects</h3>
     This section can safely be skipped without loss of continuity.
 <p>
@@ -1963,9 +2061,9 @@ from a <code >shared_ptr</code> to a constant object;
 object from a <code >shared_ptr</code> to a base class object.
     </ul>
 <p>
-<a name="l59"></a>
+<a name="l60"></a>
 <h2 >3.6: Keywords and reserved names in C++</h2>
-<strong >C++</strong>'s  <a name="an258"></a>keywords are a superset of <strong >C</strong>'s  keywords. Here is a
+<strong >C++</strong>'s  <a name="an269"></a>keywords are a superset of <strong >C</strong>'s  keywords. Here is a
 list of all keywords of the language:
     
         <pre>
@@ -1988,9 +2086,9 @@ char16_t else         mutable  requires         try
 <p>
 Notes:
     <ul>
-    <li> The <a name="an259"></a><code >export</code> keyword is no longer actively used by <strong >C++</strong>, but it
+    <li> The <a name="an270"></a><code >export</code> keyword is no longer actively used by <strong >C++</strong>, but it
 is kept as a keyword, reserved for future use.
-    <li> the <a name="an260"></a><em >operator keywords</em>: <code >and, and_eq,
+    <li> the <a name="an271"></a><em >operator keywords</em>: <code >and, and_eq,
 bitand, bitor, compl, not, not_eq, or, or_eq, xor</code> and <code >xor_eq</code> are symbolic
 alternatives for, respectively, <code >&amp;&amp;, &amp;=, &amp;, |, ~, !, !=, ||, |=, ^</code> and
 <code >^=</code>.
@@ -2002,10 +2100,10 @@ special meanings when declaring classes or polymorphic functions. Section
 <p>
 Keywords can only be used for their intended purpose and cannot be used as
 names for other entities (e.g., variables, functions, class-names, etc.). In
-addition to keywords <a name="an261"></a>identifiers starting with an underscore and living in
-the <a name="an262"></a><em >global namespace</em> (i.e., not using any explicit namespace or using the
+addition to keywords <a name="an272"></a>identifiers starting with an underscore and living in
+the <a name="an273"></a><em >global namespace</em> (i.e., not using any explicit namespace or using the
 mere <code >::</code> namespace specification) or living in the <em >std namespace</em> are
- <a name="an263"></a>reserved identifiers in the sense that their use is a prerogative of the
+ <a name="an274"></a>reserved identifiers in the sense that their use is a prerogative of the
 implementor.
 <p>
 
