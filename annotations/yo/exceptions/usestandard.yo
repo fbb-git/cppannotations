@@ -1,0 +1,54 @@
+Since values of any type may be thrown as exceptions, you may wonder when to
+throw values of standard exception types and (if ever) when to throw values of
+other types.
+
+Current practice in the C++ community is to throw exceptions only in
+exceptional situations. In that respect C++'s philosophy about using
+exceptions differs markedly from the way exceptions are used in, e.g., Java,
+where exceptions are often encountered in situations C++ doesn't consider
+exceptional. Another common practice is to follow a `conceptual' style when
+designing software. A nice characteristic of exceptions is that exceptions can
+be thrown at a point where your source shows what's happening: throwing an
+tt(std::out_of_range) exception is nice for the software maintainer, because
+he/she will immediately recognize the reason for the exception.
+
+At the catch-clause the semantical context ususally isn't very relevant
+anymore and by catching a std:;exception and showing its what() contents the
+program's em(user) is informed about what happened.
+
+But throwing values of other types can also be useful. What about a situation
+where you want to throw an exception and catch it at some shallow level?  In
+between there may be various levels of software provided by external software
+libraries over which the software engineer has no control.  At those levels
+exceptions (std::exceptions) could be generated too, and those exceptions
+might also be caught by the library's code. When throwing a standard exception
+type it may be hard to convince yourself that that exception isn't caught by
+the externally provided software. Assuming that no catch-alls are used (i.e.,
+tt(catch (...)))  then throwing an exception from the tt(std::exception)
+family might not be a very good idea. In such cases throwing a value from a
+simple, maybe empty, tt(enum) works fine:
+        verb(
+    enum HorribleEvent 
+    {};      
+
+    ... at some deep level:
+        throw HorribleEvent{};
+
+    ... at some shallow level:
+    catch (HorribleEvent hs)
+    {
+        ...
+    }
+        )
+    Other examples can easily be found: design a class holding a message and
+an error (exit) code: where necessary throw an object of that class, catch it
+in the catch clause of main's try block and you can be sure that all objects
+defined at intermediate levels are neatly destroyed, and at the end you show
+the error message and return the exit code embedded in your non-exception
+object.
+
+    So, the advice is to use tt(std::exception) types when available, and
+clearly do the required job. But if an exception is used to simply bail out
+of an unpleasant situation, or if there's a chance that externally provided
+code might catch tt(std:exceptions) then consider throwing objects or values
+of other types.
