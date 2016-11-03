@@ -25,17 +25,50 @@ consecutively in memory. An array index expression may thereafter be used to
 access the array's individual elements: tt(intarr[0]) represents the first
 tt(int) value, immediately followed by tt(intarr[1]), and so on until the last
 element (tt(intarr[19])).
- hi(memory: initialization)With non-class types (primitive types, tt(struct)
-types without constructors) the block of memory returned by operator tt(new[])
-is em(not) guaranteed to be initialized to 0.
 
-    When operator tt(new[]) is used to allocate arrays of objects their
-constructors are automatically used. Consequently tt(new string[20]) results
-in a block of 20 em(initialized) tt(string) objects. When allocating arrays of
-objects the class's
-  emi(default constructor) is used to initialize each individual object in
-turn. A non-default constructor cannot be called, but often it is possible to
-work around that as discussed in section ref(NONDEFINIT).
+ hi(memory: initialization)With non-class types (primitive types, POD
+types without constructors) the block of memory returned by operator tt(new[])
+is em(not) guaranteed to be initialized to 0. Alternatively, adding tt(()) to
+the tt(new) expression em(will) initialize the block of memory to
+zeroes. E.g.,
+        verb(
+    struct POD
+    {
+        int iVal;
+        double dVal;
+    };
+    new POD[5]();       // returns a pointer to 5 0-initialized PODs
+    new double[9]();    // returns a pointer to 9 0-initialized doubles
+        )
+    If there are members of the tt(struct POD) that are explicitly initialized
+in the struct's interface (e.g., tt(int iVal = 12)), or if the struct uses
+composition, and the composed data member's type defines a default
+constructor, then initializations in the struct's interface and
+initializations performed by the composed data member's constructor takes
+precedence over the 0-initialization. Here is an example:
+        verb(
+    struct Data
+    {
+        int value = 100;
+    };
+    struct POD
+    {
+        int iVal = 12;
+        double dVal;
+        Data data;
+    };
+
+    POD *pp = new POD[5]();
+        )
+    Here, tt(pp) points to five tt(POD) objects, each having their tt(iVal)
+data members initialized to 12, their tt(dVal) data members initialized to 0,
+and their tt(data.value) members initialized to 100.
+
+    When operator tt(new[]) is used to allocate arrays of objects of class
+types defining default constructors these constructors are automatically
+used. Consequently tt(new string[20]) results in a block of 20 em(initialized)
+tt(string) objects. A non-default constructor cannot be called, but often it
+is possible to work around that (as discussed in section ref(NONDEFINIT)).
 
     The expression between brackets of operator tt(new[]) represents the
 number of elements of the array to allocate. The bf(C++) standard allows

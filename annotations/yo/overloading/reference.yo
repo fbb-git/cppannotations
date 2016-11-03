@@ -57,10 +57,10 @@ called from a temporary and tt(operator+=) when
 called from another object. In the latter case we need a temporary, to which
 tt(rhs) is added:
         verb(
-    Binary &operator+=(Binary const &rhs) &&
+    Binary &&Binary::operator+=(Binary const &rhs) &&
     {
         // directly add rhs to *this, 
-        return *this;
+        return std::move(*this);
     }
     Binary &operator+=(Binary const &rhs) &
     {
@@ -77,13 +77,14 @@ create a temporary, and then call tt(operator+=() &&) from the temporary.
         verb(
     Binary &&operator+(Binary &&lhs, Binary const &rhs)
     {
-        return move(move(lhs) += rhs);
+        return move(lhs) += rhs;
     }
     
-    Binary &&operator+(Binary const &lhs, Binary const &rhs)
+    Binary operator+(Binary const &lhs, Binary const &rhs)
     {
         Binary tmp(lhs);
-        return move(tmp) + rhs;
+        move(tmp) + rhs;
+        return tmp;
     }
         )
     So, why do we still need tt(operator+=() &)? Well, only in situations

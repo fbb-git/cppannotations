@@ -1,6 +1,5 @@
     #include <iostream>
     #include <string>
-    #include <cstring>
 
     using namespace std;
 
@@ -18,7 +17,7 @@
 
         while (true)                        // eat up all memory
         {
-            memset(new int [100000], 0, 100000 * sizeof(int));
+            new int [100000]();
             allocated += 100000 * sizeof(int);
             cout << "Allocated " << allocated << " bytes\n";
         }

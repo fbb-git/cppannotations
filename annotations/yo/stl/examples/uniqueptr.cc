@@ -8,7 +8,7 @@ struct Move
 {
     Move()
     {}
-    Move(Move &&rvalue)
+    Move(Move &&tmp)
     {}
     ~Move()
     {}

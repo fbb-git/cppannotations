@@ -1,12 +1,15 @@
-WIP
-===
+Although this section contains forward references to chapters ref(String),
+ref(Classes), and ref(PointMembers), its topic best fits the current
+chapter. This section can be skipped without loss of continuity, and you might
+consider returning to it once you're familiar with the contents of these
+future chapters.
 
 Historically, the bf(C) programming language distinguished between
 em(lvalues) and em(rvalues). The terminology was based on
 assignment expressions, where the value to the left of the assignment operator
-could receive a value (e.g., it referred to a location in memory where a value
+receives a value (e.g., it referred to a location in memory where a value
 could be written into, like a variable), while the value to the right of the
-assignment operator only needed to represent a value (it could be a temporary
+assignment operator only had to represent a value (it could be a temporary
 variable, a constant value or the value stored in a variable):
         verb(
     lvalue = rvalue;
@@ -19,11 +22,11 @@ values:
         bf(C). It refers to a location where a value can be stored, like a
         variable, a reference to a variable, or a dereferenced pointer.
     itt(xvalue): an emi(xvalue) indicates an emi(expiring value). An expiring
-        value refers to an em(object) (cf. chapter ref(CLASSES)) just before
-        its lifetime ends. Resources (like dynamically allocated memory)
-        owned by such objects will soon cease to exist as well, and may
-        therefore, just before the object's lifetime ends, be moved to another
-        location, thus preventing their destruction.
+        value refers to an em(object) (cf. chapter ref(Classes)) just before
+        its lifetime ends. Such objects normally have to make sure that
+        resources they own (like dynamically allocated memory) also cease to
+        exist, but such resources may, just before the object's lifetime ends,
+        be moved to another location, thus preventing their destruction.
     itt(gvalue): a emi(gvalue) is a emi(generalized lvalue). A generalized
         lvalue refers to anything that may receive a value. It is either an
         lvalue or an xvalue.
@@ -33,31 +36,63 @@ values:
         ref(String)))
     )
 
-    
+An expression's value is an xvalue if it is:
+    itemization(
+    it() the value returned by a function returning an rvalue reference to an
+            object;
+    it() an object that is cast to an rvalue reference;
+    it() an expression accessing a non-static class data member whose object
+            is 
+        itemization(
+        it() an xvalue, or
+        it() a tt(.*) (pointer-to-member) expression (cf. chapter
+            ref(PointMembers)) in which the left-hand side operand is an
+            xvalue and the right-hand side operand is a pointer to a data
+            member.
+        )
+        The effect of this rule is that named rvalue references are treated as
+            lvalues and anonymous rvalue references to objects are treated as
+            xvalues.nl()
+        Rvalue references to functions are treated as lvalues whether
+            anonymous or not.
+    )
 
-[ Note: An expression is an xvalue if it is:nl()
-   -- the result of calling a function, whether implicitly or explicitly,
-whose return type is an rvalue reference to object type,nl()
-   -- a cast to an rvalue reference to object type,nl()
-   -- a class member access expression designating a non-static data member of
-non-reference type in which the object expression is an xvalue, or nl()
-   -- a .* pointer-to-member expression in which the first operand is an
-xvalue and the second operand is a pointer to data member.  In general, the
-effect of this rule is that named rvalue references are treated as lvalues and
-unnamed rvalue references to objects are treated as xvalues; rvalue references
-to functions are treated as lvalues whether named or not.nl() 
-    -- end note ]
+Here is a small example. Consider this simple struct:
+        verb(
+    struct Demo 
+    {
+        int d_value;
+    };
+        )
+    In addition we have these function declarations and definitions:
+    verb(
+    Demo &&operator+(Demo const &lhs, Demo const &rhs);
+    Demo &&factory();
 
- Example:
-  struct A {
-    int m;
-  };
-  A&& operator+(A, A);
-  A&& f();
-  A a;
-  A&& ar = static_cast<A&&>(a);
-The expressions f(), f().m, static_cast<A&&>(a), and a + a are xvalues. The expression ar is an lvalue.
--- end example ]
+    Demo demo;
+    Demo &&rref = static_cast<Demo &&>(demo);
+    )
 
+    Expressions like
+        verb(
+    factory();
+    factory().d_value;
+    static_cast<Demo &&>(demo);
+    demo + demo
+        )
+    are xvalues. However, the expression
+        verb(
+    rref;
+        )
+    is an lvalue.
 
-
+In many situations it's not particularly important to know what kind of gvalue
+or what kind of rvalue is actually used. In the annotations() the term
+emi(lhs) (i(left hand side)) is frequently used to indicate an operand that's
+written to the left of a binary operator, while the term emi(rhs) 
+    (i(right hand side)) is frequently used to indicate an operand that's
+written to the right of a binary operator. Lhs and rhs operands could actually
+be gvalues (e.g., when representing ordinary variables), but they could also
+be prvalues (e.g., numeric values added together using the addition
+operator). Whether or not lhs and rhs operands are glvalues can always be
+determined from the context in which they are used.
