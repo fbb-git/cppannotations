@@ -110,7 +110,7 @@ implementing the compound assignment operator the strong guarantee should
 again be kept in mind. Use a temporary object and swap if the tt(add) member
 might throw. Example:
         verb(
-    Binary &operator+=(Binary const &other)
+    Binary &Binary::operator+=(Binary const &other)
     {
         Binary tmp(*this);
         tmp.add(other);     // this may throw
@@ -179,26 +179,22 @@ do that by explicitly stating that its return value is an rvalue reference:
         verb(
     Binary &&operator+(Binary &&lhs, Binary const &rhs)
     {
-        return std::move(lhs += rhs);
+        return std::move(lhs) += rhs;
     }
         )
-    And, realizing that our `traditional' binary operator also returns a
-temporary, we do the same for that operator:
+
+    Note that we cannot do that with our `traditional' binary operator. E.g.,
         verb(
+        // DON'T DO THIS:
     Binary &&operator+(Binary const &lhs, Binary const &rhs)
     {
         Binary tmp(lhs);
         return std::move(tmp += rhs);
     }
         )
-    Now the compiler applies return value optimization, and returns the
-temporaries, rather than constructing new objects, and the final call of the
-move constructor disappears.
+    In this case the compiler will return tt(lhs) as an rvalue, but since
+tt(lhs) is a local variable it won't exist anymore when returning from the
+function. 
 
     But we're not there yet: in the next section we'll encounter possibilities
 for some additional and interesting  optimizations.
-
-
-
-
-
