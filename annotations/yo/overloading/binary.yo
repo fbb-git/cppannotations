@@ -75,62 +75,64 @@ shortly, but here is our first revision of the declaration of the class
 tt(Binary), declaring an overloaded tt(+) operator as a free function:
         verbinclude(-a examples/binary1.h)
 
-    By defining binary operators as free functions, the following promotions
-are possible:
+    By defining binary operators as free functions, these promotions
+are available:
     itemization(
     it() If the left-hand operand is of the intended class type, the right
 hand argument is promoted whenever possible;
     it() If the right-hand operand is of the intended class type, the left
 hand argument is promoted whenever possible;
-    it() No promotions occur when none of the operands are of the intended
+    it() No promotions occur when neither operand is of the intended
 class type;
     it() An ambiguity occurs when promotions to different classes are possible
 for the two operands. For example:
         verbinclude(-a examples/binaryambigu.cc)
-    Here, both overloaded tt(+) operators are possible when compiling
-the statement tt(a + a). The ambiguity must be solved by explicitly promoting
-one of the arguments, e.g., tt(a + B(a)) allows the compiler to resolve
-the ambiguity to the first overloaded tt(+) operator.
+    Here, both overloaded tt(+) operators are possible candidates when
+compiling the statement tt(a + a). The ambiguity must be solved by explicitly
+promoting one of the arguments, e.g., tt(a + B{a}), which enables the compiler
+to resolve the ambiguity to the first overloaded tt(+) operator.
     )
 
     The next step is to implement the corresponding overloaded binary compound
 assignment operators, having the form tt(@=), where tt(@) represents a binary
-operator. As this operator em(always) has a left-hand operand which is an
-object of its own class, it is implemented as a true member
-function. Furthermore, the compound assignment operator should return a
-reference to the object to which the binary operation applies, as the object
+operator. As these operators em(always) have left-hand operands which are
+object of their own classes, they are implemented as true member
+functions. Moreover, compound assignment operators should return references to
+the objects for which the binary operators were requested, as these objects
 might be modified in the same statement. E.g.,
-    tt((s2 += s3) + " postfix"). Here is our second revision of the class
-tt(Binary), showing both the declaration of the plain binary operator and the
-corresponding compound assignment operator:
+    tt((s2 += s3) + " postfix"). 
+
+    Here is our second revision of the class tt(Binary), showing both the
+declaration of the plain binary operator and the corresponding compound
+assignment operator:
         verbinclude(-a examples/binary2.h)
 
 How should the compound addition assignment operator be implemented?  When
 implementing the compound assignment operator the strong guarantee should
-again be kept in mind. Use a temporary object and swap if the tt(add) member
-might throw. Example:
+again be kept in mind: use a temporary object and swap if the addition might
+throw:
         verb(
     Binary &operator+=(Binary const &other)
     {
         Binary tmp(*this);
-        tmp.add(other);     // this may throw
+        tmp.add(other);     // this might throw
         swap(tmp);
         return *this;
     }
         )
 
-    It's easy to implement the plain binary operator for classes offering the
+    It's easy to implement the free binary operator for classes offering the
 matching compound assignment operator: the tt(lhs) argument is copied into a
 tt(Binary tmp) to which the tt(rhs) operand is added. Then tt(tmp) is
 returned. The copy construction and two statements could be contracted into
 one single return statement, but then compilers usually aren't able to apply
-copy elision in this case. But copy elision em(is) usually used when the steps
+copy elision in this case. Copy elision em(is) commonly used when the steps
 are taken separately:
         verbinclude(-a examples/binary3.h)
 
     But wait! Remember the design principle for move-aware classes that was
 given in section ref(MOVEPRINCIPLE)? When implementing binary operators we're
-doing exactly what was mentioned in that design principle. A temporay
+doing exactly what was mentioned at that design principle. A temporay
 object is constructed and the compound assignment operation is applied to the
 temporary object. In the next section we'll have a look at how we can use this
 design principle to our advantage.
@@ -139,61 +141,54 @@ design principle to our advantage.
 binary operators to our class. The actual work, as mentioned, is performed by
 the compound addition assignment operator. Applying the format of the
 traditional binary operator (receiving two const references) to the move-aware
-addition operator we get the following signature:
+addition operator we obtain the following signature:
         verb(
     Binary operator+(Binary &&lhs, Binary const &rhs);
         )
-    To implement this, we realize that we already have a temporary object, so
-we can return tt(lhs) after having added tt(rhs) to it. Since tt(lhs) already
-is a temporary, we can avoid a copy construction by wrapping the compund
-addition in a tt(std::move) call:
+    To implement this, we realize that we already have a temporary object,
+which we can return after having added tt(rhs) to it. Since tt(lhs) already is
+a temporary, we can avoid a copy construction by informing the compiler that
+tt(lhs) is a temporary (using tt(std::move)), and explicitly returning an
+rvalue reference from the function::
         verb(
     Binary operator+(Binary &&lhs, Binary const &rhs)
     {
-        return std::move(lhs += rhs);
+        lhs.add(rhs);
+        return std::move(lhs);
     }
         )
-    When executing an expression like (all tt(Binary) objects) tt(b1 + b2 +
-b3) the following functions are called:
+    Now, when executing an expression like (all tt(Binary) objects) tt(b1 + b2
++ b3) the following functions are called:
         verb(
     copy operator+          = b1 + b2 
     Copy constructor        = tmp(b1) 
-    Copy +=                 = tmp += b2 
-    Copy constructor        = tmp2(tmp) 
-    += operation            = tmp2.add(b3), swap(tmp2) 
-    
+        Copy +=             = tmp += b2 
+        Copy constructor    = tmp2(tmp) 
+        adding              = tmp2.add(b3), swap(tmp2) 
+    (copy elision           = tmp is returned from b1 + b2)
+        
     move operator+          = tmp + b3 
-    Copy +=                 = tmp += b3 
-    Copy constructor        = tmp2(tmp) 
-    += operation            = tmp2.add(b3), swap(tmp2) 
-    
-    Move constructor        = return std::move(tmp) 
+    adding                  = tmp.add(b3)
+    Move constructor        = return std::move(lhs)
         )
-    There's at least some gain: if the tt(std::move) wrap is omitted, then the
-copy constructor is called.
+    There's at least some gain: if the tt(std::move) wrap is omitted at the
+end of tt(operator+(Binary &&lhs, Binary const &rhs)) then the copy constructor
+would have been called.
 
-    But since we already have a temporary object, wouldn't it be nice if we
-could lure the compiler into using return value optimization? We can, by
-telling the compiler that tt(operator+'s) return value em(is) a temporary. We
-do that by explicitly stating that its return value is an rvalue reference:
+    But as we already have a temporary object when calling tt(operator+(Binary
+&&lhs, Binary const &rhs)) , wouldn't it be nice if we could tell the compiler
+that it should use return value optimization? We can, by telling the compiler
+that tt(operator+'s) return value already em(is) a temporary. We do that by
+explicitly stating that its return value is an rvalue reference:
         verb(
     Binary &&operator+(Binary &&lhs, Binary const &rhs)
     {
-        return std::move(lhs += rhs);
+        lhs.add(rhs);
+        return std::move(lhs);
     }
         )
-    And, realizing that our `traditional' binary operator also returns a
-temporary, we do the same for that operator:
-        verb(
-    Binary &&operator+(Binary const &lhs, Binary const &rhs)
-    {
-        Binary tmp(lhs);
-        return std::move(tmp += rhs);
-    }
-        )
-    Now the compiler applies return value optimization, and returns the
-temporaries, rather than constructing new objects, and the final call of the
-move constructor disappears.
+    Now the compiler applies return value optimization, and returns tt(lhs),
+rather than calling an extra copy or move or copy constructor.
 
     But we're not there yet: in the next section we'll encounter possibilities
 for some additional and interesting  optimizations.
