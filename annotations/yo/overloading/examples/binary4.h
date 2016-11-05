@@ -6,16 +6,11 @@
                 // copy and move constructors are available by default, or
                 // they can be explicitly declared and implemented.
 
-            Binary &operator+=(Binary const &other);    // see the text
+            Binary &operator+=(Binary const &other) &;    // see the text
+            Binary &&operator+=(Binary const &other) &&; 
     };
 
-    inline Binary &&operator+(Binary &&lhs, Binary const &rhs)
-    {
-        return std::move(lhs += rhs);   // avoids copy/move construction
-    }
+    Binary operator+(Binary const &lhs, Binary const &rhs);
+    Binary operator+(Binary &&lhs, Binary const &rhs);
 
-    inline Binary &&operator+(Binary const &lhs, Binary const &rhs)
-    {
-        Binary tmp(lhs);
-        return std::move(tmp) + rhs;
-    }
+

@@ -6,3 +6,5 @@
     };
 
     Binary operator+(Binary const &lhs, Binary const &rhs);
+
+

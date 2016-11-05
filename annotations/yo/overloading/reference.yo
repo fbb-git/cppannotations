@@ -1,121 +1,119 @@
-In the previous section we saw that plain binary operators (like
-tt(operator+)) can be implemented very efficiently if the left-hand side
-operand is an anonymous temporary object, for which an rvalue-reference
-parameter is used. Moreover, by specifying an rvalue reference return type we
-can allow the compiler to use return value optimization for the returned
-temporary. 
+In the previous section we saw that binary operators (like tt(operator+)) can
+be implemented very efficiently, but still require at least move constructors.
 
-    But in cases where the tt(lhs) operand is a temporary 
-the tt(rhs) operand can directly be added to the tt(lhs)
-operand, and we don't need the additional temporary value, created by
-tt(operator+=) anymore. 
-
-Our implementation of tt(operator+=) thus far looks like this:
-    verb(
-    Binary &operator+=(Binary const &rhs)
-    {
-        Binary tmp(*this);
-        tmp.add(rhs);
-        swap(tmp);
-        return *this;
-    }
-        )
-    However, when implementing tt(operator+) we either already have a
-temporary object (when using tt(operator+(Binary &&lhs, ...))), or just created
-a temporary object (when using tt(operator+(Binary const &lhs, ...))). In our
-current implementation lots of additional temporaries are being constructed,
-each of them requiring a copy construction. E.g, in an expression like 
+An expression like
         verb(
     Binary{} + varB + varC + varD
         )
-    a temporary is constructed when computing tt(Binary{} + varB), then
-another one for tt(Binary{} + varC), and yet one more for tt(Binary{} +
-varD). In addition, each addition also performs a swap, even though we already
-have a temporary (i.e., tt(Binary{})) in our hands. 
+  therefore returns a move constructed object representing tt(Binary{} +
+varB), then another move constructed object receiving the first return value
+and tt(varC), and finally yet another move constructed object receiving the
+second returned object and tt(varD) as its arguments.
 
-    How to tell the compiler that we don't need these temporaries?
+Now consider the situation where we have a function defining a tt(Binary &&)
+parameter, and a second tt(Binary const &) parameter. Inside that function
+these values need to be added, and their sum is then passed as argument to two
+other functions. We em(could) do this:
+        verb(
+    void fun1(Binary &&lhs, Binary const &rhs)
+    {
+        lhs += rhs;
+        fun2(lhs);
+        fun3(lhs);
+    }
+        )
+    But realize that when using tt(operator+=) we first construct a copy of
+the current object, so a temporary object is available to perform the addition
+on, and then swap the temporary object with the current object to commit the
+results. But wait! Our lhs operand already em(is) a temporary object. So why
+create another?
 
-    For that we need a way to inform the compiler that tt(operator+=)
-is either called by a standard lvalue left-hand side operand, or by an rvalue
-reference (i.e., temporary object). This can be realized using 
+    In this example there's indeed no need for yet another temporary
+object. But different from the binary operators compound assignment operators
+don't have a explicitly defined lhs operand. In situations like these we
+nevertheless can inform the compiler that a member (not just compound
+assignment operators) should only be used when the objects calling those
+members is an rvalue reference, or an lvalue reference to either a modifiable
+or non-modifiable object. For this we use 
     em(reference bindings)hi(reference binding) a.k.a.  
-    em(reference qualifiers)hi(reference qualifier). Reference bindings, which
-may be used by all member functions, not just by overloaded operators, consist
-of a reference token (tt(&)) or an rvalue reference token (tt(&&)) which is
-affixed immediately to the function's head (this applies to the declaration
-and the implementation alike). Functions provided with rvalue reference
-bindings are used when called by anonymous temporary objects (i.e., rvalues),
-whereas functions provided with lvalue reference bindings are used when called
-by other types of objects. Where appropriate the tt(const) qualifier can be
-applied in addition (although it wouldn't make much sense in combination with
-rvalue reference bindings, since rvalue references don't refer to tt(const)
-objects).
+    em(reference qualifiers)hi(reference qualifier). 
 
-    Now we're in a position to fine-tune our implementations of
-tt(operator+()). First we make a distinction between tt(operator+=) when
-called from a temporary and tt(operator+=) when
-called from another object. In the latter case we need a temporary, to which
-tt(rhs) is added:
+    Reference bindings consist of a reference token (tt(&)), optionally
+preceded by tt(const), or an rvalue reference token (tt(&&)). Such reference
+qualifiers are is affixed immediately to the function's head (this applies to
+the declaration and the implementation alike). Functions provided with rvalue
+reference bindings are used when called by anonymous temporary objects,
+whereas functions provided with lvalue reference bindings are used when called
+by other types of objects.
+
+    Reference qualifiers allow us to fine-tune our implementations of
+tt(operator+=). If we know that the object calling the compound assignment
+operator is itself a temporary, then there's no need for a separate temporary
+object. The operator may directly perform its operation and then return. Here
+is the implementation of tt(operator+=) tailored to being used by temporary
+objects:
         verb(
     Binary &&Binary::operator+=(Binary const &rhs) &&
     {
-        // directly add rhs to *this, 
-        return std::move(*this);
+        add(rhs);                   // directly add rhs to *this, 
+        return std::move(*this);    // return *this as rvalue ref.
     }
-    Binary &operator+=(Binary const &rhs) &
+        )    
+    This implementation is about as fast as it gets. So, for that
+operator we use (note the reference qualifier):
+        verb(
+    Binary &Binary::operator+=(Binary const &other) &
     {
         Binary tmp(*this);
-        std::move(tmp) += rhs;  // directly add rhs to tmp
+        tmp.add(other);     // this might throw
         swap(tmp);
         return *this;
     }
         )
-
-    Next we look at the two implementations of tt(operator+). When using
-tt(Binary &&lhs) we can directly call tt(operator++() &&), otherwise we first
-create a temporary, and then call tt(operator+=() &&) from the temporary. 
+    With this implementation adding a tt(Binary) object to another boils down
+to
         verb(
-    Binary &&operator+(Binary &&lhs, Binary const &rhs)
+    operator+=    (&)       = b1 += b2 
+    Copy constructor        = tmp(b1) 
+        adding              = tmp.add(b2)
+    swap                    = tmp <-> *this
+        )
+    Although een interesting alternative implementation exists, it's somewhat
+less efficient than the above. The alternative implementation looks like
+this:
+        verb(
+    // not advised:
+    Binary &Binary::operator+=(Binary const &other) &
     {
-        return move(lhs) += rhs;
-    }
-    
-    Binary operator+(Binary const &lhs, Binary const &rhs)
-    {
-        Binary tmp(lhs);
-        move(tmp) + rhs;
-        return tmp;
+        return *this = Binary{*this} += rhs;
     }
         )
-    So, why do we still need tt(operator+=() &)? Well, only in situations
-where we want to add something to an existing tt(Binary) object.
+    When this implementation is used we observe:
+        verb(
+    operator+=    (&)       = b1 += b2 
+    Copy constructor        = tmp(b1) 
+    operator+=    (&&)      = tmp += b2
+        adding              = tmp.add(b2)
+    move assign             = *this = tmp
+        )
 
-And this is what we call when using the above implementations for the
-expression tt(b1 + b2 + b3)
-        verb(
-    Copy constructor    = tmp(b1) 
-    Move +=             = tmp += b2
-    Move +=             = tmp += b3
-        )
-    It's even faster when the first operand already is a temporary (e.g.,
-tt(Binary{} + b2 + b3)):
-        verb(
-    Move +=             = Binary{} += b2
-    Move +=             = Binary{} += b3
-        )
-    It might be illustrative to compare these actions to the ones shown in the
-previous section, using traditional implementations.
+    Notice that the implementations of tt(operator+) and tt(operator+=) are
+independent of the actual definition of the class tt(Binary). Adding standard
+binary operators to a class (i.e., operators operating on arguments of their
+own class types) can therefore easily be realized.
 
     Summarizing:
     itemization(
-    it() Reference bindings are used to inform the compiler for what type of
-references functions should be called;
+    it() Reference qualifiers are used to inform the compiler about which
+overloaded version of a member should be called for which type of object;
     it() Binary operators can capitalize on these functions to minimize the
-number of copy constructions that have to be performed;
-    it() By specifying rvalue references as return types of functions
-returning temporaries the compiler can apply additional return value
-optimizations. 
+number of copy constructions that must be performed;
     )
+
+    
+
+
+
 
 
 

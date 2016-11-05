@@ -1,13 +1,13 @@
     In various classes overloading binary operators (like ti(operator+)) can
 be a very natural extension of the class's functionality. For example, the
-tt(std::string) class has various overloaded forms of tt(operator+).
+tt(std::string) class has various overloaded tt(operator+) members.
 
     Most binary operators come in two flavors: the plain binary operator (like
-the tt(+) operator) and the compound assignment variant (like the tt(+=)
-operator). Whereas the plain binary operators return values,
-the compound assignment operators return a reference to the
-object to which the operator was applied. For example, with tt(std::string)
-objects the following code (annotations below the example) may be used:
+the tt(+) operator) and the compound binary assignment operator (like
+tt(operator+=)). Whereas the plain binary operators return values, the
+compound binary assignment operators return references to the objects for
+which the operators were called. For example, with tt(std::string) objects the
+following code (annotations below the example) may be used:
         verbinclude(-a examples/binarystring.cc)
     itemization(
     it() at tt(// 1) the contents of tt(s3) is added to tt(s2). Next, tt(s2)
@@ -30,7 +30,7 @@ value of the expression.
         )
     )
 
-    Consider the following code, in which a class tt(Binary) supports
+    Let's consider the following code, in which a class tt(Binary) supports
 an overloaded tt(operator+):
         verbinclude(-a examples/binary1.cc)
     Compilation of this little program fails for statement tt(// 2), with the
@@ -42,41 +42,41 @@ compiler reporting an error like:
 won't compile?
 
     In order to understand this remember em(promotions). As we have seen in
-section ref(EXPLICIT), constructors expecting a single argument may be
-implicitly activated when an argument of an appropriate type is
-provided. We've encountered this repeatedly with tt(std::string) objects,
-where an NTBS may be used to initialize a tt(std::string) object.
+section ref(EXPLICIT), constructors expecting single arguments may implicitly
+be activated when an argument of an appropriate type is provided. We've
+already encountered this with tt(std::string) objects, where NTBSs may be used
+to initialize tt(std::string) objects.
 
-    Analogously, in statement tt(// 1), the tt(+) operator is called for the
-tt(b2) object. This operator expects another tt(Binary) object as its right
-hand operand. However, an tt(int) is provided. As a constructor
-tt(Binary(int)) exists, the tt(int) value is first promoted to a tt(Binary)
-object. Next, this tt(Binary) object is passed as argument to the
+    Analogously, in statement tt(// 1), tt(operator+) is called, using tt(b2)
+as its left-hand side operand. This operator expects another tt(Binary) object
+as its right-hand side operand. However, an tt(int) is provided. But as a
+constructor tt(Binary(int)) exists, the tt(int) value can be promoted to a
+tt(Binary) object. Next, this tt(Binary) object is passed as argument to the
 tt(operator+) member.
 
-    In statement tt(// 2) no promotions are available: here the tt(+) operator
-is applied to an lvalue that is an tt(int). An tt(int) is a primitive type and
-primitive types have no concept of `constructors', `member functions' or
-`promotions'.
+    Unfortunately, in statement tt(// 2) no promotions are available: here the
+tt(+) operator is applied to an tt(int)-type lvalue. An tt(int) is a primitive
+type and primitive types have no knowledge of `constructors', `member
+functions' or `promotions'.
 
     How, then, are promotions of left-hand operands implemented in statements
-like tt("prefix " + s3)? Since promotions are applied to function arguments,
-we must make sure that both operands of binary operators are arguments. This
-implies that plain binary operators supporting promotions for
+like tt("prefix " + s3)? Since promotions can be applied to function
+arguments, we must make sure that both operands of binary operators are
+arguments. This implies that plain binary operators supporting promotions for
 either their left-hand side operand or right-hand side operand should be
 declared as
         hi(operator: free)hi(function: free)em(free operators),
     also called em(free functions).
 
     Functions like the plain binary operators conceptually belong to the class
-for which they implement the binary operator. Consequently they should be
+for which they implement these operators. Consequently they should be
 declared in the class's header file. We cover their implementations
 shortly, but here is our first revision of the declaration of the class
 tt(Binary), declaring an overloaded tt(+) operator as a free function:
         verbinclude(-a examples/binary1.h)
 
-    By defining binary operators as free functions, these promotions
-are available:
+    By defining binary operators as free functions, several promotions are
+available:
     itemization(
     it() If the left-hand operand is of the intended class type, the right
 hand argument is promoted whenever possible;
@@ -93,13 +93,13 @@ promoting one of the arguments, e.g., tt(a + B{a}), which enables the compiler
 to resolve the ambiguity to the first overloaded tt(+) operator.
     )
 
-    The next step is to implement the corresponding overloaded binary compound
-assignment operators, having the form tt(@=), where tt(@) represents a binary
-operator. As these operators em(always) have left-hand operands which are
-object of their own classes, they are implemented as true member
+    The next step consists of implementing the required overloaded binary
+compound assignment operators, having the form tt(@=), where tt(@) represents
+a binary operator. As these operators em(always) have left-hand side operands
+which are object of their own classes, they are implemented as true member
 functions. Moreover, compound assignment operators should return references to
-the objects for which the binary operators were requested, as these objects
-might be modified in the same statement. E.g.,
+the objects for which the binary compound assignment operators were requested,
+as these objects might be modified in the same statement. E.g.,
     tt((s2 += s3) + " postfix"). 
 
     Here is our second revision of the class tt(Binary), showing both the
@@ -108,9 +108,9 @@ assignment operator:
         verbinclude(-a examples/binary2.h)
 
 How should the compound addition assignment operator be implemented?  When
-implementing the compound assignment operator the strong guarantee should
-again be kept in mind: use a temporary object and swap if the addition might
-throw:
+implementing compound binary assignment operators the strong guarantee should
+always be kept in mind: if the operation might throw use a temporary object
+and swap. Here is our first implementation of a compund assignment operator:
         verb(
     Binary &Binary::operator+=(Binary const &other)
     {
@@ -122,39 +122,54 @@ throw:
         )
 
     It's easy to implement the free binary operator for classes offering the
-matching compound assignment operator: the tt(lhs) argument is copied into a
-tt(Binary tmp) to which the tt(rhs) operand is added. Then tt(tmp) is
-returned. The copy construction and two statements could be contracted into
-one single return statement, but then compilers usually aren't able to apply
-copy elision in this case. Copy elision em(is) commonly used when the steps
-are taken separately:
+matching compound binary assignment operator: the tt(lhs) argument is copied
+into a tt(Binary tmp) to which the tt(rhs) operand is added. Then tt(tmp) is
+returned:
         verbinclude(-a examples/binary3.h)
 
-    But wait! Remember the design principle for move-aware classes that was
-given in section ref(MOVEPRINCIPLE)? When implementing binary operators we're
-doing exactly what was mentioned at that design principle. A temporay
-object is constructed and the compound assignment operation is applied to the
-temporary object. In the next section we'll have a look at how we can use this
-design principle to our advantage.
-
-    If the class tt(Binary) is a move-aware class then we can add move-aware
-binary operators to our class. The actual work, as mentioned, is performed by
-the compound addition assignment operator. Applying the format of the
-traditional binary operator (receiving two const references) to the move-aware
-addition operator we obtain the following signature:
+But if the class tt(Binary) is a move-aware class then it's attractive to add
+move-aware binary operators to our class. In this case we also need operators
+whose left-hand side operanda EW rvalue references. When a class is move aware
+various interesting implementations are suddenly possible, which we will
+encounter below and in the next (sub)section. First have a look at the
+signature of such a binary operator:
         verb(
     Binary operator+(Binary &&lhs, Binary const &rhs);
         )
-    To implement this, we realize that we already have a temporary object,
-which we can return after having added tt(rhs) to it. Since tt(lhs) already is
-a temporary, we can avoid a copy construction by informing the compiler that
-tt(lhs) is a temporary (using tt(std::move)), and explicitly returning an
-rvalue reference from the function::
+
+Since the lhs operand is an rvalue reference, we can modify it em(ad lib). But
+binary operators are commonly designed as factory functions, returning objects
+created by those operators. Although the bf(C++) standard does not explicitly
+advise against it, it would be a violation of the principle of least surprise
+to return that modified lhs operand as an rvalue reference: objects returned
+from binary operators should neither be the operators' lhs operand nor the
+operators' rhs operand. Instead these operators should return objects created
+by them.  But it's OK to use the move constructor to return a copy of a
+modified lhs operand.
+
+Alternatively, the binary operator can first create an object by move
+constructing it from the operator's lhs operand. Then directly perform the
+binary operation on that object and the operator's rhs operand, and then
+return the modified object. It's a matter of taste which one is preferred.
+
+    Here are the two implementations. Because of copy elision the explicitly
+defined tt(ret) object is created in the location of the return value. Both
+implementations, although they appear to be different, show identical run-time
+behavior:
         verb(
-    Binary operator+(Binary &&lhs, Binary const &rhs)
+                // first implementation: modify lhs
+    Binary operator+(Binary &&lhs, Binary const &rhs)   
     {
         lhs.add(rhs);
         return std::move(lhs);
+    }
+
+                // second implementation: move construct ret from lhs
+    Binary operator+(Binary &&lhs, Binary const &rhs)   
+    {
+        Binary ret{std::move(lhs)};
+        ret.add(rhs);
+        return ret;
     }
         )
     Now, when executing an expression like (all tt(Binary) objects) tt(b1 + b2
@@ -162,33 +177,17 @@ rvalue reference from the function::
         verb(
     copy operator+          = b1 + b2 
     Copy constructor        = tmp(b1) 
-        Copy +=             = tmp += b2 
-        Copy constructor    = tmp2(tmp) 
-        adding              = tmp2.add(b3), swap(tmp2) 
-    (copy elision           = tmp is returned from b1 + b2)
+        adding              = tmp.add(b2)
+    copy elision            : tmp is returned from b1 + b2
         
     move operator+          = tmp + b3 
     adding                  = tmp.add(b3)
-    Move constructor        = return std::move(lhs)
+    Move construction       = tmp2(move(tmp)) is returned     
         )
-    There's at least some gain: if the tt(std::move) wrap is omitted at the
-end of tt(operator+(Binary &&lhs, Binary const &rhs)) then the copy constructor
-would have been called.
 
-    But as we already have a temporary object when calling tt(operator+(Binary
-&&lhs, Binary const &rhs)) , wouldn't it be nice if we could tell the compiler
-that it should use return value optimization? We can, by telling the compiler
-that tt(operator+'s) return value already em(is) a temporary. We do that by
-explicitly stating that its return value is an rvalue reference:
-        verb(
-    Binary &&operator+(Binary &&lhs, Binary const &rhs)
-    {
-        lhs.add(rhs);
-        return std::move(lhs);
-    }
-        )
-    Now the compiler applies return value optimization, and returns tt(lhs),
-rather than calling an extra copy or move or copy constructor.
+    But we're not there yet: in the next section we encounter possibilities
+for more  interesting implementations, concentrating on compound assignment
+operators. 
 
-    But we're not there yet: in the next section we'll encounter possibilities
-for some additional and interesting  optimizations.
+
+
