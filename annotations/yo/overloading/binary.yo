@@ -112,6 +112,7 @@ implementing compound binary assignment operators the strong guarantee should
 always be kept in mind: if the operation might throw use a temporary object
 and swap. Here is our first implementation of a compund assignment operator:
         verb(
+        // first implementation: modified in the next section
     Binary &Binary::operator+=(Binary const &other)
     {
         Binary tmp(*this);
@@ -129,16 +130,16 @@ returned:
 
 But if the class tt(Binary) is a move-aware class then it's attractive to add
 move-aware binary operators to our class. In this case we also need operators
-whose left-hand side operanda EW rvalue references. When a class is move aware
-various interesting implementations are suddenly possible, which we will
+whose left-hand side operands are rvalue references. When a class is move
+aware various interesting implementations are suddenly possible, which we will
 encounter below and in the next (sub)section. First have a look at the
 signature of such a binary operator:
         verb(
     Binary operator+(Binary &&lhs, Binary const &rhs);
         )
 
-Since the lhs operand is an rvalue reference, we can modify it em(ad lib). But
-binary operators are commonly designed as factory functions, returning objects
+Since the lhs operand is an rvalue reference, we can modify it em(ad lib). 
+Binary operators are commonly designed as factory functions, returning objects
 created by those operators. Although the bf(C++) standard does not explicitly
 advise against it, it would be a violation of the principle of least surprise
 to return that modified lhs operand as an rvalue reference: objects returned

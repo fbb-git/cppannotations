@@ -30,21 +30,21 @@ create another?
 
     In this example there's indeed no need for yet another temporary
 object. But different from the binary operators compound assignment operators
-don't have a explicitly defined lhs operand. In situations like these we
-nevertheless can inform the compiler that a member (not just compound
+don't have a explicitly defined left-hand side operand. In situations like
+these we nevertheless can inform the compiler that a member (not just compound
 assignment operators) should only be used when the objects calling those
 members is an rvalue reference, or an lvalue reference to either a modifiable
-or non-modifiable object. For this we use 
+or non-modifiable object. For this we use
     em(reference bindings)hi(reference binding) a.k.a.  
     em(reference qualifiers)hi(reference qualifier). 
 
     Reference bindings consist of a reference token (tt(&)), optionally
 preceded by tt(const), or an rvalue reference token (tt(&&)). Such reference
-qualifiers are is affixed immediately to the function's head (this applies to
-the declaration and the implementation alike). Functions provided with rvalue
-reference bindings are used when called by anonymous temporary objects,
-whereas functions provided with lvalue reference bindings are used when called
-by other types of objects.
+qualifiers are immediately affixed to the function's head (this applies to the
+declaration and the implementation alike). Functions provided with rvalue
+reference bindings are selected by the compiler when used by anonymous
+temporary objects, whereas functions provided with lvalue reference bindings
+are selected by the compiler when used by other types of objects.
 
     Reference qualifiers allow us to fine-tune our implementations of
 tt(operator+=). If we know that the object calling the compound assignment
@@ -59,8 +59,11 @@ objects:
         return std::move(*this);    // return *this as rvalue ref.
     }
         )    
-    This implementation is about as fast as it gets. So, for that
-operator we use (note the reference qualifier):
+    This implementation is about as fast as it gets. 
+
+    For the compound assignment operator called by an lvalue reference (i.e.,
+a named object) we could adapt the implementation for tt(operator+=) from the
+previous section (note the reference qualifier):
         verb(
     Binary &Binary::operator+=(Binary const &other) &
     {
@@ -78,38 +81,37 @@ to
         adding              = tmp.add(b2)
     swap                    = tmp <-> *this
         )
-    Although een interesting alternative implementation exists, it's somewhat
-less efficient than the above. The alternative implementation looks like
-this:
+    
+    However, an interesting alternative implementation exists: 
         verb(
-    // not advised:
+        // operator+=() & (advised implementation)
     Binary &Binary::operator+=(Binary const &other) &
     {
-        return *this = Binary{*this} += rhs;
+        return *this = Binary{std::move(*this)} += rhs;
     }
         )
     When this implementation is used we observe:
         verb(
     operator+=    (&)       = b1 += b2 
-    Copy constructor        = tmp(b1) 
+    Move constructor        = tmp(b1) 
     operator+=    (&&)      = tmp += b2
         adding              = tmp.add(b2)
     move assign             = *this = tmp
         )
+    This former implementation differs from the latter in that the former
+implementation uses a copy constructor and a swap-operation, whereas the
+latter implementation uses two move operations: a move constructor and a move
+assignment. 
 
+Copy construction, especially compared with move construction, can be quite
+expensive, Likewise, swapping commonly is at least as expensive as move
+assignment operations. Therefore, the latter implementation is preferred over
+the former.
+    
     Notice that the implementations of tt(operator+) and tt(operator+=) are
 independent of the actual definition of the class tt(Binary). Adding standard
 binary operators to a class (i.e., operators operating on arguments of their
 own class types) can therefore easily be realized.
-
-    Summarizing:
-    itemization(
-    it() Reference qualifiers are used to inform the compiler about which
-overloaded version of a member should be called for which type of object;
-    it() Binary operators can capitalize on these functions to minimize the
-number of copy constructions that must be performed;
-    )
-
     
 
 
