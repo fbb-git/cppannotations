@@ -1,7 +1,7 @@
     #include <string>
     using namespace std;
 
-    string *enlarge(string *old, unsigned oldsize, unsigned newsize)
+    string *enlarge(string *old, size_t oldsize, size_t newsize)
     {
         string *tmp = new string[newsize];  // allocate larger array
 
