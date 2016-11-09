@@ -62,8 +62,8 @@ objects:
     This implementation is about as fast as it gets. 
 
     For the compound assignment operator called by an lvalue reference (i.e.,
-a named object) we could adapt the implementation for tt(operator+=) from the
-previous section (note the reference qualifier):
+a named object) we can initially use the implementation for tt(operator+=)
+from the previous section (note the reference qualifier):
         verb(
     Binary &Binary::operator+=(Binary const &other) &
     {
@@ -90,7 +90,7 @@ to
         return *this = Binary{std::move(*this)} += rhs;
     }
         )
-    When this implementation is used we observe:
+    Using this implementation we observe:
         verb(
     operator+=    (&)       = b1 += b2 
     Move constructor        = tmp(b1) 
@@ -98,7 +98,7 @@ to
         adding              = tmp.add(b2)
     move assign             = *this = tmp
         )
-    This former implementation differs from the latter in that the former
+    The former implementation differs from the latter in that the former
 implementation uses a copy constructor and a swap-operation, whereas the
 latter implementation uses two move operations: a move constructor and a move
 assignment. 
@@ -112,8 +112,6 @@ the former.
 independent of the actual definition of the class tt(Binary). Adding standard
 binary operators to a class (i.e., operators operating on arguments of their
 own class types) can therefore easily be realized.
-    
-
 
 
 

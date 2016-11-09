@@ -122,18 +122,21 @@ and swap. Here is our first implementation of a compound assignment operator:
     }
         )
 
-    It's easy to implement the free binary operator for classes offering the
-matching compound binary assignment operator: the tt(lhs) argument is copied
-into a tt(Binary tmp) to which the tt(rhs) operand is added. Then tt(tmp) is
-returned:
+    It's easy to implement the free binary operator the tt(lhs) argument is
+copied into a tt(Binary tmp) to which the tt(rhs) operand is added. Then
+tt(tmp) is returned, using copy elision. The class tt(Binary) declares the
+free binary operator as a friend, so it can call tt(Binary's add) member:
         verbinclude(-a examples/binary3.h)
 
-But if the class tt(Binary) is a move-aware class then it's attractive to add
-move-aware binary operators to our class. In this case we also need operators
-whose left-hand side operands are rvalue references. When a class is move
-aware various interesting implementations are suddenly possible, which we will
-encounter below and in the next (sub)section. First have a look at the
-signature of such a binary operator:
+The binary operator's implementation becomes:
+        verbinclude(-a examples/binaryadd1.cc)
+
+If the class tt(Binary) is move-aware then it's attractive to add move-aware
+binary operators. In this case we also need operators whose left-hand side
+operands are rvalue references. When a class is move aware various interesting
+implementations are suddenly possible, which we will encounter below and in
+the next (sub)section. First have a look at the signature of such a binary
+operator (which should also be declared as a friend in the class interface):
         verb(
     Binary operator+(Binary &&lhs, Binary const &rhs);
         )
@@ -164,7 +167,6 @@ behavior:
         lhs.add(rhs);
         return std::move(lhs);
     }
-
                 // second implementation: move construct ret from lhs
     Binary operator+(Binary &&lhs, Binary const &rhs)   
     {
@@ -189,6 +191,3 @@ behavior:
     But we're not there yet: in the next section we encounter possibilities
 for more  interesting implementations, concentrating on compound assignment
 operators. 
-
-
-
