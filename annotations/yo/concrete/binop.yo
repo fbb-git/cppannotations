@@ -1,23 +1,226 @@
 As we've seen in section ref(OVERLOADBINARY) binary operators expecting
-tt(const &) arguments can be implemented in move-aware classes using a
+tt(const &) arguments can be implemented using a member implementing the
+operation, only offering the basic exception guarantee.
 move-aware binary operator, using a rvalue reference for its first
 argument. This latter function can in turn be implemented using the binary
 assignment member. The following examples illustrated this approach for a
 fictitious class tt(Binary):
         verbinclude(-a ../overloading/examples/binary4.h)
 
-Therefore, the implementation of the binary operators eventually depends on
-the availability of the member performing the binary operation for two
-objects, modifying one of them (e.g., as implemented by tt(void
-Binary::add(Binary const &)) in the above example.
+Eventually, the implementation of binary operators depends on the availability
+of the member implementing the basic binary operation, modifying the object
+calling that member (i.e., tt(void Binary::add(Binary const &)) in the
+example).
 
 Since template functions are not instantiated before they are actually used we
-can mention a non-existing function in a template that is never
-instantiated. If such a function would actually be called then the compiler
-would generated an error message, complaining about the missing function.
+can call non-existing functions from template functions that are never
+instantiated. If such a template function is (accidentally) instantiated, then
+the compiler generates an error message, complaining about the missing
+function.
 
 This allows us to implement all binary operators, movable and non-movable, as
-templates. It is then only possible to call the binary operators
+templates. Below we develop the class template tt(Binops), offering binary
+operators (here we only implement the addition, subtraction and multiplication
+operators, but the example can directly be generalized to any other binary
+operator). 
+
+The class tt(Binops) uses the Curiously Recurring Template Pattern, receiving
+the name of the class that requests binary operators, and it defines a
+non-type variadic template parameter which is used to specify the requested
+binary operators. Figure ref(binopscrtp) illustrates the eventual 
+structure of a class tt(Binary) that should be provided with addition and
+subtraction operators.
+
+    figure(binopscrtp)(Binops CRTP structure)(binopscrtp)
+
+    itemization(
+    ittq(class Binary) 
+        (The tt(class Binary) wants to provide addition and subtraction
+operators. For this, it declares and implements private members tt(void
+add(Binary const &rhs)) and tt(void sub(Binary const &rhs)), and passes its
+class name as well as the list of requested operators to tt(Binops). In
+addition, it declares its base class as friend:
+        verb(
+class Binary: public Binops<Binary, '+', '-'>
+{
+    friend class Binops<Binary, '+', '-'>;
+
+    void add(Binary const &rhs);
+    void sub(Binary const &rhs);
+};
+        )
+        This shows a prototype of a user-defined class: any class can be
+provided with binary operators by simply implementing functions like tt(add)
+and tt(sub) (the basic arithmetic functions), and deriving it from the
+appropriate tt(Binops) base class. All class templates shown below only need
+to be implemented once, whereafter they can be used time and again for any
+other user-defined class.
+        )
+
+
+    ittq(class Binops)
+        (tt(Binops) is a class template having two template parameters:
+            itemization(
+            itt(Derived) is the class type of the class that was derived from
+                tt(Binops) (in this example that's tt(Binary));
+            itt(int ...ops) is a variadic non-type parameter list specifying
+                the requested arithmetic operations
+        )
+        tt(Binops) can access tt(Derived's) the basic arithmetic
+functions. But at nested levels of the class hierarchy the classes tt(Add,
+Sub, Mul) (the arithmetic classes) etc. also must be able to use tt(Derived's)
+basic arithmetic functions. Therefore tt(Binops) declares all arithmetic
+classes friends, and offers wrapping functions around tt(Derived's) basic
+arithmetic functions. This allows, e.g. tt(Add's operator+=) to call
+tt(Derived's add) function through tt(Binop's addWrap) member. Be careful not
+to give these wrapping functions identical names as tt(Derived's) basic
+arithmetic functions, lest they are recursively called when tt(Derived) did
+not implement the required arithmetic functions.
+
+In addition, the free binary operators must be able to access the wrapping
+functions and so these functions are also declared as friends. Since these
+functions must exist voor any tt(Derived) class, the free arithmetic functions
+must be defined as function templates. Their declarations and definitions are
+provided below (at the description of the class tt(Add)), but at this point
+it's sufficient to know that have only one class type parameter: the class
+type that's derived from tt(Binops). 
+
+    One final problem that must be solved is that the arithmetic classes need
+to know what class declared them as friends. That problem is solved by passing
+tt(Binops) type (as specified by tt(Derived)) to tt(Binop's) base class (i.e.,
+tt(Binops0)). Here is tt(Binops') class interface:
+        verb(
+template <class Derived, int ...ops>
+class Binops:
+    public Binops0<
+                Binops<Derived, ops...>, 
+                Derived, ops...>
+{
+    friend class Add<Binops<Derived, ops...>, Derived>;
+    friend class Sub<Binops<Derived, ops...>, Derived>;
+    friend class Mul<Binops<Derived, ops...>, Derived>;
+    // as well as all other binary base classes
+
+    friend Derived operator+<Derived>(Derived const &lhs, Derived const &rhs); 
+    friend Derived operator+<Derived>(Derived &&lhs, Derived const &rhs);
+    // as well as the friend declarations for all other free operators
+
+        void addWrap(Derived const &rhs);
+        void subWrap(Derived const &rhs);
+        void mulWrap(Derived const &rhs);
+};
+
+// example of a wrapping member's implementation:
+
+template <class Derived, int ...ops>
+inline void Binops<Derived, ops...>::addWrap(Derived const &rhs)
+{
+    static_cast<Derived &>(*this).add(rhs);
+}
+        )
+        )
+
+    ittq(class Binops0)
+        (This class declares three template parameters:
+            itemization(
+            itt(Binops:) the class type specified by the tt(Derived) class;
+            itt(Derived,) forwarded from tt(Binops);
+            itt(int ...ops:) forwarded from tt(Binops).
+            )
+        tt(Binops0) itself is recursively defined: at each level it derives
+from the arithmetic class whose operator-defining int (e.g., tt('+')) is at the
+head of its tt(int ...ops) variadic non-type parameter, and from its own type,
+receiving the tail of the tt(int ...ops) variadic non-type parameter. Once
+tt(int ...ops) is empty, the recursion stops. So we have tt(Binops0's)
+declaration and empty vadiadic non-type parameter definition:
+        verb(
+template <class Binops, class Derived, int ...ops>
+class Binops0;
+
+template <class Binops, class Derived>  // int ...ops now empty
+class Binops0<Binops, Derived>
+{};
+        )
+        And in addition, for each binary class there is a
+specialization. E.g., this one's for the addition operator:
+        verb(
+template <class Binops, class Derived, int ...ops>
+class Binops0<Binops, Derived, '+', ops...>
+:
+    public Binops0<Binops, Derived, ops...>,
+    public Add<Binops, Derived>
+{};
+        )
+        Starting with t(int ...ops) equal to tt('-', '+), once it is empty the
+structure shown in figure ref(binopscrtp) has been defined.
+    )
+
+    ittq(class Add)
+        (The class tt(Add) is shown here illustrating how an arithmetic class
+can be declared and defined. tt(Add) receives two template type parameters:
+tt(Binops), which is used to access the basic arithmetic function wrappers,
+andtt(Derived), which is the class that needs to augment its interface with
+tt(Add's) interface. Since tt(Add) is (in)directly derived from tt(Binops) it
+can use static casting to access tt(Binops') appropriate wrapping member. The
+header file containing tt(Add's) declaration and member function template
+definitions also contains the decla
+
+It also implements the free tt(operator+) members, already declared as friends
+by tt(Binops). To begin with the latter: here are the implementations of the
+free binary addition operators:
+        verb(
+template <class Derived>
+Derived operator+(Derived const &lhs, Derived const &rhs)
+{
+    Derived ret{lhs};
+    ret.addWrap(rhs);
+    return ret;
+}
+
+template <class Derived>
+Derived operator+(Derived &&lhs, Derived const &rhs)
+{
+    lhs.addWrap(rhs);
+    return std::move(lhs);
+}
+        )
+
+Next, tt(Add's) class interface is:
+        verb(
+#include <utility>
+
+template <class Binops, class Derived>
+struct Add
+{
+    Derived &operator+=(Derived const &rhs) &; // Used as: object1 += object2
+    Derived &&operator+=(Derived const &rhs) &&;    // (anon.) += object2
+};
+        )
+
+Finally, noting that tt(Add) objects are (in)directly derived from tt(Binops)
+and tt(Derived), we can implement the compound assignment operators:
+        verb(
+template <class Binops, class Derived>
+Derived &&Add<Binops, Derived>::operator+=(Derived const &rhs) &&
+{
+    static_cast<Binops &>(*this).addWrap(rhs);
+    return std::move(static_cast<Derived &>(*this));
+}
+
+template <class Binops, class Derived>
+Derived &Add<Binops, Derived>::operator+=(Derived const &rhs) &
+{
+    return 
+        static_cast<Derived &>(*this) = 
+            Derived{
+                std::move(static_cast<Derived &>(*this))
+            } += rhs;
+}
+        )
+    
+
+
+It is then only possible to call the binary operators
 for which a matching binary assignment exists. The template functions
 implementing the above addition binary operators look like this:
         verbinclude(-a examples/binary5.h)
@@ -39,3 +242,4 @@ by copy elision). The following program (using modified function templates
 containing output statements) behaves identically whether or not the move
 constructor is defined:
         verbinclude(-a examples/binop.cc)
+

@@ -8,9 +8,13 @@
 
             Binary &operator+=(Binary const &other) &;    // see the text
             Binary &&operator+=(Binary const &other) &&; 
+
+        private:
+            void add(Binary const &rhs);
+
+        friend Binary operator+(Binary const &lhs, Binary const &rhs);
+        friend Binary operator+(Binary &&lhs, Binary const &rhs);
     };
 
-    Binary operator+(Binary const &lhs, Binary const &rhs);
-    Binary operator+(Binary &&lhs, Binary const &rhs);
 
 
