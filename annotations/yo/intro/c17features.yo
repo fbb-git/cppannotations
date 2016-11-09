@@ -1,0 +1,124 @@
+The upcoming i(C++17) standard adds the following features to the language:
+
+description(    
+
+dit(Aggregate initialization extensions)
+
+    Aggreates (e.g., structs) can be initialized using the familiar
+curly-brace notation. C++17 extends the initialization possibilities by
+allowing, e.g., structs using inheritance to be initialized using the curly
+braces notation as well. Example:
+        verb(
+struct Base
+{
+    int value;
+};
+struct Derived: public Base
+{
+    string text;
+    void member();
+};
+
+// Initializing a Derived object:
+
+Derived der{{value}, "hello world"};
+//          -------
+//          initialization of the (first) base class.
+        )
+
+dit(Evaluation order of operands of operators)
+
+    Up to C++17, the evaluation order of expressions of operands of binary
+operators is, except for the boolean operators tt(and) and tt(or), not
+defined. C++17 changes this for postfix expressions, assignment expressions
+(including compound assignments), and shift operators:
+    itemization(
+    it() Postfix expressions (like index operators and member selectors) 
+        are evaluated from left to right;
+    it() Assignment expressions are evaluated from right to left;
+    it() Operands of shift operators are evaluated from left to right.
+    )
+    In the following examples tt(first) is evaluated before tt(second), before
+tt(third), before tt(fourth), whether they are single variables, parenthesized
+expressions, or function calls:
+        verb(
+    first.second
+    fourth += third = second += first
+    first << second << third << fourth
+    first >> second >> third >> fourth
+        )
+    In addition, when overloading an operator, the function implementing the
+overloaded operator is evaluated like the built-in operator it overloads, and
+not in the way function call are ordered in genereal.
+
+dit([[fallthrough]])hi(fallthrough)
+
+    When statements that are nested under tt(case) entries in tt(switch)
+statements continue into subsequent tt(case) or tt(default) entries the
+compiler will issue a `falling through' warning. If falling through is
+intentional the attribute tt([[fallthrough]]) should be used. Here is an
+annotated example:
+        verb(
+void function(int selector)
+{
+    switch (selector)
+    {
+        case 1:
+        case 2:             // no falling through, but merged entry points
+            cout << "cases 1 and 2\n";
+        [[fallthrough]];
+        case 3:
+            cout << "case 3\n";
+
+        case 4:             // a warning is issued
+            cout << "case 4\n";
+        [[fallthrough]];    // error: nothing beyond
+    }
+}
+        )
+
+dit(Keywords `export' and `register')
+
+    The keywords ti(export) and ti(register) are no longer used, but are still
+identifiers that are reserved for future use. In other words, definitions like
+        verb(
+    register int index;
+        )
+    result in compilation errors. Also, tt(register) is no longer considered a
+    i(storage class specifier) (storage class specifiers are tt(extern,
+thread_local, mutable) and tt(static)).
+
+dit([[maybe_unused]])hi(maybe_unused)
+
+    This attribute can be applied to a class, typedef-name, variable,
+non-static fata member, a function, an enumeration or an enumerator. When it
+is applied to an entity no warning is generated if the entity whether the
+entity is used or is not used. Example:
+        verb(
+void fun([[maybe_unused]] size_t argument)
+{
+    // argument isn't used, but no warning 
+    // telling you so is generated
+}
+        )
+
+dit([[nodiscard]])hi(nodiscard)
+
+    The attribute tt([[nodiscard]]) may be specified when declaring a
+function, class or enumeration. If a function is declared tt([[nodiscard]]) or
+if a function returns an entity previously declared using tt([[nodiscard]])
+then the return value of such a function may only be ignored when explicitly
+cast to void. Otherwise, when the return value is not used as warning is
+issued. Example:
+        verb(
+int [[nodiscard]] importantInt();
+struct [[nodiscard]] ImportantStruct { ... };
+
+ImportantStruct factory();
+    
+int main()
+{
+    importantInt();         // warning issued
+    factory();              // warning issued
+}
+        )
