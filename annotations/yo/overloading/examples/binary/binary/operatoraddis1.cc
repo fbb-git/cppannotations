@@ -5,5 +5,8 @@ Binary &Binary::operator+=(Binary const &rhs) &
     cout << d_nr << ':' << d_copy << " += " << 
             rhs.d_nr << ':' << rhs.d_copy << '\n';
 
-    return *this = Binary{*this} += rhs;
+    Binary tmp(*this);
+    tmp.add(rhs);     // this might throw
+    swap(tmp);
+    return *this;
 }

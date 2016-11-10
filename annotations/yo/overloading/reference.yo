@@ -62,8 +62,8 @@ objects:
     This implementation is about as fast as it gets. 
 
     For the compound assignment operator called by an lvalue reference (i.e.,
-a named object) we can initially use the implementation for tt(operator+=)
-from the previous section (note the reference qualifier):
+a named object) we use the implementation for tt(operator+=) from the previous
+section (note the reference qualifier):
         verb(
     Binary &Binary::operator+=(Binary const &other) &
     {
@@ -73,41 +73,49 @@ from the previous section (note the reference qualifier):
         return *this;
     }
         )
-    With this implementation adding a tt(Binary) object to another boils down
-to
+    With this implementation adding tt(Binary) objects to each other
+(e.g., tt(b1 += b2 += b3)) boils down to
         verb(
-    operator+=    (&)       = b1 += b2 
+    operator+=    (&)       = b2 += b3
+    Copy constructor        = tmp(b2) 
+        adding              = tmp.add(b3)
+        swap                = b2 <-> tmp
+    return                  = b2
+
+    operator+=    (&)       = b1 += b2
     Copy constructor        = tmp(b1) 
         adding              = tmp.add(b2)
-    swap                    = tmp <-> *this
+        swap                = b1 <-> tmp
+    return                  = b1
         )
-    
-    However, an interesting alternative implementation exists: 
+
+    When the leftmost object is a temporary then a compy construction and swap
+call are replaced by the construction of an anonymous object. E.g.,
+with tt(Binary{} += b2 += b3)) we observe:
         verb(
-        // operator+=() & (advised implementation)
+    operator+=    (&)       = b2 += b3
+    Copy constructor        = tmp(b2) 
+        adding              = tmp.add(b3)
+        swap                = b2 <-> tmp
+    
+    Anonymous object        = Binary{}
+
+    operator+=    (&&)      = Binary{} += b2
+        adding              = add(b2)
+
+    return                  = Binary{}
+        )
+
+    For tt(Binary &Binary::operator+=(Binary const &other) &) an  alternative
+implementation exists, using one single return statement, but in fact
+requiring two extra function calls. It's a matter of taste whether you prefer
+less code to write or executing fewer function calls:  
+        verb(
     Binary &Binary::operator+=(Binary const &other) &
     {
-        return *this = Binary{std::move(*this)} += rhs;
+        return *this = Binary{*this} += rhs;
     }
         )
-    Using this implementation we observe:
-        verb(
-    operator+=    (&)       = b1 += b2 
-    Move constructor        = tmp(b1) 
-    operator+=    (&&)      = tmp += b2
-        adding              = tmp.add(b2)
-    move assign             = *this = tmp
-        )
-    The former implementation differs from the latter in that the former
-implementation uses a copy constructor and a swap-operation, whereas the
-latter implementation uses two move operations: a move constructor and a move
-assignment. 
-
-Copy construction, especially compared with move construction, can be quite
-expensive, Likewise, swapping commonly is at least as expensive as move
-assignment operations. Therefore, the latter implementation is preferred over
-the former.
-    
     Notice that the implementations of tt(operator+) and tt(operator+=) are
 independent of the actual definition of the class tt(Binary). Adding standard
 binary operators to a class (i.e., operators operating on arguments of their

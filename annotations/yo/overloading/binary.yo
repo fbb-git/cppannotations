@@ -110,13 +110,12 @@ assignment operator:
 How should the compound addition assignment operator be implemented?  When
 implementing compound binary assignment operators the strong guarantee should
 always be kept in mind: if the operation might throw use a temporary object
-and swap. Here is our first implementation of a compound assignment operator:
+and swap. Here is our implementation of the compound assignment operator:
         verb(
-        // first implementation: modified in the next section
-    Binary &Binary::operator+=(Binary const &other)
+    Binary &Binary::operator+=(Binary const &rhs)
     {
         Binary tmp(*this);
-        tmp.add(other);     // this might throw
+        tmp.add(rhs);           // this might throw
         swap(tmp);
         return *this;
     }
@@ -178,6 +177,7 @@ behavior:
     Now, when executing an expression like (all tt(Binary) objects) tt(b1 + b2
 + b3) the following functions are called:
         verb(
+
     copy operator+          = b1 + b2 
     Copy constructor        = tmp(b1) 
         adding              = tmp.add(b2)

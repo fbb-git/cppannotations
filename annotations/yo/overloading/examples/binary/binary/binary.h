@@ -35,9 +35,4 @@ class Binary
 };
 
 
-inline void Binary::swap(Binary &other)
-{
-    FBB::fswap(*this, other);
-}
-        
 #endif
