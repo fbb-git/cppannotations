@@ -45,18 +45,21 @@ class Binary: public Binops<Binary, '+', '-'>
 {
     friend class Binops<Binary, '+', '-'>;
 
-    void add(Binary const &rhs);
-    void sub(Binary const &rhs);
+    public:
+        void swap(Binary &other);
+
+    private:
+        void add(Binary const &rhs);
+        void sub(Binary const &rhs);
 };
         )
-        This shows a prototype of a user-defined class: any class can be
+        This shows the prototype of a user-defined class: any class can be
 provided with binary operators by simply implementing functions like tt(add)
 and tt(sub) (the basic arithmetic functions), and deriving it from the
 appropriate tt(Binops) base class. All class templates shown below only need
 to be implemented once, whereafter they can be used time and again for any
 other user-defined class.
         )
-
 
     ittq(class Binops)
         (tt(Binops) is a class template having two template parameters:
@@ -210,36 +213,14 @@ Derived &&Add<Binops, Derived>::operator+=(Derived const &rhs) &&
 template <class Binops, class Derived>
 Derived &Add<Binops, Derived>::operator+=(Derived const &rhs) &
 {
-    return 
-        static_cast<Derived &>(*this) = 
-            Derived{
-                std::move(static_cast<Derived &>(*this))
-            } += rhs;
+    Derived tmp{static_cast<Derived &>(*this)};
+    tmp.addWrap(rhs);
+    static_cast<Derived &>(*this).swap(tmp);
+    return static_cast<Derived &>(*this);
 }
         )
     
-
-
-It is then only possible to call the binary operators
-for which a matching binary assignment exists. The template functions
-implementing the above addition binary operators look like this:
-        verbinclude(-a examples/binary5.h)
-    em(Caveat): when defining these function templates ensure that the binary
-operator specifying an rvalue reference as its first parameter is defined
-before the binary operator specifying a const lrvalue reference as its first
-parameter, or programs using these templates fail due to infinite
-recursion.
-
-The function templates for the other binary operators can easily be added to
-these addition operators. After collecting them in a file tt(binops.h) include
-this file in, e.g., your class header file to add the binary operators to your
-class.
-
-Interestingly, classes em(not) implementing move constructors can still use
-these templates, as the move constructor itself is never called by the
-implementations of the binary operator (and its call is usually optimized away
-by copy elision). The following program (using modified function templates
-containing output statements) behaves identically whether or not the move
-constructor is defined:
-        verbinclude(-a examples/binop.cc)
-
+A complete implementation of a class tt(Derived) supporting addition and
+subtraction operators is provided in the file 
+tt(annotations/yo/concrete/examples/binopclasses.cc) in the annotations()'
+source archive.

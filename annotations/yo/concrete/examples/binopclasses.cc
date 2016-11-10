@@ -46,22 +46,20 @@ struct Add
 };
 
 template <class Binops, class Derived>
-Derived &&Add<Binops, Derived>::operator+=(Derived const &rhs) &&
+Derived &Add<Binops, Derived>::operator+=(Derived const &rhs) &
 {
-    static_cast<Binops &>(*this).addWrap(rhs);
-    return std::move(static_cast<Derived &>(*this));
+    Derived tmp{static_cast<Derived &>(*this)};
+    tmp.addWrap(rhs);
+    static_cast<Derived &>(*this).swap(tmp);
+    return static_cast<Derived &>(*this);
 }
 
 template <class Binops, class Derived>
-Derived &Add<Binops, Derived>::operator+=(Derived const &rhs) &
+Derived &&Add<Binops, Derived>::operator+=(Derived const &rhs) &&
 {
-    return 
-        static_cast<Derived &>(*this) = 
-            Derived{
-                std::move(static_cast<Derived &>(*this))
-            } += rhs;
+    static_cast<Derived &>(*this).addWrap(rhs);
+    return std::move(static_cast<Derived &>(*this));
 }
-
 
 template <class Derived>
 Derived operator+(Derived const &lhs, Derived const &rhs)
@@ -80,6 +78,7 @@ Derived operator+(Derived &&lhs, Derived const &rhs)
 
 ////////////////////////////////////////////////////
 
+// Sub and Mul are provided as stubs. They can be implemented like Add.
 
 template <class Binops, class Derived>
 struct Sub
@@ -224,10 +223,18 @@ class Derived: public Binops<Derived, '+', '-'>
             d_value(value)
         {}
             
+        void swap(Derived &other);
 
-    void add(Derived const &rhs);
-    void sub(Derived const &rhs);
+    private:
+        void add(Derived const &rhs);
+        void sub(Derived const &rhs);
 };
+
+inline void Derived::swap(Derived &rhs)
+{
+    cout << "swapping " << d_value << " <-> " << rhs.d_value << "\n";
+    std::swap(d_value, rhs.d_value);
+}
 
 inline void Derived::add(Derived const &rhs)
 {
@@ -251,5 +258,3 @@ int main()
     o1 = o1 + o2;
     o1 += o1;
 }
-
-
