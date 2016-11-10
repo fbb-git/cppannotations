@@ -7,7 +7,7 @@
                 // they can be explicitly declared and implemented.
 
             Binary &operator+=(Binary const &other) &;    // see the text
-            Binary &&operator+=(Binary const &other) &&; 
+            Binary &&operator+=(Binary const &other) &&;
 
         private:
             void add(Binary const &rhs);
@@ -15,6 +15,3 @@
         friend Binary operator+(Binary const &lhs, Binary const &rhs);
         friend Binary operator+(Binary &&lhs, Binary const &rhs);
     };
-
-
-

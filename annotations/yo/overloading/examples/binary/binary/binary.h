@@ -20,17 +20,17 @@ class Binary
         ~Binary();
 
         Binary &operator=(Binary const &other) = delete;    // for this demo
-        Binary &operator=(Binary &&tmp);        
+        Binary &operator=(Binary &&tmp);
 
         void swap(Binary &other);
 
         Binary &operator+=(Binary const &rhs) &;
         Binary &&operator+=(Binary const &rhs) &&;
 
-    private: 
+    private:
         void add(Binary const &other);
 
-    friend Binary operator+(Binary const &lhs, Binary const &rhs); 
+    friend Binary operator+(Binary const &lhs, Binary const &rhs);
     friend Binary operator+(Binary &&lhs, Binary const &rhs);
 };
 

@@ -1,5 +1,5 @@
 // The classes Add and Sub performing the basic arithmetic operations.
-// Each operation type has its own class. Here Add and Sub only provide 
+// Each operation type has its own class. Here Add and Sub only provide
 // operator@=  (for demonstration purposes)
 //
 // Binops is the class befriending the arithmetic operation classes
@@ -23,14 +23,14 @@
 //              |                               |
 //              +-----------+-------------------+
 //                          |
-//                       Binops0<Binops, Derived, '+', '-'> 
+//                       Binops0<Binops, Derived, '+', '-'>
 //                          |   this forwards the Binops class to the
 //                          |   binary operator classes
 //                          |
 //                       Binops<Derived, '+', '-'>
 //                          |   declares all binary operator classes as friend
 //                          |
-//                        Derived 
+//                        Derived
 //                            (wants, e.g., + and - operations)
 //
 //////////////////////////////////////////////////////////////////
@@ -95,7 +95,7 @@ struct Mul
     void operator*=(Derived const &rhs)
     {
         static_cast<Binops &>(*this).mulWrap(rhs);
-    }                                          
+    }
 };
 
 //////////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ struct Mul
     // cast becomes available to reach the basic arithmetic classes
 
     // The general declaration:
-    // 
+    //
 template <class Binops, class Derived, int ...ops>
 class Binops0;
 
@@ -145,7 +145,7 @@ class Binops0<Binops, Derived, '*', ops...>
 {};
 
     // The class Binops befriends all arithmetic classes, and implements
-    // wrappers for the arithmetic functions potentially defined in 
+    // wrappers for the arithmetic functions potentially defined in
     // Derived.
     // The arithmetic classes call Binops' functions, which in turn call
     // Derived's functions. This way Derived only needs to implement the
@@ -160,7 +160,7 @@ class Binops:
     friend class Sub<Binops<Derived, ops...>, Derived>;
     friend class Mul<Binops<Derived, ops...>, Derived>;
 
-    friend Derived operator+<Derived>(Derived const &lhs, Derived const &rhs); 
+    friend Derived operator+<Derived>(Derived const &lhs, Derived const &rhs);
     friend Derived operator+<Derived>(Derived &&lhs, Derived const &rhs);
 
     void (Derived::*fun)(Derived const &);
@@ -199,11 +199,11 @@ inline void Binops<Derived, ops...>::mulWrap(Derived const &rhs)
 
     // User area: the user defines a class Derived, and wants to provide
     // addition and subtraction.
-    // When additional operators are added to the template argument list 
+    // When additional operators are added to the template argument list
     // (e.g. '*') compilation still succeeds, but because of the missing mul
-    // function compilation fails if associated operators are actually 
+    // function compilation fails if associated operators are actually
     // used (like o1 *= o2, shown below)
-    // 
+    //
 
 #include <iostream>
 
@@ -222,7 +222,7 @@ class Derived: public Binops<Derived, '+', '-'>
         :
             d_value(value)
         {}
-            
+
         void swap(Derived &other);
 
     private:
