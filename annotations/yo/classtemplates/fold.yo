@@ -1,0 +1,112 @@
+Functions accepting variable numbers of arguments (of possibly varying types)
+are commonly handled using variadic templates.  Implementations usually
+process the first argument, passing the remaining arguments to an overloaded
+function, which is defined by the compiler for these remaining argument
+types. One of the overloaded versions, accepting zero or one argument, ends
+the compiler's recursive implementations.
+
+Sometimes the arguments must be combined using binary operators (like tt(arg1
++ arg2 + ...)). In those cases a emi(folding expression) can be used instead
+of combining the arguments using a traditional variadic template.
+
+All binary operators (including the assignment, compount assignment and comma
+operators) can be used in folding expressions. 
+
+    itemization(
+    it() A em(unary left fold) is a fold expression that looks like this:
+        verb(
+    (... op expr)
+        )
+    where em(op) is the binary operator that is used in the fold expression,
+and em(expr) is an expression formulated in terms of the function parameter
+representing the variadic arguments. Here is an example:
+        verb(
+    template <typename ReturnType, typename ...Params>
+    ReturnType sum(Params ...params)
+    {
+        return (... + params);
+    }
+        )
+
+    If a more elaborate expression than just the designator of the variadic
+arguments is used then the expression must be clearly demarcated, e.g., by 
+surrounding in with parentheses:
+        verb(
+    return (... + (2 * params));
+        )
+
+    In a unary fold expression all the function's arguments matching the types
+of the parameter pack are combined using specified operator. E.g.,
+        verb(
+    sum<int>(1, 2, 3);
+        )
+    returns 6.
+    )
+    There are no special restrictions that apply to function templates using
+fold expressions. Directly returning the result of the fold expression is OK,
+but the result could also be used in another expression (maybe inserting its
+value into an tt(ostream)), or when initializing a variable or object. Also,
+the types of the arguments do not have to be identical: the only requirement
+is that the fully expanded expression (in the example: tt(1 + 2 + 3) is a
+valid expression).
+
+    itemization(
+    it() A em(unary right fold) is a fold expression that results in the same
+expression as its unary left fold alternative, but swaps the ellipses and the
+tt(params) identifier:
+        verb(
+    (expr op ...)
+        )
+    )
+
+Together, unary left folds and unary right folds are called em(unary folds).
+
+    itemization(
+    it() A em(binary fold) is a fold expression of the following form:
+        verb(
+    (expr1 op ... op expr2)
+        )
+    Here, either tt(expr1) is the identifier representing the variable
+arguments or tt(expr2) must be that identifier. The other one can be any other
+valid expression (as with unary folds, both expressions must be clearly
+demarcated). In addition, both operators must be identical.
+    )
+
+If a binary operator has been overloaded, it will be used where applicable. A
+well-known example is of course tt(operator<<) as defined for tt(std::ostream)
+objects. A binary fold defined for tt(operator<<) will not only do shifts, but
+can also be used to insert a series of arguments into tt(cout):
+        verb(
+    template <class ...Pack>
+    ostream &out2(ostream &out, Pack &&...args)
+    {
+        return (out << ... << args);
+    };
+
+Here is another interesting example: a fold expression for the comma operator:
+        verb(
+    template <class ...Pack>
+    void call(Pack &&...args)
+    {
+        ... , args());
+    };
+        )    
+    This unary fold calls each of its arguments in sequence. Arguments could
+be function addresses, function object or lambda functions. Note the use of
+the rvalue reference when defining the variadic parameter list which prevents
+copying of function objects that might be passed to tt(call). Assuming that
+tt(struct Functor) defines a functor, and that tt(void function()) has been
+defined, then tt(call) could be called this way:
+        verb(
+    Functor functor;
+    call(functor, function, functor, 
+        []()
+        {
+            // ...    
+        }
+    );
+        )
+
+Finally: don't forget the 
+        hi(fold expression: parentheses)
+    parentheses surrounding fold expressions: they are required!
