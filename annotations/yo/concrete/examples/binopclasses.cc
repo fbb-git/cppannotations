@@ -163,8 +163,6 @@ class Binops:
     friend Derived operator+<Derived>(Derived const &lhs, Derived const &rhs);
     friend Derived operator+<Derived>(Derived &&lhs, Derived const &rhs);
 
-    void (Derived::*fun)(Derived const &);
-
             // Note that the following function names should be different from
             // the function names in Derived: if they're identical, and the
             // corresponding Derived class function doesn't exist, then the
