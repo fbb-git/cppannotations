@@ -1,0 +1,72 @@
+The standard tt(for) repetition statements start with an optional
+initialization clause. The initialization clause allows us to localize
+variables to the scope of the for statements.
+
+i(C++17) extends this concept to selection statements. The language already
+allowed us to define and initialize a variable in the condition clauses of
+tt(if) and tt(switch) statements, but starting with C++17 the definition and
+assignment can be separated, thus supporting selection statements with
+initializer clauses.
+
+Consider the situation where an action should be performed if the next line
+read from the standard input stream equals tt(go!). When used inside a
+function, while intending to localize the string to contain the contents of
+the next line as much as possible, constructions like the following had to be
+used:
+        verb(
+    void function()
+    {
+        // ... any set of statements
+        {
+            string line;    // localize line
+            if (getline(cin, line))
+                action();
+        }
+        // ... any set of statements
+    }
+        )
+ C++17 adds an optional tt(init;) clause to tt(if) and tt(while) statements
+(note that the semicolon is optional too, which is different from the optional
+tt(init) (no semicolon) clause in tt(for) statements). This allows us to
+rephrase the above example as:
+        verb(
+    void function()
+    {
+        // ... any set of statements
+        if (string line; getline(cin, line))
+            action();
+        // ... any set of statements
+    }
+        )
+    
+Like the tt(if)-statement the tt(switch)-statement also supports an optional
+tt(init;) clause. Assume a program processes commands, entered as lines on the
+standard input, and a function tt(convert) is available converting the command
+to an enumeration value. Applying the tt(init;) clause to a tt(switch), all
+commands may then be processed like this:
+        verb(
+    void process()
+    {
+        while (true)
+        {
+            switch (string cmd; int select = convert(getline(cin, cmd)))
+            {
+                case CMD1:
+                    ...
+                break;
+
+                case CMD2:
+                    ...
+                break;
+
+                ... 
+            }
+        }
+    }
+        )
+    Note that a variable may still be defined in the actual condition clauses.
+This is true for both the extended tt(if) and tt(switch) statement. But before
+the condition clauses an initialization clause may be used to define
+additional variables (plural, as it may contain a comma-separated
+list of variables, similar to the syntax that's available for
+tt(for)-statements. 
