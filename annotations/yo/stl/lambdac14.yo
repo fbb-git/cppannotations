@@ -27,21 +27,21 @@ could also be implemented using a class template like this:
     auto lambda = Lambda{};
         )
     One of the consequences of this identity is that using tt(auto) in the
-lambda expression's parameterlist is obeys the rules of template argument
+lambda expression's parameterlist obeys the rules of template argument
 deduction (cf. section ref(TEMPFUNARGS)), which are somewhat different from
 the way tt(auto) normally operates.
 
 
-Another extension available since the C++14 standard is how lambda expressions
-capture outer scope variables. C++11 uses capture by either value or
-reference. A consequence of this is that an outer scope variable of a type
-that only supports move construction cannot be passed by value to a lambda
-function. This restriction has been dropped since the C++14 standard, allowing
-variables to be initialized from arbitrary expressions. This not only allows
-move-initialization of variables in the lambda introducer, but variables may
-also be initialized here that do not have a correspondingly named variable in
-the lambda expression's outer scope. Initializer expressions can be used in
-this case like so:
+Another extension is how lambda expressions capture outer scope variables. In
+the C++11 standard capture was used either by value or by reference. A
+consequence of this is that an outer scope variable of a type that only
+supports move construction cannot be passed by value to a lambda
+function. This restriction was dropped, allowing variables to be initialized
+from arbitrary expressions. This not only allows move-initialization of
+variables in the lambda introducer, but variables may here also be initialized
+if they do not have a correspondingly named variable in the lambda
+expression's outer scope. In this case initializer expressions can be used as
+shown in this example:
         verb(
     auto fun = [value = 1] 
                {
@@ -60,10 +60,29 @@ the type from the initializer expression as if tt(auto) had been used.
                };
         )
 
+In generic lambda expressions the keyword tt(auto) indicates that the compiler
+determines which types to use when the lambda function is instantiated. A
+generic lamda expression therefore em(is) a class template (cf. chapter
+ref(TEMPCLASS)), even though it doesn't look like one. As an example, the
+following lambda expression defines a generic class template, which can be
+used as shown:
+        verb(
+    char const *target = "hello";
 
+     auto lambda =         
+        [target](auto const &str)
+        {
+            return str == target;
+        };
+        
+        vector<string> vs{stringVectorFactory()};
 
-
-
+        find_if(vs.begin(), vs.end(), lambda);
+        )
+    This works fine, but if the programmer defines tt(lambda) this way then
+he/she should be prepared for complex error messages result if the types of
+the derefenced iterators and lambda's (silently assumed) tt(str) type don't
+match. 
 
 
 

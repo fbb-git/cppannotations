@@ -121,12 +121,56 @@ expression is defined using the tt(mutable) keyword. E.g.,
     }
         )
 
-    Fine-tuning is also possible. With an initial tt(=), comma-separated
-tt(&var) specifications indicate that the mentioned local variables should be
-processed by reference, rather than as copies; with an initial tt(&), comma
-separated tt(var) specifications indicate that local copies should be used of 
-the mentioned local variables. Again, these copies have immutable values
-unless the lambda expression is provided with the tt(mutable) keyword. 
+    In the i(C++17) standard, when defining lambda-expressions in (non-static)
+member functions, the lambda-capture may also contain hi(lambda: *this)
+    hi(this: in lambda-captures) tt(*this). Even when not specified, the
+lambda expression implicitly captures the tt(this) pointer, and class members
+are always accessed relative to tt(this). But when members are called
+asynchronously a problem may arise, because the asynchronously called
+lambda function may refer to members of an object whose lifetime ended shortly
+after asynchronously calling the lambda function. This potentially arising
+problem is solved by using `tt(, *this)' in the lambda-capture if it starts
+with tt(=), e.g., tt([=, *this]) (in addition, variables may still 
+also be captured, as usual). When specifying `tt(, *this)' the object to which
+tt(this) refers is em(explicitly captured): if the object's scope ends it is
+not immediately destroyed, but is captured by the lambda-expression for the
+duration of that expression. In order to use the `tt(, *this)' specification,
+the object must directly be available. Consider the following example:
+        verb(
+    struct s2 
+    {
+        double ohseven = .007;
+        auto f() 
+        {
+            return [this] 
+                    {
+                        return [*this] 
+                                {
+                                    return ohseven; // OK
+                                }
+                    }();
+        }
+        auto g() 
+        {
+            return [] 
+                    {
+                      return [*this] 
+                        { 
+                            // error: *this not captured by outer
+                            // lambda-expression 
+                        }; 
+                    }();
+        }
+    };
+        )
+        
+    Fine-tuning lambda-captures is also possible. With an initial tt(=),
+comma-separated tt(&var) specifications indicate that the mentioned local
+variables should be processed by reference, rather than as copies; with an
+initial tt(&), comma separated tt(var) specifications indicate that local
+copies should be used of the mentioned local variables. Again, these copies
+have immutable values unless the lambda expression is provided with the
+tt(mutable) keyword.
 
 Another fine-tuning consists of using tt(this) in the lambda-capture: it also
 allows the lambda-expression to access the surrounding class members.
