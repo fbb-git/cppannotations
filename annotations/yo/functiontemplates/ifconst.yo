@@ -1,0 +1,30 @@
+The i(C++17) standard offers the tt(if constexpr (cond))
+syntax. Although it can be used in all situations where a standard tt(if)
+selection statement can be used, its specific use is encountered with
+function templates: ti(if constexpr) allows the compiler to instantiate
+elements of a template function, depending on the compile-time evaluation of
+the tt(if constexpr's (cond)) clause.
+
+Here is an example:
+    verbinsert(-ns4 //ifconst examples/lambdaconstexpr.cc)
+    itemization(
+    it() At lines 7 and 9 tt(if constexpr) statements start. Since tt(value)
+        is a template non-type parameter its value is compile-time available,
+        and so are the values of the condition sections.
+    it() In line 15 tt(fun<4>()) is called: the condition in line 7 is
+        therefore tt(true), and the condition in line 9 is tt(false).
+    it() The compiler therefore instantiates tt(fun<4>()) this way:
+        verb(
+    void fun<4>()
+    {
+        positive();
+    }
+        )
+    )
+    Note that the tt(if constexpr) statements themselves do not result in
+executable code: it is used by the compiler to em(select) which part(s) it
+should instantiate. In this case only tt(positive), which must be available
+before the program's linking phase can properly complete.
+
+
+

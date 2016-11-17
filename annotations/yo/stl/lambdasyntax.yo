@@ -24,13 +24,45 @@ operator. Here is an example of a lambda expression:
     The function call operator of the closure object created by this lambda
 expression expects two tt(int) arguments and returns their product. It is an
 inline tt(const) member of the closure type. To drop the tt(const) attribute,
-the lamba expression should specify tt(mutable), as follows:
+the lamba expression should specify hi(lambda: mutable) tt(mutable), as
+follows:
         verb(
     [](int x, int y) mutable
     ...
         )
-    The lambda-declarator may be omitted, if no parameters are defined. The
-parameters in a lamba declarator may not be given default arguments.
+    The lambda-declarator may be omitted, if no parameters are defined, but
+when specifying tt(mutable) (or tt(constexpr), see below) the
+lambda-declarator must at least start with an empty set of parenthese. The
+parameters in a lamba declarator cannot be given default arguments. 
+
+Declarator specifiers can be tt(mutable), or (starting with i(C++17))
+tt(constexpr), or both. A tt(constexpr) lambda-expression is itself a
+tt(constexpr), which may be compile-time evaluated if its arguments qualify as
+const-expressions. Moreover, if a lambda-expression is defined inside a
+tt(constexpr) function then the lambda-expression itself must qualify as a
+tt(constexpr), and explicitly specifying the tt(constexpr) declarator
+specifier is not required. The following function definitions, therefore, are
+identical:
+        verb(
+    // starting with C++17:
+    int constexpr change10(int n)
+    {
+        return [n] 
+               { 
+                   return n > 10 ? n - 10 : n + 10; 
+               }();
+    }
+    
+    // starting with C++17:
+    int constexpr change10(int n)
+    {
+        return [n] () constexpr 
+               { 
+                   return n > 10 ? n - 10 : n + 10; 
+               }();
+    }
+        )
+
 
 A closure object as defined by the above lamda expression could be used e.g.,
 in combination with the tt(accumulate) (cf. section ref(ACCU)) generic

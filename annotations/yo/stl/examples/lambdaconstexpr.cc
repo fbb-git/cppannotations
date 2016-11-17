@@ -1,6 +1,7 @@
 constexpr int add(int n)
 {
-    return [n] { return n > 10 ? n - 10 : n + 10; }();
+//    return [n] () constexpr { return n > 10 ? n - 10 : n + 10; }();
+    return [n]  { return n > 10 ? n - 10 : n + 10; }();
 }
 
 auto id = [] (int n ) constexpr { return n; };
@@ -36,4 +37,23 @@ auto add3 = [](auto m1) constexpr
         return monoid(ret);
     };
 };
+
+//ifconst
+void positive();
+void negative();
+
+template <int value>
+void fun()
+{
+    if constexpr (value > 0)
+        positive();
+    else if constexpr (value < 0)
+        negative();
+}
+
+int main()
+{
+    fun<4>();
+}
+//=
 
