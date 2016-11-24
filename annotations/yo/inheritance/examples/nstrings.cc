@@ -8,7 +8,7 @@ using namespace std;
 
 string *nStrings(size_t size, char const *fname)
 {
-    static ifstream in;
+    static thread_local ifstream in;
 
     struct Xstr: public string
     {
