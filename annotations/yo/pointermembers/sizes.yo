@@ -28,4 +28,100 @@ ref(PMSIZES).
             (std::fstream object organization)
             (PMSIZES)
 
-In tt(fstream (a) 
+In tt(fstream (a)) the first base class was tt(std::istream), and the second
+baseclass was tt(std::ofstream). But it could also very well be the other way
+around, as illustrated in tt(fstream (b)): first the tt(std::ofstream), then
+the tt(std::ifstream). And that's the crux of the biscuit.
+
+If we have an tt(fstream fstr{"myfile"}) object and do tt(fstr.seekg(0)), then
+we call tt(ifstream's seekg) function. But if we do tt(fstr.seekp(0)), then we
+call tt(ofstream's seekp) function. These functions have their own addresses,
+say &seekg and &seekp. But when we call a member function (like
+tt(fstr.seekp(0))) then what we in fact are doing is tt(seekp(&fstr, 0)).
+
+But the problem here is that tt(&fstr) does not represent the correct object
+address: tt(seekp) operates on an tt(ofstream), and that object does not start
+at tt(&fstr), so (in tt(fstream (a))), at tt(&(fstr + sizeof(ifstream))).
+
+So, the compiler, when calling a memberfunction of a class using inheritance,
+must make a correction for the relative location of an object whose members we
+are calling.
+
+However, when we're defining something like
+        verb(
+    ostream &(fstream::*ptr)(ios::off_type step, ios::seekdir org) = &seekp;
+        )
+
+and then do tt((fstr->*)ptr(0)) the compiler doesn't know anymore which
+function is actually being called: it merely receives the function's
+address. To solve the compiler's problem the shift (for the location of the
+ofstream object) is now stored in the member pointer itself. That's one reason
+why the extra data field is needed when using function pointers.
+
+Here is a concrete illustration: first we define 2 structs, each having a
+member function (all inline, using single line implementations to save some
+space):
+        verb(
+    struct A
+    {
+        int a;
+    };
+
+    struct B
+    {
+        int b;
+        void bfun() {}
+    };
+        )
+    Then we define C, which is derived from both A (first) and B (next)
+(comparable to tt(fstream), which embeds tt(ifstream) and tt(ofstream)):
+        verb(
+    struct C: public A, public B
+    {};
+        )
+    Next, in tt(main) we define a C object and a union.  Each union object
+receives the address of the same member function: tt(&B::bfun), but
+tt(BPTR.ptr) looks at it as a member in the struct B world, while tt(CPTR.ptr)
+looks at it as a member in the struct C world.
+
+Once the unions have been given values their value[] arraya are used to
+display the values of the ptr fields (see below):
+        verb(
+    int main()
+    {
+        union BPTR
+        {
+            void (B::*ptr)();
+            unsigned long value[2];
+        };
+        BPTR bp;
+        bp.ptr = &B::bfun;
+        cout << hex << bp.value[0] << ' ' << bp.value[1] << dec << '\n';
+
+        union CPTR
+        {
+            void (C::*ptr)();
+            unsigned long value[2];
+        };
+        CPTR cp;
+        cp.ptr = &C::bfun;
+        cout << hex << cp.value[0] << ' ' << cp.value[1] << dec << '\n';
+    }
+        )
+    When this program is run, we see
+        verb(
+    400b0c 0
+    400b0c 4
+        )
+    (your address values (the first ones on the two lines) may differ). Note
+that the functions' addresses are the same, but since in the C world the B
+object lives beyond the A object, and the A object is 4 bytes large, we must
+add 4 to the value of the `tt(this)' pointer when calling the fnction from a C
+object. That's exactly what the shift value in the pointer's second field is
+telling the compile.
+
+
+
+
+
+
