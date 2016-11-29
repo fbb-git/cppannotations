@@ -27,6 +27,6 @@
             return EOF;
 
         setg(d_buffer, d_buffer, d_buffer + 1);
-        return *gptr();
+        return static_cast<unsigned char>(*gptr());
     }
 //=

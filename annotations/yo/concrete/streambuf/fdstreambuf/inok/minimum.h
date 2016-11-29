@@ -34,7 +34,8 @@ class fdstreambuf: public std::streambuf
         int underflow()             // inspects the character
         {
             if (gptr() < egptr())
-                return *gptr();     // return next char waiting in the buffer
+                return static_cast<unsigned char>(*gptr());
+                                    // return next char waiting in the buffer
 
 /*
     Now that the buffer is refilled, what do we have?
@@ -66,7 +67,7 @@ class fdstreambuf: public std::streambuf
                  buffer + minimum,
                  buffer + minimum + nread);
 
-            return *gptr();
+            return static_cast<unsigned char>(*gptr());
         }
 
     private:

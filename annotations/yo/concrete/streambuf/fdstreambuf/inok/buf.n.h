@@ -24,7 +24,8 @@ class fdstreambuf: public std::streambuf
         int underflow()             // inspects the character
         {
             if (gptr() < egptr())
-                return *gptr();     // return next char waiting in the buffer
+                return static_cast<unsigned char>(*gptr());
+                                    // return next char waiting in the buffer
 
             int
                 nread = read(fd, buffer, bufsize);
@@ -33,7 +34,7 @@ class fdstreambuf: public std::streambuf
                 return EOF;
 
             setg(buffer, buffer, buffer + nread);
-            return *gptr();
+            return static_cast<unsigned char>(*gptr());
         }
 
     private:

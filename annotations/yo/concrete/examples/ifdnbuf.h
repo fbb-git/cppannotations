@@ -69,7 +69,7 @@
             return EOF;
 
         setg(d_buffer, d_buffer, d_buffer + nread);
-        return *gptr();
+        return static_cast<unsigned char>(*gptr());
     }
 //=
 //XSGETN

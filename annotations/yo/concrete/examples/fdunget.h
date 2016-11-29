@@ -59,6 +59,6 @@
 
         setg(d_base - move, d_base, d_base + nread);
 
-        return *gptr();
+        return static_cast<unsigned char>(*gptr());
     }
 //=
