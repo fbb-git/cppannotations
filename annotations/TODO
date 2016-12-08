@@ -26,3 +26,34 @@ Dynamic memory allocation for over-aligned data     P0035R4
 ?? not found: Extending static_assert     N3928
 Rewording inheriting constructors (core issue 1941 et al)   P0136R1
 Make exception specifications be part of the type system    P0012R1
+
+====================================================================
+
+// To declare a class template as friend:
+template <typename Tp1>
+class Friend;
+
+template <typename Type>
+struct Base
+{
+    template <typename Tp1>         // to declare it as friend: use the std
+    class Friend;                   // template declaration + friend
+
+    template <typename Tp>
+    static void fun()
+    {};
+};
+
+template <typename Type>
+struct Der: public Base<Type>
+{
+    //template <typename Tp>            optional
+    static void gun()
+    {
+        // Base<Type>::fun<int>();          won't compile
+        Base<Type>::template fun<int>();
+    };
+};
+
+
+
