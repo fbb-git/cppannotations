@@ -44,6 +44,8 @@ struct Base
     {};
 };
 
+    // call a static member template of a class template:
+    // ==================================================
 template <typename Type>
 struct Der: public Base<Type>
 {
@@ -54,6 +56,43 @@ struct Der: public Base<Type>
         Base<Type>::template fun<int>();
     };
 };
+
+//---------------------------------------------------------------------
+
+template <typename Type>
+struct Base
+{
+    template <typename Tp1>         // to declare it as friend: use the normal
+    friend class Friend;            // template declaration and `friend'
+
+    template <typename Tp>
+    static void fun();
+
+
+    private:
+        void run();
+
+};
+
+template <typename Tp1>
+class Friend
+{
+    public:
+        void call(Base<Tp1> &base)
+        {
+            base.run();
+        }
+};
+
+
+
+int main(int argc, char **argv)
+{
+    Friend<int> fr;
+    Base<int> bi;
+
+    fr.call(bi);
+}
 
 
 
