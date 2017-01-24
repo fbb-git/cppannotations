@@ -8,14 +8,43 @@ template arguments can (and cannot) be specified.
     {
         public:
             Deduce(Types ...params);    // constructors
+            void fun();                 // a member function
     };
     )
 
     Some definitions:
         verb(
-                                // deduce:     full definition:
-    Deduce first{1};            // 1: int   -> Deduce<int> first{1} 
-    Deduce second;              // no Types -> Deduce<> second;  
+                                    // deduce:     full definition:
+                                    // --------------------------------
+    Deduce first{1};                // 1: int   -> Deduce<int> first{1} 
+    Deduce second;                  // no Types -> Deduce<> second;  
+    Deduce &&ref = Deduce<int>{1};  // int      -> Deduce<int> &&ref
 
     template <class Type>
-    Deduce third{reinterpret_cast<Type *>(0)};
+    Deduce third{static_cast<Type *>(0)};
+        )
+    The template tt(third) is a recipe for constructing tt(Deduce)
+objects from a type that's specified for tt(third). The pointer's type simply 
+is a pointer to the specified type (so, specifying tt(third<int>) implies an
+tt(int *)). Now that the type of tt(third)'s argument is available (i.e., an
+tt(int *)) the compiler deduces that tt(third{0}) is a tt(Deduce<int *>).
+
+This tt(Deduce<int *>) object could, e.g., be used to initialize a named
+tt(Deduce<int *>) object:
+        verb(
+    auto x = third<int>;        // x's full definition: Deduce<int *> x{0}
+        )
+tt(Deduce's) member functions can be used by anonymous and named objects:
+        verb(
+    x.fun();                    // OK: fun called by named object
+    third<int>.fun();           // OK: fun called by anonymous object
+        )
+
+Here are some examples that won't compile:
+        verb(
+    extern Deduce object;       // not an object definition
+    Deduce *pointer = 0;        // any set of type could be intended
+    Deduce function();          // same.
+        )
+
+
