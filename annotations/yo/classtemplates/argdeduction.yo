@@ -1,0 +1,64 @@
+One important difference between function templates and class templates is
+that the template arguments of function templates can be deduced by the
+compiler, whereas template arguments of class templates must be specified by
+the user. 
+
+So, in case we have a 
+    verb(
+    template <typename T>
+    void fun(T const &param);
+    )
+    we can do
+    verb(
+    vector<int> vi;
+    fun(vi)
+    )
+    and the compiler deduces tt(T == vectr<int>). 
+
+On the other hand,  if we have
+    verb(
+    template <typename T>
+    struct Fun
+    {
+        Fun(T const &param);
+    };
+    )
+    we can+bf(not) do
+    verb(
+    vector<int> vi;
+    Fun fun(vi);
+    )
+    even though tt(T) here must also be equal to tt(vector<int>).
+
+The fact that we cannot do this has resulted in a proliferation of
+tt(make_...) functions: tt(make_exception_ptr, make_heap, make_shared,
+make_signed, make_unique, make_unsigned), as well as (probably) a whole bunch
+of tt(make_...) functions defined by individual programmers, suiting their
+personal needs. After all, it's much easier to write
+    verb(
+    auto lck = make_lock_guard(aMutex);
+    )
+    than having to write
+    verb(
+    auto lck = lock_guard<std::mutex>{aMutex};
+    )
+
+    Somehow it looks superfluous and error-prone that em(we) have to specify
+tt(lock_guard's) template type, if the compiler apparently em(is) able to
+deduce that type when we provide a function.
+
+The above observations resulted in bf(C++) syntax, added to the language in
+the C++17 standard, allowing the compiler to deduce the types of class
+templates in situations where that was not possible before. This section
+covers this new syntax, and describes the compiler's actions when deducing
+template arguments of class templates.
+
+As long as no pointer is defined template argument of objects of class
+templates can be deduced by the compiler. In this case em(simple definitions)
+are used. Alternatively, em(explicit type conversions may be specified.
+
+
+
+in facilities were considerations also All the above was The upcoming The members of the bf(C++) While preparing for the C++17 standard 
+
+

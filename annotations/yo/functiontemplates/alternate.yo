@@ -76,21 +76,23 @@ definition tt(lhs.length) is used instead of tt(lhs) itself:
     }
         )
     em(Any) variable visible at the time tt(decltype) is compiled can be used
-in the tt(decltype) expression. However, it is currently not possible to
+in the tt(decltype) expression. It is also possible to
 handle member selection through pointers to members. The following code aims
 at specifying the address of a member function as tt(add)'s first argument and
 then use its return value type to determine the function template's return
-type:
+type. Here is an example:
         verb(
-    std::string global;
+    std::string global{"hello world"};
 
     template <typename MEMBER, typename RHS>
     auto  add(MEMBER mem, RHS rhs) -> decltype((global.*mem)() + rhs)
     {
         return (global.*mem)() + rhs;
     }
+
+    int main()
+    {
+        std::cout << add(&std::string::length, 3.4) << '\n'; // shows: 14.4
+    }
         )
-    Although the above function compiles fine, it cannot currently be used as
-it results in a compiler error message like
-    emi(unimplemented: mangling dotstar_expr) (generated for a statement like
-tt(cout << add(&string::length, 3.4))).
+
