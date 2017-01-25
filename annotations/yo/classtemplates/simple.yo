@@ -43,8 +43,114 @@ tt(Deduce's) member functions can be used by anonymous and named objects:
 Here are some examples that won't compile:
         verb(
     extern Deduce object;       // not an object definition
-    Deduce *pointer = 0;        // any set of type could be intended
+    Deduce *pointer = 0;        // any set of types could be intended
     Deduce function();          // same.
         )
+
+When defining objects, either using function-type or curly-brace definitions
+template argument deduction is realized as follows:
+    itemization(
+    it() First, a list of available constructors is formed. The list contains
+all available ordinary constructors and constructor templates (i.e,
+constructors defined as member templates);
+    it() For each element of that list a parallel imaginary function
+is formed by the compiler (forming function templates for constructor
+templates, and ordinary functions for ordinary constructors);
+    it() The return types of these imaginary functions are the class types of
+the constructors, using the template parameters of the original class
+template. For example, for the tt(Deduce::Deduce) constructor the imaginary
+function 
+        verb(
+    template <class ...Types>
+    Deduce<Types ...> imaginary(Types ...params);
+        )
+    is formed.
+    it() Next, ordinary argument deduction and overload resolution is applied
+to the set of imaginary functions. If this results in a best match for 
+one of these imaginary functions then that function's class type (or
+specialization) will be used. Otherwise the program is ill-formed.
+    )
+
+Let's apply this process to the class tt(Deduce). The set of imaginary
+functions matching tt(Deduce) looks like this:
+        verb(
+                                        // already encountered: matching
+    template <class ...Types>           // Deduce(Types ...params)
+    Deduce<Types ...> imaginary(Types ...params);
+
+                                        // the copy constructor: matching
+    template <class ...Types>           // Deduce(Deduce<Types ...> const &)
+    Deduce<Types ...> imaginary(Deduce<Types ...> const &other);
+                                    
+                                        // the move constructor, matching
+    template <class ...Types>           // Deduce(Deduce<Types ...> &&)
+    Deduce<Types ...> imaginary(Deduce<Types ...> &&tmp);
+        )
+
+    For the construction tt(Deduce first{1}) the first imaginary function wins
+the overload contest, resulting in the template argument deduction tt(int) for
+tt(class ...Types), and hence tt(Deduce<int> first{1}) is defined.
+
+Note that when a class template is nested under a class template, the nested
+class template's name depends on the outer class type. The outer class then
+provides the name qualifier for the inner class template. In such cases
+template argument deduction is used for the nested class, but (as it is not
+used for name qualifiers) is not used for the outer class. Here is an example:
+adding a nested class template to tt(Deduce):
+
+    verb(
+    template <class OuterType>
+    class Outer
+    {
+        public:
+            template <class InnerType>
+            struct Inner
+            {
+                Inner(OuterType);
+                Inner(OuterType, InnerType);
+                template <typename ExtraType>
+                Inner(ExtraType, InnerType);
+            };
+    };
+    // defining:
+    Outer<int>::Inner inner{2.0, 1};
+    )
+
+In this case, the compiler uses these imaginary functions:
+    verb(
+    template <typename InnerType>
+    Outer<int>::Inner<InnerType>            // copy constructor
+        imaginary(Outer<int>::Inner<InnerType> const &);
+
+    template <typename InnerType>       
+    Outer<int>::Inner<InnerType>            // move constructor
+        imaginary(Outer<int>::Inner<InnerType> &&);
+
+    template <typename InnerType>           // first declared constructor
+    Outer<int>::Inner<InnerType> imaginary(int);
+
+    template <typename InnerType>           // second declared constructor
+    Outer<int>::Inner<InnerType> imaginary(int, InnerType);
+
+    template <typename InnerType>           // third declared constructor
+    template <typename ExtraType>       
+    Outer<int>::Inner<InnerType> imaginary(ExtraType, InnerType);
+    )
+
+    Template argument deduction for calling  tt(imaginary(2.0, 1)) results in
+tt(double) for its first argument and tt(int) for its second. Overload
+resolution then favors the last imaginary function, and so tt(ExtraType:
+double) and tt(InnerType: int). Consequently, 
+    verb(
+    Outer<int>::Inner inner{2.0, 1};
+    )
+is defined as:
+    verb(
+    Outer<int>::Inner<int> Inner{2.0, 1};
+    )
+
+    
+
+    
 
 
