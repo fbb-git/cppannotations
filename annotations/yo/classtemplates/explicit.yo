@@ -1,0 +1,33 @@
+template <typename T>
+struct S
+{
+    struct I
+    {
+        typedef T type;
+    };
+
+    S(I i1, I i2)
+    {}
+
+    template <class Tp>
+    S(Tp a, Tp b)
+    {}
+};
+
+template <typename I>
+S(I a, I b) -> S<typename I::type>;         // no {}
+
+
+struct Int
+{
+    typedef int type;
+};
+
+int main()
+{
+    S s{ S<int>::I{}, S<int>::I{} };
+    Int a;
+    Int b;
+    S t{ a, b };
+    S u{ Int{}, Int{} };
+}
