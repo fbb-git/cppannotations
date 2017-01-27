@@ -1,33 +1,131 @@
-template <typename T>
-struct S
-{
-    struct I
+Have a look at the following class interface:
+        verb(
+    template <class T>
+    struct Class
     {
-        typedef T type;
+        struct Iterator
+        {
+            typedef T type;
+            // ... 
+        };
+    
+        Class(Type t);
+
+        Class(Iterator begin, Iterator end)
+        {}
+    
+        template <class Tp>
+        Class(Tp a, Tp b)
+        {}
+
+        Iterator begin();
+        Iterator end();
+    };
+        )
+    The implementation of the tt(Class) constructor expecting two
+tt(Class::Iterator) arguments would probably be somewhat similar to the
+following: 
+        verb(
+    template <class T>
+    Class<T>::Class(Iterator begin, Iterator end)
+    {
+        while (begin != end)
+            d_data.push_back(*begin++);
+    }
+        )
+    where tt(d_data) is some container storing tt(T) values. A
+tt(Class) object can now constructed from a pair of tt(Class::Iterators):
+        verb(
+    Class<int> source;      
+    ...
+    Class<int> dest{source.begin(), source.end()};
+        )
+    Here, the simple template argument deduction procedure fails to deduce the
+tt(int) template argument. This fails:
+        verb(
+    Class dest{source.begin(), source.end()};
+        )
+    When attempting to instantiate a tt(Class) object by passing it
+tt(Class::Iterators) the compiler cannot directly deduce from the provided
+arguments that a tt(Class<Class::Iterator::type> is to be used: tt(type) isn't
+directly available. Compare this to tt(Class's) second constructor, where
+    verb(
+    Class intObject{12};
+    )
+    allows the compiler to create an imaginary function 
+        verb(
+    template <class Type>
+    Class <Type> imaginary(Type param)
+        )
+    in which case tt(Type) clearly is an tt(int), and so a tt(Class<int>)
+object is constructed.
+    
+    When we try to do this for tt(Class(Iterator, Iterator)) we get
+        verb(
+    template <class Iterator>
+    Class<???> f(Iterator, Iterator);
+        )
+    and here tt(Class's) template argument isn't directly related to
+tt(Iterator): the compiler cannot deduce its type and consequently compilation
+fails. 
+
+A similar argument applies to the third constructor, which receives two tt(Tp)
+arguments, which are independent from tt(Class's) template type. 
+
+In cases like these simple type template argument deduction fails. Still, not
+everything is lost. The C++17 standard also introduces explicit conversions,
+which are defined as em(explicitly specified) emi(deduction rules) that are
+added to (beyond) the class's interface.
+
+An explicitly specified deduction rule relates a class template constructor
+signature to a class template type (providing the template arguments for the
+class template object that is constructed using the constructor whose
+signature is specified. The generic syntactical form of an explicitly
+specified deduction rule looks like this:
+        verb(
+    class template constructor signature -> resulting class type ;
+        )
+    
+Let's apply this to tt(Class(Iter begin, Iter end)). Its signature is
+        verb(
+    template <class Iter>
+    Class(Iter begin, Iter end)
+        )
+    Requiring that tt(Iter) defines a typename tt(type), we can now formulate
+a resulting class type:
+        verb(
+    Class<typename Iter::type>
+        )
+    Now combine both in an explicitly specified deduction rule (which is added
+as a separately line following  tt(Class's) interface:
+        verb(
+    template <class Iter>
+    Class(Iter begin, Iter end) -> Class<typename Iter::type>
+        )
+    
+    After adding this deduction rule to tt(Class's) interface the following
+constructor calls successfully compile:
+        verb(
+    Class src{12};      // already OK
+
+    Class dest1{src.begin(), src.end()};
+                        // begin() and end() return Class<int>::Iterator
+                        // objects. Typename Class<int>::Iterator::type
+                        // is defined as int, so Class<int> dest1 is
+                        // defined.
+
+    struct Double       // used at the next construction
+    {
+        typedef double type;
+        // ... members ...
     };
 
-    S(I i1, I i2)
-    {}
-
-    template <class Tp>
-    S(Tp a, Tp b)
-    {}
-};
-
-template <typename I>
-S(I a, I b) -> S<typename I::type>;         // no {}
+    Class dest2{Double{}, Double{}};
+                        // Here the struct Double defines 
+                        // typename double type, so
+                        // Class<double> dest2 is defined.
+        )
 
 
-struct Int
-{
-    typedef int type;
-};
 
-int main()
-{
-    S s{ S<int>::I{}, S<int>::I{} };
-    Int a;
-    Int b;
-    S t{ a, b };
-    S u{ Int{}, Int{} };
-}
+
