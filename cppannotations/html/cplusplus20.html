@@ -1,6 +1,6 @@
 <!DOCTYPE html><html><head>
 <meta charset="UTF-8">
-<title> C++ Annotations Version 10.6.0 </title>
+<title> C++ Annotations Version 10.7.0 </title>
 <link rel="stylesheet" type="text/css" href="cplusplus.css"><style type="text/css">
     figure {text-align: center;}
     img {vertical-align: center;}
@@ -14,7 +14,7 @@
     <li> <a href="cplusplus21.html">Next Chapter</a>
 </ul>
 <hr>
-<a name="THREADING"></a><a name="l459"></a>
+<a name="THREADING"></a><a name="l462"></a>
 <h1 >Chapter 20: Multi Threading</h1>
 The 98 <strong >C++</strong> standard did not acknowledge the existence of
 multi-threading. Between then and the release of the current <strong >C++</strong> standard
@@ -24,14 +24,14 @@ now is a real option to consider when developing software.
 <a name="PTHREADS"></a>
 Multi-threading is an extensive and complex subject, and many
 good reference texts on the subject exist. The <strong >C++</strong> multi-threading is
-built upon the facilities offered by the <a name="an2436"></a><em >pthreads</em> library (cf. 
-    <a name="an2437"></a>Nichols, B, <em >et al.</em>'s
+built upon the facilities offered by the <a name="an2452"></a><em >pthreads</em> library (cf. 
+    <a name="an2453"></a>Nichols, B, <em >et al.</em>'s
         <a href="http://oreilly.com/catalog/">Pthreads Programming</a>, O'Reilly
-        <a name="an2438"></a><a name="an2439"></a>). However,
+        <a name="an2454"></a><a name="an2455"></a>). However,
 in line with <strong >C++</strong>'s current-day philosophy the multi-threading
 implementation offered by the language offers a high level interface to
 multi-threading, and using the raw pthread building blocks is hardly ever
-necessary (cf. <a name="an2440"></a>Williams, A. (2012): <strong >C++ Concurrency in action</strong>,
+necessary (cf. <a name="an2456"></a>Williams, A. (2012): <strong >C++ Concurrency in action</strong>,
 Manning).  
 <p>
 This chapter covers the facilities for multi-threading as supported by
@@ -41,20 +41,20 @@ is far from complete. The topic of multi threading is too extensive for
 that. The mentioned reference texts provide a good starting point for any
 further study of multi threading.
 <p>
-A <a name="an2441"></a><em >thread of execution</em> (commonly abbreviated to a <a name="an2442"></a><em >thread</em>) is a single
+A <a name="an2457"></a><em >thread of execution</em> (commonly abbreviated to a <a name="an2458"></a><em >thread</em>) is a single
 flow of control within a program. It differs from a separately executed
-program, as created by the <a name="an2443"></a><strong >fork</strong>(1) system call in the sense that threads
+program, as created by the <a name="an2459"></a><strong >fork</strong>(1) system call in the sense that threads
 all run inside one program, while <strong >fork</strong>(1) creates independent copies of a
 running program. Multi-threading means that multiple tasks are being executed
 in parallel inside one program, and no assumptions can be made as to which
 thread is running first or last, or at what moment in time. Especially when
 the number of threads does not exceed the number of cores, each thread may be
 active at the same time. If the number of threads exceed the number of cores,
-the operating system will resort to <a name="an2444"></a><em >task switching</em>, offering each thread
+the operating system will resort to <a name="an2460"></a><em >task switching</em>, offering each thread
 time slices in which it can perform its tasks. Task switching takes time, and
 the law of diminishing returns applies here as well: if the number of threads
 greatly exceeds the number of available cores (also called
-<a name="an2445"></a><em >overpopulation</em>), then the overhead incurred may exceed the benefit of
+<a name="an2461"></a><em >overpopulation</em>), then the overhead incurred may exceed the benefit of
 being able to run multiple tasks in parallel.
 <p>
 Since all threads are running inside one single program, all threads share the
@@ -103,9 +103,9 @@ terminates, thus ending the second thread.
     </ul>
 <p>
 When compiling multi-threaded programs using the Gnu <code >g++</code> compiler the 
-    <a name="an2446"></a><code >-pthread</code>
-        <a name="an2447"></a><a name="an2448"></a>
- option must be specified. At link-time the <a name="an2449"></a><code >libpthread</code> library must be
+    <a name="an2462"></a><code >-pthread</code>
+        <a name="an2463"></a><a name="an2464"></a>
+ option must be specified. At link-time the <a name="an2465"></a><code >libpthread</code> library must be
 available as well. 
 <p>
 To create a multi-threaded program defined in a source file <code >multi.cc</code>
@@ -113,11 +113,11 @@ the <code >g++</code> compiler can be called like this:
         <pre>
     g++ --std=c++14 -pthread -Wall multi.cc
 </pre>
-    When several pre-compiled objects must be linked, the <a name="an2450"></a><code >-lpthread</code>
-        <a name="an2451"></a><a name="an2452"></a>
+    When several pre-compiled objects must be linked, the <a name="an2466"></a><code >-lpthread</code>
+        <a name="an2467"></a><a name="an2468"></a>
 linker option should also be specified.
 <p>
-<a name="TIMESPEC"></a><a name="l460"></a>
+<a name="TIMESPEC"></a><a name="l463"></a>
 <h2 >20.1: Handling time (absolute and relative)</h2>
 The <strong >C</strong> programming language offered tools like <strong >sleep</strong>(3) and
 <strong >select</strong>(2) to suspend program execution for a certain amount of time.
@@ -140,15 +140,15 @@ which mix well with time-dependent thread members. Threads are the topic of
 the next section (<a href="cplusplus20.html#THREADS">20.2</a>). Before that, we'll first have a look at
 facilities for specifying time.
 <p>
-<a name="l461"></a>
+<a name="l464"></a>
 <h3 >20.1.1: Units: the class std::ratio</h3>
     Thread execution may have to be suspended until a specific point in time, for
 a specific amount of time, or until some event has occurred. When specifying
 time an appropriate time unit must be selected. Units (not necessarily time
-units) are defined in the class template <a name="an2453"></a><code >std::ratio</code>.
+units) are defined in the class template <a name="an2469"></a><code >std::ratio</code>.
 <p>
-Before the class <code >ratio</code> can be used, the <a name="an2454"></a><code >&lt;ratio&gt;</code> header file must be
-included. Usually just the <a name="an2455"></a><code >&lt;chrono&gt;</code> header file is included, as <code >chrono</code>
+Before the class <code >ratio</code> can be used, the <a name="an2470"></a><code >&lt;ratio&gt;</code> header file must be
+included. Usually just the <a name="an2471"></a><code >&lt;chrono&gt;</code> header file is included, as <code >chrono</code>
 includes <code >ratio</code>, and facilities for specifying time are available after
 including the <code >chrono</code> header file.
 <p>
@@ -164,7 +164,7 @@ Examples:
 </pre>
 <p>
 The class template <code >ratio</code> defines two directly accessible static data
-fields: <code >num</code><a name="an2456"></a> represents its numerator, <code >den</code><a name="an2457"></a>
+fields: <code >num</code><a name="an2472"></a> represents its numerator, <code >den</code><a name="an2473"></a>
 its denominator. A <code >ratio</code> definition by itself simply defines a certain
 amount. E.g., when executing the following program
         <pre>
@@ -188,8 +188,8 @@ instead of the more cumbersome <code >ratio&lt;x&gt;</code> or <code >ratio&lt;x
 
     
 <tr >
-<td > <a name="an2458"></a>yocto</td>  <td > 10<sup >-24</sup></td> <td > <blockquote ></blockquote></td>
-                     <td > <a name="an2459"></a>zepto</td>  <td > 10<sup >-21</sup></td> <td > <blockquote ></blockquote></td> <td colspan=2 style="text-align: center" ></td>
+<td > <a name="an2474"></a>yocto</td>  <td > 10<sup >-24</sup></td> <td > <blockquote ></blockquote></td>
+                     <td > <a name="an2475"></a>zepto</td>  <td > 10<sup >-21</sup></td> <td > <blockquote ></blockquote></td> <td colspan=2 style="text-align: center" ></td>
  
 </tr>
 
@@ -197,56 +197,56 @@ instead of the more cumbersome <code >ratio&lt;x&gt;</code> or <code >ratio&lt;x
 
     
 <tr >
-<td > <a name="an2460"></a>atto</td>  <td > 10<sup >-18</sup></td> <td > </td>
-        <td > <a name="an2461"></a>femto</td> <td > 10<sup >-15</sup></td> <td > </td>
-        <td > <a name="an2462"></a>pico</td>  <td > 10<sup >-12</sup></td>
+<td > <a name="an2476"></a>atto</td>  <td > 10<sup >-18</sup></td> <td > </td>
+        <td > <a name="an2477"></a>femto</td> <td > 10<sup >-15</sup></td> <td > </td>
+        <td > <a name="an2478"></a>pico</td>  <td > 10<sup >-12</sup></td>
  
 </tr>
 
     
 <tr >
-<td > <a name="an2463"></a>nano</td>  <td > 10<sup >-9</sup></td> <td > </td>
-        <td > <a name="an2464"></a>micro</td> <td > 10<sup >-6</sup></td> <td > </td>
-        <td > <a name="an2465"></a>milli</td> <td > 10<sup >-3</sup></td>
+<td > <a name="an2479"></a>nano</td>  <td > 10<sup >-9</sup></td> <td > </td>
+        <td > <a name="an2480"></a>micro</td> <td > 10<sup >-6</sup></td> <td > </td>
+        <td > <a name="an2481"></a>milli</td> <td > 10<sup >-3</sup></td>
  
 </tr>
 
     
 <tr >
-<td > <a name="an2466"></a>centi</td> <td > 10<sup >-2</sup></td> <td > </td>
-        <td > <a name="an2467"></a>deci</td>  <td > 10<sup >-1</sup></td> 
+<td > <a name="an2482"></a>centi</td> <td > 10<sup >-2</sup></td> <td > </td>
+        <td > <a name="an2483"></a>deci</td>  <td > 10<sup >-1</sup></td> 
 </tr>
 
     <td colspan=8><hr/></td>
 
     
 <tr >
-<td > <a name="an2468"></a>deca</td>  <td > 10<sup >1</sup></td> <td > </td>
-        <td > <a name="an2469"></a>hecto</td> <td > 10<sup >2</sup></td> <td > </td>
-        <td > <a name="an2470"></a>kilo</td>  <td > 10<sup >3</sup></td>
+<td > <a name="an2484"></a>deca</td>  <td > 10<sup >1</sup></td> <td > </td>
+        <td > <a name="an2485"></a>hecto</td> <td > 10<sup >2</sup></td> <td > </td>
+        <td > <a name="an2486"></a>kilo</td>  <td > 10<sup >3</sup></td>
  
 </tr>
 
     
 <tr >
-<td > <a name="an2471"></a>mega</td>  <td > 10<sup >6</sup></td> <td > </td>
-        <td > <a name="an2472"></a>giga</td>  <td > 10<sup >9</sup></td> <td > </td>
-        <td > <a name="an2473"></a>tera</td>  <td > 10<sup >12</sup></td>
+<td > <a name="an2487"></a>mega</td>  <td > 10<sup >6</sup></td> <td > </td>
+        <td > <a name="an2488"></a>giga</td>  <td > 10<sup >9</sup></td> <td > </td>
+        <td > <a name="an2489"></a>tera</td>  <td > 10<sup >12</sup></td>
  
 </tr>
 
     
 <tr >
-<td > <a name="an2474"></a>peta</td>  <td > 10<sup >15</sup></td> <td > </td>
-        <td > <a name="an2475"></a>exa</td>   <td > 10<sup >18</sup></td> 
+<td > <a name="an2490"></a>peta</td>  <td > 10<sup >15</sup></td> <td > </td>
+        <td > <a name="an2491"></a>exa</td>   <td > 10<sup >18</sup></td> 
 </tr>
 
     <td colspan=8><hr/></td>
 
     
 <tr >
-<td > <a name="an2476"></a>zetta</td>   <td > 10<sup >21</sup></td> <td > </td>
-        <td > <a name="an2477"></a>yotta</td>   <td > 10<sup >24</sup></td> 
+<td > <a name="an2492"></a>zetta</td>   <td > 10<sup >21</sup></td> <td > </td>
+        <td > <a name="an2493"></a>yotta</td>   <td > 10<sup >24</sup></td> 
 </tr>
 
     <td colspan=8><hr/></td>
@@ -258,15 +258,15 @@ instead of the more cumbersome <code >ratio&lt;x&gt;</code> or <code >ratio&lt;x
 use integral constants exceeding 64 bits. Although these constants are defined
 in <strong >C++</strong>, they are not available on 64 bit or smaller architectures.)
 <p>
-<a name="DURATION"></a><a name="l462"></a>
+<a name="DURATION"></a><a name="l465"></a>
 <h3 >20.1.2: Amounts of time: std::chrono::duration</h3>
-    The class template <a name="an2478"></a><code >std::chrono::duration</code> is defined
+    The class template <a name="an2494"></a><code >std::chrono::duration</code> is defined
 in the
-        <a name="an2479"></a><code >std::chrono</code> namespace.
+        <a name="an2495"></a><code >std::chrono</code> namespace.
 Objects of the class <code >duration</code> define amounts of time.
 <p>
-Before using the class <code >duration</code> the <a name="an2480"></a><code >&lt;chrono&gt;</code> header file must be
-included (which in turn includes the <a name="an2481"></a><code >&lt;ratio&gt;</code> header file).
+Before using the class <code >duration</code> the <a name="an2496"></a><code >&lt;chrono&gt;</code> header file must be
+included (which in turn includes the <a name="an2497"></a><code >&lt;ratio&gt;</code> header file).
 <p>
 The class template <code >duration</code> requires two template type arguments: a
 numeric type (commonly <code >int64_t</code>) defining the duration's value, and a
@@ -289,37 +289,37 @@ exist:
 
     
 <tr >
-<td > <a name="an2482"></a>nanoseconds</td> <td > <blockquote ></blockquote></td> <td > <code >duration&lt;int64_t, nano&gt;</code></td>
+<td > <a name="an2498"></a>nanoseconds</td> <td > <blockquote ></blockquote></td> <td > <code >duration&lt;int64_t, nano&gt;</code></td>
  
 </tr>
 
     
 <tr >
-<td > <a name="an2483"></a>microseconds</td><td > </td> <td > <code >duration&lt;int64_t, micro&gt;</code></td>
+<td > <a name="an2499"></a>microseconds</td><td > </td> <td > <code >duration&lt;int64_t, micro&gt;</code></td>
  
 </tr>
 
     
 <tr >
-<td > <a name="an2484"></a>milliseconds</td><td > </td> <td > <code >duration&lt;int64_t, milli&gt;</code></td>
+<td > <a name="an2500"></a>milliseconds</td><td > </td> <td > <code >duration&lt;int64_t, milli&gt;</code></td>
  
 </tr>
 
     
 <tr >
-<td > <a name="an2485"></a>seconds</td> <td > </td> <td > <code >duration&lt;int64_t&gt;</code></td>
+<td > <a name="an2501"></a>seconds</td> <td > </td> <td > <code >duration&lt;int64_t&gt;</code></td>
  
 </tr>
 
     
 <tr >
-<td > <a name="an2486"></a>minutes</td> <td > </td> <td > <code >duration&lt;int64_t, ratio&lt;60&gt;&gt;</code></td>
+<td > <a name="an2502"></a>minutes</td> <td > </td> <td > <code >duration&lt;int64_t, ratio&lt;60&gt;&gt;</code></td>
  
 </tr>
 
     
 <tr >
-<td > <a name="an2487"></a>hours</td>   <td > </td> <td > <code >duration&lt;int64_t, ratio&lt;3600&gt;&gt;</code></td>
+<td > <a name="an2503"></a>hours</td>   <td > </td> <td > <code >duration&lt;int64_t, ratio&lt;3600&gt;&gt;</code></td>
  
 </tr>
 
@@ -333,9 +333,9 @@ as <code >std::chrono::minutes halfHour(30)</code>.
 <p>
 The class template <code >duration</code> itself defines two types:
     <ul>
-    <li><a name="an2488"></a><code >std::chrono::duration&lt;Value, Period&gt;::rep</code>:<blockquote >the <code >Value</code> type used by the <code >duration</code> type (e.g., <code >int64_t</code>)</blockquote>
+    <li><a name="an2504"></a><code >std::chrono::duration&lt;Value, Period&gt;::rep</code>:<blockquote >the <code >Value</code> type used by the <code >duration</code> type (e.g., <code >int64_t</code>)</blockquote>
 <p>
-<li><a name="an2489"></a><code >std::chrono::duration&lt;Value, Period&gt;::period</code>:<blockquote >the <code >ratio</code> type used by the <code >duration</code> (e.g., 
+<li><a name="an2505"></a><code >std::chrono::duration&lt;Value, Period&gt;::period</code>:<blockquote >the <code >ratio</code> type used by the <code >duration</code> (e.g., 
             <code >std::ratio::nano</code>) (so <code >period</code> itself has static values
             <code >num</code> and (den), as mentioned in the previous section).</blockquote>
     </ul>
@@ -373,17 +373,17 @@ operator, using an integral constant for its right-hand side operand. The
 binary arithmetic and the binary compound assignment operators are also
 available.</blockquote>
 <p>
-<li><a name="an2490"></a><code >constexpr Value count() const</code>:<blockquote >returns the <em >value</em> that is stored inside a <code >duration</code> object. For
+<li><a name="an2506"></a><code >constexpr Value count() const</code>:<blockquote >returns the <em >value</em> that is stored inside a <code >duration</code> object. For
 <code >halfHour</code> this would return 30, not 1800, as the time unit itself is
-obtained from its <a name="an2491"></a><code >duration&lt;Value, Unit&gt;::period</code> type.</blockquote>
+obtained from its <a name="an2507"></a><code >duration&lt;Value, Unit&gt;::period</code> type.</blockquote>
 <p>
-<li><a name="an2492"></a><code >static constexpr duration zero()</code>:<blockquote >this is a static member, returning a duration object representing a
+<li><a name="an2508"></a><code >static constexpr duration zero()</code>:<blockquote >this is a static member, returning a duration object representing a
 duration of zero time units.</blockquote>
 <p>
-<li><a name="an2493"></a><code >static constexpr duration min()</code>:<blockquote >this is a static member, returning a duration object 
+<li><a name="an2509"></a><code >static constexpr duration min()</code>:<blockquote >this is a static member, returning a duration object 
 representing <code >numeric_limits&lt;Rep&gt;::lowest()</code>.</blockquote>
 <p>
-<li><a name="an2494"></a><code >static constexpr duration max()</code>:<blockquote >this is a static member, returning a duration object 
+<li><a name="an2510"></a><code >static constexpr duration max()</code>:<blockquote >this is a static member, returning a duration object 
 representing <code >numeric_limits&lt;Rep&gt;::max()</code>.</blockquote>
     </ul>
 <p>
@@ -409,14 +409,14 @@ The suffixes <code >h, min, s, ms, us, ns</code> can be used for integral
 values, creating the corresponding <code >duration</code> time intervals. E.g., 
 <code >minutes oneMinute = 1m</code>.
 <p>
-<a name="l463"></a>
+<a name="l466"></a>
 <h3 >20.1.3: Clocks measuring time</h3>
     Since time plays an important role, not only in real life, but also in
 multi-threaded programs, we need clocks to represents and measure time.  
-<strong >C++</strong> offers several predefined <a name="an2495"></a><em >clock</em> types, and all these
+<strong >C++</strong> offers several predefined <a name="an2511"></a><em >clock</em> types, and all these
 clocks are defined in the <code >std::chrono</code> namespace.
 <p>
-Before using these clocks the <a name="an2496"></a><code >&lt;chrono&gt;</code> header file must be included.
+Before using these clocks the <a name="an2512"></a><code >&lt;chrono&gt;</code> header file must be included.
 <p>
 A clock type must be specified when referring to a point in time using
 <code >std::chrono::time_point</code> (covered by the next section). It is also possible
@@ -426,32 +426,32 @@ to define your own clock type (not covered by the <strong >C++</strong> Annotati
 If <code >Clock</code> is a predefined clock type, then <code >Clock</code> defines the following
 types:
     <ul>
-    <li><a name="an2497"></a><code >std::chrono::Clock::duration</code>:<blockquote >the <code >duration</code> type which 
+    <li><a name="an2513"></a><code >std::chrono::Clock::duration</code>:<blockquote >the <code >duration</code> type which 
          used by <code >Clock</code> (e.g., <code >std::chrono::nanoseconds</code>)</blockquote>
-    <li><a name="an2498"></a><code >std::chrono::Clock::period</code>:<blockquote >the time period used by <code >Clock</code> (e.g.,
+    <li><a name="an2514"></a><code >std::chrono::Clock::period</code>:<blockquote >the time period used by <code >Clock</code> (e.g.,
          <code >std::ratio::nano</code>)</blockquote> 
-    <li><a name="an2499"></a><code >std::chrono::Clock::rep</code>:<blockquote >defining the value type used by <code >Clock</code> to store duration
+    <li><a name="an2515"></a><code >std::chrono::Clock::rep</code>:<blockquote >defining the value type used by <code >Clock</code> to store duration
          values (e.g., <code >int64_t</code>)</blockquote>
-    <li><a name="an2500"></a><code >std::chrono::Clock::time_point</code>:<blockquote >time points used by <code >Clock</code> 
+    <li><a name="an2516"></a><code >std::chrono::Clock::time_point</code>:<blockquote >time points used by <code >Clock</code> 
          (e.g., <code >std::chrono::time_point&lt;system_clock, duration&gt;</code>)</blockquote>
     </ul>
 <p>
 In addition to these types predefined clocks offer a member
     <ul>
-    <li><a name="an2501"></a><code >static std::chrono::time_point 
+    <li><a name="an2517"></a><code >static std::chrono::time_point 
                       std::chrono::Clock::now()</code>:<blockquote >returns the <code >time_point</code> representing the current time</blockquote>
     </ul>
 <p>
 There are three predefined clock types:
     <ul>
-    <li><a name="an2502"></a><code >std::chrono::system_clock</code>:<blockquote >the `wall clock' time, using the system's real time clock. 
+    <li><a name="an2518"></a><code >std::chrono::system_clock</code>:<blockquote >the `wall clock' time, using the system's real time clock. 
         In addition to <code >now</code> the class <code >system_clock</code>
         offers these two static members:
         <ul>
-        <li><a name="an2503"></a><code >static std::time_t std::chrono::system_clock::to_time_t</code>
+        <li><a name="an2519"></a><code >static std::time_t std::chrono::system_clock::to_time_t</code>
                 <blockquote ><code >(std::chrono::time_point const &amp;
                 timePoint)</code></blockquote>
-            <blockquote >a <a name="an2504"></a><code >std::time_t</code> value (the same type as returned by <strong >C</strong>'s
+            <blockquote >a <a name="an2520"></a><code >std::time_t</code> value (the same type as returned by <strong >C</strong>'s
 <strong >time</strong>(2) function) as used by the representing the same point in time as
 <code >timePoint</code>. Example:
         <pre>
@@ -461,7 +461,7 @@ std::chrono::system_clock::to_time_t(
 </pre>
             </blockquote>
 <p>
-<li><a name="an2505"></a><code >static std::chrono::time_point
+<li><a name="an2521"></a><code >static std::chrono::time_point
                 std::chrono::system_clock::from_time_t</code>
                 <blockquote ><code >(std::time_t seconds)</code></blockquote>
             <blockquote >a <code >time_point</code> value representing the same point in time
@@ -469,10 +469,10 @@ std::chrono::system_clock::to_time_t(
         </ul>
         </blockquote>
 <p>
-<li><a name="an2506"></a><code >std::chrono::steady_clock</code>:<blockquote >a clock whose time increases in parallel with the increase of real
+<li><a name="an2522"></a><code >std::chrono::steady_clock</code>:<blockquote >a clock whose time increases in parallel with the increase of real
         time.</blockquote> 
 <p>
-<li><a name="an2507"></a><code >std::chrono::high_resolution_clock</code>:<blockquote >the computer's fastest clock (i.e., the clock having the shortest
+<li><a name="an2523"></a><code >std::chrono::high_resolution_clock</code>:<blockquote >the computer's fastest clock (i.e., the clock having the shortest
 timer-tick period). In practice this is the same clock as  <code >system_clock</code>.</blockquote>  
     </ul>
 <p>
@@ -481,12 +481,12 @@ As an example: to access the current time you could use:
     auto point = std::chrono::system_clock::now();
 </pre>
 <p>
-<a name="TIMEPOINT"></a><a name="l464"></a>
+<a name="TIMEPOINT"></a><a name="l467"></a>
 <h3 >20.1.4: Points in time: std::chrono::time_point</h3>
-    The class <a name="an2508"></a><code >time_point</code> is defined in the <code >std::chrono</code> namespace.
+    The class <a name="an2524"></a><code >time_point</code> is defined in the <code >std::chrono</code> namespace.
 Objects of the class <code >std::chrono::time_point</code> define a point in time.
 <p>
-Before using the class <code >std::chrono::time_point</code> the <a name="an2509"></a><code >&lt;chrono&gt;</code> header
+Before using the class <code >std::chrono::time_point</code> the <a name="an2525"></a><code >&lt;chrono&gt;</code> header
 file must be included.
 <p>
 The class <code >time_point</code> is a class template, requiring two template type
@@ -506,7 +506,7 @@ value of <code >system_clock::now</code>. The explicit definition looks like thi
 The class <code >std::chrono::time_point</code> features three constructors:
     <ul>
     <li><code >time_point()</code>:<blockquote >the default constructor represents the beginning of the clock's
-        <a name="an2510"></a><em >epoch</em> (E.g., Jan, 1, 1970, 00:00h);</blockquote>
+        <a name="an2526"></a><em >epoch</em> (E.g., Jan, 1, 1970, 00:00h);</blockquote>
 <p>
 <li><code >time_point(time_point&lt;Clock, Duration&gt; const &amp;timeStep)</code>:<blockquote >initializes a <code >time_point</code> object to represent a point in time
 <code >timeStep Duration</code> units byond the clock's epoch;</blockquote>
@@ -543,12 +543,12 @@ The class <code >std::chrono::time_point</code> has these operators and members:
 </pre>
         </blockquote>
 <p>
-<li><a name="an2511"></a><code >constexpr Duration time_since_epoch() const</code>:<blockquote >returns the object's <code >Duration</code> since the epoch.</blockquote>
+<li><a name="an2527"></a><code >constexpr Duration time_since_epoch() const</code>:<blockquote >returns the object's <code >Duration</code> since the epoch.</blockquote>
 <p>
-<li><a name="an2512"></a><code >static constexpr time_point min()</code>:<blockquote >a static member returning the value returned by the time point's
+<li><a name="an2528"></a><code >static constexpr time_point min()</code>:<blockquote >a static member returning the value returned by the time point's
         <code >duration::min</code> value.</blockquote>
 <p>
-<li><a name="an2513"></a><code >static constexpr time_point max()</code>:<blockquote >a static member returning the value returned by the time point's
+<li><a name="an2529"></a><code >static constexpr time_point max()</code>:<blockquote >a static member returning the value returned by the time point's
         <code >duration::max</code> value.</blockquote>
     </ul>
 <p>
@@ -565,29 +565,29 @@ of the epoch is:
             nanoseconds(hours(1)).count() &lt;&lt; " hours since the epoch\n";
 </pre>
 <p>
-<a name="TIME"></a><a name="l465"></a>
+<a name="TIME"></a><a name="l468"></a>
 <h3 >20.1.5: Converting time to text</h3>
-    In section <a href="cplusplus06.html#IOFORMAT">6.3.2</a> the function <code >std::put_time</code><a name="an2514"></a> was briefly
+    In section <a href="cplusplus06.html#IOFORMAT">6.3.2</a> the function <code >std::put_time</code><a name="an2530"></a> was briefly
 introduced. In this section we take a closer look at <code >std::put_time</code> and
 related functions.
 <p>
 <p><a name="TIMEIMG"></a><figure >
 <img src="threading/time.gif" >
-<figcaption >Figure 22: Time according to <strong >C++</strong></figcaption>
+<figcaption >Figure 23: Time according to <strong >C++</strong></figcaption>
 </figure></p>
 
 <p>
-Figure <a href="cplusplus20.html#TIMEIMG">22</a> illustrates how the various aspects of time are handled by
+Figure <a href="cplusplus20.html#TIMEIMG">23</a> illustrates how the various aspects of time are handled by
 <strong >C++</strong>. Starting point is a <code >time_point</code>, as obtained from, e.g., the
 <code >system_clock::now</code> function. A <code >time_point</code> object's address can be
 passed to the function <code >to_time_t</code>, returning a <code >std::time_t</code>.
 <p>
 Two functions are available for processing <code >std::time_t</code> values:
     <ul>
-    <li><a name="an2515"></a><code >std::tm *std::localtime(std::time_t const *time)</code>:<blockquote >This function returns a pointer to a <a name="an2516"></a><code >std::tm</code> object holding the
+    <li><a name="an2531"></a><code >std::tm *std::localtime(std::time_t const *time)</code>:<blockquote >This function returns a pointer to a <a name="an2532"></a><code >std::tm</code> object holding the
 data that are used to display elements of the local time;</blockquote>
-    <li><a name="an2517"></a><code >std::tm *std::gmtime(std::time_t const *time)</code>:<blockquote >This function returns a pointer to a <a name="an2518"></a><code >std::tm</code> object holding the
-data that are used to display <a name="an2519"></a>UTC (<a name="an2520"></a><em >universal time coordinated</em>)
+    <li><a name="an2533"></a><code >std::tm *std::gmtime(std::time_t const *time)</code>:<blockquote >This function returns a pointer to a <a name="an2534"></a><code >std::tm</code> object holding the
+data that are used to display <a name="an2535"></a>UTC (<a name="an2536"></a><em >universal time coordinated</em>)
 elements;</blockquote>
     </ul>
     Note that the <code >std::tm</code> object to which the pointers returned by
@@ -595,9 +595,9 @@ elements;</blockquote>
 functions from multiple threads should be protected by a <code >std::mutex</code>.
 <p>
 Actually displaying these time elements is left to the function 
-    <a name="an2521"></a><code >Type std::put_time(std::tm const *time, char const *fmt)</code>,
-which is declared in the header <a name="an2522"></a><code >&lt;iomanip&gt;</code>. The following steps result in a 
-<code >std::tm</code><a name="an2523"></a> object whose address can be passed to
+    <a name="an2537"></a><code >Type std::put_time(std::tm const *time, char const *fmt)</code>,
+which is declared in the header <a name="an2538"></a><code >&lt;iomanip&gt;</code>. The following steps result in a 
+<code >std::tm</code><a name="an2539"></a> object whose address can be passed to
 <code >put_time</code>: 
     <ul>
     <li> A <code >chrono::time_point</code> object is obtained. E.g., the static
@@ -670,7 +670,7 @@ declared immediately after <code >using namespace std</code>.
     }
 </pre>
 <p>
-<a name="l466"></a>
+<a name="l469"></a>
 <h4>20.1.5.1: std::put_time format specifiers</h4>
         The following tables contain all format specifiers that can be used in the
 format string of the <code >std::put_time</code> function.
@@ -1125,7 +1125,7 @@ instead of <code >\n</code>, and <code >%t</code> can be used instead of <code >
 
 </table></div>
 <p>
-<a name="THREADS"></a><a name="l467"></a>
+<a name="THREADS"></a><a name="l470"></a>
 <h2 >20.2: Multi Threading</h2>
 In <strong >C++</strong> multi threading may be implemented at various levels of abstraction. In
 general the highest level of abstraction which is available to implement a
@@ -1151,37 +1151,37 @@ class <code >std::condition_variable</code>).
 Members of these classes may throw <code >system_error</code> objects (cf. section
 <a href="cplusplus10.html#SYSTEMERROR">10.9</a>) when encountering a low-level error condition.
 <p>
-<a name="l468"></a>
+<a name="l471"></a>
 <h3 >20.2.1: The namespace std::this_thread</h3>
-    The <a name="an2524"></a><a name="an2525"></a> <code >namespace std::this_thread</code>
+    The <a name="an2540"></a><a name="an2541"></a> <code >namespace std::this_thread</code>
 contains functions that are uniquely associated with the currently running
 thread.
 <p>
-Before using the namespace <code >this_thread</code> the <a name="an2526"></a><code >&lt;thread&gt;</code> header file must
+Before using the namespace <code >this_thread</code> the <a name="an2542"></a><code >&lt;thread&gt;</code> header file must
 be included.
 <p>
 Inside the <code >std::this_thread</code> namespace several free functions are defined,
 providing information about the current thread or that can be used to control
 its behavior:
     <ul>
-    <li><a name="an2527"></a><code >thread::id this_thread::get_id() noexcept</code>:<blockquote >returns an object of type <code >thread::id</code> that identifies the currently
+    <li><a name="an2543"></a><code >thread::id this_thread::get_id() noexcept</code>:<blockquote >returns an object of type <code >thread::id</code> that identifies the currently
 active thread of execution. For an active thread the returned <code >id</code> is unique
 in the sense that it maps 1:1 to the currently active thread, and is not
 returned by any other thread. If a thread is currently not running
-<a name="an2528"></a><code >thread::id()</code> is returned by the <code >std::thread</code> object's <code >get_id</code>
+<a name="an2544"></a><code >thread::id()</code> is returned by the <code >std::thread</code> object's <code >get_id</code>
 member.</blockquote>
 <p>
-<li><a name="an2529"></a><code >void yield() noexcept</code>:<blockquote >when a thread calls <code >this_thread::yield()</code> the current thread is
+<li><a name="an2545"></a><code >void yield() noexcept</code>:<blockquote >when a thread calls <code >this_thread::yield()</code> the current thread is
 briefly suspended, allowing other (waiting) threads to start.</blockquote>
 <p>
-<li><a name="an2530"></a><code >void sleep_for(chrono::duration&lt;Rep, Period&gt; const &amp;relTime)
+<li><a name="an2546"></a><code >void sleep_for(chrono::duration&lt;Rep, Period&gt; const &amp;relTime)
             noexcept</code>:<blockquote >when a thread call <code >this_thread::sleep_for(...)</code> it is suspended for
 the amount of time that's specified in its argument. E.g.,
    <pre>
 std::this_thread::sleep_for(std::chrono::seconds(5));
 </pre>
         </blockquote>
-    <li><a name="an2531"></a><code >void sleep_until(chrono::time_point&lt;Clock, Duration&gt; const &amp;absTime)
+    <li><a name="an2547"></a><code >void sleep_until(chrono::time_point&lt;Clock, Duration&gt; const &amp;absTime)
             noexcept</code>:<blockquote >when a thread calls this member it is suspended until the specified
 <code >absTime</code> is in the past. The next example has the same effect as the
 previous example:
@@ -1197,13 +1197,13 @@ this_thread::sleep_until(chrono::system_clock().now() - chrono::seconds(5));
         </blockquote>
     </ul>
 <p>
-<a name="THREAD"></a><a name="l469"></a>
+<a name="THREAD"></a><a name="l472"></a>
 <h3 >20.2.2: The class std::thread</h3>
     Multi threading in <strong >C++</strong> starts off with objects of the class
-<a name="an2532"></a><code >std::thread</code>. Each object of this class handles a separate
+<a name="an2548"></a><code >std::thread</code>. Each object of this class handles a separate
 thread.
 <p>
-Before using <code >Thread</code> objects the <a name="an2533"></a><code >&lt;thread&gt;</code> header file must be included.
+Before using <code >Thread</code> objects the <a name="an2549"></a><code >&lt;thread&gt;</code> header file must be included.
 <p>
 Thread objects can be constructed in various ways:
     <ul>
@@ -1363,7 +1363,7 @@ If the thread cannot be created a <code >std::system_error</code> exception is
 thrown.
 <p>
 Since this constructor not only accepts functions but also function objects as
-its first argument, a <a name="an2534"></a><em >local context</em> may be passed to the function
+its first argument, a <a name="an2550"></a><em >local context</em> may be passed to the function
 object's constructor. Here is an example of a thread receiving a function
 object using a local context:
         <pre>
@@ -1416,7 +1416,7 @@ thread, then <code >terminate</code> is called. Otherwise, <code >tmp</code> is 
 operator's lhs and <code >tmp's</code> state is changed to the thread's default state
 (i.e., <code >thread()</code>).</blockquote>
 <p>
-<li><a name="an2535"></a><code >void detach()</code>:<blockquote >Requires <code >joinable</code> (see below) to return <code >true</code>.  The thread for
+<li><a name="an2551"></a><code >void detach()</code>:<blockquote >Requires <code >joinable</code> (see below) to return <code >true</code>.  The thread for
 which <code >detach</code> is called continues to run. The (e.g., parent) thread calling
 <code >detach</code> continues immediately beyond the <code >detach</code>-call.  After calling
 <code >object.detach()</code>, `<code >object</code>' no longer represents the (possibly still
@@ -1499,12 +1499,12 @@ int main()
 <p>
 </blockquote>
 <p>
-<li><a name="an2536"></a><code >id get_id() const noexcept</code>:<blockquote >If the current object does not represent a running thread 
-<a name="an2537"></a><code >thread::id()</code> is returned. Otherwise, the thread's unique ID
+<li><a name="an2552"></a><code >id get_id() const noexcept</code>:<blockquote >If the current object does not represent a running thread 
+<a name="an2553"></a><code >thread::id()</code> is returned. Otherwise, the thread's unique ID
 (also obtainable from with the thread from <code >this_thread::get_id()</code>) is
 returned.</blockquote>
 <p>
-<li><a name="an2538"></a><code >void join()</code>:<blockquote >Requires <code >joinable</code> to return <code >true</code>.  Blocks the thread calling
+<li><a name="an2554"></a><code >void join()</code>:<blockquote >Requires <code >joinable</code> to return <code >true</code>.  Blocks the thread calling
 <code >join</code> until the thread for which <code >join</code> is called has
 completed. Following its completion the object whose <code >join</code> member was
 called no longer represents a running thread, and its <code >get_id</code> member will
@@ -1514,14 +1514,14 @@ This member was used in several examples shown so far. As noted: when
 <code >main</code> ends while a joinable thread is still running, <code >terminate</code> is
 called, aborting the program.</blockquote>
 <p>
-<li><a name="an2539"></a><code >bool joinable() const noexcept</code>:<blockquote >returns <code >object.get_id() != id()</code>, where <code >object</code> is the
+<li><a name="an2555"></a><code >bool joinable() const noexcept</code>:<blockquote >returns <code >object.get_id() != id()</code>, where <code >object</code> is the
 <code >thread</code> object for which <code >joinable</code> was called.</blockquote>
 <p>
-<li><a name="an2540"></a><code >void swap(thread &amp;other) noexcept</code>:<blockquote >The states of the <code >thread</code> object for which <code >swap</code> was called and
+<li><a name="an2556"></a><code >void swap(thread &amp;other) noexcept</code>:<blockquote >The states of the <code >thread</code> object for which <code >swap</code> was called and
 <code >other</code> are swapped. Note that threads may always be swapped, even when
 their thread functions are currently being executed.</blockquote>
 <p>
-<li><a name="an2541"></a><code >unsigned thread::hardware_concurrency() noexecpt</code>:<blockquote >This static member returns the number of threads that can run at the
+<li><a name="an2557"></a><code >unsigned thread::hardware_concurrency() noexecpt</code>:<blockquote >This static member returns the number of threads that can run at the
 same time on the current computer. On a stand-alone multi-core computer it
 (probably) returns the number of cores.</blockquote>
     </ul>
@@ -1588,7 +1588,7 @@ when <code >main</code> ends:
 There are several ways to solve this problem. One of them is discussed in
 the next section.
 <p>
-<a name="l470"></a>
+<a name="l473"></a>
 <h4>20.2.2.1: Static data and threads: std::thread_local</h4>
         With multi-threaded programs the well-known distinction between global and
 local data is somewhat too coarse. For single- and multi-threaded programs
@@ -1597,7 +1597,7 @@ are available to the function (or compound statement) in which the local data
 are defined. But multi-threaded programs may feel the need for an intermediate
 type of data, uniquely available to the different threads.
 <p>
-The <a name="an2542"></a><code >thread_local</code> keyword provides this intermediate data level. Global
+The <a name="an2558"></a><code >thread_local</code> keyword provides this intermediate data level. Global
 variables declared as <code >thread_local</code> are global within each individual
 thread. Each thread owns a copy of the <code >thread_local</code> variables, and may
 modify them at will. A <code >thread_local</code> variable in one thread is completely
@@ -1650,7 +1650,7 @@ stack, these variables may occupy the same relative locations within their
 respective stacks, giving the illusion that their physical addresses are
 identical.
 <p>
-<a name="l471"></a>
+<a name="l474"></a>
 <h4>20.2.2.2: Exceptions and join()</h4>
         Once a thread starts and it isn't detached it must eventually join
 its starting (parent) thread, or the program aborts. Usually, once a thread
@@ -1780,11 +1780,11 @@ ends <code >parent</code>, but just before that <code >JoinGuard's</code> destru
 that the child-thread has been joined.
     </ul>
 <p>
-<a name="MUTEX"></a><a name="l472"></a>
+<a name="MUTEX"></a><a name="l475"></a>
 <h2 >20.3: Synchronization (mutexes)</h2>
-Objects of <a name="an2543"></a>mutex classes are used to protect shared data.
+Objects of <a name="an2559"></a>mutex classes are used to protect shared data.
 <p>
-Before using mutexes the <a name="an2544"></a><code >&lt;mutex&gt;</code> header file must be included.
+Before using mutexes the <a name="an2560"></a><code >&lt;mutex&gt;</code> header file must be included.
 <p>
 One of the key characteristics of multi-threaded programs is that threads may
 share data. Functions running as separate threads have access to all global
@@ -1839,18 +1839,18 @@ atomic calls. When requesting a mutex-lock the thread is blocked (i.e., the
 mutex statement does not return) until the lock has been obtained by the
 requesting thread.
 <p>
-Apart from the class <code >std::mutex</code> the class <a name="an2545"></a>
+Apart from the class <code >std::mutex</code> the class <a name="an2561"></a>
 <code >std::recursive_mutex</code> is available.  When a <code >recursive_mutex</code> is called
 multiple times by the same thread it increases its lock-count. Before other
 threads may access the protected data the recursive mutex must be unlocked
 again that number of times. Moreover, the classes 
-        <a name="an2546"></a><code >std::timed_mutex</code> 
+        <a name="an2562"></a><code >std::timed_mutex</code> 
     and 
-        <a name="an2547"></a><code >std::recursive_timed_mutex</code> 
+        <a name="an2563"></a><code >std::recursive_timed_mutex</code> 
     are available. Their locks expire when released, but also after a certain
 amount of time.
 <p>
-The members of the mutex classes perform <a name="an2548"></a><em >atomic actions</em>: no context
+The members of the mutex classes perform <a name="an2564"></a><em >atomic actions</em>: no context
 switch occurs while they are active. So when two threads are trying to
 <em >lock</em> a mutex only one can succeed. In the above example: if both threads
 would use a mutex to control access to <code >var</code> thread 2 would not have been
@@ -1890,17 +1890,17 @@ constructor;</blockquote>
 <li><code >~mutex()</code>:<blockquote >The destructor does <em >not</em> unlock a locked mutex. If locked it must
 explicitly be unlocked using the mutex's <code >unlock</code> member;</blockquote>
 <p>
-<li><a name="an2549"></a><code >void lock()</code>:<blockquote >The calling thread blocks until it owns the mutex. Unless <code >lock</code> is
+<li><a name="an2565"></a><code >void lock()</code>:<blockquote >The calling thread blocks until it owns the mutex. Unless <code >lock</code> is
 called for a recursive mutex a <em >system_error</em> is thrown if the thread
 already owns the lock. Recursive mutexes increment their internal 
-    <a name="an2550"></a><em >lock count</em>;</blockquote>
+    <a name="an2566"></a><em >lock count</em>;</blockquote>
 <p>
-<li><a name="an2551"></a><code >bool try_lock() noexcept</code>:<blockquote >The calling thread tries to obtain ownership of the mutex. If
+<li><a name="an2567"></a><code >bool try_lock() noexcept</code>:<blockquote >The calling thread tries to obtain ownership of the mutex. If
 ownership is obtained, <code >true</code> is returned, otherwise <code >false</code>. If the
 calling thread already owns the lock <code >true</code> is also returned, and in this
-case a recursive mutex also increments its internal <a name="an2552"></a><em >lock count</em>;</blockquote>
+case a recursive mutex also increments its internal <a name="an2568"></a><em >lock count</em>;</blockquote>
 <p>
-<li><a name="an2553"></a><code >void unlock() noexcept</code>:<blockquote >The calling thread releases ownership of the mutex.  A
+<li><a name="an2569"></a><code >void unlock() noexcept</code>:<blockquote >The calling thread releases ownership of the mutex.  A
 <code >system_error</code> is thrown if the thread does not own the
 lock. A recursive mutex decrements its interal lock count, releasing
 ownership of the mutex once the lock count has decayed to zero;</blockquote>
@@ -1909,12 +1909,12 @@ ownership of the mutex once the lock count has decayed to zero;</blockquote>
 The timed-mutex classes (<code >timed_mutex, recursive_timed_mutex</code>) also offer
 these members:
     <ul>
-    <li><a name="an2554"></a><code >bool try_lock_for(chrono::duration&lt;Rep, Period&gt; const 
+    <li><a name="an2570"></a><code >bool try_lock_for(chrono::duration&lt;Rep, Period&gt; const 
             &amp;relTime) noexcept</code>:<blockquote >The calling thread tries to obtain ownership of the mutex within the
 specified time interval. If ownership is obtained, <code >true</code> is returned,
 otherwise <code >false</code>. If the calling thread already owns the lock <code >true</code> is
 also returned, and in this case a recursive timed mutex also increments its
-internal <a name="an2555"></a><em >lock count</em>. The <code >Rep</code> and <code >Duration</code> types are inferred from
+internal <a name="an2571"></a><em >lock count</em>. The <code >Rep</code> and <code >Duration</code> types are inferred from
 the actual <code >relTime</code> argument. E.g.,
        <pre>
 std::timed_mutex timedMutex;
@@ -1922,12 +1922,12 @@ timedMutex.try_lock_for(chrono::seconds(5));
 </pre>
        </blockquote>
 <p>
-<li><a name="an2556"></a><code >bool try_lock_until(chrono::time_point&lt;Clock,
+<li><a name="an2572"></a><code >bool try_lock_until(chrono::time_point&lt;Clock,
             Duration&gt; const &amp;absTime) noexcept</code>:<blockquote >The calling thread tries to obtain ownership of the mutex until
 <code >absTime</code> has passed. If ownership is obtained, <code >true</code> is returned,
 otherwise <code >false</code>. If the calling thread already owns the lock <code >true</code> is
 also returned, and in this case a recursive timed mutex also increments its
-internal <a name="an2557"></a><em >lock count</em>. The <code >Clock</code> and <code >Duration</code> types are inferred
+internal <a name="an2573"></a><em >lock count</em>. The <code >Clock</code> and <code >Duration</code> types are inferred
 from the actual <code >absTime</code> argument. E.g.,
        <pre>
 std::timed_mutex timedMutex;
@@ -1936,11 +1936,11 @@ timedMutex.try_lock_until(chrono::system_clock::now() + chrono::seconds(5));
        </blockquote>
     </ul>
 <p>
-<a name="l473"></a>
+<a name="l476"></a>
 <h3 >20.3.1: Initialization in multi-threaded programs</h3>
-    Before using the <a name="an2558"></a><code >std::once_flag</code> and the
-<a name="an2559"></a><code >std::call_once</code> function, introduced in this section, the
-<a name="an2560"></a><code >&lt;mutex&gt;</code> header file must be included.
+    Before using the <a name="an2574"></a><code >std::once_flag</code> and the
+<a name="an2575"></a><code >std::call_once</code> function, introduced in this section, the
+<a name="an2576"></a><code >&lt;mutex&gt;</code> header file must be included.
 <p>
 In single threaded programs the initialization of global data not necessarily
 happens at the same point in code. An example is the initialization of the
@@ -2009,7 +2009,7 @@ now easily be designed (using in-class implementations for brevity):
 <p>
 However, there are additional ways to initialize data, even for multi-threaded programs:
     <ul>
-    <li> First, suppose a constructor is declared with the <a name="an2561"></a><code >constexpr</code>
+    <li> First, suppose a constructor is declared with the <a name="an2577"></a><code >constexpr</code>
 keyword (cf. section <a href="cplusplus08.html#CONSTEXPR">8.1.4.1</a>), satisfying the requirements for constant
 initialization. In this case, a static object, initialized using that
 constructor, is guaranteed to be initialized before any code is run as part of
@@ -2018,7 +2018,7 @@ the possibility of race conditions when global mutexes are initialized.
 <p>
 <li> Second, a static variable defined within a compound statement may be
 used (e.g., a static local variable within a function body).  Static
-variables <a name="an2562"></a> defined within a compound
+variables <a name="an2578"></a> defined within a compound
 statement are initialized the first time the function is called at the point
 in the code where the static variable is defined. Here is an example:
         <pre>
@@ -2061,10 +2061,10 @@ problems, as non-static local variables only exist within their own thread of
 execution).
     </ul>
 <p>
-<a name="l474"></a>
+<a name="l477"></a>
 <h3 >20.3.2: Shared mutexes</h3>
     Shared mutexes (via the type <code >std::shared_mutex</code>) are available after
-including the <a name="an2563"></a><code >&lt;shared_mutex&gt;</code> header file.  Shared mutex types behave like
+including the <a name="an2579"></a><code >&lt;shared_mutex&gt;</code> header file.  Shared mutex types behave like
 <code >timed_mutex</code> types and optionally have the characteristics described below.
 <p>
 The class <code >shared_mutex</code> provides a non-recursive mutex with shared
@@ -2084,22 +2084,22 @@ exclusive lock on the same <code >shared_mutex</code> object, and vice-versa.
 <p>
 The type <code >shared_mutex</code> offers the following members:
     <ul>
-    <li><a name="an2564"></a><code >void lock_shared()</code>:<blockquote >Blocks the calling thread until shared ownership of the mutex can be
+    <li><a name="an2580"></a><code >void lock_shared()</code>:<blockquote >Blocks the calling thread until shared ownership of the mutex can be
 obtained by the calling thread. An exception is thrown if the current thread
 already owns the lock, if it is not allowed to lock the mutex, or if the mutex
 is already locked and blocking is not possible;</blockquote>
 <p>
-<li><a name="an2565"></a><code >void unlock_shared()</code>:<blockquote >Releases a shared lock on the mutex held by the calling thread. Nothing
+<li><a name="an2581"></a><code >void unlock_shared()</code>:<blockquote >Releases a shared lock on the mutex held by the calling thread. Nothing
 happens if the current thread does not already own the lock;</blockquote>
 <p>
-<li><a name="an2566"></a><code >bool try_lock_shared()</code>:<blockquote >The current thread attempts to obtain shared ownership of the mutex
+<li><a name="an2582"></a><code >bool try_lock_shared()</code>:<blockquote >The current thread attempts to obtain shared ownership of the mutex
 without blocking. If shared ownership is not obtained, there is no effect and
 <code >try_lock_shared</code> immediately returns.  Returns <code >true</code> if the shared
 ownership lock was acquired, <code >false</code> otherwise.  An implementation may fail
 to obtain the lock even if it is not held by any other thread. Initially the
 calling thread may not yet own the mutex;</blockquote>
 <p>
-<li><a name="an2567"></a><code >bool try_lock_shared_for(rel_time)</code>:<blockquote >Attempts to obtain shared lock ownership for the calling thread within
+<li><a name="an2583"></a><code >bool try_lock_shared_for(rel_time)</code>:<blockquote >Attempts to obtain shared lock ownership for the calling thread within
 the relative time period specified by <code >rel_time</code>. If the time specified by
 <code >rel_time</code> is less than or equal to <code >rel_time.zero()</code>, the member attempts
 to obtain ownership without blocking (as if by calling
@@ -2108,7 +2108,7 @@ specified by rel_time only if it has obtained shared ownership of the mutex
 object.  Returns <code >true</code> if the shared ownership lock was acquired, <code >false</code>
 otherwise. Initially the calling thread may not yet own the mutex;</blockquote>
 <p>
-<li><a name="an2568"></a><code >bool try_lock_shared_until(abs_time)</code>:<blockquote >Attempts to obtain shared lock ownership for the calling thread until the
+<li><a name="an2584"></a><code >bool try_lock_shared_until(abs_time)</code>:<blockquote >Attempts to obtain shared lock ownership for the calling thread until the
 time specified by <code >abs_time</code> has passed. If the time specified by
 <code >abs_time</code> has already passed then the member attempts to obtain ownership
 without blocking (as if by calling <code >try_lock_shared()</code>).  Returns <code >true</code>
@@ -2116,10 +2116,10 @@ if the shared ownership lock was acquired, <code >false</code> otherwise. Initia
 calling thread may not yet own the mutex;</blockquote>
     </ul>
 <p>
-<a name="LOCKS"></a><a name="l475"></a>
+<a name="LOCKS"></a><a name="l478"></a>
 <h2 >20.4: Locks and lock handling</h2>
 Locks are used to simplify the use of mutexes. Before locks can be used the
-<a name="an2569"></a><code >&lt;mutex&gt;</code> header file must be included.
+<a name="an2585"></a><code >&lt;mutex&gt;</code> header file must be included.
 <p>
 Whenever threads share data, and at least one of the threads may change common
 data, mutexes should be used to prevent threads from using the same data
@@ -2131,10 +2131,10 @@ as we've seen with the thread's <code >join</code> member.
 <p>
 To simplify locking and unlocking two mutex wrapper classes are available:
     <ul>
-    <li><a name="an2570"></a><code >std::lock_guard</code>:<blockquote >objects of this class offer the basic unlock-guarantee: their
+    <li><a name="an2586"></a><code >std::lock_guard</code>:<blockquote >objects of this class offer the basic unlock-guarantee: their
 destructors call the member <code >unlock</code> of the mutexes they control;</blockquote>
 <p>
-<li><a name="an2571"></a><code >std::unique_lock</code>:<blockquote >objects of this class offer a more extensive interface, allowing
+<li><a name="an2587"></a><code >std::unique_lock</code>:<blockquote >objects of this class offer a more extensive interface, allowing
 explicit unlocking and locking of the mutexes they control, while their
 destructors preserve the unlock-guarantee also offered by <code >lock_guard</code>;</blockquote>
     </ul>
@@ -2173,8 +2173,8 @@ function ends;
 released by the <code >lock_guard's</code> destructor.
             </ul>
         </blockquote>
-    <li><code >mutex_type</code>:<blockquote >in <a name="an2572"></a> addition to the constructors and destructor,
-<code >lock_guard&lt;Mutex&gt;</code> types also define the type <a name="an2573"></a><code >mutex_type</code>: it is a
+    <li><code >mutex_type</code>:<blockquote >in <a name="an2588"></a> addition to the constructors and destructor,
+<code >lock_guard&lt;Mutex&gt;</code> types also define the type <a name="an2589"></a><code >mutex_type</code>: it is a
 synonym of the <code >Mutex</code> type that is passed to the <code >lock_guard</code>'s
 constructor.</blockquote>
     </ul>
@@ -2217,7 +2217,7 @@ to prevent information inserted into <code >cout</code> from getting mixed.
 </pre>
 <p>
 As with <code >lock_guard</code>, a mutex-type must be specified when defining
-objects of the class <a name="an2574"></a><code >std::unique_lock</code>.  The class
+objects of the class <a name="an2590"></a><code >std::unique_lock</code>.  The class
 <code >unique_lock</code> is much more elaborate than the basic <code >lock_guard</code> class
 template.  Its interface does not define a copy constructor or overloaded
 assignment operator, but it <em >does</em> define a move constructor and a move
@@ -2271,11 +2271,11 @@ std::unique_lock&lt;std::timed_mutex&gt; ulock(
 </pre>
         </blockquote>
 <p>
-<li><a name="an2575"></a><code >void lock()</code>:<blockquote >blocks the current thread until ownership of the mutex that is managed
+<li><a name="an2591"></a><code >void lock()</code>:<blockquote >blocks the current thread until ownership of the mutex that is managed
 by the <code >unique_lock</code> is obtained. If no mutex is currently managed, then a
 <code >system_error</code> exception is thrown.</blockquote>
 <p>
-<li><a name="an2576"></a><code >Mutex *mutex() const noexcept</code>:<blockquote >returns a pointer to the mutex object stored inside the
+<li><a name="an2592"></a><code >Mutex *mutex() const noexcept</code>:<blockquote >returns a pointer to the mutex object stored inside the
 <code >unique_lock</code> (a <code >nullptr</code> is returned if no mutex object is currently
 associated with the <code >unique_lock</code> object.)</blockquote>
 <p>
@@ -2286,50 +2286,50 @@ associated with the <code >unique_lock</code> object.)</blockquote>
 <code >unlock</code> member, whereafter <code >tmp's</code> state is transferred to the left-hand
 operand;</blockquote>
 <p>
-<li><a name="an2577"></a><code >bool owns_lock() const noexcept</code>:<blockquote >returns <code >true</code> if the <code >unique_lock</code> owns the mutex, otherwise
+<li><a name="an2593"></a><code >bool owns_lock() const noexcept</code>:<blockquote >returns <code >true</code> if the <code >unique_lock</code> owns the mutex, otherwise
 <code >false</code> is returned;</blockquote>
 <p>
-<li><a name="an2578"></a><code >Mutex *release() noexcept</code>:<blockquote >returns a pointer to the mutex object that is associated with the
+<li><a name="an2594"></a><code >Mutex *release() noexcept</code>:<blockquote >returns a pointer to the mutex object that is associated with the
 <code >unique_lock</code> object, discarding that association;</blockquote>
 <p>
-<li><a name="an2579"></a><code >void swap(unique_lock&amp; other) noexcept</code>:<blockquote >swaps the states of the current <code >unique_lock</code> and <code >other</code>;</blockquote>
+<li><a name="an2595"></a><code >void swap(unique_lock&amp; other) noexcept</code>:<blockquote >swaps the states of the current <code >unique_lock</code> and <code >other</code>;</blockquote>
 <p>
-<li><a name="an2580"></a><code >bool try_lock()</code>:<blockquote >tries to obtain ownership of the mutex that is associated witg the
+<li><a name="an2596"></a><code >bool try_lock()</code>:<blockquote >tries to obtain ownership of the mutex that is associated witg the
 <code >unique_lock</code>, returning <code >true</code> if this succeeds, and <code >false</code>
 otherwise. If no mutex is currently associated with the <code >unique_lock</code>
 object, then a <code >system_error</code> exception is thrown;</blockquote>
 <p>
-<li><a name="an2581"></a><code >bool try_lock_for(chrono::duration&lt;Rep, Period&gt; const
+<li><a name="an2597"></a><code >bool try_lock_for(chrono::duration&lt;Rep, Period&gt; const
         &amp;relTime)</code>:<blockquote >this member function tries to obtain ownership of the <code >Mutex</code> object
 managed by the <code >unique_lock</code> object by calling the mutex's
 <code >try_lock_for(relTime)</code> member. The specified mutex type must therefore
 support this member (e.g., it is a <code >std::timed_mutex</code>);</blockquote>
 <p>
-<li><a name="an2582"></a><code >bool try_lock_until(chrono::time_point&lt;Clock,
+<li><a name="an2598"></a><code >bool try_lock_until(chrono::time_point&lt;Clock,
         Duration&gt; const &amp;absTime)</code>:<blockquote >this member function tries to obtain ownership of the <code >Mutex</code> object
 managed by the <code >unique_lock</code> object by calling the mutex's
 <code >mutex.try_lock_until(absTime)</code> member. The specified mutex type must
 therefore support this member (e.g., it is a <code >std::timed_mutex</code>);</blockquote>
 <p>
-<li><a name="an2583"></a><code >void unlock()</code>:<blockquote >releases ownership of the mutex (or reduces the mutex's lock count). A
+<li><a name="an2599"></a><code >void unlock()</code>:<blockquote >releases ownership of the mutex (or reduces the mutex's lock count). A
 <code >system_error</code> exception is thrown if the <code >unique_lock</code> object does not
 own the mutex.</blockquote>
     </ul>
 <p>
 In addition to the members of the classes <code >std::lock_guard</code> and
-<code >std::unique_lock</code> the functions <code >std::lock</code><a name="an2584"></a> and
-<code >std::try_lock</code><a name="an2585"></a> are available. These functions can be
+<code >std::unique_lock</code> the functions <code >std::lock</code><a name="an2600"></a> and
+<code >std::try_lock</code><a name="an2601"></a> are available. These functions can be
 used to prevent <em >deadlocks</em>, the topic of the next section.
 <p>
-<a name="l476"></a>
+<a name="l479"></a>
 <h3 >20.4.1: Deadlocks</h3>
     A deadlock occurs when two locks are required to process data, but one thread
 obtains the first lock and another thread obtains the second lock. <strong >C++</strong>
 defines the generic
-    <a name="an2586"></a><code >std::lock</code> and <a name="an2587"></a><code >std::try_lock</code> functions that can
+    <a name="an2602"></a><code >std::lock</code> and <a name="an2603"></a><code >std::try_lock</code> functions that can
 be used to help preventing such situations.
 <p>
-Before these functions  can be used the <a name="an2588"></a><code >&lt;mutex&gt;</code> header file must be
+Before these functions  can be used the <a name="an2604"></a><code >&lt;mutex&gt;</code> header file must be
 included
 <p>
 In the following overview <code >L1 &amp;l1, ...</code> represents one or more
@@ -2435,11 +2435,11 @@ use an identical argument order when calling <code >std::lock</code> or
     33: }
 </pre>
 <p>
-<a name="l477"></a>
+<a name="l480"></a>
 <h3 >20.4.2: Shared locks</h3>
     <em >Shared locks</em> are available through the type
-    <a name="an2589"></a><code >std::shared_lock</code>, after including the
-    <a name="an2590"></a><code >&lt;shared_mutex&gt;</code> header file.
+    <a name="an2605"></a><code >std::shared_lock</code>, after including the
+    <a name="an2606"></a><code >&lt;shared_mutex&gt;</code> header file.
 <p>
 An object of the type <code >std::shared_lock</code> controls the shared ownership of a
 lockable object within a scope. Shared ownership of the lockable object may be
@@ -2505,32 +2505,32 @@ transfers the information in <code >tmp</code> to the
 current <code >shared_lock</code> object. Following this <code >tmp.pm == 0</code>
 and <code >tmp</code> no longer owns the lock;)
 <p>
-<li><a name="an2591"></a><code >explicit operator bool () const noexcept</code>:<blockquote >Returns whether or not the <code >shared_lock</code> object owns the lock.</blockquote>
+<li><a name="an2607"></a><code >explicit operator bool () const noexcept</code>:<blockquote >Returns whether or not the <code >shared_lock</code> object owns the lock.</blockquote>
     </ul>
 <p>
 The following members are provided:
 <p>
 <ul>
-    <li><a name="an2592"></a><code >void lock()</code>:<blockquote >Calls <code >pm-&gt;lock_shared()</code>, after which the current tread owns the
+    <li><a name="an2608"></a><code >void lock()</code>:<blockquote >Calls <code >pm-&gt;lock_shared()</code>, after which the current tread owns the
 shared lock. Exceptions may be thrown from <code >lock_shared</code>, and otherwise if
 <code >pm == 0</code> or if the current thread already owns the lock;</blockquote>
 <p>
-<li><a name="an2593"></a><code >mutex_type *mutex() const noexcept</code>:<blockquote >Returns <code >pm</code>;</blockquote>
+<li><a name="an2609"></a><code >mutex_type *mutex() const noexcept</code>:<blockquote >Returns <code >pm</code>;</blockquote>
 <p>
-<li><a name="an2594"></a><code >mutex_type *release() noexcept</code>:<blockquote >Returns the previous value of <code >pm</code>, which is equal to zero after
+<li><a name="an2610"></a><code >mutex_type *release() noexcept</code>:<blockquote >Returns the previous value of <code >pm</code>, which is equal to zero after
 calling this member. Also, the current object no longer owns the lock;</blockquote>
 <p>
-<li><a name="an2595"></a><code >void swap(shared_lock &amp;other) noexcept</code>:<blockquote >Swaps the data members of the current and the <code >other</code> <code >shared_lock</code>
+<li><a name="an2611"></a><code >void swap(shared_lock &amp;other) noexcept</code>:<blockquote >Swaps the data members of the current and the <code >other</code> <code >shared_lock</code>
 objects. There is also a free member <code >swap</code>, a function template, swapping
 two <code >shared_lock&lt;Mutex&gt;</code> objects, where <code >Mutex</code> represents the mutex type
 for which the shared lock objects were instantiated: <code >void
 swap(shared_lock&lt;Mutex&gt; &amp;one, shared_lock&lt;Mutex&gt; &amp;two) noexcept</code>;</blockquote>
 <p>
-<li><a name="an2596"></a><code >bool try_lock()</code>:<blockquote >Calls <code >pm-&gt;try_lock_shared()</code>, returning this call's return value.
+<li><a name="an2612"></a><code >bool try_lock()</code>:<blockquote >Calls <code >pm-&gt;try_lock_shared()</code>, returning this call's return value.
 Exceptions may be thrown from <code >try_lock_shared</code>, and
 otherwise if <code >pm == 0</code> or if the current thread already owns the lock;</blockquote>
 <p>
-<li><a name="an2597"></a><code >bool try_lock_for(const chrono::duration&lt;Rep, Period&gt;&amp;
+<li><a name="an2613"></a><code >bool try_lock_for(const chrono::duration&lt;Rep, Period&gt;&amp;
 rel_time)</code>:<blockquote >A member template, where <code >Clock</code> and <code >Period</code> are types specifying a
 clock and relative time (cf. section <a href="cplusplus20.html#TIMESPEC">20.1</a>). It calls
 <code >mut.try_lock_shared_for(abs_time)</code>. Following the call the lock may or may
@@ -2539,7 +2539,7 @@ not be owned by current thread, depending on the return value of
 <code >try_lock_shared_for</code>, and otherwise if <code >pm == 0</code> or if the current thread
 already owns the lock;</blockquote>
 <p>
-<li><a name="an2598"></a><code >bool try_lock_until(const chrono::time_point&lt;Clock,
+<li><a name="an2614"></a><code >bool try_lock_until(const chrono::time_point&lt;Clock,
 Duration&gt;&amp; abs_time)</code>:<blockquote >A member template, where <code >Clock</code> and <code >Duration</code> are types specifying
 a clock and absolute time (cf. section <a href="cplusplus20.html#TIMESPEC">20.1</a>). It calls
 <code >mut.try_lock_shared_until(abs_time)</code>, returning its return value. Following
@@ -2548,17 +2548,17 @@ return value of <code >try_lock_shared_until</code>.  Exceptions may be thrown f
 <code >try_lock_shared_until</code>, and otherwise if <code >pm == 0</code> or if the current
 thread already owns the lock;</blockquote>
 <p>
-<li><a name="an2599"></a><code >void unlock()</code>:<blockquote >Unlocks the shared mutex lock, releasing its ownership. Throws an
+<li><a name="an2615"></a><code >void unlock()</code>:<blockquote >Unlocks the shared mutex lock, releasing its ownership. Throws an
 exception if the shared mutex was not owned by the current thread.</blockquote>
     </ul>
 <p>
-<a name="l478"></a>
+<a name="l481"></a>
 <h2 >20.5: Event handling (condition variables)</h2>
 This section introduces <em >condition variables</em>. Condition variables allow
 programs to synchronize threads using the <em >states</em> of data, rather than
 simply locking the <em >access</em> to data (which is realized using mutexes).
 <p>
-Before condition variables can be used the <a name="an2600"></a><code >&lt;condition_variable&gt;</code> header
+Before condition variables can be used the <a name="an2616"></a><code >&lt;condition_variable&gt;</code> header
 file must be included.
 <p>
 To start our discussion, consider a classic producer-consumer scenario: the
@@ -2629,12 +2629,12 @@ variable's members (<code >notify_one, notify_all, wait, wait_for</code>, and
 <code >wait_until</code>) are called.
 <p>
 Condition variables come in two flavors: objects of the class 
-    <a name="an2601"></a><code >std::condition_variable</code> are used in combination
+    <a name="an2617"></a><code >std::condition_variable</code> are used in combination
 with objects of type <code >unique_lock&lt;mutex&gt;</code>. Because of 
 optimizations which are available for this specific combination using 
 <code >condition_variables</code> is somewhat more efficient than using the more
 generally applicable class
-    <a name="an2602"></a><code >std::condition_variable_any</code>, which may be
+    <a name="an2618"></a><code >std::condition_variable_any</code>, which may be
 used with any (e.g., user supplied) lock type.
 <p>
 Condition variable classes (covered in detail in the next two sections) offer
@@ -2654,7 +2654,7 @@ has reacquired the mutex's lock.
 In addition to the condition variable classes the following free function and
 <code >enum</code> type is provided:
     <ul>
-    <li><a name="an2603"></a><code >void
+    <li><a name="an2619"></a><code >void
         std::notify_all_at_thread_exit(condition_variable &amp;cond,
         unique_lock&lt;mutex&gt; lockObject)</code>:<blockquote >once the current thread has ended, all other threads waiting on
         <code >cond</code> are notified. It is good practice to exit the thread as
@@ -2666,7 +2666,7 @@ Waiting threads must verify that the thread they were waiting for has
         they were waiting for is true and that the lock was not
         reacquired before <code >notify_all_at_thread_exit</code> was called.</blockquote>
 <p>
-<li><a name="an2604"></a><code >std::cv_status</code>:<blockquote >the <code >cv_status</code> enum is used by several member functions of the
+<li><a name="an2620"></a><code >std::cv_status</code>:<blockquote >the <code >cv_status</code> enum is used by several member functions of the
         condition variable classes (cf. sections <a href="cplusplus20.html#CONDVAR1">20.5.1</a> and
         <a href="cplusplus20.html#CONDVAR2">20.5.2</a>): 
        <pre>
@@ -2682,13 +2682,13 @@ namespace std
         </blockquote>
     </ul>
 <p>
-<a name="CONDVAR1"></a><a name="l479"></a>
+<a name="CONDVAR1"></a><a name="l482"></a>
 <h3 >20.5.1: The class std::condition_variable</h3>
-    The class <code >std::condition_variable</code><a name="an2605"></a> merely offers a
+    The class <code >std::condition_variable</code><a name="an2621"></a> merely offers a
 default constructor. No copy constructor or overloaded assignment operator is
 provided.
 <p>
-Before using the class <code >condition_variable</code> the <a name="an2606"></a><code >&lt;condition_variable&gt;</code>
+Before using the class <code >condition_variable</code> the <a name="an2622"></a><code >&lt;condition_variable&gt;</code>
 header file must be included.
 <p>
 The class's destructor requires that no thread is blocked by the thread
@@ -2719,14 +2719,14 @@ illustrates this scheme:
 <p>
 The class <code >condition_variable</code>'s members are:
     <ul>
-    <li><a name="an2607"></a><code >void notify_one() noexcept</code>:<blockquote >one <code >wait</code> member called by other threads returns. Which one
+    <li><a name="an2623"></a><code >void notify_one() noexcept</code>:<blockquote >one <code >wait</code> member called by other threads returns. Which one
         actually returns cannot be predicted.</blockquote>
 <p>
-<li><a name="an2608"></a><code >void notify_all() noexcept</code>:<blockquote >all <code >wait</code> members called by other threads unblock their wait
+<li><a name="an2624"></a><code >void notify_all() noexcept</code>:<blockquote >all <code >wait</code> members called by other threads unblock their wait
         states. Of course, only one of them will subsequently succeed in
         reacquiring the condition variable's lock object.</blockquote>
 <p>
-<li><a name="an2609"></a><code >void wait(unique_lock&lt;mutex&gt;&amp; uniqueLock)</code>:<blockquote >before calling <code >wait</code> the current thread must have acquired the lock
+<li><a name="an2625"></a><code >void wait(unique_lock&lt;mutex&gt;&amp; uniqueLock)</code>:<blockquote >before calling <code >wait</code> the current thread must have acquired the lock
         of <code >uniqueLock</code>. Calling <code >wait</code> releases the lock, and the current
         thread is blocked until it has received a notification from another
         thread, and has reacquired the lock.</blockquote>
@@ -2740,7 +2740,7 @@ Before calling <code >wait</code> the current thread must have acquired the lock
         of <code >uniqueLock</code>. As long as `<code >pred</code>' returns <code >false</code>
         <code >wait(lock)</code> is called.</blockquote>
 <p>
-<li><a name="an2610"></a><code >cv_status wait_for(unique_lock&lt;mutex&gt; &amp;uniqueLock,
+<li><a name="an2626"></a><code >cv_status wait_for(unique_lock&lt;mutex&gt; &amp;uniqueLock,
                       std::chrono::duration&lt;Rep, Period&gt; const &amp;relTime)</code>:<blockquote >this member is defined as a member template, using the template header
         <code >template &lt;typename Rep, typename Period&gt;</code>.  
        The template's types are automatically derived from the types of the
@@ -2772,7 +2772,7 @@ As long as <code >pred</code> returns false, the previous <code >wait_for</code>
         called. If the previous member returns <code >cv_status::timeout</code>, then
         <code >pred</code> is returned, otherwise <code >true</code>.</blockquote>
 <p>
-<li><a name="an2611"></a><code >cv_status wait_until(unique_lock&lt;mutex&gt;&amp; uniqueLock,
+<li><a name="an2627"></a><code >cv_status wait_until(unique_lock&lt;mutex&gt;&amp; uniqueLock,
                         chrono::time_point&lt;Clock, Duration&gt; const &amp;absTime)</code>:<blockquote >this member is defined as a member template, using the template
         header <code >template &lt;typename Clock, typename Duration&gt;</code>. 
        The template's types are automatically derived from the types of the
@@ -2808,14 +2808,14 @@ As long as <code >pred</code> returns false, the previous <code >wait_until</cod
     Threads should verify that the required condition is <code >true</code> when
 wait-members of condition variables return.
 <p>
-<a name="CONDVAR2"></a><a name="l480"></a>
+<a name="CONDVAR2"></a><a name="l483"></a>
 <h3 >20.5.2: The class std::condition_variable_any</h3>
     Different from the class <code >condition_variable</code> the class
-    <a name="an2612"></a><code >std::condition_variable_any</code> can be used with
+    <a name="an2628"></a><code >std::condition_variable_any</code> can be used with
 any (e.g., user supplied) lock type, and not just with the stl-provided
 <code >unique_lock&lt;mutex&gt;</code>.
 <p>
-Before using the class <code >condition_variable_any</code> the <a name="an2613"></a><code >&lt;condition_variable&gt;</code>
+Before using the class <code >condition_variable_any</code> the <a name="an2629"></a><code >&lt;condition_variable&gt;</code>
 header file must be included.
 <p>
 The functionality that is offered by <code >condition_variable_any</code> is identical
@@ -2825,7 +2825,7 @@ predefined. The class <code >condition_variable_any</code> therefore requires th
 specification of the lock-type that must be used by its objects.
 <p>
 In the interface shown below this lock-type is referred to as
-<a name="an2614"></a><code >Lock</code>. Most of <code >condition_variable_any's</code> members are defined as
+<a name="an2630"></a><code >Lock</code>. Most of <code >condition_variable_any's</code> members are defined as
 member templates, defining a <code >Lock</code> type as one of its parameters. The
 requirements of these lock-types are identical to those of the stl-provided
 <code >unique_lock</code>, and user-defined lock-type implementations should provide at
@@ -2865,21 +2865,21 @@ like this:
 <p>
 These are the class <code >condition_variable_any's</code> members:
     <ul>
-    <li><a name="an2615"></a><code >void notify_one() noexcept;</code>
-    <li><a name="an2616"></a><code >void notify_all() noexcept;</code>
-    <li><a name="an2617"></a><code >void wait(Lock&amp; lock);</code>
+    <li><a name="an2631"></a><code >void notify_one() noexcept;</code>
+    <li><a name="an2632"></a><code >void notify_all() noexcept;</code>
+    <li><a name="an2633"></a><code >void wait(Lock&amp; lock);</code>
     <li><code >void wait(Lock&amp; lock, Predicate pred);</code>
-    <li><a name="an2618"></a><code >cv_status wait_until(Lock&amp; lock, const
+    <li><a name="an2634"></a><code >cv_status wait_until(Lock&amp; lock, const
         chrono::time_point&lt;Clock, Duration&gt;&amp; absTime);</code>
     <li><code >bool wait_until(Lock&amp; lock, const chrono::time_point&lt;Clock, Duration&gt;&amp;
         absTime, Predicate pred);</code> 
-    <li><a name="an2619"></a><code >cv_status wait_for(Lock&amp; lock, const chrono::duration&lt;Rep,
+    <li><a name="an2635"></a><code >cv_status wait_for(Lock&amp; lock, const chrono::duration&lt;Rep,
         Period&gt;&amp; relTime);</code> 
     <li><code >bool wait_for(Lock&amp; lock, const chrono::duration&lt;Rep, Period&gt;&amp;
         relTime,)</code> <code >Predicate pred</code>; 
     </ul>
 <p>
-<a name="CONDEX"></a><a name="l481"></a>
+<a name="CONDEX"></a><a name="l484"></a>
 <h3 >20.5.3: An example using condition variables</h3>
     Condition variables are used to synchronize threads on the values of data,
 rather than on the mere access to data (for which plain mutex-objects can be
@@ -2912,10 +2912,10 @@ performed by the client or by the producer. For the consumer `waiting' means:
     <li> Reduce the count
     <li> Release the lock.
     </ul>
-    This scheme is implemented in a class <a name="an2620"></a><code >Semaphore</code>, offering members
+    This scheme is implemented in a class <a name="an2636"></a><code >Semaphore</code>, offering members
 <code >wait</code> and <code >notify_all</code>. For a more extensive discussion of semaphores see
-<em ><a name="an2621"></a>Tanenbaum, A.S. and <a name="an2622"></a>Austin, T.</em> (2013)
-    <a name="an2623"></a>Structured Computer Organization, Pearson Prentice-Hall.
+<em ><a name="an2637"></a>Tanenbaum, A.S. and <a name="an2638"></a>Austin, T.</em> (2013)
+    <a name="an2639"></a>Structured Computer Organization, Pearson Prentice-Hall.
 <p>
 The data member containing the actual count is called <code >d_semaphore</code>. It is
 protected by <code >mutex d_mutex</code>.  In addition a <code >condition_variable
@@ -2960,7 +2960,7 @@ increment it can simultaneously be tested for being zero. If it was initially
 zero then <code >d_semaphore</code> is now one. A thread waiting until <code >d_semaphore</code>
 exceeds zero may now continue. A waiting thread is notified by calling
 <code >d_condition.notify_one</code>. In situations where multiple threads are waiting
-`<a name="an2624"></a><code >notify_all</code>' can also be used.
+`<a name="an2640"></a><code >notify_all</code>' can also be used.
 <p>
 Using the facilities of the class <code >Semaphore</code> whose constructor expects
 an initial value of its <code >semaphore</code> data member, the classic
@@ -3008,9 +3008,9 @@ program is found in the <code >yo/threading/examples/events.cc</code> file in th
     }
 </pre>
 <p>
-<a name="l482"></a>
+<a name="l485"></a>
 <h2 >20.6: Atomic actions: mutexes not required</h2>
-Before using the facilities introduced in this section the <a name="an2625"></a><code >&lt;atomic&gt;</code> header
+Before using the facilities introduced in this section the <a name="an2641"></a><code >&lt;atomic&gt;</code> header
 file must be included.
 <p>
 When data are shared among multiple threads, data corruption is usually
@@ -3029,7 +3029,7 @@ This scheme is not complex, but at the end of the day having to define a
 <code >lock_guard</code> for every single use of a simple variable, and having to define
 a matching mutex for each simple variable is a bit annoying and cumbersome.
 <p>
-<strong >C++</strong> offers a way out through the use of <a name="an2626"></a><em >atomic data types</em>.
+<strong >C++</strong> offers a way out through the use of <a name="an2642"></a><em >atomic data types</em>.
 Atomic data types are available for all basic types, and also for (trivial)
 user defined types. Trivial types are (see also section <a href="cplusplus23.html#TYPETRAITS">23.6.2</a>) all
 scalar types, arrays of elements of a trivial type, and classes whose
@@ -3037,7 +3037,7 @@ constructors, copy constructors, and destructors all have default
 implementations, and their non-static data members are themselves of trivial
 types.
 <p>
-The class template <a name="an2627"></a><code >std::atomic&lt;Type&gt;</code> is available for all
+The class template <a name="an2643"></a><code >std::atomic&lt;Type&gt;</code> is available for all
 built-in types, including pointer types. E.g., <code >std::atomic&lt;bool&gt;</code> defines
 an atomic <code >bool</code> type. For many types alternative somewhat shorter
 type names are available. E.g, instead of <code >std::atomic&lt;unsigned short&gt;</code> the
@@ -3045,7 +3045,7 @@ type <code >std::atomic_ushort</code> can be used. Refer to the <code >atomic</c
 for a complete list of alternate names.
 <p>
 If <code >Trivial</code> is a user-defined trivial type then
-        <a name="an2628"></a><code >std::atomic&lt;Trivial&gt;</code>
+        <a name="an2644"></a><code >std::atomic&lt;Trivial&gt;</code>
 defines an atomic variant of <code >Trivial</code>: such a type does not require 
 a separate <code >mutex</code> to synchronize access by multiple threads.
 <p>
@@ -3092,32 +3092,32 @@ explictly mentioned at the function's description.
 <p>
 Here are the standard available <code >std::atomic&lt;Type&gt;</code> member functions:
     <ul>
-    <li><a name="an2629"></a><code >bool compare_exchange_strong(Type
+    <li><a name="an2645"></a><code >bool compare_exchange_strong(Type
         &amp;currentValue, Type newValue) noexcept</code>:<blockquote >The value in the atomic object is compared to <code >newValue</code> using
         byte-wise comparisons. If equal <code >true</code> is returned, and
         <code >newValue</code> is stored in the atomic object; if unequal <code >false</code> is
         returned and the object's current value is stored in
         <code >currentValue</code>;</blockquote>
 <p>
-<li><a name="an2630"></a><code >bool compare_exchange_weak(Type &amp;oldValue,
+<li><a name="an2646"></a><code >bool compare_exchange_weak(Type &amp;oldValue,
         Type newValue) noexcept</code>:<blockquote >The value in the atomic object is compared to <code >newValue</code> using
         byte-wise comparisons. If equal <code >true</code> is returned, and <code >newValue</code>
         is stored in the atomic object; if unequal, or <code >newValue</code> cannot be
         atomically assigned to the current object <code >false</code> is returned and
         the object's current value is stored in <code >currentValue</code>;</blockquote>
 <p>
-<li><a name="an2631"></a><code >Type exchange(Type newValue) noexcept</code>:<blockquote >The object's current value is returned, and <code >newValue</code> is assigned
+<li><a name="an2647"></a><code >Type exchange(Type newValue) noexcept</code>:<blockquote >The object's current value is returned, and <code >newValue</code> is assigned
         to the current object;</blockquote>
 <p>
-<li><a name="an2632"></a><code >bool is_lock_free() const noexept</code>:<blockquote >If the operations on the current object can be performed lock-free
+<li><a name="an2648"></a><code >bool is_lock_free() const noexept</code>:<blockquote >If the operations on the current object can be performed lock-free
         <code >true</code> is returned, otherwise <code >false</code>.
         This member has no <code >memory_order</code> parameter;</blockquote>
 <p>
-<li><a name="an2633"></a><code >Type load() const noexcept</code>:<blockquote >The object's value is returned;</blockquote>
+<li><a name="an2649"></a><code >Type load() const noexcept</code>:<blockquote >The object's value is returned;</blockquote>
 <p>
 <li><code >operator Type() const noexcept</code>:<blockquote >The object's value is returned;</blockquote>
 <p>
-<li><a name="an2634"></a><code >void store(Type newValue) noexcept</code>:<blockquote ><code >NewValue</code> is assigned to the current object. Note that the standard
+<li><a name="an2650"></a><code >void store(Type newValue) noexcept</code>:<blockquote ><code >NewValue</code> is assigned to the current object. Note that the standard
         assignment operator can also be used.</blockquote>
     </ul>
 <p>
@@ -3125,87 +3125,87 @@ In addition to the above members, integral atomic types `<code >Integral</code>'
 (essentially the atomic variants of all built-in integral types) also offer
 the following member functions:
     <ul>
-    <li><a name="an2635"></a><code >Integral fetch_add(Integral value) noexcept</code>:<blockquote ><code >Value</code> is added to the object's value, and the object's
+    <li><a name="an2651"></a><code >Integral fetch_add(Integral value) noexcept</code>:<blockquote ><code >Value</code> is added to the object's value, and the object's
         value at the time of the call is returned;</blockquote>
 <p>
-<li><a name="an2636"></a><code >Integral fetch_sub(Integral value) noexcept</code>:<blockquote ><code >Value</code> is subtracted from the object's value, and the object's
+<li><a name="an2652"></a><code >Integral fetch_sub(Integral value) noexcept</code>:<blockquote ><code >Value</code> is subtracted from the object's value, and the object's
         value at the time of the call is returned;</blockquote>
 <p>
-<li><a name="an2637"></a><code >Integral fetch_and(Integral mask) noexcept</code>:<blockquote >The <code >bit-and</code> operator is applied to the object's value and
+<li><a name="an2653"></a><code >Integral fetch_and(Integral mask) noexcept</code>:<blockquote >The <code >bit-and</code> operator is applied to the object's value and
         <code >mask</code>, assigning the resulting value to the currrent object. The
         object's value at the time of the call is returned;</blockquote>
 <p>
-<li><a name="an2638"></a><code >Integral fetch_|=(Integral mask) noexcept</code>:<blockquote >The <code >bit-or</code> operator is applied to the object's value and <code >mask</code>,
+<li><a name="an2654"></a><code >Integral fetch_|=(Integral mask) noexcept</code>:<blockquote >The <code >bit-or</code> operator is applied to the object's value and <code >mask</code>,
         assigning the resulting value to the currrent object. The object's
         value at the time of the call is returned;</blockquote>
 <p>
-<li><a name="an2639"></a><code >Integral fetch_^=(Integral mask) noexcept</code>:<blockquote >The <code >bit-xor</code> operator is applied to the object's value and
+<li><a name="an2655"></a><code >Integral fetch_^=(Integral mask) noexcept</code>:<blockquote >The <code >bit-xor</code> operator is applied to the object's value and
         <code >mask</code>, assigning the resulting value to the currrent object. The
         object's value at the time of the call is returned;</blockquote>
 <p>
-<li><a name="an2640"></a><code >Integral operator++() noexcept</code>:<blockquote >The prefix increment operator, returning object's new value;</blockquote>
+<li><a name="an2656"></a><code >Integral operator++() noexcept</code>:<blockquote >The prefix increment operator, returning object's new value;</blockquote>
 <p>
-<li><a name="an2641"></a><code >Integral operator++(int) noexcept</code>:<blockquote >The postfix increment operator, returning the object's value before it
+<li><a name="an2657"></a><code >Integral operator++(int) noexcept</code>:<blockquote >The postfix increment operator, returning the object's value before it
         was incremented;</blockquote>
 <p>
-<li><a name="an2642"></a><code >Integral operator--() noexcept</code>:<blockquote >The prefix decrement operator, returning object's new value;</blockquote>
+<li><a name="an2658"></a><code >Integral operator--() noexcept</code>:<blockquote >The prefix decrement operator, returning object's new value;</blockquote>
 <p>
-<li><a name="an2643"></a><code >Integral operator--(int) noexcept</code>:<blockquote >The postfix decrement operator, returning the object's value before it
+<li><a name="an2659"></a><code >Integral operator--(int) noexcept</code>:<blockquote >The postfix decrement operator, returning the object's value before it
         was decremented;</blockquote>
 <p>
-<li><a name="an2644"></a><code >Integral operator+=(Integral value) noexcept</code>:<blockquote ><code >Value</code> is added to the object's current value and the object's
+<li><a name="an2660"></a><code >Integral operator+=(Integral value) noexcept</code>:<blockquote ><code >Value</code> is added to the object's current value and the object's
         new value is returned;</blockquote>
 <p>
-<li><a name="an2645"></a><code >Integral operator-=(Integral value) noexcept</code>:<blockquote ><code >Value</code> is subtracted from the object's current value and the
+<li><a name="an2661"></a><code >Integral operator-=(Integral value) noexcept</code>:<blockquote ><code >Value</code> is subtracted from the object's current value and the
         object's new value is returned;</blockquote>
 <p>
-<li><a name="an2646"></a><code >Integral operator&amp;=(Integral mask) noexcept</code>:<blockquote >The <code >bit-and</code> operator is applied to the object's current value and
+<li><a name="an2662"></a><code >Integral operator&amp;=(Integral mask) noexcept</code>:<blockquote >The <code >bit-and</code> operator is applied to the object's current value and
         <code >mask</code>, assigning the resulting value to the currrent object. The
         object's new value is returned;</blockquote>
 <p>
-<li><a name="an2647"></a><code >Integral operator|=(Integral mask) noexcept</code>:<blockquote >The <code >bit-or</code> operator is applied to the object's current value and
+<li><a name="an2663"></a><code >Integral operator|=(Integral mask) noexcept</code>:<blockquote >The <code >bit-or</code> operator is applied to the object's current value and
         <code >mask</code>, assigning the resulting value to the currrent object. The
         object's new value is returned;</blockquote>
 <p>
-<li><a name="an2648"></a><code >Integral operator^=(Integral mask) noexcept</code>:<blockquote >The <code >bit-xor</code> operator is applied to the object's current value and
+<li><a name="an2664"></a><code >Integral operator^=(Integral mask) noexcept</code>:<blockquote >The <code >bit-xor</code> operator is applied to the object's current value and
         <code >mask</code>, assigning the resulting value to the currrent object. The
         object's new value is returned;</blockquote>
     </ul>
 <p>
 Some of the free member functions have names ending in <code >_explicit</code>. The
-<code >_explicit</code> functions define an additional parameter `<a name="an2649"></a><code >memory_order</code>
+<code >_explicit</code> functions define an additional parameter `<a name="an2665"></a><code >memory_order</code>
 <code >order</code>', which is not available for the non-<code >_explicit</code> functions (e.g.,
 <code >atomic_load(atomic&lt;Type&gt; *ptr)</code> and <code >atomic_load_explicit(atomic&lt;Type&gt;
 *ptr, memory_order order)</code>)
 <p>
 Here are the free functions that are available for all atomic types:
     <ul>
-    <li><a name="an2650"></a><code >bool
+    <li><a name="an2666"></a><code >bool
         std::atomic_compare_exchange_strong(_explicit)(std::atomic&lt;Type&gt; *ptr,
         Type *oldValue, Type newValue) noexept</code>:<blockquote >returns <code >ptr-&gt;compare_exchange_strong(*oldValue, newValue)</code>;</blockquote>
 <p>
-<li><a name="an2651"></a><code >bool
+<li><a name="an2667"></a><code >bool
         std::atomic_compare_exchange_weak(_explicit)(std::atomic&lt;Type&gt; *ptr,
         Type *oldValue, Type newValue) noexept</code>:<blockquote >returns <code >ptr-&gt;compare_exchange_weak(*oldValue, newValue)</code>;</blockquote>
 <p>
-<li><a name="an2652"></a><code >Type
+<li><a name="an2668"></a><code >Type
         std::atomic_exchange(_explicit)(std::atomic&lt;Type&gt; *ptr, Type newValue)
         noexept</code>:<blockquote >returns <code >ptr-&gt;exchange(newValue)</code>;</blockquote>
 <p>
-<li><a name="an2653"></a><code >void std::atomic_init(std::atomic&lt;Type&gt; *ptr, Type
+<li><a name="an2669"></a><code >void std::atomic_init(std::atomic&lt;Type&gt; *ptr, Type
         init) noexept</code>:<blockquote >Stores <code >init</code> <em >non</em>-atomically in <code >*ptr</code>. The object pointed to
         by <code >ptr</code> must have been default constructed, and as yet no member
         functions must have been called for it.
         This function has no <code >memory_order</code> parameter;</blockquote>
 <p>
-<li><a name="an2654"></a><code >bool std::atomic_is_lock_free(std::atomic&lt;Type&gt;
+<li><a name="an2670"></a><code >bool std::atomic_is_lock_free(std::atomic&lt;Type&gt;
         const *ptr) noexept</code>:<blockquote >returns <code >ptr-&gt;is_lock_free()</code>.
         This function has no <code >memory_order</code> parameter;</blockquote>
 <p>
-<li><a name="an2655"></a><code >Type
+<li><a name="an2671"></a><code >Type
         std::atomic_load(_explicit)(std::atomic&lt;Type&gt; *ptr) noexept</code>:<blockquote >returns <code >ptr-&gt;load()</code>;</blockquote>
 <p>
-<li><a name="an2656"></a><code >void
+<li><a name="an2672"></a><code >void
         std::atomic_store(_explicit)(std::atomic&lt;Type&gt; *ptr, Type value)
         noexept</code>:<blockquote >calls <code >ptr-&gt;store(value)</code>.</blockquote>
     </ul>    
@@ -3213,28 +3213,28 @@ Here are the free functions that are available for all atomic types:
 In addition to the abovementioned free functions <code >atomic&lt;Integral&gt;</code> types
 also offer the following free member functions:
     <ul>
-    <li><a name="an2657"></a><code >Integral
+    <li><a name="an2673"></a><code >Integral
         std::atomic_fetch_add(_explicit)(std::atomic&lt;Integral&gt; *ptr, Integral
         value) noexcept</code>:<blockquote >returns <code >ptr-&gt;fetch_add(value)</code>;</blockquote>
 <p>
-<li><a name="an2658"></a><code >Integral
+<li><a name="an2674"></a><code >Integral
         std::atomic_fetch_sub(_explicit)(std::atomic&lt;Integral&gt; *ptr, Integral
         value) noexcept</code>:<blockquote >returns <code >ptr-&gt;fetch_sub(value)</code>;</blockquote>
 <p>
-<li><a name="an2659"></a><code >Integral
+<li><a name="an2675"></a><code >Integral
         std::atomic_fetch_and(_explicit)(std::atomic&lt;Integral&gt; *ptr, Integral
         mask) noexcept</code>:<blockquote >returns <code >ptr-&gt;fetch_and(value)</code>;</blockquote>
 <p>
-<li><a name="an2660"></a><code >Integral
+<li><a name="an2676"></a><code >Integral
         std::atomic_fetch_or(_explicit)(std::atomic&lt;Integral&gt; *ptr, Integral
         mask) noexcept</code>:<blockquote >returns <code >ptr-&gt;fetch_or(value)</code>;</blockquote>
 <p>
-<li><a name="an2661"></a><code >Integral
+<li><a name="an2677"></a><code >Integral
         std::atomic_fetch_xor(_explicit)(std::atomic&lt;Integral&gt; *ptr, Integral
         mask) noexcept</code>:<blockquote >returns <code >ptr-&gt;fetch_xor(mask)</code>.</blockquote>
     </ul>
 <p>
-<a name="l483"></a>
+<a name="l486"></a>
 <h2 >20.7: An example: threaded quicksort</h2>
 The quicksort sorting algorithm (Hoare, 1962) is a well-known sorting
 algorithm. Given an array of <code >n</code> elements, it works like this:
@@ -3268,7 +3268,7 @@ simple task:
 </pre>
 <p>
 Unfortunately, this translation to a multi-threaded approach won't work for 
-reasonably large arrays because of a phenomenon called <a name="an2662"></a><em >overpopulation</em>:
+reasonably large arrays because of a phenomenon called <a name="an2678"></a><em >overpopulation</em>:
 more threads are started than the operating system is prepared to give us. In
 those cases a <em >Resource temporarily unavailable</em> exception is thrown, and
 the program ends.
@@ -3281,7 +3281,7 @@ requests on to the next available worker.
 <p>
 The main data structure of the example program developed in this section is a
 queue of <code >std::pairs</code> containing iterators of the array to be sorted
-(cf. Figure <a href="cplusplus20.html#sorting">23</a>, the sources of the program are found in the annotation()'s
+(cf. Figure <a href="cplusplus20.html#sorting">24</a>, the sources of the program are found in the annotation()'s
 <code >yo/threading/examples/multisort</code> directory). Two queues are being used: one
 queue is a task-queue, receiving the iterators of sub-arrays to be
 partitioned. Instead of immediately launching new threads (the <code >lhs</code> and
@@ -3292,7 +3292,7 @@ worker threads.
 <p>
 <p><a name="sorting"></a><figure >
 <img src="threading/sorting.gif" >
-<figcaption >Figure 23: Data structure used for multi-threading quicksort</figcaption>
+<figcaption >Figure 24: Data structure used for multi-threading quicksort</figcaption>
 </figure></p>
 
 <p>
@@ -3427,16 +3427,16 @@ to the task queue, creating two new tasks to be dealt with by the scheduler:
     }
 </pre>
 <p>
-<a name="l484"></a>
+<a name="l487"></a>
 <h2 >20.8: Shared States</h2>
 Just before a thread ends it may have produced some results. These results may
 have to to be communicated to other threads. In multi threaded programs
 several classes and functions can be used that produce 
-    <a name="an2663"></a><em >shared states</em>, making it easy to communicate results
+    <a name="an2679"></a><em >shared states</em>, making it easy to communicate results
 to other threads. Results could be values, objects or exceptions.
 <p>
 Objects that contain such shared states are called 
-    <a name="an2664"></a><em >asynchronous return objects</em>. However,
+    <a name="an2680"></a><em >asynchronous return objects</em>. However,
 due to the nature of multi threading, a thread may request the results of an
 asynchronous return object before these result are actually available. In
 those cases the requesting thread blocks, waiting for the results to become
@@ -3447,7 +3447,7 @@ is used to indicate that the results are available is `the shared state has
 been made ready'.
 <p>
 Shared states are made ready by 
-    <a name="an2665"></a><em >asynchronous providers</em>. Asynchronous
+    <a name="an2681"></a><em >asynchronous providers</em>. Asynchronous
 providers are simply objects or functions providing results to shared
 states. Making a shared state ready means that an asynchronous provider
     <ul>
@@ -3467,17 +3467,17 @@ access-conflicts.
 Shared states use reference counting to keep track of the number of
 asynchronous return objects or asynchronous providers that hold references to
 them. These return objects and providers may release their references to these
-shared states <a name="an2666"></a> (which is called `releasing the
+shared states <a name="an2682"></a> (which is called `releasing the
 shared state). This happens when a return object or provider holds the last
 reference to the shared state, and
-    <a name="an2667"></a> the shared state is destroyed.
+    <a name="an2683"></a> the shared state is destroyed.
 <p>
 On the other hand, an asynchronous provider may also 
-    <a name="an2668"></a><em >abandon</em> its shared state. In that case the
+    <a name="an2684"></a><em >abandon</em> its shared state. In that case the
 provider, in sequence,
     <ul>
     <li> stores an exception object of type 
-            <a name="an2669"></a><code >std::future_error</code>, holding the error condition
+            <a name="an2685"></a><code >std::future_error</code>, holding the error condition
             <code >std::broken_promise</code> in its shared state;
     <li> makes its shared data ready; and
     <li> releases its shared data.
@@ -3489,7 +3489,7 @@ return objects. They can be produced by the <code >std::async</code> (section
 <code >std::packaged_task</code> (section <a href="cplusplus20.html#PACKAGE">20.12</a>), and <code >std::promise</code> (section
 <a href="cplusplus20.html#PROMISE">20.13</a>).
 <p>
-<a name="FUTURE"></a><a name="l485"></a>
+<a name="FUTURE"></a><a name="l488"></a>
 <h2 >20.9: Asynchronous return objects: std::future</h2>
 Condition variables allow threads to wait until data have obtained certain
 values. A thread may also have to wait until a sub-thread has finished when
@@ -3507,10 +3507,10 @@ other threads) to pick up the result at some point in the future, when the
 results are needed, without having to worry about data locks or waiting times.
 For situations like these <strong >C++</strong> provides the class <code >std::future</code>.
 <p>
-Before using the class <a name="an2670"></a> <code >std::future</code> the <a name="an2671"></a><code >&lt;future&gt;</code> header file
+Before using the class <a name="an2686"></a> <code >std::future</code> the <a name="an2687"></a><code >&lt;future&gt;</code> header file
 must be included.
 <p>
-Objects of the class template <a name="an2672"></a><code >std::future</code> harbor the results
+Objects of the class template <a name="an2688"></a><code >std::future</code> harbor the results
 produced by asynchronously executed tasks. The class <code >std::future</code> is a
 class template. Its template type parameter specifies the type of the result
 returned by the asynchronously executed task. This type may be <code >void</code>.
@@ -3528,7 +3528,7 @@ described. <code >Future</code> objects are commonly initialized through anonymo
 of <code >std::future</code> objects are provided in those sections.
 <p>
 Some of <code >future</code>'s members return a value of the strongly typed
-enumeration <a name="an2673"></a><code >std::future_status</code>. This enumeration defines
+enumeration <a name="an2689"></a><code >std::future_status</code>. This enumeration defines
 three symbolic constants: <code >future_status::ready, future_status::timeout,</code>
 and <code >future_status::deferred</code>. 
 <p>
@@ -3573,8 +3573,8 @@ Here are the members of the class <code >std::future</code>:
         <code >valid</code> returns <code >false</code>, the <code >future</code> object exists, but in
         addition to <code >valid</code> only its destructor and move constructor can
         safely be called. When other members are called while <code >valid</code>
-        returns <code >false</code> a <a name="an2674"></a><code >std::future_error</code> exception is
-        thrown (having the value <a name="an2675"></a><code >future_errc::no_state</code>).</blockquote>
+        returns <code >false</code> a <a name="an2690"></a><code >std::future_error</code> exception is
+        thrown (having the value <a name="an2691"></a><code >future_errc::no_state</code>).</blockquote>
 <p>
 <li><code >void wait() const</code>:<blockquote >The thread is blocked until the results produced by the associated
         asynchronous task are available.</blockquote>
@@ -3622,15 +3622,15 @@ Here are the members of the class <code >std::future</code>:
 </pre>
     (cf. section <a href="cplusplus20.html#ASYNC">20.11</a>).
 <p>
-<a name="l486"></a>
+<a name="l489"></a>
 <h3 >20.9.1: The std::future_error exception and the std::future_errc enum</h3>
     Members of the class <code >std::future</code> may return errors by throwing
 <code >std::future_error</code> exceptions. These error conditions are represented by
 the values of the strongly typed enumeration
-    <a name="an2676"></a><code >std::future_errc</code> which defines the following symbolic
+    <a name="an2692"></a><code >std::future_errc</code> which defines the following symbolic
 constants:
     <ul>
-    <li><a name="an2677"></a><code >broken_promise</code>
+    <li><a name="an2693"></a><code >broken_promise</code>
         <blockquote > 
    <code >Broken_promise</code> is thrown when a <code >future</code> object was received whose
     value was never assigned by a <code >promise</code> or <code >packaged_task</code>. For
@@ -3659,10 +3659,10 @@ constants:
 At line 3 a <code >promise</code> object is created, but its value is never
     set. Consequently, it `breaks its promise' to produce a value: when
     <code >main</code> tries to retrieve its value (in line 9) a <code >std::futue_error</code>
-    exception is thrown containing the the <code >future_errc::broken_promise</code>
+    exception is thrown containing the <code >future_errc::broken_promise</code>
     value</blockquote>
 <p>
-<li><a name="an2678"></a><code >future_already_retrieved</code> 
+<li><a name="an2694"></a><code >future_already_retrieved</code> 
         <blockquote >
    <code >Future_already_retrieved</code> is thrown when multiple attempts are made to
     retrieve the <code >future</code> object from, e.g., a <code >promise</code> or
@@ -3684,7 +3684,7 @@ Note that after defining the <code >std::promise</code> object in line 3 it has
     but then, in line 5, the exception is thrown as `the future has already
     been retrieved'.</blockquote>
 <p>
-<li><a name="an2679"></a><code >promise_already_satisfied</code> 
+<li><a name="an2695"></a><code >promise_already_satisfied</code> 
         <blockquote >
    <code >Promise_already_satisfied</code> is thrown when multiple attempts are made to
     assign a value to a <code >promise</code> object. Assigning a value or
@@ -3701,7 +3701,7 @@ Note that after defining the <code >std::promise</code> object in line 3 it has
 <p>
 </blockquote>
 <p>
-<li><a name="an2680"></a><code >no_state</code> 
+<li><a name="an2696"></a><code >no_state</code> 
         <blockquote >
    <code >No_state</code> is thrown when a member function (other than <code >valid</code>, see
     below) of a <code >future</code> object is called when its <code >valid</code> member returns
@@ -3721,22 +3721,22 @@ Note that after defining the <code >std::promise</code> object in line 3 it has
 </blockquote>
     </ul>
 <p>
-The class   <a name="an2681"></a><code >std::future_error</code> is derived from the class
+The class   <a name="an2697"></a><code >std::future_error</code> is derived from the class
 <code >std::exception</code>, and offers, in addition to the <code >char const *what()
-const</code> member also the member <a name="an2682"></a><code >std::error_code const &amp;code() const</code>,
-returning an <a name="an2683"></a><code >std::error_code</code> object associated
+const</code> member also the member <a name="an2698"></a><code >std::error_code const &amp;code() const</code>,
+returning an <a name="an2699"></a><code >std::error_code</code> object associated
 with the thrown exception. 
 <p>
-<a name="SHAREDFUTURE"></a><a name="l487"></a>
+<a name="SHAREDFUTURE"></a><a name="l490"></a>
 <h2 >20.10: Shared asynchronous return objects: std::shared_future</h2>
 When a thread activates an asynchronous provider (e.g., a <code >std::async</code>) then
 the return value of the asynchronously called function becomes available in
 its activating thread through a <code >std::future</code> object. The
 <code >future</code> object cannot be used by another thread. If this is required (e.g.,
 see this chapter's final section) the <code >future</code> object must be converted to a
-    <a name="an2684"></a><code >std::shared_future</code> object. 
+    <a name="an2700"></a><code >std::shared_future</code> object. 
 <p>
-Before using the class <code >std::shared_future</code> the <a name="an2685"></a><code >&lt;future&gt;</code> header file
+Before using the class <code >std::shared_future</code> the <a name="an2701"></a><code >&lt;future&gt;</code> header file
 must be included.
 <p>
 Once a <code >shared_future</code> object is available, its <code >get</code> member (see below)
@@ -3879,14 +3879,14 @@ Here are the members of the class <code >std::shared_future</code>:
         </blockquote>
     </ul>
 <p>
-<a name="ASYNC"></a><a name="l488"></a>
+<a name="ASYNC"></a><a name="l491"></a>
 <h2 >20.11: Starting a new thread: std::async</h2>
-In this section the function template <a name="an2686"></a><code >std::async</code> is
+In this section the function template <a name="an2702"></a><code >std::async</code> is
 covered. <code >Async</code> is used to start asynchronous tasks, returning values (or
 <code >void</code>) to the calling thread, which is hard to realize merely using the
 <code >std::thread</code> class.
 <p>
-Before using the function <code >async</code> the <a name="an2687"></a><code >&lt;future&gt;</code> header file must be
+Before using the function <code >async</code> the <a name="an2703"></a><code >&lt;future&gt;</code> header file must be
 included. 
 <p>
 When starting a thread using the facilities of the class <code >std::thread</code> the
@@ -3929,7 +3929,7 @@ arguments which are forwarded to the function.
 <p>
 Although the function implementing the asynchronous task may be passed as
 first argument, <code >async</code> first argument may also be a value of the strongly
-typed enumeration <a name="an2688"></a><a name="an2689"></a><a name="an2690"></a><code >std::launch</code>:
+typed enumeration <a name="an2704"></a><a name="an2705"></a><a name="an2706"></a><code >std::launch</code>:
         <pre>
     enum class launch
     {
@@ -4104,9 +4104,9 @@ completion of the task to another thread. Scenarios like this are realized
 through objects of the class <code >std::package_task</code>, which is the topic of the
 next section.
 <p>
-<a name="PACKAGE"></a><a name="l489"></a>
+<a name="PACKAGE"></a><a name="l492"></a>
 <h2 >20.12: Preparing a task for execution: std::packaged_task</h2>
-The class template <a name="an2691"></a><code >std::packaged_task</code> allows a program to
+The class template <a name="an2707"></a><code >std::packaged_task</code> allows a program to
 `package' a function or functor and pass the package to a thread for further
 processing. The processing thread then calls the packaged function, passing it
 its arguments (if any). After completing the function the <code >packaged_task's</code>
@@ -4114,7 +4114,7 @@ future is ready, allowing the program to retrieve the results produced by
 the function. Thus, functions and the results of function calls can be
 transferred between threads.
 <p>
-Before using the class template <code >packaged_task</code> the <a name="an2692"></a><code >&lt;future&gt;</code> header file
+Before using the class template <code >packaged_task</code> the <a name="an2708"></a><code >&lt;future&gt;</code> header file
 must be included.
 <p>
 Before describing the class's interface, let's first look at an example to get
@@ -4268,7 +4268,7 @@ Constructors and destructor:
 <p>
 Optionally an <code >Allocator</code> may be specified as second template type
         parameter, in which case the first two arguments are
-        <a name="an2693"></a><code >std::allocator_arg_t, Allocator const
+        <a name="an2709"></a><code >std::allocator_arg_t, Allocator const
         &amp;alloc</code>. The type <code >std::allocator_arg_t</code> is a type introduced to
         disambiguate constructor selections, and can simply be specified as
         <code >std::allocator_arg_t()</code>.
@@ -4284,7 +4284,7 @@ This constructor may throw a <code >std::bad_alloc</code> exception or
 <p>
 Member functions:
     <ul>
-    <li><a name="an2694"></a><code >future&lt;ReturnType&gt; get_future()</code>:<blockquote >A <code >std::future</code> object is returned holding the results of the
+    <li><a name="an2710"></a><code >future&lt;ReturnType&gt; get_future()</code>:<blockquote >A <code >std::future</code> object is returned holding the results of the
         separately executed thread. When <code >get_future</code> is incorrectly called
         a <code >future_error</code> exception is thrown, containing one of the
         following values:
@@ -4350,13 +4350,13 @@ objects is available:
        <blockquote >Calls <code >lhs.swap(rhs)</code></blockquote>
     </ul>
 <p>
-<a name="PROMISE"></a><a name="l490"></a>
+<a name="PROMISE"></a><a name="l493"></a>
 <h2 >20.13: The class `std::promise'</h2>
 In addition to <code >std::package_task</code> and <code >std::async</code> the class template
-    <a name="an2695"></a><code >std::promise</code> can be used to obtain the results from a
+    <a name="an2711"></a><code >std::promise</code> can be used to obtain the results from a
 separate thread.
 <p>
-Before using the class template <code >promise</code> the <a name="an2696"></a><code >&lt;future&gt;</code> header file
+Before using the class template <code >promise</code> the <a name="an2712"></a><code >&lt;future&gt;</code> header file
 must be included.
 <p>
 A <code >promise</code> is useful to obtain the results from another thread without
@@ -4567,14 +4567,14 @@ available:
         noexcept</code>:<blockquote >Calls <code >lhs.swap(rhs)</code></blockquote>
     </ul>
 <p>
-<a name="EXCPTR"></a><a name="l491"></a>
+<a name="EXCPTR"></a><a name="l494"></a>
 <h3 >20.13.1: Exception propagation: std::exception_ptr</h3>
     <code >Std::promise's</code> member <code >set_exception</code> does not expect an
 <code >std::exception</code> argument, but an object of the class
-<a name="an2697"></a><code >std::exception_ptr</code>. In this section we take a closer look
+<a name="an2713"></a><code >std::exception_ptr</code>. In this section we take a closer look
 at the class <code >exception_ptr</code>.
 <p>
-Before using the class <code >exception_ptr</code> the <a name="an2698"></a><code >&lt;future&gt;</code> header file
+Before using the class <code >exception_ptr</code> the <a name="an2714"></a><code >&lt;future&gt;</code> header file
 must be included.
 <p>
 The class an <code >exception_ptr's</code> default constructor initializes it to a
@@ -4596,7 +4596,7 @@ There is no published method directly retrieving the exception to which an
 <code >exception_ptr</code> object refers. However, there are some free functions
 constructing or handling <code >exception_ptr</code> objects:
     <ul>
-    <li><a name="an2699"></a><code >std::exception_ptr std::current_exception() noexcept</code>:<blockquote >An <code >exception_ptr</code> object is returned referring to the currently
+    <li><a name="an2715"></a><code >std::exception_ptr std::current_exception() noexcept</code>:<blockquote >An <code >exception_ptr</code> object is returned referring to the currently
         handled exception (or a copy of the currently handled exception, or a
         default constructed <code >exception_ptr</code> object if no current exception
         is available). This function can also be called when a default
@@ -4620,7 +4620,7 @@ constructing or handling <code >exception_ptr</code> objects:
         <code >exception_ptr</code> objects may or may not refer to the same exception
         object.</blockquote>
 <p>
-<li><a name="an2700"></a><code >std::exception_ptr make_exception_ptr(Type
+<li><a name="an2716"></a><code >std::exception_ptr make_exception_ptr(Type
         value) noexcept</code>:<blockquote >This function template constructs an <code >exception_ptr</code> from a value of
         any type which is passed as its argument. <code >Type</code> does not
         necessarily have to be an <code >std::exception</code>. The constructed
@@ -4642,12 +4642,12 @@ obj.set_exception(make_exception_ptr(ptr);
        )
        </blockquote>
 <p>
-<li><a name="an2701"></a><code >void std::rethrow_exception(exception_ptr obj)</code>:<blockquote >The exception to which <code >obj</code> refers is thrown. Note: <code >obj</code>
+<li><a name="an2717"></a><code >void std::rethrow_exception(exception_ptr obj)</code>:<blockquote >The exception to which <code >obj</code> refers is thrown. Note: <code >obj</code>
         cannot be a <code >nullptr</code>.</blockquote>
 <p>
 </ul>
 <p>
-<a name="l492"></a>
+<a name="l495"></a>
 <h2 >20.14: An example: multi-threaded compilations</h2>
 In this section another program is developed. This section's  example program
 illustrates the use of <code >packaged_tasks</code>. 
@@ -4658,13 +4658,13 @@ current example the tasks happens to be identical, but diffent tasks might as
 well have been used, without the need to update the workers.
 <p>
 The program uses a <code >class Task</code> containing a command-specification
-(<code >d_command</code>, and a task specification (<code >d_task</code>) (cf. Figure <a href="cplusplus20.html#compile">24</a>, the
+(<code >d_command</code>, and a task specification (<code >d_task</code>) (cf. Figure <a href="cplusplus20.html#compile">25</a>, the
 sources of the program are found in the 
 <code >yo/threading/examples/multicompile</code> directory) of the <strong >C++</strong> Annotations).
 <p>
 <p><a name="compile"></a><figure >
 <img src="threading/compile.gif" >
-<figcaption >Figure 24: Data structure used for the multi-threading compilation</figcaption>
+<figcaption >Figure 25: Data structure used for the multi-threading compilation</figcaption>
 </figure></p>
 
 <p>

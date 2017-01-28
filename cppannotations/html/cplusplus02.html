@@ -1,6 +1,6 @@
 <!DOCTYPE html><html><head>
 <meta charset="UTF-8">
-<title> C++ Annotations Version 10.6.0 </title>
+<title> C++ Annotations Version 10.7.0 </title>
 <link rel="stylesheet" type="text/css" href="cplusplus.css"><style type="text/css">
     figure {text-align: center;}
     img {vertical-align: center;}
@@ -37,7 +37,7 @@ by the <strong >C++</strong> Annotations, as these tokens occur extremely seldom
 code. In addition, <a name="an5"></a><em >trigraphs</em> (using <code >??&lt;</code> for <code >{</code>, and <code >??&gt;</code> for
 <code >}</code>) were removed from <strong >C++</strong> in the <a name="an6"></a>C++17 standard.
 <p>
-The version number of the <strong >C++</strong> Annotations (currently 10.6.0) is updated when
+The version number of the <strong >C++</strong> Annotations (currently 10.7.0) is updated when
 the contents of the document change. The first number is the major number, and
 is probably not going to change for some time: it indicates a major
 rewriting. The middle number is increased when new information is added to the
@@ -51,7 +51,7 @@ the Netherlands under the <a name="an7"></a>
 <p>
 The <strong >C++ Annotations</strong> were typeset using the <a name="an8"></a>
     <a name="an9"></a>
-    <a target=_top href="http://yodl.sourceforge.net">yodl</a>
+    <a target=_top href="https://fbb-git.github.io/yodl/">yodl</a>
 formatting system.
 <p>
 <blockquote >
@@ -81,6 +81,10 @@ a major version upgrade the entries of the previous major version are kept,
 and entries referring to older releases are removed.
     <ul>
 
+    <li> Version 10.7.0 adds various sections about the upcoming new C++17
+        standard (cf. section <a href="cplusplus02.html#CXVII">2.5.14</a>). In addition, the sections about
+        overloading binary operators and adding binary operators to existing
+        classes were rewritten.
     <li> Version 10.6.0 adds a section (Lvalues, rvalues and more) introducing
         some new terms in addition to the familiar terms `lvalue and rvalue';
         adds a new section (Standard Exceptions: to use or not to use?) about
@@ -168,7 +172,7 @@ Gradually new chapters were added, and the contents were modified and further
 improved (thanks to countless readers who sent us their comment).
 <p>
 In major version four Frank added new chapters and converted the document from
-SGML to <a target=_top href="http://yodl.sourceforge.net">yodl</a>.
+SGML to <a target=_top href="https://fbb-git.github.io/yodl/">yodl</a>.
     <blockquote >
     The <strong >C++</strong> Annotations are freely distributable. Be sure to read
     the <a href="legal.shtml">legal notes</a>.
@@ -300,8 +304,8 @@ to activate the features of the C++14 standard.
 serious programming projects program maintenance tools are used. Usually the
 standard <a name="an42"></a><code >make</code> program is used to maintain <strong >C++</strong> programs, but good
 alternatives exist, like  the <a name="an43"></a>
-        <a target=_top href="http://icmake.sourceforge.net/">icmake</a>
-    or <a name="an44"></a> <a target=_top href="http://ccbuild.sourceforge.net/">ccbuild</a> program
+        <a target=_top href="https://fbb-git.github.io/icmake/">icmake</a>
+    or <a name="an44"></a> <a target=_top href="https://github.com/bneijt/ccbuild/">ccbuild</a> program
 maintenance utilities.
 <p>
 It is strongly advised to start using maintenance utilities early in the study
@@ -647,7 +651,7 @@ is then also possible to
     overload member functions by their <code >const</code> attributes. In those cases,
 classes may have pairs of identically named member functions, having identical
 parameter lists. Then, these functions are overloaded by their <code >const</code>
-attribute. In such cases only one of these function must have the <code >const</code>
+attribute. In such cases only one of these functions must have the <code >const</code>
 attribute.
     </ul>
 <p>
@@ -1110,6 +1114,194 @@ circle might contain three <code >int</code> values: two values for the coordina
 the center of the circle and one value for the radius. Analogously to the
 <code >Point</code> structure, a <code >Circle</code> may now have a function <code >draw</code> to draw the
 circle.
+<p>
+<a name="CXVII"></a><a name="l26"></a>
+<h3 >2.5.14: Upcoming C++17 features</h3>
+        The next <strong >C++</strong> standard will be <a name="an116"></a>C++17 (also referred to as <a name="an117"></a>C++1z).
+Work is currently in progress to add the new (C++17) features of the language
+to the next major version upgrade of the Gnu <code >g++</code> compiler (version
+7.0.0 or beyond).
+<p>
+The working draft of the standard is freely available, and can be cloned from
+the git-repository at <a href="https://github.com/cplusplus/draft.git">https://github.com/cplusplus/draft.git</a>
+<p>
+In time the <strong >C++</strong> Annotations will reflect the changes related to the C++17
+standard. Refer to the C++17 entry in the index for locations where the C++17
+standard is mentioned.
+<p>
+The <a name="an118"></a>C++17 standard adds the following features to the language:
+<p>
+<dl>    
+<dt ><strong>Aggregate initialization extensions</strong></dt>
+<p>
+Aggreates (e.g., structs) can be initialized using the familiar
+curly-brace notation. C++17 extends the initialization possibilities by
+allowing, e.g., structs using inheritance to be initialized using the curly
+braces notation as well. Example:
+        <pre>
+struct Base
+{
+    int value;
+};
+struct Derived: public Base
+{
+    string text;
+    void member();
+};
+
+// Initializing a Derived object:
+
+Derived der{{value}, "hello world"};
+//          -------
+//          initialization of the (first) base class.
+</pre>
+<p>
+<dt ><strong>Evaluation order of operands of operators</strong></dt>
+<p>
+Up to C++17, the evaluation order of expressions of operands of binary
+operators is, except for the boolean operators <code >and</code> and <code >or</code>, not
+defined. C++17 changes this for postfix expressions, assignment expressions
+(including compound assignments), and shift operators:
+    <ul>
+    <li> Postfix expressions (like index operators and member selectors) 
+        are evaluated from left to right;
+    <li> Assignment expressions are evaluated from right to left;
+    <li> Operands of shift operators are evaluated from left to right.
+    </ul>
+    In the following examples <code >first</code> is evaluated before <code >second</code>, before
+<code >third</code>, before <code >fourth</code>, whether they are single variables, parenthesized
+expressions, or function calls:
+        <pre>
+    first.second
+    fourth += third = second += first
+    first &lt;&lt; second &lt;&lt; third &lt;&lt; fourth
+    first &gt;&gt; second &gt;&gt; third &gt;&gt; fourth
+</pre>
+    In addition, when overloading an operator, the function implementing the
+overloaded operator is evaluated like the built-in operator it overloads, and
+not in the way function call are ordered in genereal.
+<p>
+<dt ><strong>[[fallthrough]]</strong></dt><a name="an119"></a>
+<p>
+When statements that are nested under <code >case</code> entries in <code >switch</code>
+statements continue into subsequent <code >case</code> or <code >default</code> entries the
+compiler will issue a `falling through' warning. If falling through is
+intentional the attribute <code >[[fallthrough]]</code> should be used. Here is an
+annotated example:
+        <pre>
+void function(int selector)
+{
+    switch (selector)
+    {
+        case 1:
+        case 2:             // no falling through, but merged entry points
+            cout &lt;&lt; "cases 1 and 2\n";
+        [[fallthrough]];
+        case 3:
+            cout &lt;&lt; "case 3\n";
+
+        case 4:             // a warning is issued
+            cout &lt;&lt; "case 4\n";
+        [[fallthrough]];    // error: nothing beyond
+    }
+}
+</pre>
+<p>
+<dt ><strong>if constexpr</strong></dt>
+<p>
+In template definitions <code >if constexpr</code> statements may be used to
+instantiate parts of a function definition depending on the value of the
+expression following <code >constexpr</code>. This is further elaborated in section
+<a href="cplusplus21.html#IFCONST">21.16</a>. 
+<p>
+<dt ><strong>Inline variables</strong></dt>
+<p>
+In addition to inline functions, <a name="an120"></a> 
+inline variables can be defined (and identically initialized) in multiple
+translation units. E.g., a header file could contain
+        <pre>
+    inline int value = 15;                      OK
+
+    class Demo
+    {
+        // static int s_value = 15;             ERROR
+        static int constexpr s_value = 15;      OK
+
+        static int s_inline;                    NEW, see below
+    };
+    inline int Demo::s_inline = 20;             OK
+</pre>
+<p>
+<dt ><strong>Keywords `export' and `register'</strong></dt>
+<p>
+The keywords <a name="an121"></a><code >export</code> and <a name="an122"></a><code >register</code> are no longer used, but are still
+identifiers that are reserved for future use. In other words, definitions like
+        <pre>
+    register int index;
+</pre>
+    result in compilation errors. Also, <code >register</code> is no longer considered a
+    <a name="an123"></a>storage class specifier (storage class specifiers are <code >extern,
+thread_local, mutable</code> and <code >static</code>).
+<p>
+<dt ><strong>[[maybe_unused]]</strong></dt><a name="an124"></a>
+<p>
+This attribute can be applied to a class, typedef-name, variable,
+non-static fata member, a function, an enumeration or an enumerator. When it
+is applied to an entity no warning is generated if the entity whether the
+entity is used or is not used. Example:
+        <pre>
+void fun([[maybe_unused]] size_t argument)
+{
+    // argument isn't used, but no warning 
+    // telling you so is generated
+}
+</pre>
+<p>
+<dt ><strong>lambda expressions</strong></dt>
+<p>
+Lambda expressions were extended. See the sections marked with <code >C++17</code>
+in section <a href="cplusplus18.html#LAMBDA">18.7</a>.
+<p>
+<dt ><strong>[[nodiscard]]</strong></dt><a name="an125"></a>
+<p>
+The attribute <code >[[nodiscard]]</code> may be specified when declaring a
+function, class or enumeration. If a function is declared <code >[[nodiscard]]</code> or
+if a function returns an entity previously declared using <code >[[nodiscard]]</code>
+then the return value of such a function may only be ignored when explicitly
+cast to void. Otherwise, when the return value is not used as warning is
+issued. Example:
+        <pre>
+int [[nodiscard]] importantInt();
+struct [[nodiscard]] ImportantStruct { ... };
+
+ImportantStruct factory();
+    
+int main()
+{
+    importantInt();         // warning issued
+    factory();              // warning issued
+}
+</pre>
+<p>
+<dt ><strong>Nested namespace definitions</strong></dt>
+<p>
+When nesting namespaces, a nested namespace can directly be referred to
+using scope resolution operators. E.g.,
+        <pre>
+namespace Outer::Middle::Inner
+{
+    // entities defined/declared here are defined/declared in the Inner
+    // namespace, which is defined in the Middle namespace, which is defined
+    // in the Outer namespace
+}
+</pre>
+<p>
+<dt ><strong>Template argument deduction for class templates</strong></dt>
+<p>
+In some situations template arguments for class templates can be deduced
+by the compiler. See section <a href="cplusplus22.html#ARGDEDUCTION">22.0.1</a> for details.
+<p>
+</dl>
 <p>
 
 <hr>
