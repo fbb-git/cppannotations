@@ -3,28 +3,30 @@
 _project_=cppannotations
 _product_=annotations
 
-echo -n "Need to (re)create ${_project_}'s wip files for gh-pages [y/n] ? "
+echo if any modified or untracked files are shown, handle these first:
+echo
+git st
+echo -n "Continue [Yn] ? "
 read yesno
+[ "$yesno" == "y" -o "$yesno" == "" ]   ||   exit 0
 
-if [ "$yesno" == "y" ] ; then
-    git co master
+git co master
 
-    cd ${_product_}                 # check
-    ./build man
-    ./build docs
-    ./build zips
+cd ${_product_}                 # check
+./build man
+./build docs
+./build zips
 
-    ./build github
-    ./build distclean
-    cd ..    
-    git co gh-pages
+./build github
+./build distclean
+cd ..    
+git co gh-pages
 
-    cp -r ../wip/changelog.txt ../wip/c++-annotations-man.html .
-    rm -r cppannotations
-    unzip ../wip/zips/cplusplus.html.zip
+cp -r ../wip/changelog.txt ../wip/c++-annotations-man.html .
+rm -r cppannotations
+unzip ../wip/zips/cplusplus.html.zip
 
-    cp ../wip/zips/*.zip ../../cppannotations-zip/
-fi
+cp ../wip/zips/*.zip ../../cppannotations-zip/
 
 echo
 echo -n "Check index.yo: version and last 5 releases [y/n] ? "
