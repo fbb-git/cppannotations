@@ -127,5 +127,48 @@ constructor calls successfully compile:
         )
 
 
+em(Within) classes the compiler uses (as before) the class itself when merely
+referring to the class name: when referring to tt(Class) in the class
+tt(Class), the compiler considers tt(Class) to be tt(Class<T>). So the headers
+of the declaration and definition of tt(Class's) copy constructor look like
+this:
+        verb(
+    Class(Class const &other);      // declaration
 
+    template <class T>              // definition
+    Class<T>::Class(Class const &other)
+    { /* ... */ }
+        )
 
+Sometimes the default type is not what you want, in which case the required
+type must explicitly be specified. Consider what happens if add a
+member tt(dup) to tt(Class):
+    verb(
+    template <typename T>
+    template <typename Tp>
+    auto Class<T>::dup(Tp a, Tp b)
+    {
+        return Class(a, b);         // probably not what you want
+    }                               // (see the following text)
+        )
+    Here, because we're inside tt(Class) the compiler deduces that
+tt(Class<T>) must be returned. But in the previous section we decided that,
+when initializing tt(Class) from iterators, tt(Class<typename Tp::type>)
+should be constructed and returned. To accomplish that, the required type is
+explicitly specified:
+    verb(
+    template <typename T>
+    template <typename Tp>
+    auto Class<T>::dup(Tp a, Tp b)
+    {                               // OK: explicitly specified Class tyoe.
+        return Class<typename Tp::type>(a, b);
+    }                             
+        )
+
+As shown in this example, simple (implicit) or explicit deduction rules do not
+em(have) to be used: they em(can) be used in many standard situations where
+explicitly specifying the class's template arguments appears to be
+superfluous. Template argument deduction was added to the language to simplify
+object construction when using class templates. But in the end you don't
+em(have) to use these deduction rules: it's always still possible to
+explicitly specify template arguments.
