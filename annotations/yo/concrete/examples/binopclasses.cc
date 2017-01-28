@@ -3,7 +3,7 @@
 // operator@=  (for demonstration purposes)
 //
 // Binops is the class befriending the arithmetic operation classes
-// Derived is the class that's derived from Binops. Derived wants to offer + 
+// Derived is the class that's derived from Binops. Derived wants to offer +
 // and - operators. It does so by deriving from Binops<Derived, '+', '-'>
 //
 // The design is based on the CRTP, stepping over several classes

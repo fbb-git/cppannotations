@@ -5,8 +5,8 @@
     int main(int argc, char **argv)
     {
         bool more = argc > 5;
-        
-        cout << "more than 5: " << exchange(more, argc > 2) << 
+
+        cout << "more than 5: " << exchange(more, argc > 2) <<
                 ", more than 2: " << more << '\n';
     }
     /*

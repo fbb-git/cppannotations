@@ -16,10 +16,10 @@ int constexpr (*fp)(int) = add2;
 
 static_assert(fp(3) == add2(3), "");
 
-auto monoid = [](auto v) 
+auto monoid = [](auto v)
                 {
-                    return [=] 
-                            { return v; 
+                    return [=]
+                            { return v;
                             };
                 };
 
@@ -56,4 +56,3 @@ int main()
     fun<4>();
 }
 //=
-
