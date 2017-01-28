@@ -3,20 +3,20 @@
 // operator@=  (for demonstration purposes)
 //
 // Binops is the class befriending the arithmetic operation classes
-// Derived is the class that's derived from Binops. Derived wants to offer + and
-// - operators. It does so by deriving from Binops<Derived, '+', '-'>
+// Derived is the class that's derived from Binops. Derived wants to offer + 
+// and - operators. It does so by deriving from Binops<Derived, '+', '-'>
 //
 // The design is based on the CRTP, stepping over several classes
 // Structure (read the ascii art below from bottom to top):
 //
 //
-//  Binops0<Binops, Derived>      Sub<Binops, Derived>
+//  Binops0<Binops, Derived>      Sub<Derived>
 //          |   Ends the            |   Binops now also is a Sub
 //          |   recursion           |
 //          |                       |
-//          +---+--------------------+
+//          +---+-------------------+
 //              |
-//       Binops0<Binops, Derived, '-'>        Add<Binops, Derived>
+//       Binops0<Binops, Derived, '-'>        Add<Derived>
 //              |   Recursively defning         |   Binops now also is an Add
 //              |   Binops0s for remaining      |
 //              |   operators                   |
@@ -38,15 +38,15 @@
 
 #include <utility>
 
-template <class Binops, class Derived>
+template <class Derived>
 struct Add
 {
     Derived &operator+=(Derived const &rhs) &; // Used as: object1 += object2
     Derived &&operator+=(Derived const &rhs) &&;    // (anon.) += object2
 };
 
-template <class Binops, class Derived>
-Derived &Add<Binops, Derived>::operator+=(Derived const &rhs) &
+template <class Derived>
+Derived &Add<Derived>::operator+=(Derived const &rhs) &
 {
     Derived tmp{static_cast<Derived &>(*this)};
     tmp.addWrap(rhs);
@@ -54,8 +54,8 @@ Derived &Add<Binops, Derived>::operator+=(Derived const &rhs) &
     return static_cast<Derived &>(*this);
 }
 
-template <class Binops, class Derived>
-Derived &&Add<Binops, Derived>::operator+=(Derived const &rhs) &&
+template <class Derived>
+Derived &&Add<Derived>::operator+=(Derived const &rhs) &&
 {
     static_cast<Derived &>(*this).addWrap(rhs);
     return std::move(static_cast<Derived &>(*this));
@@ -80,21 +80,21 @@ Derived operator+(Derived &&lhs, Derived const &rhs)
 
 // Sub and Mul are provided as stubs. They can be implemented like Add.
 
-template <class Binops, class Derived>
+template <class Derived>
 struct Sub
 {
     void operator-=(Derived const &rhs)
     {
-        static_cast<Binops &>(*this).subWrap(rhs);
+        static_cast<Derived &>(*this).subWrap(rhs);
     }
 };
 
-template <class Binops, class Derived>
+template <class Derived>
 struct Mul
 {
     void operator*=(Derived const &rhs)
     {
-        static_cast<Binops &>(*this).mulWrap(rhs);
+        static_cast<Derived &>(*this).mulWrap(rhs);
     }
 };
 
@@ -123,7 +123,7 @@ template <class Binops, class Derived, int ...ops>
 class Binops0<Binops, Derived, '+', ops...>
 :
     public Binops0<Binops, Derived, ops...>,
-    public Add<Binops, Derived>
+    public Add<Derived>
 {};
 
     // This one is for subtraction:
@@ -132,7 +132,7 @@ template <class Binops, class Derived, int ...ops>
 class Binops0<Binops, Derived, '-', ops...>
 :
     public Binops0<Binops, Derived, ops...>,
-    public Sub<Binops, Derived>
+    public Sub<Derived>
 {};
 
     // This one is for multiplication:
@@ -141,7 +141,7 @@ template <class Binops, class Derived, int ...ops>
 class Binops0<Binops, Derived, '*', ops...>
 :
     public Binops0<Binops, Derived, ops...>,
-    public Mul<Binops, Derived>
+    public Mul<Derived>
 {};
 
     // The class Binops befriends all arithmetic classes, and implements
@@ -156,9 +156,9 @@ template <class Derived, int ...ops>
 class Binops:
     public Binops0<Binops<Derived, ops...>, Derived, ops...>
 {
-    friend class Add<Binops<Derived, ops...>, Derived>;
-    friend class Sub<Binops<Derived, ops...>, Derived>;
-    friend class Mul<Binops<Derived, ops...>, Derived>;
+    friend class Add<Derived>;
+    friend class Sub<Derived>;
+    friend class Mul<Derived>;
 
     friend Derived operator+<Derived>(Derived const &lhs, Derived const &rhs);
     friend Derived operator+<Derived>(Derived &&lhs, Derived const &rhs);

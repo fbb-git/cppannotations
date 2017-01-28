@@ -99,9 +99,9 @@ class Binops:
                 Binops<Derived, ops...>, 
                 Derived, ops...>
 {
-    friend class Add<Binops<Derived, ops...>, Derived>;
-    friend class Sub<Binops<Derived, ops...>, Derived>;
-    friend class Mul<Binops<Derived, ops...>, Derived>;
+    friend class Add<Derived>;
+    friend class Sub<Derived>;
+    friend class Mul<Derived>;
     // as well as all other binary base classes
 
     friend Derived operator+<Derived>(Derived const &lhs, Derived const &rhs); 
@@ -151,7 +151,7 @@ template <class Binops, class Derived, int ...ops>
 class Binops0<Binops, Derived, '+', ops...>
 :
     public Binops0<Binops, Derived, ops...>,
-    public Add<Binops, Derived>
+    public Add<Derived>
 {};
         )
         Starting with t(int ...ops) equal to tt('-', '+), once it is empty the
@@ -190,7 +190,7 @@ Next, tt(Add's) class interface is:
         verb(
 #include <utility>
 
-template <class Binops, class Derived>
+template <class Derived>
 struct Add
 {
     Derived &operator+=(Derived const &rhs) &; // Used as: object1 += object2
@@ -201,15 +201,15 @@ struct Add
 Finally, noting that tt(Add) objects are (in)directly derived from tt(Binops)
 and tt(Derived), we can implement the compound assignment operators:
         verb(
-template <class Binops, class Derived>
-Derived &&Add<Binops, Derived>::operator+=(Derived const &rhs) &&
+template <class Derived>
+Derived &&Add<Derived>::operator+=(Derived const &rhs) &&
 {
-    static_cast<Binops &>(*this).addWrap(rhs);
+    static_cast<Derived &>(*this).addWrap(rhs);
     return std::move(static_cast<Derived &>(*this));
 }
 
-template <class Binops, class Derived>
-Derived &Add<Binops, Derived>::operator+=(Derived const &rhs) &
+template <class Derived>
+Derived &Add<Derived>::operator+=(Derived const &rhs) &
 {
     Derived tmp{static_cast<Derived &>(*this)};
     tmp.addWrap(rhs);
