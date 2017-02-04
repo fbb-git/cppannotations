@@ -10,21 +10,21 @@
 // Structure (read the ascii art below from bottom to top):
 //
 //
-//  Binops0<Binops, Derived>      Sub<Derived>
-//          |   Ends the            |   Binops now also is a Sub
+//   Binops0<Derived>            Sub<Derived>
+//          |   Ends the            |   Derived now also is a Sub
 //          |   recursion           |
 //          |                       |
 //          +---+-------------------+
 //              |
-//       Binops0<Binops, Derived, '-'>        Add<Derived>
-//              |   Recursively defning         |   Binops now also is an Add
+//       Binops0<Derived, '-'>               Add<Derived>
+//              |   Recursively defning         |   Derived now also is an Add
 //              |   Binops0s for remaining      |
 //              |   operators                   |
 //              |                               |
 //              +-----------+-------------------+
 //                          |
-//                       Binops0<Binops, Derived, '+', '-'>
-//                          |   this forwards the Binops class to the
+//                       Binops0<Derived, '+', '-'>
+//                          |   this forwards the Derived class to the
 //                          |   binary operator classes
 //                          |
 //                       Binops<Derived, '+', '-'>
@@ -99,18 +99,18 @@ struct Mul
 };
 
 //////////////////////////////////////////////////////////////////
-    // The recursively defined Binops0 class: receives Binops, so a static
+    // The recursively defined Binops0 class: receives Derived, so a static
     // cast becomes available to reach the basic arithmetic classes
 
     // The general declaration:
     //
-template <class Binops, class Derived, int ...ops>
+template <class Derived, int ...ops>
 class Binops0;
 
     // The terminating definition:
     //
-template <class Binops, class Derived>
-class Binops0<Binops, Derived>
+template <class Derived>
+class Binops0<Derived>
 {};
 
     // The recursive definition: each variant inherits from the corresponding
@@ -119,28 +119,28 @@ class Binops0<Binops, Derived>
     //
     // This one is for addition:
     //
-template <class Binops, class Derived, int ...ops>
-class Binops0<Binops, Derived, '+', ops...>
+template <class Derived, int ...ops>
+class Binops0<Derived, '+', ops...>
 :
-    public Binops0<Binops, Derived, ops...>,
+    public Binops0<Derived, ops...>,
     public Add<Derived>
 {};
 
     // This one is for subtraction:
     //
-template <class Binops, class Derived, int ...ops>
-class Binops0<Binops, Derived, '-', ops...>
+template <class Derived, int ...ops>
+class Binops0<Derived, '-', ops...>
 :
-    public Binops0<Binops, Derived, ops...>,
+    public Binops0<Derived, ops...>,
     public Sub<Derived>
 {};
 
     // This one is for multiplication:
     //
-template <class Binops, class Derived, int ...ops>
-class Binops0<Binops, Derived, '*', ops...>
+template <class Derived, int ...ops>
+class Binops0<Derived, '*', ops...>
 :
-    public Binops0<Binops, Derived, ops...>,
+    public Binops0<Derived, ops...>,
     public Mul<Derived>
 {};
 
@@ -154,12 +154,14 @@ class Binops0<Binops, Derived, '*', ops...>
     //
 template <class Derived, int ...ops>
 class Binops:
-    public Binops0<Binops<Derived, ops...>, Derived, ops...>
+    public Binops0<Derived, ops...>
 {
     friend class Add<Derived>;
     friend class Sub<Derived>;
     friend class Mul<Derived>;
 
+            // instantiation declarations to make the free operators
+            // available:
     friend Derived operator+<Derived>(Derived const &lhs, Derived const &rhs);
     friend Derived operator+<Derived>(Derived &&lhs, Derived const &rhs);
 
@@ -169,7 +171,6 @@ class Binops:
             // program will recursively call Binops member, causing a
             // stack-overflow, and therefore a segfault. I added B to indicate
             // a Binops function.
-
         void addWrap(Derived const &rhs);
         void subWrap(Derived const &rhs);
         void mulWrap(Derived const &rhs);

@@ -82,22 +82,39 @@ not implement the required arithmetic functions.
 
 In addition, the free binary operators must be able to access the wrapping
 functions and so these functions are also declared as friends. Since these
-functions must exist voor any tt(Derived) class, the free arithmetic functions
+functions must exist for any tt(Derived) class, the free arithmetic functions
 must be defined as function templates. Their declarations and definitions are
 provided below (at the description of the class tt(Add)), but at this point
 it's sufficient to know that have only one class type parameter: the class
-type that's derived from tt(Binops). 
+type that's derived from tt(Binops). Also note that in order to make these
+functions available, instantiation declarations are required: since
+tt(Derived) doesn't provide the free operators, we must tell the compiler that
+we need them for the class tt(Derived). 
 
-    One final problem that must be solved is that the arithmetic classes need
-to know what class declared them as friends. That problem is solved by passing
-tt(Binops) type (as specified by tt(Derived)) to tt(Binop's) base class (i.e.,
-tt(Binops0)). Here is tt(Binops') class interface:
+    Be aware of a subtlety is encountered when trying
+to declare overloaded stream insertion and extraction operators. In that case,
+declaring, e.g., tt(std::ostream &operator<<<Derived>(std::ostream &out,
+Derived const &obj)), defining it as
+        verb(
+    template <class Derived>
+    std::ostream &operator<<(std::ostream &out, Derived const &rhs)
+    {
+        return rhs.insertWrap(out);
+    }
+        )
+    you'll likely run into ambiguous overloads whenever inserting anything
+into a stream. The reason for that is that the above template also perfectly
+matches insertions like tt(cout << 42), and since the latter insertion is also
+defined as a function template the compiler reports ambiguous overloads. This
+can easily be avoided by declaring tt(Binops) and all its base-classes and
+functions in a separate namespace. In that case em(Koenig lookup) solves
+the ambiguity.
+
+    Here is tt(Binops') class interface:
         verb(
 template <class Derived, int ...ops>
 class Binops:
-    public Binops0<
-                Binops<Derived, ops...>, 
-                Derived, ops...>
+    public Binops0<Derived, ops...>
 {
     friend class Add<Derived>;
     friend class Sub<Derived>;
@@ -108,7 +125,8 @@ class Binops:
                                 Derived const &lhs, Derived const &rhs); 
     friend Derived operator+<Derived>(
                                 Derived &&lhs, Derived const &rhs);
-    // ... and the friend declarations for all other free operators
+    // ... and the friend instantiation declarations for all other 
+    //     free operators
 
     void addWrap(Derived const &rhs);
     void subWrap(Derived const &rhs);
@@ -119,17 +137,25 @@ class Binops:
 // example of a wrapping member's implementation:
 
 template <class Derived, int ...ops>
-inline void Binops<Derived, ops...>::addWrap(Derived const &rhs)
+inline void BinopsBase<Derived, ops...>::addWrap(Derived const &rhs)
 {
-    static_cast<Derived &>(*this).add(rhs);
+    static_cast<Derived &>(
+        static_cast<Add<Derived> &>(*this)
+    ).add(rhs);
 }
         )
+    The two tt(static_casts) are there for the following reason:
+    itemization(
+    it() The nested tt(static_cast) ensures that tt(addWrap) can only be
+        called from free operators if tt(Add) has actually been instantiated;
+    it() The outer tt(static_cast) allows tt(BinopsBase) to call the required
+        tt(Derived) member.
+    )
         )
 
     ittq(class Binops0)
-        (This class declares three template parameters:
+        (This class declares two template parameters:
             itemization(
-            itt(Binops:) the class type specified by the tt(Derived) class;
             itt(Derived,) forwarded from tt(Binops);
             itt(int ...ops:) forwarded from tt(Binops).
             )
@@ -140,20 +166,20 @@ receiving the tail of the tt(int ...ops) variadic non-type parameter. Once
 tt(int ...ops) is empty, the recursion stops. So we have tt(Binops0's)
 declaration and empty vadiadic non-type parameter definition:
         verb(
-template <class Binops, class Derived, int ...ops>
+template <class Derived, int ...ops>
 class Binops0;
 
-template <class Binops, class Derived>  // int ...ops now empty
+template <class Derived>  // int ...ops now empty
 class Binops0<Binops, Derived>
 {};
         )
         And in addition, for each binary class there is a
 specialization. E.g., this one's for the addition operator:
         verb(
-template <class Binops, class Derived, int ...ops>
-class Binops0<Binops, Derived, '+', ops...>
+template <class Derived, int ...ops>
+class Binops0<Derived, '+', ops...>
 :
-    public Binops0<Binops, Derived, ops...>,
+    public Binops0<Derived, ops...>,
     public Add<Derived>
 {};
         )
