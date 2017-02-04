@@ -1,6 +1,6 @@
 <!DOCTYPE html><html><head>
 <meta charset="UTF-8">
-<title> C++ Annotations Version 10.7.0 </title>
+<title> C++ Annotations Version 10.7.1 </title>
 <link rel="stylesheet" type="text/css" href="cplusplus.css"><style type="text/css">
     figure {text-align: center;}
     img {vertical-align: center;}
@@ -2820,22 +2820,39 @@ not implement the required arithmetic functions.
 <p>
 In addition, the free binary operators must be able to access the wrapping
 functions and so these functions are also declared as friends. Since these
-functions must exist voor any <code >Derived</code> class, the free arithmetic functions
+functions must exist for any <code >Derived</code> class, the free arithmetic functions
 must be defined as function templates. Their declarations and definitions are
 provided below (at the description of the class <code >Add</code>), but at this point
 it's sufficient to know that have only one class type parameter: the class
-type that's derived from <code >Binops</code>. 
+type that's derived from <code >Binops</code>. Also note that in order to make these
+functions available, instantiation declarations are required: since
+<code >Derived</code> doesn't provide the free operators, we must tell the compiler that
+we need them for the class <code >Derived</code>. 
 <p>
-One final problem that must be solved is that the arithmetic classes need
-to know what class declared them as friends. That problem is solved by passing
-<code >Binops</code> type (as specified by <code >Derived</code>) to <code >Binop's</code> base class (i.e.,
-<code >Binops0</code>). Here is <code >Binops'</code> class interface:
+Be aware of a subtlety is encountered when trying
+to declare overloaded stream insertion and extraction operators. In that case,
+declaring, e.g., <code >std::ostream &amp;operator&lt;&lt;&lt;Derived&gt;(std::ostream &amp;out,
+Derived const &amp;obj)</code>, defining it as
+        <pre>
+    template &lt;class Derived&gt;
+    std::ostream &amp;operator&lt;&lt;(std::ostream &amp;out, Derived const &amp;rhs)
+    {
+        return rhs.insertWrap(out);
+    }
+</pre>
+    you'll likely run into ambiguous overloads whenever inserting anything
+into a stream. The reason for that is that the above template also perfectly
+matches insertions like <code >cout &lt;&lt; 42</code>, and since the latter insertion is also
+defined as a function template the compiler reports ambiguous overloads. This
+can easily be avoided by declaring <code >Binops</code> and all its base-classes and
+functions in a separate namespace. In that case <em >Koenig lookup</em> solves
+the ambiguity.
+<p>
+Here is <code >Binops'</code> class interface:
         <pre>
 template &lt;class Derived, int ...ops&gt;
 class Binops:
-    public Binops0&lt;
-                Binops&lt;Derived, ops...&gt;, 
-                Derived, ops...&gt;
+    public Binops0&lt;Derived, ops...&gt;
 {
     friend class Add&lt;Derived&gt;;
     friend class Sub&lt;Derived&gt;;
@@ -2846,7 +2863,8 @@ class Binops:
                                 Derived const &amp;lhs, Derived const &amp;rhs); 
     friend Derived operator+&lt;Derived&gt;(
                                 Derived &amp;&amp;lhs, Derived const &amp;rhs);
-    // ... and the friend declarations for all other free operators
+    // ... and the friend instantiation declarations for all other 
+    //     free operators
 
     void addWrap(Derived const &amp;rhs);
     void subWrap(Derived const &amp;rhs);
@@ -2857,16 +2875,24 @@ class Binops:
 // example of a wrapping member's implementation:
 
 template &lt;class Derived, int ...ops&gt;
-inline void Binops&lt;Derived, ops...&gt;::addWrap(Derived const &amp;rhs)
+inline void BinopsBase&lt;Derived, ops...&gt;::addWrap(Derived const &amp;rhs)
 {
-    static_cast&lt;Derived &amp;&gt;(*this).add(rhs);
+    static_cast&lt;Derived &amp;&gt;(
+        static_cast&lt;Add&lt;Derived&gt; &amp;&gt;(*this)
+    ).add(rhs);
 }
 </pre>
+    The two <code >static_casts</code> are there for the following reason:
+    <ul>
+    <li> The nested <code >static_cast</code> ensures that <code >addWrap</code> can only be
+        called from free operators if <code >Add</code> has actually been instantiated;
+    <li> The outer <code >static_cast</code> allows <code >BinopsBase</code> to call the required
+        <code >Derived</code> member.
+    </ul>
         </blockquote>
 <p>
-<li><code >class Binops0</code>:<blockquote >This class declares three template parameters:
+<li><code >class Binops0</code>:<blockquote >This class declares two template parameters:
             <ul>
-            <li><code >Binops:</code> the class type specified by the <code >Derived</code> class;
             <li><code >Derived,</code> forwarded from <code >Binops</code>;
             <li><code >int ...ops:</code> forwarded from <code >Binops</code>.
             </ul>
@@ -2877,20 +2903,20 @@ receiving the tail of the <code >int ...ops</code> variadic non-type parameter. 
 <code >int ...ops</code> is empty, the recursion stops. So we have <code >Binops0's</code>
 declaration and empty vadiadic non-type parameter definition:
         <pre>
-template &lt;class Binops, class Derived, int ...ops&gt;
+template &lt;class Derived, int ...ops&gt;
 class Binops0;
 
-template &lt;class Binops, class Derived&gt;  // int ...ops now empty
+template &lt;class Derived&gt;  // int ...ops now empty
 class Binops0&lt;Binops, Derived&gt;
 {};
 </pre>
         And in addition, for each binary class there is a
 specialization. E.g., this one's for the addition operator:
         <pre>
-template &lt;class Binops, class Derived, int ...ops&gt;
-class Binops0&lt;Binops, Derived, '+', ops...&gt;
+template &lt;class Derived, int ...ops&gt;
+class Binops0&lt;Derived, '+', ops...&gt;
 :
-    public Binops0&lt;Binops, Derived, ops...&gt;,
+    public Binops0&lt;Derived, ops...&gt;,
     public Add&lt;Derived&gt;
 {};
 </pre>

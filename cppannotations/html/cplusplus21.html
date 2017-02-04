@@ -1,6 +1,6 @@
 <!DOCTYPE html><html><head>
 <meta charset="UTF-8">
-<title> C++ Annotations Version 10.7.0 </title>
+<title> C++ Annotations Version 10.7.1 </title>
 <link rel="stylesheet" type="text/css" href="cplusplus.css"><style type="text/css">
     figure {text-align: center;}
     img {vertical-align: center;}
@@ -2457,7 +2457,7 @@ Consider the following struct definition:
     };
 </pre>
     Although at this point it may seem strange to embed a typedef in a struct,
-in chapter <a href="cplusplus23.html#ADVANCEDTEMPL">23</a> we'll encounter situations where this is
+in chapter <a href="cplusplus23.html#ADVANCEDTEMPL">23</a> we will encounter situations where this is
 actually very useful.  It allows us to define a variable of a type that is
 required by the template. E.g., (ignore the use of <code >typename</code> in the
 following function parameter list, but see section <a href="cplusplus22.html#DISTINGUISH">22.2.1</a> for
@@ -2468,8 +2468,8 @@ details):
     {
     }
 </pre>
-    To call <code >func(10)</code> <code >Int</code> has to be specified explicitly since there
-may be many structs that define <code >type</code>: the compiler needs some
+    When calling <code >func(10)</code> <code >Int</code> has to be specified explicitly since
+there may be many structs that define <code >type</code>: the compiler needs some
 assistance. The correct call is <code >func&lt;Int&gt;(10)</code>. Now that it's clear that
 <code >Int</code> is meant, and the compiler correctly deduces that <code >value</code> is an
 <code >int</code>.
@@ -2480,31 +2480,30 @@ But templates may be overloaded and our next definition is:
     void func(Type value)
     {}
 </pre>
-    Now, to make sure this function is used we specify <code >func&lt;int&gt;(10)</code> and
-again this compiles flawlessly.
+    Now, to call this function we specify <code >func&lt;int&gt;(10)</code> and
+again this flawlessly compiles.
 <p>
 But as we've seen in the previous section when the compiler determines
-which template to instantiate it creates a list of viable functions by
-matching the parameter types of available function prototypes with the
-provided actual argument types. To do so it has to <em >determine</em> the types of
-the parameters and herein lies a problem.
+which template to instantiate it creates a list of viable functions and
+selects the function to instantiate by matching the parameter types of viable
+functions with the provided actual argument types. To do so it has to
+<em >determine</em> the types of the parameters and herein lies a problem.
 <p>
 When evaluating <code >Type = int</code> the compiler encounters the prototypes
 <code >func(int::type)</code> (first template definition) and <code >func(int)</code> (second
 template definition). But there is no <code >int::type</code>, and so in a way this
-generates an error. However, the error results from substituting the provided
-template type argument into the various template definitions.
+generates an error. The error results from matching the provided template type
+argument with the types used in the various template definitions.
 <p>
-A type-problem caused by substituting a type in a template definition is
-<em >not</em> considered an error, but merely an indication that that particular
-type cannot be used in that particular template. The template is therefore
-removed from the list of candidate functions.
+A type-problem caused by substituting a type in a template definition is,
+however, <em >not</em> considered an error, but merely an indication that that
+particular type cannot be used in that particular template. The template is
+therefore removed from the list of candidate functions.
 <p>
 This principle is known as <a name="an2867"></a><em >substitution failure</em> <em >is not an error</em>
 <a name="an2868"></a>(SFINAE) and it is often used by the compiler to select not only a
 simple overloaded function (as shown here) but also to choose among available
-template specializations (see also chapters <a href="cplusplus22.html#TEMPCLASS">22</a> and
-<a href="cplusplus23.html#ADVANCEDTEMPL">23</a>).
+template specializations (see also sections <a href="cplusplus23.html#CLASSORNOT">23.6.1</a> and <a href="cplusplus23.html#TYPECONV">23.8.3</a>).
 <p>
 <a name="IFCONST"></a><a name="l528"></a>
 <h2 >21.16: C++17: Conditional function definitions using `if constexpr'</h2>
