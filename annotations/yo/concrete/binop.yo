@@ -1,8 +1,7 @@
 As we've seen in section ref(OVERLOADBINARY) binary operators expecting
 tt(const &) arguments can be implemented using a member implementing the
 operation, only offering the basic exception guarantee.
-move-aware binary operator, using a rvalue reference for its first
-argument. This latter function can in turn be implemented using the binary
+This latter function can in turn be implemented using the binary
 assignment member. The following examples illustrated this approach for a
 fictitious class tt(Binary):
         verbinclude(-a ../overloading/examples/binary4.h)
@@ -14,23 +13,131 @@ example).
 
 Since template functions are not instantiated before they are actually used we
 can call non-existing functions from template functions that are never
-instantiated. If such a template function is (accidentally) instantiated, then
-the compiler generates an error message, complaining about the missing
+instantiated. If such a template function is If such a template function is
+never instantiated, nothing happens; if it is (accidentally) instantiated,
+then the compiler generates an error message, complaining about the missing
 function.
 
 This allows us to implement all binary operators, movable and non-movable, as
 templates. Below we develop the class template tt(Binops), offering binary
-operators (here we only implement the addition, subtraction and multiplication
-operators, but the example can directly be generalized to any other binary
-operator). 
+operators (in this section we develop the addition, and multiplication
+operators, as well as the stream-insertion operator, but the example can
+directly be generalized to other binary operators). When designing the
+templates below, we'll concentrate on the addition operator, noting that the
+remaining operators are implemented analogously.
+
+In section ref(OVERLOADBINARY) the addition operators were implemented in
+terms of a support member tt(add). This is less attractive when developing
+function templates, as tt(add) is a private member, requiring us to provide
+friend declarations for all function templates to allow them to access the
+private tt(add) member. But at the end of section ref(OVERLOADBINARY) we saw
+that the 
+implementation of the member tt(add) can be provided by tt(operator+=(Class
+const &rhs) &&). This operator may then, in turn, be used to implement the
+remaining addition operators:
+        verb(
+    inline Binary &operator+=(Binary const &rhs) &
+    {
+        return *this = Binary{*this} += rhs;        
+    }
+        )
+    
+COMMENT(
+    Binary operator+(Binary &&lhs, Binary const &rhs)
+    {
+        return std::move(lhs) += rhs;
+    }
+
+    Binary operator+(Binary const &lhs, Binary const &rhs)
+    {
+        return Binary{lhs} += rhs;
+    }
+ )
+
+    In this implementation the private tt(add) function is no longer
+required. The plain binary operators are free functions, which supposedly can
+easily be converted to function templates. E.g.,
+        verb(
+    template <typename Binary>
+    Binary operator+(Binary const &lhs, Binary const &rhs)
+    {
+        return Binary{lhs} += rhs;
+    }
+        )
+    Function templates like these usually work fine, but not always. Here is
+an example:
+        verb(
+    enum X
+    {
+        A,
+        B
+    };
+    
+    template <typename Tp>
+    Tp operator+(Tp const &lhs, Tp const &rhs)
+    {
+        return static_cast<X>(12);
+    };
+    
+    int main()
+    {
+        cout << (A + B);        // shows 12
+    }
+        )
+    To avoid this a namespace could be used, but then all classes using the
+binary operator also have to be defined in that namespace, which is not a very
+attractive restriction. Instead, a design using the CRTP can be used: in that
+case the operators are defined for a base class, which has the derived class
+as its template argument. Thus the class tt(Binops) is defined, allowing us to
+implement the binary operators in terms of tt(Binops<Derived>):
+        verb(
+    template <class Derived>
+    struct Binops
+    {
+        Derived &operator+=(Derived const &rhs) &;
+    };
+
+    template <typename Derived>
+    Derived operator+(Binops<Derived> const &lhs, Derived const &rhs)
+    {
+        return Derived{static_cast<Derived> const &>(lhs) } += rhs;
+    }
+    // analogous implementation for Binops<Derived> &&lhs
+        )
+    Now, a class that derives from tt(Binops), and that provides an
+tt(operator+=) member, bound to an rvalue reference object, suddenly also is
+provided with all binary addition operations:
+        verb(
+    class Derived: public Binops<Derived>
+    {
+        ...
+        public:
+            ...
+            Derived &&operator+=(Derived const &rhs) &&
+    };
+        )
+    All, but one. The operation that's not available is the compound addition
+operator, bound to an lvalue reference: as its function name is identical to
+the one in the Derived class, it is not automatically visible at the user
+level. 
+
+Although a tt(using Binops<Derived>::operator+=) declaration solves this
+problem, it's not an attractive solution: using declarations have to be
+provided for each binary operator that is implemented in the derived class.
+
+A em(much) more attractive solution exists. A beautiful out-of-the-box
+solution, completely avoiding the hidden base class operator, was proposed
+by i(Wiebe-Marten Wijnja).
+
+implementation  
+
+
 
 The class tt(Binops) uses the Curiously Recurring Template Pattern, receiving
-the name of the class that requests binary operators, and it defines a
-non-type variadic template parameter which is used to specify the requested
-binary operators. Figure ref(binopscrtp) illustrates the eventual 
-structure of a class tt(Binary) that should be provided with addition and
-subtraction operators.
+the name of the class that requests binary operators.
 
+COMMENT( 
+    
     figure(concrete/binopscrtp)(Binops CRTP structure)(binopscrtp)
 
     itemization(
