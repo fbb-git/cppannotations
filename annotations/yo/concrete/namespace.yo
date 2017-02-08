@@ -1,0 +1,27 @@
+When using the function template tt(Binary operator+(Binary const &lhs, Binary
+const &rhs), however, we may encounter a subtle and unexpected
+complication. Consider the following program. When run, it displays the value
+12, rather than 1:
+        verb(
+    enum Values
+    {
+        ZERO,
+        ONE
+    };
+    
+    template <typename Tp>
+    Tp operator+(Tp const &lhs, Tp const &rhs)
+    {
+        return static_cast<X>(12);
+    };
+    
+    int main()
+    {
+        cout << (ZERO + ONE);       // shows 12
+    }
+        )
+    This complication can be avoided by defining the operators in their own
+namespace, but then all classes using the binary operator also have to be
+defined in that namespace, which is not a very attractive
+restriction. Fortunately, there is a better alternative: using the CRTP
+(cf. section ref(STATICPOLY)).

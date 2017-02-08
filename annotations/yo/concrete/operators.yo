@@ -1,0 +1,40 @@
+In section ref(OVERLOADBINARY) addition operators are implemented in terms of
+a support member tt(add). This is less attractive when developing function
+templates, as tt(add) is a private member, requiring us to provide friend
+declarations for all function templates so they may access the private tt(add)
+member.
+
+At the end of section ref(OVERLOADBINARY) we saw that tt(add's) implementation
+can be provided by tt(operator+=(Class const &rhs) &&). This operator may
+thereupon be used when implementing the remaining addition operators:
+        verb(
+    inline Binary &operator+=(Binary const &rhs) &
+    {
+        return *this = Binary{*this} += rhs;        
+    }
+
+    Binary operator+(Binary &&lhs, Binary const &rhs)
+    {
+        return std::move(lhs) += rhs;
+    }
+
+    Binary operator+(Binary const &lhs, Binary const &rhs)
+    {
+        return Binary{lhs} += rhs;
+    }
+        )
+
+    In this implementation tt(add) is no longer required. The plain binary
+operators are free functions, which supposedly can easily be converted to
+function templates. E.g.,
+        verb(
+    template <typename Binary>
+    Binary operator+(Binary const &lhs, Binary const &rhs)
+    {
+        return Binary{lhs} += rhs;
+    }
+        )
+
+
+
+

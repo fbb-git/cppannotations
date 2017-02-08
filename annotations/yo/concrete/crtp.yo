@@ -1,0 +1,84 @@
+When deriving classes from a class template tt(Binops), using the CRTP the
+operators are defined for arguments of the class tt(Binops<Derived>): a base
+class receiving the derived class as its template argument. 
+
+Thus the class tt(Binops) as well as the additional operators are defined,
+expecting tt(Binops<Derived>) type of arguments:
+        verb(
+    template <class Derived>
+    struct Binops
+    {
+        Derived &operator+=(Derived const &rhs) &;
+    };
+
+    template <typename Derived>
+    Derived operator+(Binops<Derived> const &lhs, Derived const &rhs)
+    {
+        return Derived{static_cast<Derived> const &>(lhs) } += rhs;
+    }
+    // analogous implementation for Binops<Derived> &&lhs
+        )
+
+    This way, a class that derives from tt(Binops), and that provides an
+tt(operator+=) member which is bound to an rvalue reference object, suddenly
+also provides all other binary addition operators:
+        verb(
+    class Derived: public Binops<Derived>
+    {
+        ...
+        public:
+            ...
+            Derived &&operator+=(Derived const &rhs) &&
+    };
+        )
+    All, but one.... 
+
+    The operator that's not available is the compound addition operator,
+bound to an lvalue reference. As its function name is identical to the one in
+the class tt(Derived), it is not automatically visible at the user level.
+
+Although this problem can simply be solved by providing the class tt(Derived)
+with a tt(using Binops<Derived>::operator+=) declaration, it is not a very
+attractive solution, as separate using declarations have to be provided for
+each binary operator that is implemented in the class tt(Derived).
+
+But a em(much) more attractive solution exists. A beautiful out-of-the-box
+solution, completely avoiding the hidden base class operator, was proposed
+by i(Wiebe-Marten Wijnja). Wiebe-Marten conjectured that tt(operator+=), bound
+to an lvalue reference could also very well be defined as a em(free)
+function. In that case no inheritance is used and therefore no function hiding
+occurs. Consequently, the tt(using) directive can be avoided. 
+
+The implementation of this free tt(operator+=) function looks like this:
+        verb(
+    template <class Derived>
+    Derived &operator+=(Binops<Derived> &lhs, Derived const &rhs) 
+    {
+        Derived tmp{ Derived{ static_cast<Derived &>(lhs) } += rhs };
+        tmp.swap(static_cast<Derived &>(lhs));
+        return static_cast<Derived &>(lhs);
+    }
+        )    
+
+------------------------------------------------------
+The flexibility of this design is augmented 
+further after realizing that the right-hand side operand doesn't have to be a
+tt(Derived) class object. Consider tt(operator<<): oftentimes shifts are
+bit-shifts, using a tt(size_t) to specify the number of bits to
+shift. In fact, the type of the right-hand side operand can completely be
+generalized by defining a second template type parameter, which is used to
+specify the right-hand side's operand type. It's up to the tt(Derived) class
+to specify the argument type of its tt(operator+=) (or any other binary
+compound operator), whereafter the compiler will deduct the types of the
+right-hand side operands for the remaining binary operators. Here is the
+final implementation of the free
+tt(operator+=) function:
+        verb(
+    template <class Derived, typename Rhs>
+    Derived &operator+=(Base<Derived> &lhs, Rhs const &rhs) 
+    {
+        Derived tmp{ Derived{ static_cast<Derived &>(lhs) } += rhs };
+        tmp.swap(static_cast<Derived &>(lhs));
+        return static_cast<Derived &>(lhs);
+    }
+        )    
