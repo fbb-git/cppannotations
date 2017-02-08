@@ -127,9 +127,24 @@ provided for each binary operator that is implemented in the derived class.
 
 A em(much) more attractive solution exists. A beautiful out-of-the-box
 solution, completely avoiding the hidden base class operator, was proposed
-by i(Wiebe-Marten Wijnja).
+by i(Wiebe-Marten Wijnja). Wiebe-Marten conjectured that tt(operator+=), bound
+to an lvalue reference could also very well be defined as a em(free)
+function. In that case no inheritance is used and therefore no function hiding
+is happening. Consequently, the tt(using) directive can be avoided. The
+implementation of this tt(operator+=) would then look like this:
+        verb(
+    template <class Derived>
+    Derived &operator+=(Base<Derived> &lhs, Derived const &rhs) 
+    {
+        Derived tmp{ Derived{ static_cast<Derived &>(lhs) } += rhs };
+        tmp.swap(der(lhs));
+        return der(lhs);
+    }
+        )    
 
-implementation  
+
+
+
 
 
 
