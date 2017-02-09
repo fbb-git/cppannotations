@@ -20,45 +20,21 @@ function.
 
 This allows us to implement all binary operators, movable and non-movable, as
 templates. In the following subsections we develop the class template
-tt(Binops), offering binary operators (in this section we develop the addition
-and the stream-insertion operator, but the example can directly be generalized
-to other binary operators and to the stream-extraction operator). 
-
-===============================================================
-
-Classes also frequently define overloaded insertion and extraction
-operators. Since there are no associated `compound insertion operators' the
-approach discussed so far cannot be used when overloading these
-operators. Instead the use of standardized member function signatures is
-advocated: tt(void insert(std::ostream &out) const) to insert an object into
-an tt(ostream) and tt(void extract(std::istream &in) const) to extract an
-object from an tt(istream). As these  functions are only called by,
-respectively, the insertion and extraction operators, they can be declared in
-the tt(Derived) class's private interface. Instead of declaring the insertion
-and extraction operators friends of the class tt(Derived) a simpler tt(friend
-Binops<Derived>) can be declared. Doing so, tt(Binops<Derived>) can provide
-private, inline tt(iWrap) and tt(eWrap) members, merely calling, respectively, 
-tt(Derived's insert) and tt(extract) members. E.g.,
-        verb(
-    template <typename Derived>
-    void Base<Derived>::iWrap(std::ostream &out) const
-    {
-        static_cast<Derived const &>(*this).insert(out);
-    }
-        )
-    In addition, tt(Base) can declare the insertion and extraction operators
-as its friends, allowing these operators to call, respectively, tt(iWrap) and
-tt(eWrap). The overloaded insertion operator then looks like this:
-        verb(
-    template <typename Derived>
-    std::ostream &operator<<(std::ostream &out, Base<Derived> const &obj)
-    {
-        obj.iWrap(out);
-        return out;
-    }
-        )
-    
-A complete implementation of a class tt(Derived) supporting addition and
-insertion  operators is provided in the file 
+tt(Binops), prividing binary operators.  A complete implementation of a class
+tt(Derived) illustrating how addition and insertion operators can be added to
+a class is provided in the file
 tt(annotations/yo/concrete/examples/binopclasses.cc) in the annotations()'
 source archive.
+
+
+
+
+
+
+
+
+
+
+
+
+

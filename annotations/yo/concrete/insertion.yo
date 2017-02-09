@@ -1,0 +1,31 @@
+Classes also frequently define overloaded insertion and extraction
+operators. Since there are no `compound insertion operators' the approach
+covered above cannot be used when overloading these operators. Instead using
+standardized member function signatures is advocated: tt(void
+insert(std::ostream &out) const) to insert an object into an tt(ostream) and
+tt(void extract(std::istream &in) const) to extract an object from an
+tt(istream). As these functions are only used by, respectively, the
+insertion and extraction operators, they can be declared in the tt(Derived)
+class's private interface. Instead of declaring the insertion and extraction
+operators friends of the class tt(Derived) a simpler tt(friend
+Binops<Derived>) is specified. This allows  tt(Binops<Derived>) to define
+private, inline tt(iWrap) and tt(eWrap) members, merely calling, respectively,
+tt(Derived's insert) and tt(extract) members:
+        verb(
+    template <typename Derived>
+    inline void Base<Derived>::iWrap(std::ostream &out) const
+    {
+        static_cast<Derived const &>(*this).insert(out);
+    }
+        )
+    tt(Base<Derived>) also declares the insertion and extraction operators
+as its friends, allowing these operators to call, respectively, tt(iWrap) and
+tt(eWrap). Here is the implementation of the overloaded insertion operator:
+        verb(
+    template <typename Derived>
+    std::ostream &operator<<(std::ostream &out, Base<Derived> const &obj)
+    {
+        obj.iWrap(out);
+        return out;
+    }
+        )

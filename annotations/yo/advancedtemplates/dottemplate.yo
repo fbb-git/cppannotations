@@ -118,3 +118,57 @@ than the tt(.template) construction. E.g.,
         ptr->template nested<T3>();
     }
         )
+
+As we've seen class templates can be derived from base class templates. The
+base class template can declare a i(static member template), which is
+available to a class that is derived from this base class. Such a base class
+might look like this:
+        verb(
+    template <typename Type>
+    struct Base
+    {
+        template <typename Tp>
+        static void fun();
+    };
+        )
+
+    Normally, when a base class defines a static member we can just call that
+member by prefixing its name by its class name. E.g.,
+        verb(
+    int main()
+    {
+        Base<int>::fun<double>();
+    }
+        )
+    This also works fine if a class tt(Derived) is derived from tt(Base),
+instantiated for a specific type:
+        verb(
+    struct Der: public Base<int>
+    {
+        static void call()
+        {
+            Base<int>::fun<int>();      // OK
+            fun<int>();                 // also OK
+        };
+    };
+    However, when the derived class itself is a class template this way to
+call tt(fun) does not compile anymore, as it interprets tt(Base<Type>::fun) in
+tt(Base<Type>::fun<int>) as a type, to be instantiated for tt(int). This
+interpretation can be overruled by us by indicating that tt(fun) itself is a
+template. For this the tt(::template) prefix is used:
+        verb(
+    template <typename Type>
+    struct Der: public Base<Type>
+    {
+        //template <typename Tp>    // 'call' may be a member template
+        //static                    // 'call' may be a static member
+        void call()
+        {
+            // fun<int>();                      // won't compile
+            // Base<Type>::fun<int>();          // won't compile
+            Base<Type>::template fun<int>();    // OK
+            Base<Type>::template fun<Tp>();     // OK if call is a 
+                                                //    member template
+        };
+    };
+        )
