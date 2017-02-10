@@ -14,7 +14,7 @@ class Binops
 
     template <typename Der>
     friend std::istream &operator>>(std::istream &in, Binops<Der> &rhs);
-    
+
     void eWrap(std::istream &in);
     void iWrap(std::ostream &out) const;
 };
@@ -23,7 +23,7 @@ class Binops
     // depend on operator+=(...) defined in Derived
     //
 template <class Derived, typename Rhs>
-Derived &operator+=(Binops<Derived> &lhs, Rhs const &rhs) 
+Derived &operator+=(Binops<Derived> &lhs, Rhs const &rhs)
 {
     Derived tmp{ Derived{static_cast<Derived &>(lhs)} += rhs };
     tmp.swap(static_cast<Derived &>(lhs));
@@ -119,7 +119,7 @@ int main()
 {
     Derived o1(1), o2(2);
     o1 += o2;
-    // o1 *= o2;            // adding this statement results in 
+    // o1 *= o2;            // adding this statement results in
                             // a compilation error
 
     o1 = o1 + o2;
