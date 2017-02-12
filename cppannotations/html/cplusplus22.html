@@ -1,6 +1,6 @@
 <!DOCTYPE html><html><head>
 <meta charset="UTF-8">
-<title> C++ Annotations Version 10.7.1 </title>
+<title> C++ Annotations Version 10.7.2 </title>
 <link rel="stylesheet" type="text/css" href="cplusplus.css"><style type="text/css">
     figure {text-align: center;}
     img {vertical-align: center;}
@@ -4823,8 +4823,8 @@ classes, even if these functions are never actually called.
 Static polymorphism <a name="an3006"></a> allows us to avoid these
 disadvantages. It can be used instead of dynamic polymorphism in cases where
 the abovementioned invariant holds. Static polymorphism, also called the
-    <a name="an3007"></a><em >curiously recurring template pattern</em>, is an example of 
-    <a name="an3008"></a><em >template meta programming</em> (see also chapter <a href="cplusplus23.html#ADVANCEDTEMPL">23</a> for
+    <a name="an3007"></a><em >curiously recurring template pattern</em> (<a name="an3008"></a><em >CRTP</em>), is an example of 
+    <a name="an3009"></a><em >template meta programming</em> (see also chapter <a href="cplusplus23.html#ADVANCEDTEMPL">23</a> for
 additional examples of template meta programming).
 <p>
 Whereas dynamic polymorphism is based on the concepts of <em >vpointers,
@@ -4923,7 +4923,7 @@ Thus, in order to use the above scheme we must ensure that
             `<code >polymorphic</code>'. 
         </ul>
     The first requirement is satisfied by using the 
-        <a name="an3009"></a><em >curiously recurring template pattern</em>:
+        <a name="an3010"></a><em >curiously recurring template pattern</em>:
         <pre>
     class First: public Base&lt;First&gt;
 </pre>
@@ -5004,7 +5004,7 @@ object is passed to <code >fun</code>, and here again the compiler checks whethe
 </pre>
 <p>
 There are also downsides to 
-        <a name="an3010"></a> 
+        <a name="an3011"></a> 
     using static polymorphism:
         <ul>
         <li> First, the sentence `a <code >Second</code> object is passed to <code >fun</code>'
@@ -5017,7 +5017,7 @@ parameters results in completely new code which is generated when the template
 statically polymorphic base classes. If the base class defines data members
 and member functions, and if these additional members are used by derived
 class types, then each member has its own instantiation for each derived class
-type. This also results in <a name="an3011"></a>code bloat, albeit of a different kind than
+type. This also results in <a name="an3012"></a>code bloat, albeit of a different kind than
 obeserved with dynamic polymorphism. This kind of code bloat can often be
 somewhat reduced by deriving the base class from its own (ordinary,
 non-template) base class, encapsulating all elements of the statically
@@ -5389,15 +5389,15 @@ objects of their own types.
 <h2 >22.13: Class templates and nesting</h2>
 When a class is nested within a class template, it automatically becomes a
 class template itself.
-        <a name="an3012"></a>
+        <a name="an3013"></a>
     The nested class may use the template parameters of the surrounding
 class, as shown by the following skeleton program. Within a class
 <code >PtrVector</code>, a class <code >iterator</code> is defined. The nested class receives its
 information from its surrounding class, a <code >PtrVector&lt;Type&gt;</code> class. Since
 this surrounding class should be the only class constructing its iterators,
-<code >iterator</code>'s constructor is made <a name="an3013"></a>private and the surrounding class is
+<code >iterator</code>'s constructor is made <a name="an3014"></a>private and the surrounding class is
 given access to the private members of <code >iterator</code> using a
- <a name="an3014"></a><em >bound friend</em> declaration.
+ <a name="an3015"></a><em >bound friend</em> declaration.
     Here is the initial section of <code >PtrVector</code>'s class interface:
         <pre>
     template &lt;typename Type&gt;
@@ -5482,7 +5482,7 @@ Here is a simple skeleton program, showing how the nested class
     }
 </pre>
 <p>
-Nested <a name="an3015"></a> enumerations and <a name="an3016"></a>
+Nested <a name="an3016"></a> enumerations and <a name="an3017"></a>
 nested typedefs can also be defined by class templates. The class <code >Table</code>,
 mentioned before (section <a href="cplusplus22.html#TFROMC">22.11.3</a>) inherited the enumeration
 <code >TableType::FillDirection</code>. Had <code >Table</code> been implemented as a full class
@@ -5525,13 +5525,13 @@ RandomAccessIterators.
 <p>
 To ensure that an object of a class is interpreted as a particular type of
 iterator, the class must be derived from the class
-    <a name="an3017"></a><code >std::iterator</code>.  Before a class can be derived from this
-class the <a name="an3018"></a><code >&lt;iterator&gt;</code> header file must be included.
+    <a name="an3018"></a><code >std::iterator</code>.  Before a class can be derived from this
+class the <a name="an3019"></a><code >&lt;iterator&gt;</code> header file must be included.
 <p>
 In section <a href="cplusplus18.html#ITERATORS">18.2</a> the characteristics of iterators were
 discussed. All iterators
-        <a name="an3019"></a>
         <a name="an3020"></a>
+        <a name="an3021"></a>
     should support (using <code >Iterator</code> as the generic name of the designed
 iterator class and <code >Type</code> to represent the (possibly <code >const</code>, in which
 case the associated operator should be a <code >const</code> member as well) data type to
@@ -5546,7 +5546,7 @@ which <code >Iterator</code> objects refer):
     </ul>
 <p>
 When
-        <a name="an3021"></a>
+        <a name="an3022"></a>
     iterators are to be used in the context of generic algorithms they must
 meet additional requirements. This is caused by the fact that generic
 algorithms perform checks on the types of the iterators they receive. Simple
@@ -5554,20 +5554,20 @@ pointers are usually accepted, but if an iterator-object is used it must be
 able to specify the kind of iterator it represents.
 <p>
 When deriving a class from the class <code >iterator</code> the
-        <a name="an3022"></a>
+        <a name="an3023"></a>
     type of iterator is defined by the class template's <em >first</em> parameter,
 and the
-        <a name="an3023"></a>
+        <a name="an3024"></a>
     data type to which the iterator refers is defined by the class template's
 <em >second</em> parameter.
 <p>
 The type of iterator that is implemented by the derived class
-is specified using a so-called <a name="an3024"></a><em >iterator_tag</em>, provided as the
+is specified using a so-called <a name="an3025"></a><em >iterator_tag</em>, provided as the
 first template argument of the class <code >iterator</code>. For the five basic iterator
 types, these tags are:
     <ul>
-    <li><a name="an3025"></a><code >std::input_iterator_tag</code>. This tag defines an
-<a name="an3026"></a>InputIterator.  Iterators of this type allow reading operations, iterating
+    <li><a name="an3026"></a><code >std::input_iterator_tag</code>. This tag defines an
+<a name="an3027"></a>InputIterator.  Iterators of this type allow reading operations, iterating
 from the first to the last element of the series to which the iterator
 refers.
 <p>
@@ -5578,8 +5578,8 @@ The InputIterator  dereference operator should be declared as follows:
     Except for the standard operators there are no further requirements for
 InputIterators.
 <p>
-<li><a name="an3027"></a><code >std::output_iterator_tag</code>. This tag defines an
-<a name="an3028"></a>OutputIterator.  Iterators of this type allow for assignment operations,
+<li><a name="an3028"></a><code >std::output_iterator_tag</code>. This tag defines an
+<a name="an3029"></a>OutputIterator.  Iterators of this type allow for assignment operations,
 iterating from the first to the last element of the series to which the
 iterator refers.
 <p>
@@ -5592,8 +5592,8 @@ dereference operator should be declared as follows:
     Except for the standard operators there are no further requirements for
 OutputIterators.
 <p>
-<li><a name="an3029"></a><code >std::forward_iterator_tag</code>. This tag defines a
-        <a name="an3030"></a>ForwardIterator.  Iterators of this type allow reading <em >and</em>
+<li><a name="an3030"></a><code >std::forward_iterator_tag</code>. This tag defines a
+        <a name="an3031"></a>ForwardIterator.  Iterators of this type allow reading <em >and</em>
 assignment operations, iterating from the first to the last element of the
 series to which the iterator refers.
 <p>
@@ -5606,8 +5606,8 @@ dereference operator should be declared as follows:
     Except for the standard operators there are no further requirements for
 ForwardIterators.
 <p>
-<li><a name="an3031"></a><code >std::bidirectional_iterator_tag</code>. This
-tag defines a <a name="an3032"></a>BidirectionalIterator. Iterators of this type allow reading
+<li><a name="an3032"></a><code >std::bidirectional_iterator_tag</code>. This
+tag defines a <a name="an3033"></a>BidirectionalIterator. Iterators of this type allow reading
 <em >and</em> assignment operations, iterating step by step, possibly in alternating
 directions, over all elements of the series to which the iterator refers.
 <p>
@@ -5620,8 +5620,8 @@ operators required for iterators, offer the following operators:
     Iterator &amp;operator--();
 </pre>
 <p>
-<li><a name="an3033"></a><code >std::random_access_iterator_tag</code>. This
-tag defines a <a name="an3034"></a>RandomAccessIterator.  Iterators of this type allow reading
+<li><a name="an3034"></a><code >std::random_access_iterator_tag</code>. This
+tag defines a <a name="an3035"></a>RandomAccessIterator.  Iterators of this type allow reading
 <em >and</em> assignment operations, iterating, possibly in alternating directions,
 over all elements of the series to which the iterator refers using any
 available (random) stepsize.
@@ -5698,8 +5698,8 @@ pointers.
     In the chapter about containers (chapter <a href="cplusplus12.html#CONTAINERS">12</a>) it was noted that
 containers own the information they contain. If they contain objects, then
 those objects are destroyed once the containers are destroyed. As pointers are
-not objects their use in containers is discouraged (STL's <a name="an3035"></a><code >unique_ptr</code> and
-<a name="an3036"></a><code >shared_ptr</code> type objects may be used, though).  Although discouraged, we
+not objects their use in containers is discouraged (STL's <a name="an3036"></a><code >unique_ptr</code> and
+<a name="an3037"></a><code >shared_ptr</code> type objects may be used, though).  Although discouraged, we
 might be able to use pointer data types in specific contexts. In the following
 class <code >StringPtr</code>, an ordinary class is derived from the <code >std::vector</code>
 container that uses <code >std::string *</code> as its data type:
@@ -5758,7 +5758,7 @@ named, but useless members of its base class:
 defined. As suggested by its type name, <code >iterator</code> is a nested type of
 <code >StringPtr</code>. To use a <code >StringPtr::iterator</code> in combination
 with the <code >sort</code> generic algorithm it must also be a
-<a name="an3037"></a><code >RandomAccessIterator</code>. Therefore, <code >StringPtr::iterator</code> itself must be
+<a name="an3038"></a><code >RandomAccessIterator</code>. Therefore, <code >StringPtr::iterator</code> itself must be
 derived from the existing class <code >std::iterator</code>.
 <p>
 To derive a class from <code >std::iterator</code>, both the iterator type and the
@@ -6000,9 +6000,9 @@ required operators) vary accordingly for the other iterator types.
 <p>
 <a name="REVERSEIT"></a><a name="l581"></a>
 <h3 >22.14.2: Implementing a `reverse_iterator'</h3>
-        Once we've implemented an iterator, the matching <a name="an3038"></a><em >reverse iterator</em> can
+        Once we've implemented an iterator, the matching <a name="an3039"></a><em >reverse iterator</em> can
 be implemented in a jiffy. Comparable to the <code >std::iterator</code> a
-<code >std::reverse_iterator</code> <a name="an3039"></a>
+<code >std::reverse_iterator</code> <a name="an3040"></a>
     exists, that nicely implements the reverse iterator for us once we
 have defined an iterator class. Its constructor merely requires an object of
 the iterator type for which we want to construct a reverse iterator.
@@ -6014,7 +6014,7 @@ only one line of code, which must be inserted after the interface of the class
         <pre>
     typedef std::reverse_iterator&lt;iterator&gt; reverse_iterator;
 </pre>
-    Also, the well known members <a name="an3040"></a><code >rbegin</code> and <a name="an3041"></a><code >rend</code> are added to
+    Also, the well known members <a name="an3041"></a><code >rbegin</code> and <a name="an3042"></a><code >rend</code> are added to
 <code >StringPtr</code>'s interface. Again, they can easily be implemented inline:
         <pre>
 inline StringPtr::reverse_iterator StringPtr::rbegin()
@@ -6028,7 +6028,7 @@ inline StringPtr::reverse_iterator StringPtr::rend()
 </pre>
 <p>
 Note the arguments the <code >reverse_iterator</code> constructors receive: the
-        <a name="an3042"></a>
+        <a name="an3043"></a>
     <em >begin point</em> of the reversed iterator is obtained by providing
 <code >reverse_iterator</code>'s constructor with the value returned by the member
 <code >end</code>: the <em >endpoint</em> of the normal iterator range; the <em >endpoint</em> of
@@ -6154,7 +6154,7 @@ that the iterator's <code >operator*</code> returns a reference to a modifiable
 To control such default expectancies, iterators can use <code >typedefs</code> to
 fine-tune these expectancies. The following <code >typedefs</code> are interpreted by
 <code >std::reverse_iterator</code>:
-        <a name="an3043"></a>
+        <a name="an3044"></a>
         <pre>
     pointer         -   the type of the pointer to the data 
                         (e.g., Type *)
