@@ -2,141 +2,64 @@ The keyword ti(auto) can be used to simplify type definitions of variables and
 return types of functions if  the compiler is able to determine the proper
 types of such variables or functions.
 
-In additon, the use of tt(auto) as a storage class specifier is no longer
-supported by bf(C++): a variable definition like tt(auto int var) results in a
-compilation error.
+Using tt(auto) as a storage class specifier is no longer supported by bf(C++):
+a variable definition like tt(auto int var) results in a compilation error.
 
-This can be very useful in situations where it is very hard to determine the
-variable's type in advance. These situations occur, e.g., in the context of
-em(templates), topics covered in chapters ref(STL) until ref(ADVANCEDTEMPL).
+The keyword tt(auto) is frequently used in situations where it is very hard to
+determine the variable's type. These situations are encountered, e.g., in the
+context of em(templates) (cf. chapters ref(STL) until ref(ADVANCEDTEMPL).
 
-At this point in the Annotations only simple examples can be given. Also, some
-hints will be provided about more general uses of the tt(auto) keyword.
+At this point in the Annotations only simple examples can be given.  Refer to
+section ref(AUTODECL) for additional information about tt(auto) (and the
+related tt(decltype) function).
 
 When defining and initializing a variable tt(int variable = 5) the type of the
 initializing expression is well known: it's an tt(int), and unless the
 programmer's intentions are different this could be used to define
-tt(variable)'s type (although it shouldn't in normal circumstances as it
+tt(variable)'s type (a somewhat contrived example as in this case it
 reduces rather than improves the clarity of the code):
         verb(
     auto variable = 5;
         )
 
-    Here are some examples where using tt(auto) em(is) useful.
-In chapter ref(String) the emi(iterator) concept is introduced (see also
-chapters ref(CONTAINERS) and ref(STL)). Iterators sometimes have long type
-definitions, like
+    However, here are some examples where tt(auto) can profitably be used.  In
+chapter ref(String) the emi(iterator) concept is introduced (see also chapters
+ref(CONTAINERS) and ref(STL)). Iterators sometimes have long type definitions,
+like
         verb(
     std::vector<std::string>::const_reverse_iterator
         )
     Functions may return types like this. Since the compiler knows the
-types returned by functions we may exploit this knowledge using
-tt(auto). Assuming that a function tt(begin()) is declared as follows:
+types returned by functions we may exploit this knowledge by using
+tt(auto). Assume that a function tt(begin()) is declared like this:
         verb(
     std::vector<std::string>::const_reverse_iterator begin();
         )
     Rather than writing the verbose variable definition (at tt(//
-1)) a much shorter definition (at tt(// 2)) may be used:
+1), below) a much shorter definition (at tt(// 2)) can be used:
         verb(
     std::vector<std::string>::const_reverse_iterator iter = begin();    // 1
     auto iter = begin();                                                // 2
         )
     It's easy to define additional variables of this type. When initializing
-those variables using tt(iter) the tt(auto) keyword can be used again:
+those variables using tt(iter) the tt(auto) keyword can again be used:
         verb(
     auto start = iter;
         )
-
-    Merely using tt(auto) always results in a non-reference type. If tt(auto)
-should refer to a reference type, ti(auto &&) should be used.
-
-    If tt(start) can't be initialized immediately using an existing
-variable the type of a well known variable or function can be used in
-combination with the ti(decltype) keyword, as in:
+    A definition using a mere tt(auto) results in a plain, non-reference type
+(or a pointer type if the initializing expression is a pointer expression). If
+a reference type is requested, ti(auto &) or tt(auto &&) can be
+used. Likewise, tt(const) and/or pointer specifications can be used. Examples:
         verb(
-    decltype(iter) start;
-    decltype(begin()) spare;
+    int value;
+    auto another = value;   // value is int, so 'int another' is defined
+
+    string const &text();
+    auto str = text();      // text's plain type is string, so 
+                            // string str, NOT string const str
+                            // is defined
+    str += "...";           // OK
+
+    int *ip = &value;
+    auto ip2 = ip;          // int *ip2, pointing at value, is defined.
         )
-    The keyword tt(decltype) may also receive an expression as its
-argument. E.g., tt(decltype(3 + 5)) represents an int, tt(decltype(3 /
-double(3))) represents tt(double).
-
-    Different from tt(auto) the type deduced by tt(decltype) may either be a
-value or a reference type, depending on the kind of expression that is passed
-to tt(decltype). E.g, if tt(int intVal) and tt(int &&intTmp()) are available,
-then 
-        verb(
-    decltype(intVal)     iv(3);         // iv is an int
-    declType( (intVal) ) iref(intVal);  // iref is an int &
-    declType(intTmp())   tmpRef(f());   // tmpRef is an int &&
-        )
-
-    In addition to this, tt(decltype(auto)) specifications, in
-which case tt(decltype's) rules are applied to tt(auto) are supported since
-the C++14 standard. E.g.,
-        verb(
-    decltype(auto) iref2((intVal));     // iref2 is an int &
-    auto iref3((intVal));               // iref3 is an int
-        )
-
-
-The tt(auto) keyword can also be used to postpone the definition of a
-function's return type. The declaration of a function tt(intArrPtr) returning
-a pointer to an array of 10 tt(int)s looks like this:
-        verb(
-    int (*intArrPtr())[10];
-        )
-    Such a declaration is fairly complex. E.g., among other complexities it
-requires `protection of the pointer'hi(pointer protection) using parentheses
-in combination with the function's parameter list. In situations like these
-the specification of the return type can be postponed using the tt(auto)
-return type, followed by the specification of the function's return type after
-any other specification the function might receive (e.g., as a const member
-(cf. section ref(ConstFunctions)) or following its tt(noexcept) specification
-(cf. section ref(NOEXCEPT))).
-
-    Using tt(auto) to declare the above function, the declaration becomes:
-        verb(
-    auto intArrPtr() -> int (*)[10];
-        )
-    A return type specification using tt(auto) is called a
-        emi(late-specified return type).
-
-    The tt(auto) keyword can also be used to defined types that are related to
-the actual tt(auto) associated type. Here are some examples:
-        verb(
-    vector<int> vi;
-    auto iter = vi.begin();     // standard: auto is vector<int>::iterator
-    auto &&rref = vi.begin();   // auto is rvalue ref. to the iterator type
-    auto *ptr = &iter;          // auto is pointer to the iterator type
-    auto *ptr = &rref;          // same
-        )
-
-Since the C++14 standard late return type specifications are no longer
-required for functions returning tt(auto). Such functions can now simply be
-declared like this:
-        verb(
-    auto autoReturnFunction();
-        )
-    In this case some restrictions apply, both to the function definitions and
-the function declarations:
-    itemization(
-    it() If multiple return statements are used in function definitions they
-all must be of the same type;
-    it() Functions merely returning tt(auto) cannot be used before the
-compiler has seen their definitions. So they cannot be used after mere
-declarations;
-    it() When functions returning tt(auto) are implemented as recursive
-function then at least one return statement must have been seen before the 
-recursive call. E.g.,
-        verb(
-    auto fibonacci(size_t n)
-    {
-        if (n <= 1)
-            return n;
-        return fibonacci(n - 1) + fibonacci(n - 2);
-    }
-        )
-    )
-
-

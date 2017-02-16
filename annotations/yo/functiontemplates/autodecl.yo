@@ -1,0 +1,155 @@
+    In section ref(AUTO) the tt(auto) keyword was briefly covered. A related
+facility is ti(decltype), and even constructions like tt(decltype(auto)), may
+be encountered and used. This section concentrates on tt(decltype), also
+contrasting and joining it with tt(auto).
+
+    Assume we have a function defining a 
+parameter  tt(std::string &text). Inside the function we use the following two
+definitions:
+        verb(
+    auto scratch1{text};
+    decltype(text) scratch2;
+        )
+    When using tt(auto) a plain type is deduced, so tt(scratch1) is a
+tt(string), and tt(scratch) is initialized with a copy of tt(text). The
+specfication tt(decltype) works differently. In this case it inspects its
+argument, and deduces tt(text's) type: tt(string &), which is then used to
+define tt(scratch2).
+
+
+tt(string) variable. In 
+    If tt(start) can't be initialized immediately using an existing variable
+the type of a well known variable or function can be used in combination with
+the ti(decltype) keyword, as in:
+        verb(
+    decltype(iter) start;
+    decltype(begin()) spare;
+        )
+    The keyword tt(decltype) may also receive an expression as its
+argument. E.g., tt(decltype(3 + 5)) represents an int, tt(decltype(3 /
+double(3))) represents tt(double).
+
+    Different from tt(auto) the type deduced by tt(decltype) may be a
+value or a reference type, depending on the kind of expression that is passed
+to tt(decltype). E.g, if tt(int intVal) and tt(int &&intTmp()) are available,
+then 
+        verb(
+    decltype(intVal)     iv(3);         // iv is an int
+    declType( (intVal) ) iref(intVal);  // iref is an int &
+    declType(intTmp())   tmpRef(f());   // tmpRef is an int &&
+        )
+    Depending on its argument tt(decltype(arg)) represents different kinds of
+        types: 
+    itemization(
+    it() if tt(arg) is a compiler-computable value, then tt(arg's) type:
+        tt(decltype( (3 + 5) )) represents tt(int);
+    it() if tt(arg) has  a value- or pointer type: then tt(arg's) type:nl()
+        for tt(int arg): tt(decltype( arg ) represents tt(int);nl() 
+        for tt(int *arg): tt(decltype(arg)) represents tt(int *);
+    it() if tt(arg) has  a value- or pointer type, and is passed to
+        tt(decltype) between parentheses, then an lvalue reference to 
+         tt(arg's) type:nl()
+        for tt(int arg): decltype( (arg) ) represents tt(int &);nl() 
+        for tt(int *arg): tt(decltype((arg))) represents tt(int *&);
+    it() if tt(arg) is an l- or r-value reference (or a function returning an
+        l- or r-value reference), then tt(arg's) type:nl()
+        for tt(int &&arg): tt(decltype( arg )) and tt(decltype( (arg) )) 
+            represent tt(int &&);nl()
+        for tt(int &arg): tt(decltype( arg )) and tt(decltype( (arg) )) 
+        represent tt(int &);
+    )
+
+
+    In addition to this, ti(decltype(auto)) specifications can be used, in
+which case tt(decltype's) rules are applied to tt(auto):
+        verb(
+    int intVal;
+    auto value( (intVal) );             // (intVal)'s plain type is int:
+                                        // auto deduces 'int'
+
+    decltype(auto) iref2( (intVal) );   // (intVal) is used with decltype,
+                                        // so iref2 is defined as an int &
+        )
+
+    Two slightly more complex examples, but well worth studying:
+        itemization(
+    class Data
+    {
+        std::string *d_sp;
+        public:                         
+            decltype(auto) get(size_t idx) const
+            {
+                return d_sp[idx];
+            }
+    };
+    Data data;
+    decltype(auto) cc = data.get(0);    
+        )
+        In this example, tt(decltype(auto) is used to define tt(get's) return
+type. The compiler deduces the return type as follows:
+    itemization(
+    it() tt(d_sp[idx]) is returned. 
+    it() tt(auto) in tt(decltype(auto)) is replaced with the return
+expression: tt(decltype(d_sp[idx]))
+    So that's what tt(auto) is replaced
+with. Sinds tt(get) is a const member function, tt(d_sp[idx])'s , it is inserted
+
+The tt(auto) keyword can also be used to postpone the definition of a
+function's return type. The declaration of a function tt(intArrPtr) returning
+a pointer to an array of 10 tt(int)s looks like this:
+        verb(
+    int (*intArrPtr())[10];
+        )
+    Such a declaration is fairly complex. E.g., among other complexities it
+requires `protection of the pointer'hi(pointer protection) using parentheses
+in combination with the function's parameter list. In situations like these
+the specification of the return type can be postponed using the tt(auto)
+return type, followed by the specification of the function's return type after
+any other specification the function might receive (e.g., as a const member
+(cf. section ref(ConstFunctions)) or following its tt(noexcept) specification
+(cf. section ref(NOEXCEPT))).
+
+    Using tt(auto) to declare the above function, the declaration becomes:
+        verb(
+    auto intArrPtr() -> int (*)[10];
+        )
+    A return type specification using tt(auto) is called a
+        emi(late-specified return type).
+
+    The tt(auto) keyword can also be used to defined types that are related to
+the actual tt(auto) associated type. Here are some examples:
+        verb(
+    vector<int> vi;
+    auto iter = vi.begin();     // standard: auto is vector<int>::iterator
+    auto &&rref = vi.begin();   // auto is rvalue ref. to the iterator type
+    auto *ptr = &iter;          // auto is pointer to the iterator type
+    auto *ptr = &rref;          // same
+        )
+
+Since the C++14 standard late return type specifications are no longer
+required for functions returning tt(auto). Such functions can now simply be
+declared like this:
+        verb(
+    auto autoReturnFunction();
+        )
+    In this case some restrictions apply, both to the function definitions and
+the function declarations:
+    itemization(
+    it() If multiple return statements are used in function definitions they
+all must be of the same type;
+    it() Functions merely returning tt(auto) cannot be used before the
+compiler has seen their definitions. So they cannot be used after mere
+declarations;
+    it() When functions returning tt(auto) are implemented as recursive
+function then at least one return statement must have been seen before the 
+recursive call. E.g.,
+        verb(
+    auto fibonacci(size_t n)
+    {
+        if (n <= 1)
+            return n;
+        return fibonacci(n - 1) + fibonacci(n - 2);
+    }
+        )
+    )
+
