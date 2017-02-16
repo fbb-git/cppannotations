@@ -1,37 +1,44 @@
-    In section ref(AUTO) the tt(auto) keyword was briefly covered. A related
-facility is ti(decltype), and even constructions like tt(decltype(auto)), may
-be encountered and used. This section concentrates on tt(decltype), also
-contrasting and joining it with tt(auto).
+    In section ref(AUTO) the tt(auto) keyword was introduced. The keyword
+tt(decltype) is related to the keyword tt(auto), but produces somewhat
+different results.  This section concentrates on the keyword
+tt(decltype). Different from tt(auto), which requires no further
+specifications, the keyword tt(decltype) is always followed by an expression
+between parentheses (e.g., tt(decltype(variable))). 
 
-    Assume we have a function defining a 
-parameter  tt(std::string &text). Inside the function we use the following two
+    As an initial illustration, assume we have a function defining a parameter
+tt(std::string const &text). Inside the function we use the following two
 definitions:
         verb(
     auto scratch1{text};
-    decltype(text) scratch2;
+    decltype(text) scratch2 = text;
         )
-    When using tt(auto) a plain type is deduced, so tt(scratch1) is a
-tt(string), and tt(scratch) is initialized with a copy of tt(text). The
-specfication tt(decltype) works differently. In this case it inspects its
-argument, and deduces tt(text's) type: tt(string &), which is then used to
-define tt(scratch2).
-
-
-tt(string) variable. In 
-    If tt(start) can't be initialized immediately using an existing variable
-the type of a well known variable or function can be used in combination with
-the ti(decltype) keyword, as in:
+    When using tt(auto) the compiler deduces a plain type, so tt(scratch1) is
+defined as a tt(string), and is initialized with a copy of tt(text). But
+tt(decltype) works differently: tt(decltype) deduces tt(text's) type:
+tt(string const &), which is then used as tt(scratch2's) type: tt(string const
+&scratch2), referring to whatever string tt(text) refers to. This is
+tt(decltype's) standard behavior: when provided with the name of a variable,
+it is replaced by that variable's type. 
+=================================================================
+Here are some examples, contrasting it
+with tt(auto):
         verb(
-    decltype(iter) start;
-    decltype(begin()) spare;
-        )
-    The keyword tt(decltype) may also receive an expression as its
-argument. E.g., tt(decltype(3 + 5)) represents an int, tt(decltype(3 /
-double(3))) represents tt(double).
+    int const *ptr  // decltype(ptr) is replaced by int const *
+    auto ptr2 = ptr;
 
-    Different from tt(auto) the type deduced by tt(decltype) may be a
-value or a reference type, depending on the kind of expression that is passed
-to tt(decltype). E.g, if tt(int intVal) and tt(int &&intTmp()) are available,
+    This example illustrates the standard use of tt(decltype): if it is
+provided with the name of a variable then the tt(decltype) specification is 
+replaced by the variable's type. Alternatively, tt(decltype) can be provided
+with an expression, 
+    
+
+    In general, tt(decltype) receives an expression as its argument. E.g.,
+tt(decltype(3 + 5)) represents an int, tt(decltype(3 / double(3))) represents
+tt(double). Depending on the type of the expression that is passed to
+tt(decltype), a tt(decltype) specification is either replaced by its
+argument's type, or it is replaced by a reference to the expression's type. 
+
+. E.g, if tt(int intVal) and tt(int &&intTmp()) are available,
 then 
         verb(
     decltype(intVal)     iv(3);         // iv is an int

@@ -46,10 +46,15 @@ those variables using tt(iter) the tt(auto) keyword can again be used:
         verb(
     auto start = iter;
         )
-    A definition using a mere tt(auto) results in a plain, non-reference type
-(or a pointer type if the initializing expression is a pointer expression). If
-a reference type is requested, ti(auto &) or tt(auto &&) can be
-used. Likewise, tt(const) and/or pointer specifications can be used. Examples:
+    When defining variables using tt(auto) the variable's type is deduced from
+the variable's initializing expression. Plain types and pointer types are used
+as-is, but when the initializing expression is a reference type, then the
+reference's basic type (without the reference, and omitting tt(const) or
+tt(volatile) specifications) is used.
+
+If a reference type is required then ti(auto &) or tt(auto &&) can be
+used. Likewise, tt(const) and/or pointer specifications can be used in
+combination with the tt(auto) keyword itself. Examples:
         verb(
     int value;
     auto another = value;   // value is int, so 'int another' is defined
@@ -62,4 +67,15 @@ used. Likewise, tt(const) and/or pointer specifications can be used. Examples:
 
     int *ip = &value;
     auto ip2 = ip;          // int *ip2, pointing at value, is defined.
+
+    int *const &ptr = ip;
+    auto ip3 = ptr;         // int *ip3 is defined, omitting const &
+    auto const &ip4 = ptr;  // int *const &ip4 is defined.
         )
+
+
+
+
+
+
+

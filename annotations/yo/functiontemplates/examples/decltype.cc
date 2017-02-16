@@ -38,71 +38,129 @@ struct Data
 
 };
 
+void fun(string const &text)
+{
+    auto s1{text};
+    decltype(text) s2 = text;
+    show<decltype(s1)>();
+    show<decltype(text)>();
+}
+
 int main()
 {
-    int value;
 
-    show<decltype(value)>();            // plain value
-    show<decltype((value))>();          // l ref
-
-    show<decltype(3)>();                // plain value
-    show<decltype((3))>();              // plain value
-
-    show<decltype(rref())>();           // r ref
-    show<decltype( (rref())) >();       // r ref
-
-    int &iref = value;
-
-    show<decltype(iref)>();             // lref
-    show<decltype( (iref)) >();         // lref
-
-    decltype( (iref) ) iref2 = value;   // same lref as iref
-
+    int value = 12;
     int *ip = &value;
-    show<decltype(  ip  ) >();          // pointer
-    show<decltype( (ip) ) >();          // lref
 
-    decltype( (ip) ) ipref = ip;        // lref to ip
-    show<decltype( ipref )>();
+    int *const &ptr = ip;
+//    auto ptr2 = ptr;        // int *
 
-    *ipref = 1;
-    int *&ipref2 = ip;                  // reference to pointer
+//    show<decltype(ptr2)>();
+//
+    string str;
+    fun(str);
+//    string const &sc = str;
+//    auto s2{sc};
+//    show<decltype(s2)>();
 
-    cout << value << "\n\n";
 
-    show<decltype(icref())>();
+//    string *sptr;
+//
+//    auto scratch{sptr};
+//
+//    scratch = 0;
+//
+//    show<decltype(scratch)>();
+//
+//    int value;
+//
+//    show<decltype(value)>();            // plain variable
+//
+//    show<decltype(value + value)>();            // plain variable
 
-    auto str = text();      // text's plain type is string, so 
-                            // string str, NOT string const str
-                            // is defined
-    str += "...";           // OK          
+//    show<decltype((value))>();          // l ref: assignment to value is
+                                        // potentially possible
 
-    cout << str << '\n';
+//    show<decltype(3)>();                // plain value
+//    show<decltype((3))>();              // plain value
+//
+//    show<decltype(rref())>();           // r ref
+//    show<decltype( (rref())) >();       // r ref
+//
+//    int &iref = value;
+//
+//    show<decltype(iref)>();             // lref
+//    show<decltype( (iref)) >();         // lref
+//
+//    decltype( (iref) ) iref2 = value;   // same lref as iref
 
-    int *ip3= &value;
-    auto ip4 = ip3; 
-    *ip4 = 12;
-    cout << value << '\n';
+//    int *ip = &value;
+//    show<decltype(  ip  ) >();          // pointer
 
-    string const &scr = str;
-    show<decltype(scr)>();
+//    show<decltype( (ip) ) >();          // lref
+//
+//    decltype( (ip) ) ipref = ip;        // lref to ip
+//    show<decltype( ipref )>();
+//
+//    *ipref = 1;
+//    int *&ipref2 = ip;                  // reference to pointer
+//
+//    cout << value << "\n\n";
+//
+//    show<decltype(icref())>();
+//
+//    auto str = text();      // text's plain type is string, so 
+//                            // string str, NOT string const str
+//                            // is defined
+//    str += "...";           // OK          
+//
+//    cout << str << '\n';
+//
+//    int *ip3= &value;
+//    auto ip4 = ip3; 
+//    *ip4 = 12;
+//    cout << value << '\n';
+//
+//    string const &scr = str;
+//    show<decltype(scr)>();
+//
+//    Data data;
+//    show<decltype(data.fun())>();
+//
+//    int &fref = data.fun();    
+//
+////    cout << fref << '\n';
+//
+//                                    cout << "arr[20]:\n";
 
-    Data data;
-    show<decltype(data.fun())>();
+//    int arr[20];
+//    show<decltype(arr[0])>();
+//    show<decltype(arr[0] + arr[3])>();
 
-    int &fref = data.fun();    
+//    int const x = 10;
 
-//    cout << fref << '\n';
+//    show<decltype(x)>();
 
-    int arr[20];
-    show<decltype(arr[0])>();
+//    auto y = x;
+//    show<decltype(y)>();
 
-    int const x = 10;
+//    string stringVar;
 
-    show<decltype(x)>();
+//    show<decltype(stringVar + stringVar)>();
+//    show<decltype((stringVar + stringVar))>();
+//
+//    int intVar;
+//
+//    show<decltype(intVar + intVar)>();
+//    show<decltype( (intVar + intVar)) >();
+//    show<decltype( *&intVar ) >();
 
-    auto y = x;
-    show<decltype(y)>();
+//    show<decltype(arr)>();
+
+//    int const cvalue = 9;
+
+//    show<decltype(cvalue)>();            // plain value
+//    show<decltype((cvalue))>();          // l ref: (cvalue) has an address
 
 }
 
