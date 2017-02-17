@@ -1,162 +1,147 @@
     In section ref(AUTO) the tt(auto) keyword was introduced. The keyword
-tt(decltype) is related to the keyword tt(auto), but produces somewhat
-different results.  This section concentrates on the keyword
-tt(decltype). Different from tt(auto), which requires no further
-specifications, the keyword tt(decltype) is always followed by an expression
-between parentheses (e.g., tt(decltype(variable))). 
+tt(decltype), related to tt(auto), shows a somewhat different behavior.  This
+section concentrates on tt(decltype). Different from tt(auto), which requires
+no further specifications, tt(decltype) is always followed by an
+expression between parentheses (e.g., tt(decltype(variable))).
 
     As an initial illustration, assume we have a function defining a parameter
-tt(std::string const &text). Inside the function we use the following two
-definitions:
+tt(std::string const &text). Inside the function we may encounter the
+following two definitions:
         verb(
     auto scratch1{text};
     decltype(text) scratch2 = text;
         )
-    When using tt(auto) the compiler deduces a plain type, so tt(scratch1) is
-defined as a tt(string), and is initialized with a copy of tt(text). But
-tt(decltype) works differently: tt(decltype) deduces tt(text's) type:
-tt(string const &), which is then used as tt(scratch2's) type: tt(string const
-&scratch2), referring to whatever string tt(text) refers to. This is
-tt(decltype's) standard behavior: when provided with the name of a variable,
-it is replaced by that variable's type. 
-=================================================================
-Here are some examples, contrasting it
-with tt(auto):
-        verb(
-    int const *ptr  // decltype(ptr) is replaced by int const *
-    auto ptr2 = ptr;
+    With tt(auto) the compiler deduces a plain type, so tt(scratch1) is a
+tt(string), using copy construction to initialize it with tt(text). Next
+consider tt(decltype): tt(decltype) obtains tt(text's) type: tt(string const
+&), which is then used as tt(scratch2's) type: tt(string const &scratch2),
+referring to whatever string tt(text) refers to. This is tt(decltype's)
+standard behavior: when provided with the name of a variable, it is replaced
+by that variable's type.
 
-    This example illustrates the standard use of tt(decltype): if it is
-provided with the name of a variable then the tt(decltype) specification is 
-replaced by the variable's type. Alternatively, tt(decltype) can be provided
-with an expression, 
+Alternatively, tt(decltype) can be provided with an expression. Of course, a
+variable by itself also is an expression, but in the context of tt(decltype)
+we define an `expression' as any expression that is more complex than a plain
+variable specification. This may be as simple as tt((variable)), the name of a
+variable between parentheses. 
+
+When an expression is used, the compiler determines whether the expression
+could be used to initialize an lvalue reference. If so,
+tt(decltype(expression)) is replaced by the type of that imaginary lvalue
+reference. If not, tt(decltype(expression)) is replaced by the expression's
+type.
+
+    Here are some examples:
+    verb(
+    int *ptr;
+    decltype((ptr))     
+        int *&ref = (ptr): OK. 
+        decltype is replaced by int *&
+
+    int value;
+    decltype(value + value) 
+        int &ref = value + value: NOT OK 
+        decltype is replaced by int (value + value's type)
     
+    string lines[20];
+    decltype(lines[0])
+        string &ref = lines[0]: OK
+        decltype is replaced by string &
 
-    In general, tt(decltype) receives an expression as its argument. E.g.,
-tt(decltype(3 + 5)) represents an int, tt(decltype(3 / double(3))) represents
-tt(double). Depending on the type of the expression that is passed to
-tt(decltype), a tt(decltype) specification is either replaced by its
-argument's type, or it is replaced by a reference to the expression's type. 
+    string &&strRef = string{};
+    decltype(strRef) 
+        strRef is a variable
+        decltype is replaced by strRef's type: string &&
 
-. E.g, if tt(int intVal) and tt(int &&intTmp()) are available,
-then 
-        verb(
-    decltype(intVal)     iv(3);         // iv is an int
-    declType( (intVal) ) iref(intVal);  // iref is an int &
-    declType(intTmp())   tmpRef(f());   // tmpRef is an int &&
-        )
-    Depending on its argument tt(decltype(arg)) represents different kinds of
-        types: 
-    itemization(
-    it() if tt(arg) is a compiler-computable value, then tt(arg's) type:
-        tt(decltype( (3 + 5) )) represents tt(int);
-    it() if tt(arg) has  a value- or pointer type: then tt(arg's) type:nl()
-        for tt(int arg): tt(decltype( arg ) represents tt(int);nl() 
-        for tt(int *arg): tt(decltype(arg)) represents tt(int *);
-    it() if tt(arg) has  a value- or pointer type, and is passed to
-        tt(decltype) between parentheses, then an lvalue reference to 
-         tt(arg's) type:nl()
-        for tt(int arg): decltype( (arg) ) represents tt(int &);nl() 
-        for tt(int *arg): tt(decltype((arg))) represents tt(int *&);
-    it() if tt(arg) is an l- or r-value reference (or a function returning an
-        l- or r-value reference), then tt(arg's) type:nl()
-        for tt(int &&arg): tt(decltype( arg )) and tt(decltype( (arg) )) 
-            represent tt(int &&);nl()
-        for tt(int &arg): tt(decltype( arg )) and tt(decltype( (arg) )) 
-        represent tt(int &);
+    decltype((strRef)) 
+        string &ref = strRef is OK
+        decltype is replaced by string &
     )
 
 
     In addition to this, ti(decltype(auto)) specifications can be used, in
-which case tt(decltype's) rules are applied to tt(auto):
-        verb(
-    int intVal;
-    auto value( (intVal) );             // (intVal)'s plain type is int:
-                                        // auto deduces 'int'
+which case tt(decltype's) rules are applied to tt(auto). So, tt(auto) is used
+to determine an object's basic type. Then, if the expression is a mere
+variable, the variable's type is the object's basic type, otherwise, if the
+exoression can be assigned to an lvalue then tt(decltype(auto)) is replaced by
+a reference to the object's basic type. Here are some examples:
+    verb(
+    int *ptr;
+    decltype(auto) ptr2 = ptr     
+        auto produces int *, ptr is a plain variable
+        decltype(auto) is replaced by int *
 
-    decltype(auto) iref2( (intVal) );   // (intVal) is used with decltype,
-                                        // so iref2 is defined as an int &
-        )
+    int value;
+    decltype(auto) ret = value + value;
+        auto produces int, value + value: not assignable to lvalue 
+        decltype(auto) is replaced by int
+    
+    string lines[20];
+    decltype(auto) line = lines[0];
+        auto produces string, lines[0] assignable to lvalue 
+        decltype(auto) is replaced by string &
 
-    Two slightly more complex examples, but well worth studying:
-        itemization(
-    class Data
-    {
-        std::string *d_sp;
-        public:                         
-            decltype(auto) get(size_t idx) const
-            {
-                return d_sp[idx];
-            }
-    };
-    Data data;
-    decltype(auto) cc = data.get(0);    
-        )
-        In this example, tt(decltype(auto) is used to define tt(get's) return
-type. The compiler deduces the return type as follows:
-    itemization(
-    it() tt(d_sp[idx]) is returned. 
-    it() tt(auto) in tt(decltype(auto)) is replaced with the return
-expression: tt(decltype(d_sp[idx]))
-    So that's what tt(auto) is replaced
-with. Sinds tt(get) is a const member function, tt(d_sp[idx])'s , it is inserted
+    decltype(auto) ref = string{} 
+        auto produces string, string{} not assignable to lvalue
+        decltype(auto) is replaced by string
 
-The tt(auto) keyword can also be used to postpone the definition of a
-function's return type. The declaration of a function tt(intArrPtr) returning
-a pointer to an array of 10 tt(int)s looks like this:
-        verb(
-    int (*intArrPtr())[10];
-        )
-    Such a declaration is fairly complex. E.g., among other complexities it
-requires `protection of the pointer'hi(pointer protection) using parentheses
-in combination with the function's parameter list. In situations like these
-the specification of the return type can be postponed using the tt(auto)
-return type, followed by the specification of the function's return type after
-any other specification the function might receive (e.g., as a const member
-(cf. section ref(ConstFunctions)) or following its tt(noexcept) specification
-(cf. section ref(NOEXCEPT))).
-
-    Using tt(auto) to declare the above function, the declaration becomes:
-        verb(
-    auto intArrPtr() -> int (*)[10];
-        )
-    A return type specification using tt(auto) is called a
-        emi(late-specified return type).
-
-    The tt(auto) keyword can also be used to defined types that are related to
-the actual tt(auto) associated type. Here are some examples:
-        verb(
-    vector<int> vi;
-    auto iter = vi.begin();     // standard: auto is vector<int>::iterator
-    auto &&rref = vi.begin();   // auto is rvalue ref. to the iterator type
-    auto *ptr = &iter;          // auto is pointer to the iterator type
-    auto *ptr = &rref;          // same
-        )
-
-Since the C++14 standard late return type specifications are no longer
-required for functions returning tt(auto). Such functions can now simply be
-declared like this:
-        verb(
-    auto autoReturnFunction();
-        )
-    In this case some restrictions apply, both to the function definitions and
-the function declarations:
-    itemization(
-    it() If multiple return statements are used in function definitions they
-all must be of the same type;
-    it() Functions merely returning tt(auto) cannot be used before the
-compiler has seen their definitions. So they cannot be used after mere
-declarations;
-    it() When functions returning tt(auto) are implemented as recursive
-function then at least one return statement must have been seen before the 
-recursive call. E.g.,
-        verb(
-    auto fibonacci(size_t n)
-    {
-        if (n <= 1)
-            return n;
-        return fibonacci(n - 1) + fibonacci(n - 2);
-    }
-        )
+    decltype((strRef)) 
+        string &ref = strRef is OK
+        decltype is replaced by string &
     )
+
+
+    In practice, the tt(decltype(auto)) form is most often encountered with
+function templates to define their return types. Have a look at the following
+struct definition (not using function templates, but illustrating the workings
+of tt(decltype(auto)):
+        verb(
+    struct Data
+    {
+        vector<string> d_vs;
+        string *d_val = new string[10];
+    
+        Data()
+        :
+            d_vs(1)
+        {}
+    
+        auto autoFun() const
+        {
+            return d_val[0];
+        }
+
+        decltype(auto) declArr() const       
+        {
+            return d_val[0];
+        }
+
+        decltype(auto) declVect() const
+        {
+            return d_vs[0];
+        }
+    };
+        )
+    itemization(
+    it() The member tt(autoFun) returns tt(auto): tt(d_val[0]) is passed to
+tt(auto), deducing tt(string). So the function's signature equals tt(string
+autoFun() const).
+    it() The member tt(declArr) returns tt(decltype(auto)): passing
+tt(d_val[0]) to tt(auto) produces tt(string). Since tt(d_val[0]) is not a
+named variable, but can be assigned to an lvalue, the function's siganture
+equals tt(string &declArr() const).
+    it() The member tt(declVect) returns tt(decltype(auto)): passing
+tt(d_vs[0]) to tt(auto) produces tt(string). Again tt(d_vs[0]) is not a
+named variable, but can be assigned to an lvalue. However, since
+tt(declVect) is a const member, this reference must be a tt(string const &),
+ans so the function's siganture equals tt(string const &declVect() const).
+    )
+    If you're wondering why it is tt(string &declArr() const) but tt(string
+const &declVect() const) then define reference members in these two functions:
+tt(string &ref = d_val[0]) is OK in tt(declArr), but tt(string &ref = d_vs[0])
+does not compile in tt(declVect): since tt(d_vs) is itself an object, its
+tt(operator[]) returns a tt(string const &) when called from a const member
+function. Hence, tt(decltype(auto) declVect() const) returns a tt(string const
+&) rather than a tt(string &).
+
 
