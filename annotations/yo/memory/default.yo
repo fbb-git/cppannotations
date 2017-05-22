@@ -2,23 +2,37 @@ As we've seen, classes by default offer a copy constructor and assignment
 operator. These class members are implemented so as to provide basic support:
 data members of primitive data types are copied byte-by-byte, but for class
 type data members their corresponding copy constructors c.q. assignment
-operators are called.
+operators are called.  The compiler also attempts to provide default
+implementations for move constructors and move assignment operators. However,
+the default constructors and assignment operators cannot always be provided.
 
-The compiler can provide default implementations for move constructors and
-move assignment operators.
+These are the rules the compiler applies when deciding what to provide or not
+to provide:
+    itemization(
+    it() If the copy constructor or the copy assignment operator is declared,
+then the default move constructor and move assignment operator are suppressed;
+their use is replaced by the corresponding copy operation (constructor or
+assignment operator);
 
-However, except for the copy constructor, default implementations for
-constructors (c.q. assignment operators) are no longer provided once a class
-declares at least one constructor (c.q. assignment operator), while the
-default copy constructor is suppressed by declarations of either the move
-constructor or the move assignment operator.
+    it() If the move constructor or the move assignment operator is declared
+then the copy constructor and the copy assignment operator are implicitly
+declared as deleted, and can therefore not be used anymore;
 
-If default implementations should be available in these cases, it's easy to
-add them to the class by adding tt(= default) to the appropriate constructor
-and assignment operator declarations.
+    it() If em(either) the move constructor em(or) the move assignment
+operator is declared, then (in addition to suppressing the copy operations)
+the default implementation of the other move-member is also suppressed;
+
+    it() In all other cases the default copy and move constructors em(and) the
+default copy and assignment operators are provided.
+    )
+
+If default implementations of copy or move constructors or assignment
+operators are suppressed, but they should be available, then it's easy to
+provide the default implementations by specifying the required signatures, to
+which the specification `tt(= default)' is added.
 
 Here is an example of a class offering all defaults: constructor, copy
-constructor, move constructor, assignment operator and move assignment
+constructor, move constructor, copy assignment operator and move assignment
 operator:
         verb(
     class Defaults
@@ -27,8 +41,9 @@ operator:
         Mov d_mov;
     };
         )
+
     Assuming that tt(Mov) is a class offering move operations in addition
-to the standard deep copy operations, then the following actions are performed
+to the standard copy operations, then the following actions are performed
 on the destination's tt(d_mov) and tt(d_x):
         verb(
     Defaults factory();
@@ -48,9 +63,9 @@ on the destination's tt(d_mov) and tt(d_x):
     }
         )
 
-    If, however, tt(Defaults) declares at least one constructor (it could be
-the copy constructor) and one assignment operator, then only those members and
-the copy constructor remain available. E.g.:
+    If, tt(Defaults) declares at least one constructor (not being the copy- or
+move constructor) as well as the copy assignment operators then only the
+default copy- and declared assignment operator are available. E.g.:
 
         verb(
     class Defaults
@@ -60,7 +75,7 @@ the copy constructor remain available. E.g.:
 
         public:
             Defaults(int x);
-            Defaults operator=(Defaults &&tmp);
+            Default &operator=(Default const &rhs);
     };
 
     Defaults factory();
@@ -69,12 +84,13 @@ the copy constructor remain available. E.g.:
     {                              Mov operation:    resulting d_x:
                                    --------------------------------
       Defaults one;                ERROR: not available
-      Defaults two(one);           Mov(Mov const &), one.d_x
-      Defaults three(factory());   ERROR: not available
+      Defaults two(one);           Mov(Mov const &),        one.d_x
+      Defaults three(factory());   Mov(Mov const &),        one.d_x
 
-      one = two;                   ERROR: not available
-      one = factory();             Mov::operator=(   tmp.d_x
-                                        Mov &&tmp)
+      one = two;                   Mov::operatpr=(          two.d_x
+                                        Mov const &)
+      one = factory();             Mov::operator=(          tmp.d_x
+                                        Mov const &)
     }
         )
     To reestablish the defaults, append tt(= default) to the appropriate
@@ -87,12 +103,13 @@ declarations:
 
         public:
             Defaults()               = default;
-            Defaults(Defaults &&tmp) = default;
             Defaults(int x);
-            // Default(Default const &) remains available
+            // Default(Default const &) remains available (by default)
 
-            Defaults operator=(Defaults const &rhs) = default;
-            Defaults operator=(Defaults &&tmp);
+            Defaults(Defaults &&tmp) = default;
+
+            Defaults operator=(Defaults const &rhs);
+            Defaults operator=(Defaults &&tmp) = default;
     };
         )
  Be cautious, declaring defaults, as default implementations copy data members
@@ -101,3 +118,7 @@ object. This is likely to cause problems with pointer type data members.
 
     The ti(= default) suffix can only be used when declaring constructors or
 assignment operators in the class's public section.
+
+
+
+
