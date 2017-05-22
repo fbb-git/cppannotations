@@ -14,7 +14,7 @@ interface could be:
         )
     An interface like this would allow us to do things like:
         verb(
-    Print print(cout);
+    Print print{ cout };
     for (int idx = 0; idx != argc; ++idx)
         print.print("arg: ", argv[idx], "\n");
         )
@@ -24,7 +24,7 @@ simplify tt(print)'s prototype (only one argument would need to be passed
 rather than three) and we could wrap the above code in a function
 expecting a tt(Print) object:
         verb(
-    void allArgs(Print const &print, int argc, char *argv[])
+    void allArgs(Print const &print, int argc, char **argv)
     {
         for (int idx = 0; idx != argc; ++idx)
             print.print(argv[idx]);
@@ -38,8 +38,8 @@ to the constructor which could be given  the prototype:
         )
     Now tt(allArgs) may be used as follows:
         verb(
-    Print p1(cout, "arg: ", "\n");      // prints to cout
-    Print p2(cerr, "err: --", "--\n");  // prints to cerr
+    Print p1{ cout, "arg: ", "\n" };    // prints to cout
+    Print p2{ cerr, "err: --", "--\n" };// prints to cerr
 
     allArgs(p1, argc, argv);            // prints to cout
     allArgs(p2, argc, argv);            // prints to cerr
@@ -57,22 +57,26 @@ used. Anonymous objects can be used:
 an object;
     it() if the object is em(only) used inside the function call.
     )
-    These anonymous objects are considered constant as they merely exist for
-passing the information of (class type) objects to functions. They are not
-considered 'variables'. Of course, a tt(const_cast) could be used to cast away
-the const reference's constness, but any change is lost once the function
-returns. These anonymous objects used to initialize const references should
-not be confused with rvalue references (section ref(RREF)) which have a
-completely different purpose in life. Rvalue references primarily exist to be
-`swallowed' by functions receiving them. Thus, the information made available
-by rvalue references outlives the rvalue reference objects which are also
-anonymous.
+    When passing anonymous objects as arguments of tt(const &) parameters of
+functions they are considered constant as they merely exist for passing the
+information of (class type) objects to those functions. This way, they cannot
+be modified, nor may their non-const member functions be used.  Of course, a
+tt(const_cast) could be used to cast away the const reference's constness, but
+that's considered bad practive on behalf of the function receiving the
+anonymous objects. Also, any modification to the anonymous object is lost once
+the function returns as the anonymous object ceases to exist after calling the
+function. These anonymous objects used to initialize const references should
+not be confused with passing anonymous objects to parameters defined as rvalue
+references (section ref(RREF)) which have a completely different purpose in
+life. Rvalue references primarily exist to be `swallowed' by functions
+receiving them. Thus, the information made available by rvalue references
+outlives the rvalue reference objects which are also anonymous.
 
     Anonymous objects are defined when a constructor is used without providing
 a name for the constructed object. Here is the corresponding example:
         verb(
-    allArgs(Print(cout, "arg: ", "\n"), argc, argv);    // prints to cout
-    allArgs(Print(cerr, "err: --", "--\n"), argc, argv);// prints to cerr
+    allArgs(Print{ cout, "arg: ", "\n" }, argc, argv);    // prints to cout
+    allArgs(Print{ cerr, "err: --", "--\n" }, argc, argv);// prints to cerr
         )
     In this situation the tt(Print) objects are constructed and immediately
 passed as first arguments to the tt(allArgs) functions, where they are

@@ -3,7 +3,7 @@
 
 using namespace std;
 
-int main(int argc, char *argv[])
+int main(int argc, char **argv)
 {
     static size_t staticValue = 0;
 
@@ -31,5 +31,5 @@ int main(int argc, char *argv[])
             }
     };
     Local::hello();             // call Local static member
-    Local loc(argc);            // define object of a local class.
+    Local loc{ argc };          // define object of a local class.
 }
