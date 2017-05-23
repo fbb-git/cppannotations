@@ -22,7 +22,7 @@
         string
             array[] =
             {
-                "charley",
+                "charlie",
                 "alpha",
                 "bravo",
                 "alpha"
@@ -50,9 +50,9 @@
         Generated output:
 
         Initially we have:
-        charley alpha bravo alpha
+        charlie alpha bravo alpha
         After sort() we have:
-        alpha alpha bravo charley
+        alpha alpha bravo charlie
         After unique() we have:
-        alpha bravo charley
+        alpha bravo charlie
     */

@@ -1,7 +1,7 @@
 The ti(map) class offers a (sorted) i(associative array). Before using a
 tt(map) container the tthi(map) header file must be included.
 
-    A tt(map) is filled with emi(key/value) pairs, which may be of any
+    A tt(map) is filled with emi(key, value) pairs, which may be of any
 container-accepted type. Since types are associated with both the key and the
 value, we must specify em(two types) in the angle bracket notation, comparable
 to the specification we've seen with the tt(pair) container (cf. section
@@ -12,15 +12,23 @@ tt(string) and the value is a tt(double) can be defined as follows:
     map<string, double> object;
         )
     The emi(key) is used to access its associated information. That
-information is called the emi(value). For example, a phone book uses the
-names of people as the key, and uses the telephone number and maybe other
-information (e.g., the zip-code, the address, the profession) as
-value. Since a tt(map) sorts its keys, the tt(key)'s ti(operator<) must be
-defined, and it must be sensible to use it. For example, it is generally a bad
-idea to use pointers for keys, as sorting pointers is something different than
-sorting the values pointed at by those pointers.
+information is called the emi(value). For example, a phone book uses the names
+of people as the key, and uses the telephone number and maybe other
+information (e.g., the zip-code, the address, the profession) as value. Since
+a tt(map) sorts its keys, the tt(key)'s ti(operator<) must be defined, and it
+must be sensible to use it. For example, it is generally a bad idea to use
+pointers for keys, as sorting pointers is something different than sorting the
+values pointed at by those pointers. In addition to the em(key, value) types,
+a third type defines the comparison class, used to compare two keys. By
+default, the comparison class is tt(std::less<KeyType) (cf. section
+ref(RELATIONAL)), using the key type's tt(operator<) to compare two key
+values. For key type tt(KeyType) and value type tt(ValueType) the map's type
+definition, therefore, looks like this:
+        verb(
+    map<KeyType, ValueType, std::less<KeyType>>
+        )
 
-    The two fundamental operations on maps are the storage of em(Key/Value)
+    The two fundamental operations on maps are the storage of em(key, value)
 combinations, and the retrieval of values, given their keys. The index
 operator using a key as the index, can be used for both. If the index operator
 is used as em(lvalue), the expression's tt(rvalue) is inserted into the
@@ -28,11 +36,12 @@ map. If it is used as em(rvalue), the key's associated value is retrieved.
 Each key can be stored only once in a tt(map). If the same key is entered
 again, the new value replaces the formerly stored value, which is lost.
 
-A specific key/value combination can implicitly or explicitly be inserted into
-a tt(map). If explicit insertion is required, the key/value combination
-must be constructed first. For this, every tt(map) defines a ti(value_type)
-which may be used to create values that can be stored in the tt(map). For
-example, a value for a tt(map<string, int>) can be constructed as follows:
+A specific em(key, value) combination can implicitly or explicitly be inserted
+into a tt(map). If explicit insertion is required, the em(key, value)
+combination must be constructed first. For this, every tt(map) defines a
+ti(value_type) which may be used to create values that can be stored in the
+tt(map). For example, a value for a tt(map<string, int>) can be constructed as
+follows:
         verb(
     map<string, int>::value_type siValue("Hello", 1);
         )
@@ -53,8 +62,8 @@ constructed using:
         verb(
     StringIntValue("Hello", 1);
         )
-    Alternatively, tt(pairs) may be used to represent key/value combinations
-used by maps:
+    Alternatively, tt(pairs) may be used to represent em(key, value)
+combinations used by maps:
         verb(
     pair<string, int>("Hello", 1);
         )

@@ -8,7 +8,7 @@
         {
             pair<string,int>("alpha", 1),
             pair<string,int>("bravo", 2),
-            pair<string,int>("charley", 3),
+            pair<string,int>("charlie", 3),
             pair<string,int>("bravo", 6),   // unordered `bravo' values
             pair<string,int>("delta", 5),
             pair<string,int>("bravo", 4),
@@ -45,12 +45,12 @@
         Generated output:
 
         Lower bound for `brava': bravo, 2
-        Upper bound for `bravu': charley, 3
+        Upper bound for `bravu': charlie, 3
         Equal range for `bravo':
         bravo, 2
         bravo, 6
         bravo, 4
-        Upper bound: charley, 3
+        Upper bound: charlie, 3
         Equal range for `brav':
         Upper bound: bravo, 2
     */

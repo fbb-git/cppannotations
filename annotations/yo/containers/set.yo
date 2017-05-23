@@ -11,6 +11,15 @@ follows:
         verb(
     set<string>::value_type setValue("Hello");
         )
+    Like the tt(std::map) container, the tt(std::set) also has an additional
+parameter declaring the class that is used for comparing values in the set.
+For value type tt(ValueType) the set's type definition, therefore, looks like
+this:
+        verb(
+    set<ValueType, std::less<ValueType>>
+        )
+
+
     The tt(value_type) is associated with the tt(set<string>). Anonymous
 tt(value_type) objects are also often used. E.g.,
         verb(
@@ -60,18 +69,18 @@ contains.
 that are available for containers.
     it() The tt(set) class has the following member functions:
         itemization(
-        ithtq(begin)(set::iterator begin())(returns an i(iterator) pointing to
+        ithtq(begin)(set::iterator begin())(returns an iterator pointing to
 the first element of the set. If the set is empty tt(end) is returned.)
         ithtq(clear)(void clear())
             (erases all elements from the set.)
-        ithtq(count)(size_t count(key))(returns 1 if
-the provided key is available in the tt(set), otherwise 0 is returned.)
+        ithtq(count)(size_t count(value))(returns 1 if
+the specified value is available in the tt(set), otherwise 0 is returned.)
         ithtq(empty)(bool empty())(returns tt(true) if
 the set contains no elements.)
         ithtq(end)(set::iterator end())(returns an iterator pointing beyond
 the last element of the set.)
         ithtq(equal_range)
-            (pair<set::iterator, set::iterator> equal_range(key))(this
+            (pair<set::iterator, set::iterator> equal_range(value))(this
 member returns a pair of iterators, being respectively the return values of
 the member functions tt(lower_bound) and tt(upper_bound), introduced
 below.)
@@ -97,7 +106,7 @@ element already exists, the existing element is left untouched and the element
 to be inserted is ignored.  The return value depends on the version of
 tt(insert) that is called:)
             itemization(
-            itt(pair<set::iterator, bool> insert(keyvalue)) inserts
+            itt(pair<set::iterator, bool> insert(value)) inserts
 a new tt(set::value_type) into the set. The return value is a
 ti(pair<set::iterator, bool>).  If the returned ti(bool) field is tt(true),
 tt(value) was inserted into the set. The value tt(false) indicates that the
@@ -105,11 +114,11 @@ value that was specified was already available in the set, and
 so the provided tt(value) was not inserted into the set.  In both cases the
 tt(set::iterator) field points to the data element in the tt(set) having the
 specified tt(value).
-            itt(set::iterator insert(pos, keyvalue)). This way a
+            itt(set::iterator insert(pos, value)). This way a
 tt(set::value_type) may also be inserted into the set. tt(pos) is ignored, and
 an iterator to the inserted element is returned.
             itt(void insert(first, beyond)) inserts the (tt(set::value_type))
-elements pointed to by the i(iterator range) rangeti(first, beyond) into the
+elements pointed to by the iterator range rangett(first, beyond) into the
 set.
             )
 
@@ -120,29 +129,26 @@ set.
         and tt(key_compare)'s parameters have types tt(ValueType const &). The
         comparison function returns tt(true) if its first argument should
         be ordered before its second argument.)
-    ithtq(lower_bound) (set::iterator lower_bound(key))
-       (returns an iterator pointing to the first tt(keyvalue) element of
-        which the tt(key) is at least equal to the specified tt(key).  If no
+    ithtq(lower_bound) (set::iterator lower_bound(value))
+       (returns an iterator pointing to the first tt(value) element of
+        which the tt(value) is at least equal to the specified tt(value).  If no
         such element exists, the function returns tt(end).)
     ithtq(max_size)(size_t max_size())(returns the maximum number of
         elements this tt(set) may contain.)
     ithtq(rbegin)(set::reverse_iterator rbegin())(
-    hi(reverse_iterator) returns an iterator pointing to the last element of
-the set.)
-    ithtq(rend)(set::reverse_iterator rend)(returns an iterator pointing
-        before the first element of the set.)
-    ithtq(size)(size_t size())(returns the
-number of elements in the set.)
+        returns a reverse_iterator pointing to the last element of the set.)
+    ithtq(rend)(set::reverse_iterator rend)(returns a reverse_iterator
+        pointing before the first element of the set.)
+    ithtq(size)(size_t size())(returns the number of elements in the set.)
     ithtq(swap)(void swap(argument))(swaps two sets (tt(argument) being
 the second set) that use identical data types.)
     ithtq(upper_bound)
-            (set::iterator upper_bound(key))
+            (set::iterator upper_bound(value))
             (returns an iterator pointing to the first
-tt(keyvalue) element having a tt(key) exceeding the specified tt(key).  If no
+tt(value) element having a tt(value) exceeding the specified tt(value).  If no
 such element exists, the function returns tt(end).)
-        )
     ithtq(value_comp)(value_compare value_comp())
-       (returns a copy of the object used by the tt(set) to compare keys. The
+       (returns a copy of the object used by the tt(set) to compare values. The
         type nl()
        tt(set<ValueType>::value_compare) is defined by the set container and
         tt(value_compare)'s parameters have types tt(ValueType const &). The
@@ -150,3 +156,4 @@ such element exists, the function returns tt(end).)
         ordered before its second argument. Its operation is identical to that
         of a tt(key_compare) object, returned by tt(key_comp).)
     )
+  )
