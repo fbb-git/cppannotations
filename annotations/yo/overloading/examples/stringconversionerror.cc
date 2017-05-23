@@ -7,6 +7,7 @@
         operator int() const
         {
             cout << "op int()\n";
+            return 0;
         }
     };
     ostream &operator<<(ostream &out, Insertable const &ins)

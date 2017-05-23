@@ -1,25 +1,30 @@
-Functions defined elsewhere may be linked to code that uses these
-functions. Such functions are normally declared in header files, either as
-standalone functions or as class member functions.
+Once a function has been defined it's commonly called from other functions. If
+called functions are not defined in the same source file as calling functions
+the called functions must be declared, for which header files are commonly
+used. 
 
-Those functions may of course throw exceptions. Declarations of such functions
-may contain a (now deprecated, see also section ref(NOEXCEPT)) hi(throw list)
-emi(function throw list) or
+The called functions may throw exceptions. When such functions are declared
+their declarations may specify a (now deprecated, see also section
+ref(NOEXCEPT)) hi(throw list) emi(function throw list) or
     emi(exception specification list) specifying the types of the exceptions
-that can be thrown by the function. For example, a function that may throw
-`tt(char *)' and `tt(int)' exceptions can be declared as
+that can be thrown by the called function. For example, a function that may
+throw `tt(char *)' and `tt(int)' exceptions can be declared as
         verb(
     void exceptionThrower() throw(char *, int);
         )
-    A function throw list immediately follows the function header (and it also
-follows a possible tt(const) specifier).  Throw lists may be empty. It has the
-following general form:
+    Function throw lists immediately follow the function header (and their
+specifications also follow possible tt(const) specifiers).  Throw lists
+specify zero or more, comma separated, types, using the following syntax:
         verb(
-    throw([type1 [, type2, type3, ...]])
+    throw ()
+    throw (type)
+    throw (type1, type2, type3 ...)
         )
+    where the ellipsis indicates any number of additional, comma separated,
+type specifications.
 
-    If a function is guaranteed not to throw exceptions an
- i(empty function throw list) may be used. E.g.,
+    To indicate that a function is guaranteed not to throw exceptions an
+ i(empty function throw list) can be used. E.g.,
         verb(
     void noExceptions() throw ();
         )
@@ -27,33 +32,35 @@ following general form:
 exactly match the function header used in the declaration, including a
 possibly empty function throw list.
 
-    A function for which a function throw list is specified may only throw
+    Once a function throw list has been specified its function may only throw
 exceptions of the types mentioned in its throw list. A emi(run-time error)
-occurs if it throws other types of exceptions than those mentioned in the
+occurs if such a function throws exceptions of types not specified in its
 function throw list. Example: the function tt(charPintThrower) shown below
-clearly throws a tt(char const *) exception. Since tt(intThrower) may
-throw an tt(int) exception, the function throw list of tt(charPintThrower)
-must em(also) contain tt(int).
+clearly throws a tt(char const *) exception. Since, according to its function
+throw list, tt(intThrower) may throw an tt(int) exception, the function throw
+list of tt(charPintThrower) must em(also) contain tt(int).
         verbinclude(-a examples/throwlist.cc)
 
     A function without a throw list may throw any kind of exception.  Without
 a function throw list the program's designer is responsible for providing the
 correct handlers.
 
-For various reason declaring exception throwers is now deprecated. Declaring
+For various reasons declaring exception throwers is now deprecated. Declaring
 exception throwers does not imply that the em(compiler) checks whether an
-improper exception is thrown. Rather, the function will be surrounded by
-additional code in which the actual exception that is thrown is
-processed. Instead of compile time checks one gets run-time overhead,
-resulting in additional code (and execution time) thay is added to the
-function's code. One could write, e.g.,
+improper exception is thrown. Rather, the function for which a function throw
+list has been specified is surrounded by additional code in which the actually
+thrown exception is inspected: if the exception is of a type that is listed in
+the function's throw list then that exception is rethrown; otherwise a
+run-time error is thrown. Instead of compile-time checks you get run-time
+overhead, resulting in additional code (and execution time) that is added to
+the function's code. One could write, e.g.,
         verb(
     void fun() throw (int)
     {
         // code of this function, throwing exceptions
     }
         )
-    but the function would be compiled to something like the following (cf.
+    but the function would be compiled to something like this (cf.
 section ref(FUNTRY) for the use of tt(try) immediately following the
 function's header and section ref(STDEXC) for a description of
  ti(bad_exception)):
@@ -73,8 +80,10 @@ function's header and section ref(STDEXC) for a description of
         throw bad_exception{};
     }
         )
-    Run-time overhead is caused by doubling the number of thrown and caught
-exceptions. Without a throw list a thrown tt(int) is simply caught by its
-intended handler; with a throw list the tt(int) is em(first) caught by the
-`safeguarding' handler added to the function. In there it is em(rethrown) to
-be caught by its intended handler next.
+    Run-time overhead results because the number of thrown and caught
+exceptions are doubled. If no function throw list is specified then a thrown
+tt(int) is simply caught by its intended handler; if a function throw list has
+been specified the thrown tt(int) is em(first) caught by the `safeguarding'
+handler added to the function. In there it is em(rethrown) whereafter it is
+caught by its intended handler.
+

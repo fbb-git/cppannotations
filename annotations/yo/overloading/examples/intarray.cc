@@ -23,7 +23,7 @@
         delete[] d_data;
     }
 
-    IntArray const &IntArray::operator=(IntArray const &other)
+    IntArray &IntArray::operator=(IntArray const &other)
     {
         IntArray tmp(other);
         swap(tmp);
@@ -41,7 +41,7 @@
         return operatorIndex(index);
     }
 
-    int const &IntArray::operator[](size_t index) const
+    int IntArray::operator[](size_t index) const
     {
         return operatorIndex(index);
     }

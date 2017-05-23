@@ -13,7 +13,7 @@ exceptions may be thrown:
     {
         X x;
         cout << x;
-        X *xp = new X(x);
+        X *xp = new X{ x };
         cout << (x + *xp);
         delete xp;
     }
@@ -26,10 +26,10 @@ exception there are at least 13 opportunities for exceptions to be thrown:
 exception (#2), but its rhs argument might not be an tt(X) but, e.g., an
 tt(int), and so tt(X::operator int() const) could be called which offers yet
 another opportunity for an exception (#3).
-    it() tt(*xp = new X(x)): the copy constructor may throw an exception (#4)
-and operator new (#5a) too. But did you realize that this latter exception
-might not be thrown from tt(::new), but from, e.g., tt(X)'s own overload of
-tt(operator new)? (#5b)
+    it() tt(*xp = new X{ x }): the copy constructor may throw an exception
+(#4) and operator new (#5a) too. But did you realize that this latter
+exception might not be thrown from tt(::new), but from, e.g., tt(X)'s own
+overload of tt(operator new)? (#5b)
     it() tt(cout << (x + *xp)): we might be seduced into thinking that two
 tt(X) objects are added. But it doesn't have to be that way. A separate class
 Y might exist and tt(X) may have a conversion operator tt(operator Y() const),
@@ -54,7 +54,7 @@ destructors this would violate the bf(C++) standard and so it must be
 prevented in well-behaving bf(C++) programs.
 
 How can we expect to create working programs when exceptions might be thrown
-at this many situations?
+in so many situations?
 
 Exceptions may be generated in a great many situations, but serious
 problems are prevented when we're able to provide at least one of the

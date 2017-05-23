@@ -9,7 +9,7 @@ expressions as both i(lvalue) and as i(rvalue).
         verb(
     int main()
     {
-        IntArray x(20);                 // 20 ints
+        IntArray x{ 20 };               // 20 ints
 
         for (int i = 0; i < 20; i++)
             x[i] = i * 2;               // assign the elements
@@ -53,14 +53,24 @@ situation where we have an tt(IntArray const stable(5)). Such an object is an
 immutable em(const) object. The compiler detects this and refuses to compile
 this object definition if only the non-const tt(operator[]) is
 available. Hence the second overloaded index operator is added to the class's
-interface. Here the return value is an tt(int const &), rather than an tt(int
-&), and the member function itself is a tt(const) member function. This second
-form of the overloaded index operator is only used with tt(const) objects. It
-is used for value em(retrieval) instead of value assignment. That, of course,
-is precisely what we want when using tt(const) objects. In this situation
-members are overloaded only by their tt(const) attribute. This form of
-function overloading was introduced earlier in the annotations() (sections
-ref(FunctionOverloading) and ref(ConstFunctions)).
+interface. Here the return value is an tt(int), rather than an tt(int &), and
+the member function itself is a tt(const) member function. This second form of
+the overloaded index operator is automatically used by the compiler with
+tt(const) objects. It is used for value em(retrieval) instead of value
+assignment. That, of course, is precisely what we want when using tt(const)
+objects. In this situation members are overloaded only by their tt(const)
+attribute. This form of function overloading was introduced earlier in the
+annotations() (sections ref(FunctionOverloading) and
+ref(ConstFunctions)). 
+
+Note the difference between the return types of the two overloaded index
+operators: tt(int &) and tt(int). Here, using a value return type for the
+const-index operator is OK, because the return type is a simple built-in type:
+returning a copy of the requested value is likely more efficient than
+returning a const reference, which must be dereferenced whenever it is
+used. However, for more complex return types (generally: objects) value return
+types should be avoided and the const index operator should define a tt(Type
+const &) return type instead of a tt(Type) value return type.
 
     Since tt(IntArray) stores values of a primitive type tt(IntArray)'s
 tt(operator[] const) could also have defined a value return type.  However,
