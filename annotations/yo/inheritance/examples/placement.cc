@@ -57,11 +57,11 @@ int main()
 
 /*
     After providing 5 lines containing, respectively
-        alfa, bravo, charlie, delta, echo
+        alpha, bravo, charley, delta, echo
     the program displays:
-                destructor: alfa
+                destructor: alpha
                 destructor: bravo
-                destructor: charlie
+                destructor: charley
                 destructor: delta
                 destructor: echo
 */
