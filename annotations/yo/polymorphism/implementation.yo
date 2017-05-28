@@ -11,7 +11,7 @@ selected at run-time. That means that the address of the function must be
 available somewhere, to be looked up prior to the actual call. This
 `somewhere' place must be accessible to the object in question. So when a
 tt(Vehicle *vp) points to a tt(Truck) object, then tt(vp->mass()) calls
-tt(Truck)'s member function. the address of this function is obtained through
+tt(Truck)'s member function. The address of this function is obtained through
 the actual object to which tt(vp) points.
 
 Polymorphism is commonly implemented as follows: an object containing virtual
@@ -76,10 +76,10 @@ classes, each defining virtual functions. Consider the following example:
     class Derived: public Base1, public Base2
     {
         public:
-            virtual ~Derived();
+            ~Derived() override;
         private:
-            virtual ~vOne();
-            virtual ~vThree();
+            void vOne() override;
+            void vThree() override;
     };
         )
  In the example tt(Derived) is multiply derived from tt(Base1) and tt(Base2),
@@ -87,8 +87,8 @@ each supporting virtual functions. Because of this, tt(Derived) also has
 virtual functions, and so tt(Derived) has a tt(vtable) allowing a base class
 pointer or reference to access the proper virtual member.
 
-When tt(Derived::fun1) is called (or a tt(Base1) pointer pointing to tt(fun1)
-calls tt(fun1)) then tt(fun1) calls tt(Derived::vOne) and
+When tt(Derived::fun1) is called (or a tt(Base1) pointer pointing to a
+tt(Derived) object calls tt(fun1)) then tt(fun1) calls tt(Derived::vOne) and
 tt(Base1::vTwo). Likewise, when tt(Derived::fun2) is called
 tt(Derived::vThree) is called.
 
