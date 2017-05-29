@@ -117,7 +117,34 @@ the tt(friend) declarations in the two nested classes):
     Friend declarations may be provided em(beyond) the definition of the
 entity that is to be considered a friend. So a class can be declared a friend
 em(beyond) its definition. In that situation in-class code may already use the
-fact that it is going to be declared a friend by the upcoming class.
+fact that it is going to be declared a friend by the upcoming class. As an
+example, consider an in-class implementation of the function
+tt(Surround::FirstWithin::value). The required tt(friend) declaration can also
+be inserted em(after) the implementation of the function tt(value):
+        verb(
+    class Surround
+    {
+        public:
+            class FirstWithin
+            {
+                static int s_variable;
+                public:
+                    int value();
+                    {
+                        FirstWithin::s_variable = SecondWithin::s_variable;
+                        return s_variable;
+                    }
+                friend class Surround;
+            };
+        private:
+            class SecondWithin
+            {
+                friend class Surround;
+                static int s_variable;
+            };
+    };
+        )
+
 
     Note that members named identically in outer and inner classes
 (e.g., `tt(s_variable)')
@@ -167,34 +194,40 @@ illustrated below:
         )
 
     Nested classes aren't automatically each other's friends. Here tt(friend)
-declarations must be applied to grant one nested classes access to another
-one's private members. To grant tt(FirstWithin) access to tt(SecondWithin)'s
-private members a tt(friend) declaration in tt(SecondWithin) is
-required. But to grant tt(SecondWithin) access to tt(FirstWithin)'s private
-members the class tt(FirstWithin) cannot simply use tt(friend class
-SecondWithin), as tt(SecondWithin)'s definition is as yet unknown.
+declarations must be provided to grant one nested classes access to another
+nested class's private members. 
 
-    Now a i(forward declaration) of tt(SecondWithin) is required. This forward
-declaration must be provided by the class tt(Surround), rather than by the
-class tt(FirstWithin). It makes no sense to specify a forward declaration like
-`tt(class SecondWithin;)' in the class tt(FirstWithin) itself, as this would
-refer to an external (global) class tt(SecondWithin). tt(SecondWithin)'s
-forward declaration can also not be specified inside tt(FirstWithin) as
-`tt(class Surround::SecondWithin;)'. This attempt would generate the following
-error message:
+To grant tt(FirstWithin) access to tt(SecondWithin)'s private members,
+tt(SecondWithin) must contain a tt(friend) declaration.
+
+Likewise, the class tt(FirstWithin) simply uses tt(friend class
+SecondWithin) to grant tt(SecondWithin) access to tt(FirstWithin)'s private
+members). Even though the compiler hasn't seen tt(SecondWithin) yet, a friend
+declaration is also considered a forward declaration.
+
+Note that tt(SecondWithin)'s forward declaration cannot be specified inside
+tt(FirstWithin) by using `tt(class Surround::SecondWithin;)', as this would
+generate an error message like:
         quote(`Surround' does not have a nested type named `SecondWithin')
 
-    Instead of providing a forward declaration for tt(SecondWithin) inside the
-nested classes the class tt(SecondWithin) must be declared by the class
-tt(Surround), before the class tt(FirstWithin) has been defined. This way
-tt(SecondWithin)'s friend declaration is accepted inside tt(FirstWithin). Here
-is an example in which all classes have full access to all private
-members of all involved classes: hi(friend: as forward declaration)
+Now assume that in addition to the nested class tt(SecondWithin) there also
+exists an outer-level class tt(SecondWithin). To declare that class a friend
+of tt(FirstWithin's) declare tt(friend ::SecondWithin) inside tt(class
+FirstWithin). In that case, an outer level class declaration of
+tt(FirstWithin) must be provided before the compiler encounters the tt(friend
+::SecondWithin) declaration.
+
+Here is an example in which all classes have full access to all private
+members of all involved classes: hi(friend: as forward declaration), and a
+outer level tt(FirstWithin) has also been declared:
         verb(
+    class SecondWithin;
+
     class Surround
     {
-        // class SecondWithin;      not required: friend declarations (see
-        //                          below) double as forward declarations
+        // class SecondWithin;      not required (but no error either): 
+        //                          friend declarations (see below)
+        //                          are also forward declarations
 
         static int s_variable;
         public:
@@ -202,6 +235,8 @@ members of all involved classes: hi(friend: as forward declaration)
             {
                 friend class Surround;
                 friend class SecondWithin;
+                friend class ::SecondWithin;
+
                 static int s_variable;
                 public:
                     int value();
@@ -212,6 +247,7 @@ members of all involved classes: hi(friend: as forward declaration)
             {
                 friend class Surround;
                 friend class FirstWithin;
+
                 static int s_variable;
                 public:
                     int value();
