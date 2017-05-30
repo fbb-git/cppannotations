@@ -6,10 +6,9 @@ bookkeeping is required to prevent memory leaks. When a pointer variable
 referring to dynamically allocated memory goes out of scope, the dynamically
 allocated memory becomes inaccessible and the program suffers from a 
     i(memory leak).
-
-To prevent such memory leaks strict bookkeeping is required: the programmer
-has to make sure that the dynamically allocated memory is returned to the
-common pool just before the pointer variable goes out of scope.
+    Consequently, the programmer has to make sure that the dynamically
+allocated memory is returned to the common pool just before the pointer
+variable goes out of scope.
 
 When a pointer variable points to a dynamically allocated single value or
 object, bookkeeping requirements are greatly simplified when the pointer
@@ -17,9 +16,12 @@ variable is defined as a tt(std::unique_ptr)hi(unique_ptr) object.
 
 Unique_ptrs are em(objects) masquerading as pointers. Since they are objects,
 their destructors are called when they go out of scope.  Their destructors
-automatically delete the dynamically allocated memory.
+automatically delete the dynamically allocated memory to which they
+point. Unique_ptrs (and their cousins shared_ptrs (cf. section ref(SHAREDPTR))
+are also called
+    hi(smart pointer)em(smart pointers)).
 
-    tt(Unique_ptrs) have some special characteristics:
+    tt(Unique_ptrs) have several special characteristics:
     itemization(
     it() when assigning a tt(unique_ptr) to another em(move semantics) is
 used. If move semantics is not available compilation fails. On the other
@@ -92,11 +94,9 @@ pointer itself or to have a tt(unique_ptr) point to another block of
 memory. These member functions (and tt(unique_ptr) constructors) are
 introduced in the next few sections.
 
-A tt(unique_ptr) (as well as a tt(shared_ptr), see section ref(SHAREDPTR)) can
-be used as a safe alternative to the now hi(auto_ptr: deprecated) deprecated
-tt(auto_ptr). tt(Unique_ptr) also augments tt(auto_ptr) as it can be used with
-containers and (generic) algorithms as it adds customizable deleters. Arrays
-can also be handled by tt(unique_ptrs).
+tt(Unique_ptr) can also be used with containers and (generic) algorithms. They
+can properly destruct any type of object, as their constructors accept
+customizable deleters. In addition, arrays can be handled by tt(unique_ptrs).
 
 
 

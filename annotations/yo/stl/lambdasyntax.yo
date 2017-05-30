@@ -64,7 +64,7 @@ identical:
         )
 
 
-A closure object as defined by the above lamda expression could be used e.g.,
+A closure object as defined by the previous lamda expression could be used e.g.,
 in combination with the tt(accumulate) (cf. section ref(ACCU)) generic
 algorithm to compute the product of a series of tt(int) values stored in a
 vector:
@@ -107,7 +107,7 @@ called the emi(lambda-capture)). The lambda-capture allows passing a
 
     Visible global and static variables as well as local variables defined in
 the lambda expression's compound statement itself can directly be accessed
-and, when applicable, modified. Example:
+and, when applicable, be modified. Example:
         verb(
     int global;
     
@@ -121,11 +121,13 @@ and, when applicable, modified. Example:
     }
         )
 
-    Lambda expressions that are defined inside a (non-static) class member
-function then using an initial tt(&) or tt(=) character in the lambda-capture
-enables the tt(this) pointer, allowing the lambda expression access to all
+COMMENT( ???
+    Lambda expressions defined inside a (non-static) class member
+function using an initial tt(&) or tt(=) character in the lambda-capture
+enable the tt(this) pointer, allowing the lambda expression access to all
 class members (data and functions). In that case the lambda expression may
 modify the class's data members.
+END)
 
     If a lambda expression is defined inside a function then the lambda
 expression may access all the function's local variables which are visible at
@@ -155,17 +157,17 @@ expression is defined using the tt(mutable) keyword. E.g.,
 
     In the i(C++17) standard, when defining lambda-expressions in (non-static)
 member functions, the lambda-capture may also contain hi(lambda: *this)
-    hi(this: in lambda-captures) tt(*this). Even when not specified, the
-lambda expression implicitly captures the tt(this) pointer, and class members
-are always accessed relative to tt(this). But when members are called
-asynchronously a problem may arise, because the asynchronously called
-lambda function may refer to members of an object whose lifetime ended shortly
-after asynchronously calling the lambda function. This potentially arising
-problem is solved by using `tt(, *this)' in the lambda-capture if it starts
-with tt(=), e.g., tt([=, *this]) (in addition, variables may still 
-also be captured, as usual). When specifying `tt(, *this)' the object to which
+    hi(this: in lambda-captures) tt(*this). Even when not specified, lambda
+expressions implicitly capture their tt(this) pointers, and class members are
+always accessed relative to tt(this). But when members are called
+asynchronously a problem may arise, because the asynchronously called lambda
+function may refer to members of an object whose lifetime ended shortly after
+asynchronously calling the lambda function. This potentially arising problem
+is solved by using `tt(, *this)' in the lambda-capture if it starts with
+tt(=), e.g., tt([=, *this]) (in addition, variables may still also be
+captured, as usual). When specifying `tt(, *this)' the object to which
 tt(this) refers is em(explicitly captured): if the object's scope ends it is
-not immediately destroyed, but is captured by the lambda-expression for the
+not immediately destroyed, but it is captured by the lambda-expression for the
 duration of that expression. In order to use the `tt(, *this)' specification,
 the object must directly be available. Consider the following example:
         verb(
