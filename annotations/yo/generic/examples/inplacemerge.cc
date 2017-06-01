@@ -27,7 +27,7 @@
 
         string range2[] =
             {
-                "ALFA", "CHARLEY", "DELTA", "foxtrot", "hotel",
+                "ALPHA", "CHARLEY", "DELTA", "foxtrot", "hotel",
                 "bravo", "ECHO", "GOLF"
             };
 
@@ -38,5 +38,5 @@
     /*
         Displays:
             alpha bravo charley delta echo foxtrot golf
-            ALFA bravo CHARLEY DELTA ECHO foxtrot GOLF hotel
+            ALPHA bravo CHARLEY DELTA ECHO foxtrot GOLF hotel
     */

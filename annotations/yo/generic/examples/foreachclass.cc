@@ -40,7 +40,8 @@
         cout << for_each(sarr, last, Show()).count() << '\n';
     }
     /*
-        Displays (all on one line):
-            1 Alpha; 2 Bravo; 3 Charley; 4 Delta; 5 Echo; 6 Foxtrot;
-                                                          7 Golf; 8 Hotel; 8
+    Displays (all on one line):
+
+    1 Alpha; 2 Bravo; 3 Charley; 4 Delta; 5 Echo; 6 Foxtrot;
+                                              7 Golf; 8 Hotel; 8
     */

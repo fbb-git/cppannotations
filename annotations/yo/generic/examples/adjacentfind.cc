@@ -46,9 +46,10 @@
             << *ires << " and " << *(ires + 1) << '\n';
     }
     /*
-        Displays:
-            echo
-            Second time, starting from the next position:
-            ** No more adjacent equal elements **
-            The first numbers for which the squares differ at least 10: 5 and 6
+    Displays:
+
+    echo
+    Second time, starting from the next position:
+    ** No more adjacent equal elements **
+    The first numbers for which the squares differ at least 10: 5 and 6
     */

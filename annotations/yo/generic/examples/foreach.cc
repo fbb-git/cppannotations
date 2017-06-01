@@ -32,6 +32,7 @@
         cout << '\n';
     }
     /*
-        Displays:
-          Alpha Bravo Charley Delta Echo Foxtrot Golf Hotel That's all, folks
+    Displays:
+
+    Alpha Bravo Charley Delta Echo Foxtrot Golf Hotel That's all, folks
     */
