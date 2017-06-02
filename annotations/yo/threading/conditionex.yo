@@ -34,7 +34,7 @@ tt(wait) and tt(notify_all). For a more extensive discussion of semaphores see
 em(i(Tanenbaum, A.S.) and i(Austin, T.)) (2013)
     i(Structured Computer Organization), Pearson Prentice-Hall.
 
-The data member containing the actual count is called tt(d_semaphore). It is
+The data member containing the actual count is called tt(d_available). It is
 protected by tt(mutex d_mutex).  In addition a tt(condition_variable
 d_condition) is defined:
         verbinclude(-s4 //data examples/events.cc)
@@ -43,14 +43,14 @@ The waiting process is implemented through its member function tt(wait):
         verbinclude(-nNs4 //wait examples/events.cc)
     In line 5 tt(d_condition.wait) releases the lock. It waits until receiving
 a notification, and re-acquires the lock just before returning. Consequently,
-tt(wait's) code always has complete and unique control over tt(d_semaphore).
+tt(wait's) code always has complete and unique control over tt(d_available).
 
     What about notifying the a waiting thread? This is handled in lines 4 and
 5 of the  member function tt(notify_all):
         verbinclude(-nNs4 //notify_all examples/events.cc)
-    At line 4 tt(d_semaphore) is always incremented; by using a postfix
+    At line 4 tt(d_available) is always incremented; by using a postfix
 increment it can simultaneously be tested for being zero. If it was initially
-zero then tt(d_semaphore) is now one. A thread waiting until tt(d_semaphore)
+zero then tt(d_available) is now one. A thread waiting until tt(d_available)
 exceeds zero may now continue. A waiting thread is notified by calling
 tt(d_condition.notify_one). In situations where multiple threads are waiting
 `ti(notify_all)' can also be used.
