@@ -13,7 +13,7 @@ int const &icref();
 string const &text()
 {
     static string txt = "text";
-    return txt; 
+    return txt;
 }
 
 void fun(string const &text)
@@ -38,7 +38,7 @@ struct Data
         return d_vs[0];
     }
 
-    decltype(auto) dt() const       
+    decltype(auto) dt() const
     {
         return d_val[0];
     }
@@ -83,10 +83,10 @@ int main()
 
 //    decltype(auto) ref = string{};
 //    cout << is_same< string, decltype(ref) >::value << '\n';
-  
-    Data data;  
+
+    Data data;
     cout << is_same< string const &, decltype(data.vs()) >::value << '\n';
-    
+
 //    cout << is_same< int *, decltype(ptr2) >::value << '\n';
 //    cout << is_same< int * &, decltype((ptr2)) >::value << '\n';
 //    cout << is_same< int, decltype((value + value)) >::value << '\n';
@@ -97,8 +97,3 @@ int main()
 //    cout << is_same< string &&, decltype(lref) >::value << '\n';
 //    cout << is_same< string &, decltype((lref)) >::value << '\n';
 }
-
-
-
-
-

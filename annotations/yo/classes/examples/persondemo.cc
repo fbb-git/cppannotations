@@ -30,5 +30,3 @@ Phone   :  - not available -
 Mass  : 75
 
 */
-
-

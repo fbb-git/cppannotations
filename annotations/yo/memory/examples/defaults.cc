@@ -54,11 +54,11 @@ int main()
 //cout << "1 copy cons:\n";
 //  Defaults two(one);           // Mov(Mov const &), one.d_x
 
-cout << "2 move cons\n";    
+cout << "2 move cons\n";
     Defaults &&tmp = Defaults{};
 
-  Defaults three{ move(tmp) };   // (RVO) ERROR: not available 
-                               //  
+  Defaults three{ move(tmp) };   // (RVO) ERROR: not available
+                               //
 //cout << "3 copy assign:\n";
 //  one = two;                   // ERROR: not available
 
@@ -66,8 +66,3 @@ cout << "4 move assign:\n";
   one = move(tmp);             // Mov::operator=(   tmp.d_x
                                //      Mov &&tmp)
 }
-
-
-
-
-
