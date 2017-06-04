@@ -58,12 +58,18 @@ complexity of a function's return type definition consider the following:
     template <typename T, typename U>
     decltype((*(T*)0)+(*(U*)0)) add(T t, U u);
         )
+    Kind of hard to read? A term like tt( (*(T*)0) ) defines 0, using a bf(C)
+    cast, as a pointer to type tt(T) and then dereferences the pointer,
+    producing a value of type tt(T) (even though that value itself doesn't
+    exist as a variable). Likewise for the second term that's used in the
+    tt(decltype) expression. The resulting type is thereupon used as tt(add's)
+    return type. 
     Using a late-specified return type we get the equivalent:
         verb(
     template <typename T, typename U>
     auto add(T t, U u) -> decltype(t+u);
         )
-    which most people think is easier to read.
+    which most people consider easier to understand.
 
 The expression specified with tt(decltype) does not necessarily use the
 parameters tt(lhs) and tt(rhs) themselves. In the next function
