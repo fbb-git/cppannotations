@@ -1,25 +1,15 @@
-Section ref(NEGATORS) covered the tt(not1) and tt(not2) negators. These
-negators cannot always be used in combination with the tt(bind) function
-template, and there use is limited to situations where one or two arguments
-are used. It is likely that in the upcoming i(C++17) standard they will either
-be deprecated or they will be augmented with a more generic negator, for which
-the name ti(not_fn) has been coined.
+A emi(negator) is a function object toggling the truth value of
+a function that's called from the negator: if the function returns tt(true)
+the negator returns tt(false) and vv.
+
+It is likely that in the upcoming i(C++17) standard a generic negator, for
+which the name ti(not_fn) has been coined, will be made available.
 
 In this section we'll have a look at a possible bare bones implementation of
-such a tt(not_fn) negator.
+such a tt(not_fn) negator, using it in combination with the (deprecated)
+tt(std::bind) function object.
 
-Let's first have a look at how tt(not_fn) can be used. When discussing the
-negators it was noted that the second of the following two statements won't
-compile:
-        verb(
-    count_if(vs.begin(), vs.end(), 
-        bind(not2(greater_equal<string>()), _1, reftext));
-
-    count_if(vs.begin(), vs.end(),
-        not1(bind(greater_equal<string>()), _1, reftext));
-        )
-    Here we'll develop an alternative, tt(not_fn), replacing tt(not1) and
-tt(not2) in the above statements:
+    Here's how tt(not_fn) can be used in practice:
         verb(
     count_if(vs.begin(), vs.end(),                          // 1
         bind(not_fn(greater_equal<string>()), _1, reftext));
