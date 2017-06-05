@@ -5,8 +5,6 @@
 
 using namespace std;
 
-
-
 int &&rref();
 int const &icref();
 

@@ -1,5 +1,5 @@
     In section ref(AUTO) the tt(auto) keyword was introduced. The keyword
-tt(decltype), related to tt(auto), shows a somewhat different behavior.  This
+tt(decltype), related to tt(auto), shows somewhat different behavior.  This
 section concentrates on tt(decltype). Different from tt(auto), which requires
 no further specifications, tt(decltype) is always followed by an
 expression between parentheses (e.g., tt(decltype(variable))).
@@ -12,50 +12,63 @@ following two definitions:
     decltype(text) scratch2 = text;
         )
     With tt(auto) the compiler deduces a plain type, so tt(scratch1) is a
-tt(string), using copy construction to initialize it with tt(text). Next
-consider tt(decltype): tt(decltype) obtains tt(text's) type: tt(string const
-&), which is then used as tt(scratch2's) type: tt(string const &scratch2),
-referring to whatever string tt(text) refers to. This is tt(decltype's)
-standard behavior: when provided with the name of a variable, it is replaced
-by that variable's type.
+tt(string), and copy construction is used to initialize it from
+`tt(text)'. 
+
+    Now consider tt(decltype): tt(decltype) determines tt(text's) type:
+tt(string const &), which is thereupon used as tt(scratch2's) type: tt(string
+const &scratch2), referring to whatever string tt(text) refers to. This is
+tt(decltype's) standard behavior: when provided with a variable's name,
+it is replaced by that variable's type.
 
 Alternatively, tt(decltype) can be provided with an expression. Of course, a
 variable by itself also is an expression, but in the context of tt(decltype)
-we define an `expression' as any expression that is more complex than a plain
-variable specification. This may be as simple as tt((variable)), the name of a
-variable between parentheses. 
+we define an `expression' as any expression that is more complex than just a
+plain variable specification. It may be as simple as tt((variable)), the
+name of a variable between parentheses.
 
-When an expression is used, the compiler determines whether the expression
-could be used to initialize an lvalue reference. If so,
-tt(decltype(expression)) is replaced by the type of that imaginary lvalue
-reference. If not, tt(decltype(expression)) is replaced by the expression's
-type.
+When an expression is used, the compiler determines whether the expression's
+type could be interpreted as an lvalue reference. If so,
+tt(decltype(expression)) is replaced by the type of that lvalue reference. If
+not, tt(decltype(expression)) is replaced by the expression's plain type.
 
     Here are some examples:
     verb(
     int *ptr;
-    decltype((ptr))     
-        int *&ref = (ptr): OK. 
-        decltype is replaced by int *&
+    decltype(ptr) ref = ptr;
+        // decltype's argument is a plain variable, so
+        // ptr's type is used: int *ref = ptr (resulting in
+        // two warnings about not-initialized/used variables.
+        // decltype(ptr) is replaced by int *.
+
+    int *ptr;
+    decltype( (ptr) ) ref = ptr;
+        // the expression `int *&ref = ptr' is OK. 
+        // so decltype( (ptr))  is replaced by int *&
 
     int value;
     decltype(value + value) 
-        int &ref = value + value: NOT OK 
-        decltype is replaced by int (value + value's type)
+        // decltype's argument is an expression, so
+        // the expression `int &ref = value + value is NOT OK 
+        // decltype(...) is replaced by int (i.e., value + value's type)
     
     string lines[20];
-    decltype(lines[0])
-        string &ref = lines[0]: OK
-        decltype is replaced by string &
+    decltype(lines[0]) ref = lines[6];
+        // decltype's argument is an expression, so
+        // the expression string &ref = lines[6] is OK
+        // decltype(...) is replaced by string &
 
     string &&strRef = string{};
-    decltype(strRef) 
-        strRef is a variable
-        decltype is replaced by strRef's type: string &&
+    decltype(strRef) ref = std::move(strRef);
+        // decltype's argument is a variable
+        // the expression string &&ref = std::move(strRef) is OK
+        // decltype(...) is replaced by strRef's type: string &&
 
-    decltype((strRef)) 
-        string &ref = strRef is OK
-        decltype is replaced by string &
+    decltype((strRef)) ref2 = strRef
+        // decltype's argument is an expression, so
+        // string && &ref = strRef becomes
+        // string &ref = strRef which is OK
+        // decltype is replaced by string &
     )
 
 
