@@ -30,4 +30,4 @@ int main()
     auto &&[rone, rtwo] = fun();
 
     auto &[lone, ltwo] = fun2();
-}    
+}
