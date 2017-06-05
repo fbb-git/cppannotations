@@ -22,7 +22,7 @@
             };
 
         inplace_merge(range, range + 4, range + 7);
-        copy(range, range + 7, ostream_iterator<string>(cout, " "));
+        copy(range, range + 7, ostream_iterator<string>{ cout, " " });
         cout << '\n';
 
         string range2[] =
@@ -31,8 +31,8 @@
                 "bravo", "ECHO", "GOLF"
             };
 
-        inplace_merge(range2, range2 + 5, range2 + 8, CaseString());
-        copy(range2, range2 + 8, ostream_iterator<string>(cout, " "));
+        inplace_merge(range2, range2 + 5, range2 + 8, CaseString{});
+        copy(range2, range2 + 8, ostream_iterator<string>{ cout, " " });
         cout << '\n';
     }
     /*

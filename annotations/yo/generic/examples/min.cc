@@ -14,14 +14,14 @@
     };
     int main()
     {
-        cout << "Word '" << min(string("first"), string("second")) <<
+        cout << "Word '" << min(string{ "first" }, string{ "second" }) <<
                                     "' is lexicographically first\n";
 
-        cout << "Word '" << min(string("first"), string("SECOND")) <<
+        cout << "Word '" << min(string{ "first" }, string{ "SECOND" }) <<
                                     "' is lexicographically first\n";
 
-        cout << "Word '" << min(string("first"), string("SECOND"),
-                            CaseString()) << "' is lexicographically first\n";
+        cout << "Word '" << min(string{ "first" }, string{ "SECOND" },
+                            CaseString{}) << "' is lexicographically first\n";
     }
     /*
         Displays:

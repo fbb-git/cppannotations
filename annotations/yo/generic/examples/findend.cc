@@ -32,7 +32,7 @@
         copy
         (
             find_end(sarr, last, search, search + 3),   // sequence starting
-            last, ostream_iterator<string>(cout, " ")   // at 2nd 'foxtrot'
+            last, ostream_iterator<string>{ cout, " " } // at 2nd 'foxtrot'
         );
         cout << '\n';
 
@@ -41,8 +41,8 @@
 
         copy                // sequence of values starting at last sequence
         (                   // of range[] that are twice the values in nrs[]
-            find_end(range, range + 9, nrs, nrs + 3, Twice()),
-            range + 9, ostream_iterator<size_t>(cout, " ")
+            find_end(range, range + 9, nrs, nrs + 3, Twice{}),
+            range + 9, ostream_iterator<size_t>{ cout, " " }
         );
         cout << '\n';
     }

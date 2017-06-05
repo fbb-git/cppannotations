@@ -32,7 +32,7 @@
             '\n' <<
             "compared case-insensitively, they are " <<
             (
-                equal(first, last, second, CaseString()) ?
+                equal(first, last, second, CaseString{}) ?
                     "equal" : "not equal"
             ) << '\n';
     }

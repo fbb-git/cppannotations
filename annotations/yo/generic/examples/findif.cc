@@ -27,15 +27,15 @@
 
         copy
         (
-            find_if(sarr, last, CaseName("charley")),
-            last, ostream_iterator<string>(cout, " ")
+            find_if(sarr, last, CaseName{ "charley" }),
+            last, ostream_iterator<string>{ cout, " " }
         );
         cout << '\n';
 
-        if (find_if(sarr, last, CaseName("india")) == last)
+        if (find_if(sarr, last, CaseName{ "india" }) == last)
         {
             cout << "`india' was not found in the range\n";
-            copy(sarr, last, ostream_iterator<string>(cout, " "));
+            copy(sarr, last, ostream_iterator<string>{ cout, " " });
             cout << '\n';
         }
     }

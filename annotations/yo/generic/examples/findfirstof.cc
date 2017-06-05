@@ -32,7 +32,7 @@
         copy
         (                                                 // sequence starting
             find_first_of(sarr, last, search, search + 3),// at 1st 'foxtrot'
-            last, ostream_iterator<string>(cout, " ")
+            last, ostream_iterator<string>{ cout, " " }
         );
         cout << '\n';
 
@@ -44,8 +44,8 @@
             // values in 'nrs', and ending at the last element of 'range'
         copy
         (
-            find_first_of(range, range + 9, nrs, nrs + 3, Twice()),
-            range + 9, ostream_iterator<size_t>(cout, " ")
+            find_first_of(range, range + 9, nrs, nrs + 3, Twice{}),
+            range + 9, ostream_iterator<size_t>{ cout, " " }
         );
         cout << '\n';
     }

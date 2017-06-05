@@ -29,7 +29,7 @@
                 " at offset " << (pss.first - range1) << " differ\n";
         if
         (
-            mismatch(range1, range1 + 5, range2, CaseString()).first
+            mismatch(range1, range1 + 5, range2, CaseString{}).first
             ==
             range1 + 5
         )

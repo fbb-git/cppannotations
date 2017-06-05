@@ -47,7 +47,7 @@
         cout << "Using case-insensitive comparison,\n"
             "the elements of `second' are "
             <<
-            (includes(first2, first2 + n, second, second + 3, CaseString()) ?
+            (includes(first2, first2 + n, second, second + 3, CaseString{}) ?
                 "" : "not")
             << " contained in the first2 sequence\n";
     }

@@ -16,7 +16,7 @@
 
         cout << "The max. int value is " << *max_element(ia, ia + 5) << '\n';
         cout << "The max. absolute int value is " <<
-                *max_element(ia, ia + 5, AbsValue()) << '\n';
+                *max_element(ia, ia + 5, AbsValue{}) << '\n';
     }
     /*
         Displays:

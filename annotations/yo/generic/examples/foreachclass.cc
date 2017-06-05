@@ -37,7 +37,7 @@
             };
         string *last = sarr + sizeof(sarr) / sizeof(string);
 
-        cout << for_each(sarr, last, Show()).count() << '\n';
+        cout << for_each(sarr, last, Show{}).count() << '\n';
     }
     /*
     Displays (all on one line):

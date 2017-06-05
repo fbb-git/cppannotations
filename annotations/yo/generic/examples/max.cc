@@ -21,7 +21,7 @@
                                     "' is lexicographically last\n";
 
         cout << "Word '" << max(string("first"), string("SECOND"),
-                            CaseString()) << "' is lexicographically last\n";
+                            CaseString{}) << "' is lexicographically last\n";
     }
     /*
         Displays:

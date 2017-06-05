@@ -27,7 +27,7 @@
 
         copy(result,
             merge(range1, range1 + 5, range2, range2 + 4, result),
-            ostream_iterator<string>(cout, " "));
+            ostream_iterator<string>{ cout, " " });
         cout << '\n';
 
         string range3[] =
@@ -41,8 +41,8 @@
 
         copy(result,
             merge(range3, range3 + 5, range4, range4 + 4, result,
-                                                            CaseString()),
-            ostream_iterator<string>(cout, " "));
+                                                            CaseString{}),
+            ostream_iterator<string>{ cout, " " });
         cout << '\n';
     }
     /*

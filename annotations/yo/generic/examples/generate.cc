@@ -19,11 +19,11 @@
     };
     int main()
     {
-        vector<size_t>    uv(10);
+        vector<size_t> uv(10);
 
-        generate(uv.begin(), uv.end(), NaturalSquares());
+        generate(uv.begin(), uv.end(), NaturalSquares{});
 
-        copy(uv.begin(), uv.end(), ostream_iterator<int>(cout, " "));
+        copy(uv.begin(), uv.end(), ostream_iterator<int>{ cout, " " });
         cout << '\n';
     }
     // Displays:   1 4 9 16 25 36 49 64 81 100

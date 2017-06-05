@@ -52,16 +52,16 @@
         string one[] = {"alpha", "bravo", "charley"};
         string two[] = {"ALPHA", "BRAVO", "DELTA"};
 
-        copy(one, one + 3, ostream_iterator<string>(cout, " "));
+        copy(one, one + 3, ostream_iterator<string>{ cout, " " });
         cout << " is ordered " <<
             (
                 lexicographical_compare(one, one + 3,
-                                        two, two + 3, CaseString()) ?
+                                        two, two + 3, CaseString{}) ?
                     "before "
                 :
                     "beyond or at "
             );
-        copy(two, two + 3, ostream_iterator<string>(cout, " "));
+        copy(two, two + 3, ostream_iterator<string>{ cout, " " });
         cout << "\n"
             "using case-insensitive comparisons.\n";
     }

@@ -21,17 +21,17 @@
         cout << "Sequences:\n";
         do
         {
-            copy(saints, saints + 4, ostream_iterator<string>(cout, " "));
+            copy(saints, saints + 4, ostream_iterator<string>{ cout, " " });
             cout << '\n';
         }
-        while (prev_permutation(saints, saints + 4, CaseString()));
+        while (prev_permutation(saints, saints + 4, CaseString{}));
 
         cout << "After first sorting the sequence:\n";
-        sort(saints, saints + 4, CaseString());
+        sort(saints, saints + 4, CaseString{});
         cout << "Sequences:\n";
-        while (prev_permutation(saints, saints + 4, CaseString()))
+        while (prev_permutation(saints, saints + 4, CaseString{}))
         {
-            copy(saints, saints + 4, ostream_iterator<string>(cout, " "));
+            copy(saints, saints + 4, ostream_iterator<string>{ cout, " " });
             cout << '\n';
         }
         cout << "No (more) previous permutations\n";

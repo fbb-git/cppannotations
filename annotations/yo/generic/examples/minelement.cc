@@ -17,7 +17,7 @@
         cout << "The minimum int value is " << *min_element(ia, ia + 5) <<
                 '\n';
         cout << "The minimum absolute int value is " <<
-                *min_element(ia, ia + 5, AbsValue()) << '\n';
+                *min_element(ia, ia + 5, AbsValue{}) << '\n';
     }
     /*
         Displays:

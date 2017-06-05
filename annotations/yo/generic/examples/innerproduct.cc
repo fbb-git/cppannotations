@@ -26,14 +26,14 @@
         size_t init = 0;
 
         cout << "The sum of all squares in ";
-        copy(ia1, ia1 + 7, ostream_iterator<size_t>(cout, " "));
+        copy(ia1, ia1 + 7, ostream_iterator<size_t>{ cout, " " });
         cout << "is " <<
             inner_product(ia1, ia1 + 7, ia1, init) << '\n';
 
         cout << "The sum of all cross-products in ";
-        copy(ia1, ia1 + 7, ostream_iterator<size_t>(cout, " "));
+        copy(ia1, ia1 + 7, ostream_iterator<size_t>{ cout, " " });
         cout << "and ";
-        copy(ia2, ia2 + 7, ostream_iterator<size_t>(cout, " "));
+        copy(ia2, ia2 + 7, ostream_iterator<size_t>{ cout, " " });
         cout << "is " <<
             inner_product(ia1, ia1 + 7, ia2, init) << '\n';
 
@@ -41,12 +41,12 @@
         string names2[] = {"Brokken", "Kubat", "Plomp"};
 
         cout << "A list of all combined names in ";
-        copy(names1, names1 + 3, ostream_iterator<string>(cout, " "));
+        copy(names1, names1 + 3, ostream_iterator<string>{ cout, " " });
         cout << "and\n";
-        copy(names2, names2 + 3, ostream_iterator<string>(cout, " "));
+        copy(names2, names2 + 3, ostream_iterator<string>{ cout, " " });
         cout << "is:" <<
-            inner_product(names1, names1 + 3, names2, string("\t"),
-                Cat("\n\t"), Cat(" ")) <<
+            inner_product(names1, names1 + 3, names2, string{ "\t" },
+                Cat{ "\n\t"}, Cat{ " " }) <<
             '\n';
     }
     /*
