@@ -41,8 +41,7 @@
 
     int main()
     {
-        Vector2<int>
-            vi;
+        Vector2<int> vi;
                                 // requirements input iterator
         copy(vi.rbegin(), vi.rend(), ostream_iterator<int>(cout, " "));
     }

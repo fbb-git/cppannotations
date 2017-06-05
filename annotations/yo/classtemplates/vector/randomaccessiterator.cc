@@ -51,8 +51,7 @@
 
     int main()
     {
-        Vector2<int>
-            vi;
+        Vector2<int> vi;
                                 // requirements random access iterator
         sort(vi.rbegin(), vi.rend());
     }

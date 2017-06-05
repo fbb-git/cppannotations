@@ -6,7 +6,7 @@ using namespace std;
 template <class T>
 void mswap(T &a, T &b)
 {
-    T tmp(std::move(a));
+    T tmp{ std::move(a) };
     a = std::move(b);
     b = std::move(tmp);
 }
@@ -62,7 +62,7 @@ int main()
     ++i;
     cout << i << '\n';
 
-    Data d1 = {strdup("hello")};
+    Data d1 = { strdup("hello") };
     Data d2;
     d2.copy(d1);
 cout << "sep\n";

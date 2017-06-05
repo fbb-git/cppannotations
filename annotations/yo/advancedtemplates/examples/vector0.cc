@@ -35,7 +35,7 @@ struct VI: public vector<int>
 
     VI &operator=(VI const &other)
     {
-        VI tmp(other);
+        VI tmp{ other };
         swap(tmp);
         return *this;
     }
@@ -60,7 +60,7 @@ struct VI: public vector<int>
 
 VI operator+(VI const &lhs, VI const &rhs)
 {
-    VI tmp(lhs);
+    VI tmp{ lhs };
 
     cout << "adding, returning new object\n";
 

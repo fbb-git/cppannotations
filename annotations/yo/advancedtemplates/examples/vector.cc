@@ -23,7 +23,7 @@ struct VI: public vector<int>
 
 VI operator+(VI const &lhs, VI const &rhs)
 {
-    VI tmp(lhs);
+    VI tmp{ lhs };
 
     tmp += rhs;
     return tmp;

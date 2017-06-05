@@ -20,13 +20,13 @@ using namespace std;
 int main()
 {
 //ONE
-    Multi<Policy, string> ms(Policy<string>("hello"));
-    Multi<Policy, string, string> ms2s(Policy<string>("hello"),
-                                       Policy<string>("world"));
+    Multi<Policy, string> ms{ Policy<string>{ "hello" } };
+    Multi<Policy, string, string> ms2s{ Policy<string>{ "hello" },
+                                       Policy<string>{ "world" } };
 
 
      typedef Multi<Policy, string, int> MPSI;
-     MPSI mpsi(string("hello"), 4);
+     MPSI mpsi{ string{ "hello" }, 4 };
 //=
 
 //TWO
@@ -46,7 +46,7 @@ int main()
 
 //SIX
     typedef Multi<Policy, int, int> MPII;
-    MPII mpii(4, 18);
+    MPII mpii{ 4, 18 };
 
     cout << get<0>(mpii).d_type << ' ' << get<1>(mpii).d_type << '\n';
 //=
@@ -56,7 +56,7 @@ int main()
 
 //SEVEN
     typedef Multi<Vector, int, double> MVID;
-    MVID mi({1, 2, 3}, {1.2, 3.4, 5.6, 7.8});
+    MVID mi{ {1, 2, 3}, {1.2, 3.4, 5.6, 7.8} };
 //=
 
 //EIGHT

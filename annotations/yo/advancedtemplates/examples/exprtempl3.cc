@@ -69,7 +69,7 @@ struct VI: public vector<int>
     static size_t const s_max = 10000;
 
 
-VI()
+    VI()
     :
         vector<int>(s_max, 1)
     {}

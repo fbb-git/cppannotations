@@ -41,8 +41,8 @@ int main()
 try
 {
     cout << "TRAIT: " << is_nothrow_copy_constructible<Foreign>::value << '\n';
-    MyClass<String> s1(move(MyClass<String>()));
-    MyClass<Foreign> s2(move(MyClass<Foreign>()));
+    MyClass<String> s1{ move(MyClass<String>{} ) };
+    MyClass<Foreign> s2{ move(MyClass<Foreign>{} ) };
 }
 catch (...)
 {

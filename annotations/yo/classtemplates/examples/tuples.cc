@@ -46,7 +46,7 @@ void handle(std::string const &str, tuple<size_t &, ostream &> &tup)
 
 int main(int argc, char **argv)
 {
-    Multi<int, double, int> multi(3, 12.5, 5);
+    Multi<int, double, int> multi{ 3, 12.5, 5 };
 
     size_t count = 0;
 

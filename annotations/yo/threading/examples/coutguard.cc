@@ -19,6 +19,6 @@ class Cout: private std::streambuf, public std::ostream
 template <typename Type>
 Cout &operator<<(Cout &out, Type const &value)
 {
-    std::lock_guard{out.d_mutex);
+    std::lock_guard{ out.d_mutex );
     static_cast<std::ostream>(*this) << value;
 }

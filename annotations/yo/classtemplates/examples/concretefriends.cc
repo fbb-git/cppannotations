@@ -26,7 +26,7 @@
     {
         Storage<int>::s_time = time(0);
         Storage<double> storage;
-        std::random_shuffle(storage.d_data.begin(), storage.d_data.end());
+        std::sort(storage.d_data.begin(), storage.d_data.end());
     }
 //=
 
@@ -68,13 +68,13 @@
         Composer<int> *d_ints;
         public:
             Friend(std::istream &input);
-            void randomizer();
+            void sorter();
     };
 
     template <typename Type>
     class Composer
     {
-        friend void Friend::randomizer();
+        friend void Friend::sorter();
         std::vector<Type> d_data;
         public:
             Composer(std::istream &input)
@@ -87,12 +87,12 @@
 
     inline Friend::Friend(std::istream &input)
     :
-        d_ints(new Composer<int>(input))
+        d_ints(new Composer<int>{ input })
     {}
 
-    inline void Friend::randomizer()
+    inline void Friend::sorter()
     {
-        std::random_shuffle(d_ints->d_data.begin(), d_ints->d_data.end());
+        std::sort(d_ints->d_data.begin(), d_ints->d_data.end());
     }
 //=
 

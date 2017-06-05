@@ -40,8 +40,7 @@
 
     int main()
     {
-        Vector2<int>
-            vi;
+        Vector2<int> vi;
                                 // requirements output iterator
         copy(istream_iterator<int>(cin), istream_iterator<int>(), vi.rbegin());
     }

@@ -14,7 +14,7 @@
     };
     int main(int argc, char **argv)
     {
-        sort(argv, argv + argc, CaseInsensitive());
+        sort(argv, argv + argc, CaseInsensitive{});
         for (int idx = 0; idx < argc; ++idx)
             cout << argv[idx] << " ";
         cout << '\n';

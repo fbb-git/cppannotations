@@ -41,8 +41,7 @@
 
     int main()
     {
-        Vector2<int>
-            vi;
+        Vector2<int> vi;
                                 // requirements forward iterator
         remove(vi.rbegin(), vi.rend(), 12);
     }

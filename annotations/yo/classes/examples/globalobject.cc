@@ -14,25 +14,21 @@
     }
 
     // and here is the test program:
-    Test
-        g;                      // global object
+    Test g;                     // global object
 
     void func()
     {
-        Test                    // local object
-            l;                  // in function func()
+        Test l;                 // local object in func()
 
         cout << "here's function func()" << '\n';
     }
 
     int main()
     {
-        Test                    // local object
-            x;                  // in function main()
+        Test x;                 // local object in main()
 
         cout << "main() function" << '\n';
         func();
-        return (0);
     }
 /*
     Generated output:

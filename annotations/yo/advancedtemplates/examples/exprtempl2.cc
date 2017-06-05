@@ -118,8 +118,8 @@ struct V: public vector<int>
 
     V(V const &other)
     :
-        d_name(other.d_name + "_cc"),
-        vector<int>(other)
+        vector<int>(other),
+        d_name(other.d_name + "_cc")
     {
         cout << "V copy cons " << d_name << "\n";
     }
@@ -136,6 +136,7 @@ struct V: public vector<int>
         cout << "assign " << other.d_name << " to " << d_name << '\n';
         d_name = other.d_name;
         static_cast<vector<int>&>(*this) = other;
+        return *this;
     }
 
     V &operator=(V &&tmp)
@@ -143,6 +144,7 @@ struct V: public vector<int>
         cout << "moving  " << tmp.d_name << " to " << d_name << '\n';
         d_name = std::move(tmp.d_name);
         static_cast<vector<int>&>(*this) = std::move(tmp);
+        return *this;
     }
 };
 
@@ -150,10 +152,10 @@ size_t V::s_nr;
 
 int main()
 {
-    V one("one", 1);
-    V two("two", 2);
-    V three("three", 3);
-    V four("four", 0);
+    V one{"one", 1};
+    V two{"two", 2};
+    V three{"three", 3};
+    V four{"four", 0};
 
     four = one + two + three + four;
 

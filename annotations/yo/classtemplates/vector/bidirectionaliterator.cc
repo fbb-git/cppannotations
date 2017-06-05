@@ -37,16 +37,14 @@
                 return reverse_iterator(this);
             }
             reverse_iterator rend()
-            {
-                                    // requirements bidirectional iterator
+            {                       // requirements bidirectional iterator
                 return reverse_iterator(this->begin(), this->begin());
             }
     };
 
     int main()
     {
-        Vector2<int>
-            vi;
+        Vector2<int> vi;
                                 // requirements bidirectional iterator
         reverse(vi.rbegin(), vi.rend());
     }

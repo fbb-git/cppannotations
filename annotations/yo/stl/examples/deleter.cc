@@ -19,7 +19,7 @@
     };
     int main()
     {
-        unique_ptr<string *, Deleter> sp2(new string *[10], Deleter(10));
+        unique_ptr<string *, Deleter> sp2{ new string *[10], Deleter{ 10 } };
 
         Deleter &obj = sp2.get_deleter();
     }

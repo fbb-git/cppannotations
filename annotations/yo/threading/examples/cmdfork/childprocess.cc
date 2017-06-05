@@ -9,5 +9,5 @@ void CmdFork::childProcess()
 
     execv(argv[0], argv);
 
-    throw Exception(errno) << " thrown exception " << errno;
+    throw Exception{ errno } << " thrown exception " << errno;
 }

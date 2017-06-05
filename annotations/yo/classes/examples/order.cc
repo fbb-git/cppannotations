@@ -22,9 +22,9 @@
 
     int main()
     {
-        Test first("main first");
+        Test first{ "main first" };
         func();
-        Test second("main second");
+        Test second{ "main second" };
     }
 /*
     Generated output:

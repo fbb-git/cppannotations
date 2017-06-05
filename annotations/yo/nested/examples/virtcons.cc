@@ -99,9 +99,9 @@
     {
         vector<Clonable> bv;
 
-        bv.push_back(Clonable(new Derived1()));
+        bv.push_back(Clonable{ new Derived1 });
         cout << "bv[0].name: " << typeid(bv[0].base()).name() << '\n';
 
-        vector<Clonable> v2(bv);
+        vector<Clonable> v2{ bv };
         cout << "v2[0].name: " << typeid(v2[0].base()).name() << '\n';
     }

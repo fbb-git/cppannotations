@@ -23,8 +23,8 @@ using namespace std;
 
     int main()
     {
-        shared_ptr<X> sp(new X[3], ArrayDeleter<X>());
-        shared_ptr<float> sp(new float[16], ArrayDeleter<float>());
+        shared_ptr<X> sp{ new X[3], ArrayDeleter<X>{} });
+        shared_ptr<float> sp{ new float[16], ArrayDeleter<float>{} };
     }
 #else
 //SHAREDARRAY
@@ -65,7 +65,7 @@ using namespace std;
     };
     int main()
     {
-        shared_array<X> sp(new X[3]);
+        shared_array<X> sp{ new X[3] };
         sp[0] = sp[1];
     }
 //=

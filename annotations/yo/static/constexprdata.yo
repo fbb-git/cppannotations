@@ -15,16 +15,16 @@ tt(constexpr) object can be constructed:
             constexpr ConstExpr(int x);
     };
 
-    ConstExpr ok(7);            // OK: not declared as constexpr
+    ConstExpr ok{ 7 };              // OK: not declared as constexpr
 
-    constexpr ConstExpr err(7); // ERROR: constructor's definition
-                                //        not yet seen
+    constexpr ConstExpr err{ 7 };   // ERROR: constructor's definition
+                                    //        not yet seen
 
     constexpr ConstExpr::ConstExpr(int x)
     {}
 
-    constexpr ConstExpr ok(7);                  // OK: definition seen
-    constexpr ConstExpr okToo = ConstExpr(7);   // also OK
+    constexpr ConstExpr ok{ 7 };                // OK: definition seen
+    constexpr ConstExpr okToo = ConstExpr{ 7 }; // also OK
         )
 
     A i(constant-expression constructor) has the following characteristics:
@@ -70,17 +70,17 @@ example:
             }
     };
 
-    Data d1(0);             // OK, but not a constant expression
+    Data d1{ 0 };           // OK, but not a constant expression
 
     enum e1 {
         ERR = d1.cMember()  // ERROR: cMember(): no constant
     };                      //        expression anymore
 
-    constexpr Data d2(0);   // OK, constant expression
+    constexpr Data d2{ 0 }; // OK, constant expression
 
     enum e2 {
-        OK = d2.cMember(),   // OK: cMember(): now a constant
-                             //                expression
-        ERR = d2.member(),   // ERR: member(): not a constant
-    };                       //                expression
+        OK = d2.cMember(),  // OK: cMember(): now a constant
+                            //                expression
+        ERR = d2.member(),  // ERR: member(): not a constant
+    };                      //                expression
         )

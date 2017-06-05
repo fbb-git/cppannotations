@@ -29,7 +29,7 @@
     int main()
     {
         array<int, 30> data;
-        Functor functor(data, 5);
-        thread funThread(functor, ref(cout));
+        Functor functor{ data, 5 };
+        thread funThread{ functor, ref(cout) };
         funThread.join();
     };

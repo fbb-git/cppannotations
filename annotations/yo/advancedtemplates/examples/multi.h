@@ -41,7 +41,7 @@ struct TypeList
                                 public MultiBase<nr + 1, PolicyTypes...>
     {
         typedef PolicyT1 Type;
-        typedef MultiBase<nr + 1, typename PolicyTypes...> Base;
+        typedef MultiBase<nr + 1, PolicyTypes...> Base;
 
         MultiBase(PolicyT1 && policyt1, PolicyTypes &&...policytypes)
         :

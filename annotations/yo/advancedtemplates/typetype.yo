@@ -6,7 +6,7 @@ tt(transform) generic algorithm (cf. section ref(TRANSFORM)):
     template <typename Return, typename Argument>
     Return chop(Argument const &arg)
     {
-        return Return(arg);
+        return Return{ arg };
     }
         )
     Furthermore assume that if tt(Return) is tt(std::string) then the above
@@ -21,7 +21,7 @@ specialization like this:
     template <typename Argument>        // This won't compile!
     std::string chop<std::string, Argument>(Argument const &arg)
     {
-        return string(arg, 1);
+        return std::string{ arg, 1 };
     }
         )
     Although a function template cannot be partially specialized it em(is)
@@ -30,15 +30,17 @@ possible to use overloading, defining a second,  dummy, tt(string) parameter:
     template <typename Argument>
     std::string chop(Argument const &arg, std::string)
     {
-        return string(arg, 1);
+        return std::string{ arg, 1 };
     }
         )
+    COMMENT(
     Now it em(is) possible to distinguish the two cases, but at the expense of
 a more complex function call. Moreover, in code this function may
 require the use of the tt(bind2nd) binder (cf. section ref(FUNADAPT)) to
 provide the dummy second argument, or it may require a (possibly expensive to
 construct) dummy argument to allow the compiler to choose among the two
 overloaded function templates.
+    END)
 
     Instead of providing a tt(string) dummy argument the functions em(could)
 use the tt(IntType) template (cf. section ref(INTTYPE)) to select the proper
@@ -69,13 +71,13 @@ as follows:
     template <typename Return, typename Argument>
     Return chop(Argument const &arg, TypeType<Argument> )
     {
-        return Return{arg};
+        return Return{ arg };
     }
 
     template <typename Argument>
     std::string chop(Argument const &arg, TypeType<std::string> )
     {
-        return std::string{arg, 1};
+        return std::string{ arg, 1 };
     }
         )
     Using the above implementations any type can be specified for
@@ -86,13 +88,13 @@ function tt(chop) capitalizes on this:
     template <typename Result>
     Result chop(char const *txt)    // char const * could also be a 2nd
     {                               // template type parameter
-        return chop(std::string(txt), TypeType<Result>());
+        return chop(std::string(txt), TypeType<Result>{});
     }
         )
     Using the third tt(chop) function, the following statement produces the
 text `tt(ello world)':
         verb(
-    cout << chop<string>("hello world") << '\n';
+    cout << chop<string>{ "hello world" } << '\n';
         )
     Template functions do not support partial specializations. But they can be
 overloaded. By providing overloads with dummy type-arguments that depend

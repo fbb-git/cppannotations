@@ -2,6 +2,7 @@
 
     class PointerData
     {
+        std::string (PointerData::*infoPtr)(int);
         public:
             PointerData()
             {
@@ -16,14 +17,11 @@
             {
                 return "hello";
             }
-
-            std::string (PointerData::*infoPtr)(int);
     };
 
     int main()
     {
-        PointerData
-            pd;
+        PointerData pd;
 
         pd.show();
     }

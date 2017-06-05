@@ -130,15 +130,15 @@ void Semaphore::wait()
         cerr << "Go!\n";
         size_t trials = stoul(argv[1]) + 2 / 3 * 3;
 
-        Producer prod(trials); //  << 1);
-        Consumer cons1(trials / 3, 1);
-        Consumer cons2(trials / 3, 2);
-        Consumer cons3(trials / 3, 3);
+        Producer prod{ trials }; //  << 1);
+        Consumer cons1{ trials / 3, 1 };
+        Consumer cons2{ trials / 3, 2 };
+        Consumer cons3{ trials / 3, 3 };
 
-        thread consume1(cons1);
-        thread consume2(cons2);
-        thread consume3(cons3);
-        thread produce(prod);
+        thread consume1{ cons1 };
+        thread consume2{ cons2 };
+        thread consume3{ cons3 };
+        thread produce{ prod };
 
         produce.join();
         consume1.join();
