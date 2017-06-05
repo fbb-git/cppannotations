@@ -1,0 +1,77 @@
+Usually functions return single-valued results: tt(doubles, ints, strings),
+etc. When functions need to return multiple values a em(return by argument)
+construction is often used, where addresses of variables that live outside of
+the called function are passed to functions, allowing the functions to assign
+new values to those variables. 
+
+When multiple values must be returned a tt(struct) can be used, but a
+tt(std::pair) (cf. section ref(PAIR)) or a tt(std::tuple) (cf. section
+ref(TUPLES)) can also be used. Here's a simple example, where a function
+tt(fun) returns a tt(struct) having two data fields:
+        verb(
+    struct Return
+    {
+        int first;
+        double second;
+    };
+    
+    Return fun()
+    {
+        return Return{1, 12.5};
+    }
+        )
+    (Briefly forward referencing to sections ref(PAIR) and ref(TUPLES): the
+tt(struct) definition could be omitted completely if tt(fun) would return a
+tt(pair) or tt(tuple). In those cases the following code remains valid.)
+
+    Another function em(calling) tt(fun) traditionally defines a variable
+of the same type as tt(fun's) return type, and then uses that variable's
+fields to access tt(first) and tt(second). If you don't like the typing,
+tt(auto) can also be used:
+        verb(
+    int main()
+    {
+        auto r1 = fun();
+        cout << r1.first;
+    }    
+        )
+    The i(C++17) standard extends this by introducing em(structured binding
+declarations). Here, tt(auto) is followed by a (square brackets surrounded)
+comma-separated list of variables, where each variable is em(defined), and
+receives the value of the corresponding field or element of the called 
+function's return value. So, the above tt(main) function can also be written
+like this:
+        verb(
+    int main()
+    {
+        auto [one, two] = fun();
+        cout << one;                // one and two: now defined
+    }    
+        )
+    Structured binding declarations can also be used in combination with
+reference variables. The following defines tt(rone) and tt(rtwo) as,
+respectively tt(int &&rone) and tt(double &&rtwo):
+        verb(
+    int main()
+    {
+        auto &&[rone, rtwo] = fun();
+    }    
+        )
+    If the called function returns a value that survives the function-call
+itself, then em(lvalue references) can structured binding declarations can
+also be used to define lvalue reference variables. E.g.,
+        verb(
+    Return &fun2()
+    {
+        static Return ret{4, 5};
+        return ret;
+    }
+
+    int main()
+    {
+        auto &[lone, ltwo] = fun2();    // OK: referring to ret's fields
+    }    
+        )
+
+
+
