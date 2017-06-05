@@ -107,7 +107,7 @@ class BWrap
 
 int main()
 {
-    vector<Base> bv(1);
+    vector<Base> bv{ 1 };
     cout << "==\n";
 
     Derived1 d1;
@@ -122,7 +122,7 @@ int main()
     vb.push_back(Derived1());
     cout << "==\n";
 
-    vector<BWrap> vb2(vb);
+    vector<BWrap> vb2{ vb };
     cout << "==\n";
 
 / *
@@ -134,7 +134,7 @@ int main()
     cout << dp << '\n';
     cout << "==\n";
 
-    vb[0] = Base();
+    vb[0] = Base{};
     cout << "==\n";
 
     cout << typeid(vb[0].base()).name() << '\n';

@@ -29,6 +29,6 @@
     };
     int main()
     {
-        Third third(3);     // displays `First()'
+        Third third{ 3 };   // displays `First()'
     }
 //=
