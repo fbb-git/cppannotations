@@ -3,7 +3,7 @@
 //CHILD
     void Monitor::createNewChild(int, string const &)
     {
-        Child *cp = new Child(++d_nr);
+        Child *cp = new Child{ ++d_nr };
 
         cp->fork();
 

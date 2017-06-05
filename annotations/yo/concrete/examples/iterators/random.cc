@@ -4,5 +4,5 @@
 
 int main()
 {
-    sort(RandomIterator(0), RandomIterator(100));
+    sort(RandomIterator{ 0 }, RandomIterator{ 100 });
 }

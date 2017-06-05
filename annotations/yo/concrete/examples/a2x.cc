@@ -8,8 +8,8 @@ using namespace std;
 int main()
 {
 //MAIN
-    int x = A2x("12");          // initialize int x from a string "12"
-    A2x a2x("12.50");           // explicitly create an A2x object
+    int x = A2x{ "12" };        // initialize int x from a string "12"
+    A2x a2x{ "12.50" };         // explicitly create an A2x object
 
     double d;
     d = a2x;                    // assign a variable using an A2x object
@@ -24,9 +24,9 @@ int main()
     cout << c << '\n';          // so initial blanks are skipped.
 
     int expectsInt(int x);      // initialize a parameter using an
-    expectsInt(A2x("1200"));    // anonymous A2x object
+    expectsInt(A2x{ "1200" });  // anonymous A2x object
 
-    d = A2x("12.45").to<int>(); // d is 12, not 12.45
+    d = A2x{ "12.45" }.to<int>(); // d is 12, not 12.45
     cout << d << '\n';
 //=
 }

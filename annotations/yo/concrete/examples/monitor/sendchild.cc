@@ -8,7 +8,7 @@
             cerr << "No child number " << nr << '\n';
         else
         {
-            OFdnStreambuf ofdn(it->second->writeFd());
+            OFdnStreambuf ofdn{ it->second->writeFd() };
             ostream out(&ofdn);
 
             out << line << '\n';

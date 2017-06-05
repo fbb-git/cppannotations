@@ -18,7 +18,7 @@
 //MAIN
     int main()
     {
-        ParentSlurp().fork();
+        ParentSlurp{}.fork();
     }
     /*
         Generated Output (example only, actually obtained output may differ):

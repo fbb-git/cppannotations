@@ -1,6 +1,5 @@
     #include <algorithm>
     #include <iterator>
-    #include <functional>
     #include <iostream>
     #include <cstring>
     #include "predicates.h"
@@ -36,22 +35,22 @@
 //MAIN
     int main(int argc, char **argv)
     {
-        Contains contains("aeiou");
+        Contains contains{ "aeiou" };
         if (argc == 1)
             cout << "Counted " <<
-                count_if(istream_iterator<string>(cin),
-                         istream_iterator<string>(),
-                         PredicateObject1<Contains, string>(contains)
+                count_if(istream_iterator<string>{ cin },
+                         istream_iterator<string>{},
+                         PredicateObject1<Contains, string>{contains}
                 ) << " words containing vowels ";
         else
             cout << "Counted " <<
-                count_if(istream_iterator<string>(cin),
-                        istream_iterator<string>(),
-                        bind2nd
-                        (
-                            PredicateObject2<Contains, string>(contains),
-                            "aeiou"
-                        )
+                count_if(istream_iterator<string>{ cin },
+                        istream_iterator<string>{},
+                            [&](string const &target)
+                            {
+                                return PredicateObject2<Contains, string>
+                                        { contains }(target, "aeiou");
+                            }
                 ) << " words containing vowels ";
         cout << "(read " << contains.count() << " strings)\n";
     }
@@ -62,6 +61,6 @@
         or
             a.out 2 < predobj.cc
 
-        Counted 97 words containing vowels (read 149 strings)
+        Counted 107 words containing vowels (read 163 strings)
     */
 //=

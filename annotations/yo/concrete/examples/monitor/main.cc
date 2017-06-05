@@ -4,7 +4,7 @@
     int main()
     try
     {
-        Monitor().run();
+        Monitor{}.run();
     }
     catch (int exitValue)
     {

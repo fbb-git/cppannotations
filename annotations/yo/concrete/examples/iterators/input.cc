@@ -4,5 +4,5 @@
 
 int main()
 {
-    accumulate(InputIterator(0), InputIterator(100), 0);
+    accumulate(InputIterator{ 0 }, InputIterator{ 100 }, 0);
 }

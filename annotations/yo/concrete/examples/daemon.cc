@@ -18,7 +18,7 @@
     int main()
     try
     {
-        Daemon().fork();
+        Daemon{}.fork();
     }
     catch(...)
     {}

@@ -9,8 +9,7 @@
     {
         while (true)
         {
-            string
-                cmd;
+            string cmd;
 
             cout << "rsh: " << flush;
             cin >> cmd;
@@ -21,32 +20,31 @@
                 return 0;
             }
 
-            if (cmd == "date" || cmd == "id")
+            if (cmd != "date" && cmd != "id")
             {
-                pid_t
-                    pid = fork();
-
-                if (pid == 0)
-                {
-                    execlp(cmd.c_str(), cmd.c_str(), 0);
-                    cerr << "Execution of " << cmd << " failed\n";
-                    return 1;
-                }
-
-                if (pid < 0)
-                {
-                    cerr << "Fork() failed\n";
-                    return 1;
-                }
-
-                int
-                    status;
-                wait(&status);
-                if ((status = WEXITSTATUS(status)))
-                    cerr << cmd << " returned exit status " << status << '\n';
-            }
-            else
                 cout << "Command " << cmd << " disallowed\n";
+                continue;
+            }
+
+            pid_t pid = fork();
+
+            if (pid == 0)
+            {
+                execlp(cmd.c_str(), cmd.c_str(), 0);
+                cerr << "Execution of " << cmd << " failed\n";
+                return 1;
+            }
+
+            if (pid < 0)
+            {
+                cerr << "Fork() failed\n";
+                return 1;
+            }
+
+            int status;
+            wait(&status);
+            if ((status = WEXITSTATUS(status)))
+                cerr << cmd << " returned exit status " << status << '\n';
         }
     }
     /*

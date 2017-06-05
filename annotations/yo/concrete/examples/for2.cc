@@ -19,7 +19,7 @@
 
     int main(int argc, char **argv)
     {
-        StringVector vs(argv, argv + argc);
+        StringVector vs{ argv, argv + argc };
 
         ForEach(vs.begin(), vs.end(), vs, &StringVector::display);
         cout << '\n';

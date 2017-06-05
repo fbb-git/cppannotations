@@ -4,5 +4,5 @@
 
 int main()
 {
-    adjacent_find(ForwardIterator(0), ForwardIterator(100));
+    adjacent_find(ForwardIterator{ 0 }, ForwardIterator{ 100 });
 }

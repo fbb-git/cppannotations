@@ -117,7 +117,8 @@ inline void Derived::swap(Derived &rhs)
 
 int main()
 {
-    Derived o1(1), o2(2);
+    Derived o1{ 1 },
+    Derived o2{ 2 };
     o1 += o2;
     // o1 *= o2;            // adding this statement results in
                             // a compilation error

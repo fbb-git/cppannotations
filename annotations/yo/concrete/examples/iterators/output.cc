@@ -5,5 +5,5 @@
 
 int main()
 {
-    copy(InputIterator(0), InputIterator(100), OutputIterator(0));
+    copy(InputIterator{ 0 }, InputIterator{ 100 }, OutputIterator{ 0 });
 }
