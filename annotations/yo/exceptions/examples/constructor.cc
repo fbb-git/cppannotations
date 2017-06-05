@@ -21,7 +21,7 @@
         try
         {
             cerr << "Creating `Incomplete' object\n";
-            Incomplete();
+            Incomplete{};
             cerr << "Object constructed\n";
         }
         catch(...)

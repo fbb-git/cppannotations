@@ -48,7 +48,7 @@ using namespace std;
         try
         {
             cerr << "Creating Cupboard1\n";
-            Cupboard1();
+            Cupboard1{};
             cerr << "Beyond Cupboard1 object\n";
         }
         catch (...)
@@ -58,7 +58,7 @@ using namespace std;
         try
         {
             cerr << "Creating Cupboard2\n";
-            Cupboard2();
+            Cupboard2{};
             cerr << "Beyond Cupboard2 object\n";
         }
         catch (...)

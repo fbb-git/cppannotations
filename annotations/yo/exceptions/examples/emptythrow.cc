@@ -46,8 +46,7 @@ void emptythrow(Object *o)
 /*
 int main()
 {
-    Object
-        out("'main object'");
+    Object out{ "'main object'" };
 
     try
     {
