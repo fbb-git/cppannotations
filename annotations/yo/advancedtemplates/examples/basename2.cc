@@ -4,7 +4,7 @@
     class Base
     {
         public:
-            virtual void member();
+            void member();
     };
     template <typename T>
     void Base<T>::member()

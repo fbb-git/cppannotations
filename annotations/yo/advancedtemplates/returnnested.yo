@@ -12,7 +12,7 @@ becomes clear.
             {};
             Nested nested() const
             {
-                return Nested();
+                return Nested{};
             }
     };
         )
@@ -36,22 +36,25 @@ remove the implementation from the interface and put it below the interface:
     template <typename T>
     Outer<T>::Nested Outer<T>::nested() const
     {
-        return Nested();
+        return Nested{};
     }
         )
- Suddenly the compiler refuses to compile the tt(nested) member, producing an
-error message like
-    quote(
-    em(error:)
-    emi(expected constructor, destructor, or type conversion) em(before
-'Outer').)
-    Now that the implementation is moved out of the interface the return type
-(i.e., tt(Outer<T>::Nested)) refers to a type defined by tt(Outer<T>) rather
-than to a member of tt(Outer<T>).
+ Suddenly the compiler refuses to compile the tt(nested) member. Fortunately,
+it also suggests a solution in its error message:
+    verb(
+    error: need `typename' before `Outer<T>::Nested' because 
+           `Outer<T>' is a dependent scope
+     Outer<T>::Nested Outer<T>::nested() const
+     ~~~~~~~~
+    )
+    Now that the implementation has been moved out of the interface the return
+type (i.e., tt(Outer<T>::Nested)) refers to a type defined by tt(Outer<T>)
+rather than to a member of tt(Outer<T>), and so tt(typename) must once again
+be used. 
 
-    Here tt(typename) must once again be used. The general rule being: the
-keyword tt(typename) must be used whenever a type is referred to that is a
-em(subtype) of a type that itself depends on a template type parameter.
+    A general rule for using tt(typename) can be formulated: the keyword
+tt(typename) must be used whenever a type is referred to that is a em(subtype)
+of a type that itself depends on a template type parameter.
         hi(template: subtypes inside templates)
         hi(class template: subtype vs. static members)
     When using the inline implementation no such dependency is used as the
