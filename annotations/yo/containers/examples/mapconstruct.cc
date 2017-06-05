@@ -23,11 +23,11 @@
     {
         pair<string, MyClass> pairs[] =
         {
-            pair<string, MyClass>("one", MyClass())
+            pair<string, MyClass>{ "one", MyClass{} }
         };
         cout << "pairs constructed\n";
 
-        map<string, MyClass> mapsm(&pairs[0], &pairs[1]);
+        map<string, MyClass> mapsm{ &pairs[0], &pairs[1];
         cout << "mapsm constructed\n";
     }
     /*

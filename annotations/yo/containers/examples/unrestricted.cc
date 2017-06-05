@@ -27,6 +27,7 @@ class Complex
         Complex &operator=(Complex const &other)
         {
             cout << "Complex operator=\n";
+            return *this;
         }
 };
 
@@ -57,6 +58,7 @@ class String
         {
             d_str = other.d_str;
             cout << "String operator=\n";
+            return *this;
         }
 };
 
@@ -180,10 +182,10 @@ void Union::swap(Union &other)
 
 int main()
 {
-    Union ustr("hello world");
-    Union ucom(12.4, 12.5);
+    Union ustr{ "hello world" };
+    Union ucom{ 12.4, 12.5 };
 
     ustr = ucom;
-    ustr = Union("hi there, again");
+    ustr = Union{ "hi there, again" };
     cout << ustr.asString() << '\n';
 }

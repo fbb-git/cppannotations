@@ -63,7 +63,7 @@ struct Data
 
 void Data::Union::swap(Tag myTag, Union &other, Tag oTag)
 {
-    Union tmp(*this, myTag);
+    Union tmp{ *this, myTag };
 
     destroy(myTag);
     copy(other, oTag);
@@ -216,12 +216,12 @@ Data::Data(int value)
 
 int main(int argc, char **argv)
 {
-    Data v(2);
+    Data v{ v2 };
 
     cout << v.value() << '\n';
 
-    Data a("hi");
-    Data b("lo");
+    Data a{ "hi" };
+    Data b{ "lo" };
 
     cout << a.str() << ' ' << b.str() << '\n';
 
