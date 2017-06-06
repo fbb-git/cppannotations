@@ -36,7 +36,7 @@ Demo operator+(Demo &&lhs, Demo const &rhs)
 Demo operator+(Demo const &lhs, Demo const &rhs)
 {
     cout << "copy operator+\n";
-    Demo tmp(lhs);
+    Demo tmp{ lhs };
     tmp += rhs;
     cout << "copy operator+ returns\n";
     return tmp;

@@ -33,8 +33,8 @@
     int main()
     {
         cout
-            << "`" << Align(5, ios::left) << "hi" << "'"
-            << "`" << Align(10, ios::right) << "there" << "'\n";
+            << "`" << Align{ 5, ios::left } << "hi" << "'"
+            << "`" << Align{ 10, ios::right } << "there" << "'\n";
     }
 
     /*

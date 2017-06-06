@@ -22,7 +22,7 @@ class Demo
         Demo &operator+=(Demo const &rhs) &
         {
             cout << "Copy +=\n";
-            Demo tmp(*this);
+            Demo tmp{ *this };
             std::move(tmp) += rhs;
             swap(tmp);
             return *this;
@@ -42,7 +42,7 @@ class Demo
     Demo &&operator+(Demo const &lhs, Demo const &rhs)
     {
         cout << "copy operator+\n";
-        Demo tmp(lhs);
+        Demo tmp{ lhs };
         // tmp += rhs;
         cout << "copy operator+ returns\n";
         return move(tmp +=  rhs);

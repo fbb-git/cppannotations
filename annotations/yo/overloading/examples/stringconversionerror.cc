@@ -32,7 +32,7 @@
     {
         operator Text() const
         {
-            return Text();
+            return Text{};
         }
     };
 

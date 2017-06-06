@@ -22,7 +22,7 @@ class Binary
         Binary &operator+=(Binary const &rhs) &
         {
             cout << "Copy +=\n";
-            Binary tmp(*this);
+            Binary tmp{ *this };
             std::move(tmp) += rhs;
             swap(tmp);
             return *this;
@@ -40,7 +40,7 @@ Binary &&operator+(Binary &&lhs, Binary const &rhs)
 Binary &&operator+(Binary const &lhs, Binary const &rhs)
 {
     cout << "copy operator + called\n";
-    Binary tmp(lhs);
+    Binary tmp{ lhs };
     cout << "copy operator + returns\n";
     return move(tmp) + rhs;
 }
