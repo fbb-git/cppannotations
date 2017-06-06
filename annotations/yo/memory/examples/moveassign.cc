@@ -30,7 +30,7 @@ Class &Class::operator=(Class &&tmp)
 Class &Class::operator=(Class const &other)
 {
     cout << "Overloaded assignment\n";
-    Class tmp(other);
+    Class tmp{ other };
     return *this = std::move(tmp);
 }
 

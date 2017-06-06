@@ -23,7 +23,7 @@
 
     inline Wrapper::Wrapper()
     :
-        d_strings(new Strings())
+        d_strings(new Strings{})
     {}
     inline Wrapper::~Wrapper()
     {

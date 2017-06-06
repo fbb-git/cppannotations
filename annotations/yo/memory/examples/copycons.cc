@@ -10,5 +10,5 @@ class Class
 int main()
 {
     Class one;
-    Class two(one);
+    Class two{ one };
 }

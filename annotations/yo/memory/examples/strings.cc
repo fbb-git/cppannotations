@@ -55,7 +55,7 @@ void Strings::reserve()
 void Strings::append(std::string const &next)
 {
     reserve(d_size + 1);
-    new (d_memory + d_size) std::string(next);
+    new (d_memory + d_size) std::string{ next };
     ++d_size;
 }
 //=
