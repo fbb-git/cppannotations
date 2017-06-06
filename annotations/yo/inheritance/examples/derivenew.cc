@@ -16,5 +16,5 @@ struct Xstr: public string
 int main()
 {
     string *sp = new Xstr[10];
-    copy(sp, sp + 10, ostream_iterator<string>(cout, "\n"));
+    copy(sp, sp + 10, ostream_iterator<string>{ cout, "\n" });
 }

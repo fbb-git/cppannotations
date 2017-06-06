@@ -34,5 +34,5 @@ string *nStrings(size_t size, char const *fname)
 int main()
 {
     string *sp = nStrings(10, "nstrings.cc");
-    copy(sp, sp + 10, ostream_iterator<string>(cout, "\n"));
+    copy(sp, sp + 10, ostream_iterator<string>{ cout, "\n" });
 }

@@ -32,7 +32,7 @@ class String
             for (size_t idx = 0; idx != n; ++idx)
             {
                 getline(in, line);
-                new(p.sp + idx) String(line);
+                new(p.sp + idx) String{ line };
             }
 
             return p.sp;
@@ -44,7 +44,7 @@ class String
             for (size_t n = *p.np; n--; )
                 sp++->~String();
 
-            operator delete (p.vp);
+            operator delete(p.vp);
         }
 };
 
