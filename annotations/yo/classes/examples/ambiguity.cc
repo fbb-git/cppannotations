@@ -12,7 +12,7 @@
     void fun()
     {
         int b = 18;
-        
+
         {
             Data(b);
             std::cout << b;

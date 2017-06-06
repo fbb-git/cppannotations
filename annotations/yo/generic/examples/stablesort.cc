@@ -43,15 +43,15 @@
         sort(namecity.begin(), namecity.end(), Sortby{ &Pss::first });// 6
 
         cout << "sorted by names:\n";
-        copy(namecity.begin(), namecity.end(), 
+        copy(namecity.begin(), namecity.end(),
                                             ostream_iterator<Pss>{ cout });
 
                                                                     // 7
-        stable_sort(namecity.begin(), namecity.end(), 
+        stable_sort(namecity.begin(), namecity.end(),
                                             Sortby{ &Pss::second });
 
         cout << "sorted by names within sorted cities:\n";
-        copy(namecity.begin(), namecity.end(), 
+        copy(namecity.begin(), namecity.end(),
                                             ostream_iterator<Pss>{ cout });
     }
     /*
