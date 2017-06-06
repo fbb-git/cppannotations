@@ -1,8 +1,8 @@
 
-    tt(Data()), which in the above context defines a default constructed
-anonymous tt(Data) object, takes us back to the compiler error. According to
-the compiler, our original tt(d1) apparently was not of type tt(Data), but of
-type tt(Data()). So what's that?
+    tt(Data()) in the above context defines a default constructed anonymous
+tt(Data) object. This takes us back to the compiler error. According to the
+compiler, our original tt(d1) apparently was not of type tt(Data), but of type
+tt(Data()). So what's that?
 
     Let's first have a look at our second constructor. It expects an
 tt(int). We would like to define another tt(Data) object, using the second
@@ -17,17 +17,17 @@ tt(di). After tt(`di.display()') the compiler tells us:
 em(error: request for member 'display' in 'di', which is of non-class type
 'Data(int (*)())') 
 
-Oops, not as expected.... Didn't we pass 0? Why the sudden pointer? It's that
-same `use a declaration when possible' strategy again. The notation tt(Type())
-not only represents the default value of type tt(Type), but it's also a
-shorthand notation for an anonymous pointer to a function, not expecting
-arguments, and returning a tt(Type) value, which you can verify by defining
-tt(`int (*ip)() = nullptr'), and passing tt(ip) as argument to tt(di):
-tt(di(ip)) compiles fine. 
+Oops, again not as expected.... Didn't we pass 0? Why the sudden pointer? It's
+that same `use a declaration when possible' strategy again. The notation
+tt(Type()) not only represents the default value of type tt(Type), but it's
+also a shorthand notation for an anonymous pointer to a function, not
+expecting arguments, and returning a tt(Type) value, which you can verify by
+defining tt(`int (*ip)() = nullptr'), and passing tt(ip) as argument to
+tt(di): tt(di(ip)) compiles fine.
 
 So why doesn't the error occur when inserting tt(int()) or assigning tt(int())
-to tt(int x)? In these latter cases nothing is declared. Rather, tt(cout) and
-tt(int x =) need expressions determining values, which is provided by
+to tt(int x)? In these latter cases nothing is declared. Rather, `tt(cout)'
+and `tt(int x =)' require expressions determining values, which is provided by
 tt(int())'s `natural' interpretation. But with tt(`Data di(int())') the
 compiler again has a choice, and (by design) it chooses a declaration because
 the declaration takes priority. Now tt(int())'s interpretation as an anonymous
@@ -37,4 +37,8 @@ Likewise, if tt(int x) has been defined, tt(`Data b1(int(x))') declares tt(b1)
 as a function, expecting an tt(int) (as tt(int(x)) represents a type), while
 tt(`Data b2((int)x)') defines tt(b2) as a tt(Data) object, using the
 constructor expecting a single tt(int) value.
+
+Again, to use default entities, values or objects, prefer tt({}) over tt(()):
+tt(Data di{ int{} }) defines tt(di) of type tt(Data), calling the tt(Data(int
+x)) constructor and uses tt(int's) default value 0.
         
