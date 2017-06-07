@@ -23,6 +23,16 @@ SUBST(AFFILIATION)(\
         9700 CA Groningen nl()\
         The Netherlands nl())
 
+    COMMENT(This table is used when writing the LateX index)
+DEFINECHARTABLE(index)(
+    '#' = "\\#"
+    '&' = "\\&"
+    '_'     = "\\_"
+    '^'     = "\\^"
+    '<'     = "\\textless{}"
+    '>'     = "\\textgreater{}"
+)
+
 setlatexfigureext(.eps)
 sethtmlfigureext(.gif)  COMMENT(While converting figures to .jpg)
 
@@ -41,7 +51,6 @@ IFDEF(html)(\
 
 IFDEF(latex)
 (\
-        SUBST(--)(-{}-{})\
         redef(XXsetlatexdocumentheader)(3)(\
             IFEMPTY(ARG1)
             (\
@@ -183,26 +192,8 @@ DEFINEMACRO(oprshift)(0)(\
     )\
 )
 
-DEFINEMACRO(decrement)(0)(\
-    IFDEF(latex)(\
-        NOTRANS($--$)\
-    )(\
-        NOTRANS(--)\
-    )\
-)
-
-DEFINEMACRO(opdecrement)(0)(\
-    tt(operator)\
-    IFDEF(latex)(\
-        NOTRANS($--$)\
-    )(\
-        NOTRANS(--)\
-    )\
-)
-DEFINEMACRO(iopdecrement)(0)(\
-    hix(operator--)\
-    opdecrement()\
-)
+DEFINEMACRO(ttNoCt)(1)(PUSHCHARTABLE()ttbegin()ARG1+ttend()POPCHARTABLE())
+DEFINEMACRO(hiNoCt)(1)(hix(ARG1))
 
 DEFINECOUNTER(htmlAnchor)(0)
 
@@ -271,9 +262,11 @@ def(hix)(1)(\
 )\
     )(\
         IFDEF(latex)(\
+            PUSHCHARTABLE(index)\
             NOTRANS(\index{)\
             ARG1\
             +NOTRANS(})\
+            POPCHARTABLE()\
         )()\
     )\
 )
