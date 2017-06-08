@@ -1,6 +1,6 @@
 <!DOCTYPE html><html><head>
 <meta charset="UTF-8">
-<title> C++ Annotations Version 10.7.2 </title>
+<title> C++ Annotations Version 10.8.0 </title>
 <link rel="stylesheet" type="text/css" href="cplusplus.css"><style type="text/css">
     figure {text-align: center;}
     img {vertical-align: center;}
@@ -14,7 +14,7 @@
     <li> <a href="cplusplus24.html">Next Chapter</a>
 </ul>
 <hr>
-<a name="ADVANCEDTEMPL"></a><a name="l582"></a>
+<a name="ADVANCEDTEMPL"></a><a name="l579"></a>
 <h1 >Chapter 23: Advanced Template Use</h1>
 The main purpose of templates is to provide a generic definition of classes
 and functions that may then be tailored to specific types.
@@ -40,13 +40,13 @@ template language, including prime numbers....
 <p>
 In this chapter these remarkable features of templates are
 discussed. Following a short overview of subtleties related to templates the
-main characteristics of <a name="an3045"></a>template meta programming are introduced.
+main characteristics of <a name="an2988"></a>template meta programming are introduced.
 <p>
 In addition to template type and template non-type parameters there is a third
 kind of template parameter, the
-    <a name="an3046"></a><em >template template parameter</em>. This kind of template parameter is
-introduced next, laying the groundwork for the discusion of <em >trait classes</em>
-and <em >policy classes</em>.
+    <a name="an2989"></a><em >template template parameter</em>. This kind of template parameter is
+introduced shortly, laying the groundwork for the discusion of <em >trait
+classes</em> and <em >policy classes</em>.
 <p>
 This chapter ends with the discussion of several additional and interesting
 applications of templates: adapting compiler error messages, conversions to
@@ -54,13 +54,13 @@ class types and an elaborate example discussing compile-time list processing.
 <p>
 Much of the inspiration for this chapter came from two highly recommended
 books: Andrei Alexandrescu's 2001 book
-    <a name="an3047"></a><strong >Modern C++ design</strong> (Addison-Wesley) and Nicolai
+    <a name="an2990"></a><strong >Modern C++ design</strong> (Addison-Wesley) and Nicolai
 Josutis and David Vandevoorde's 2003 book
-    <a name="an3048"></a><a name="an3049"></a><strong >Templates</strong> (Addison-Wesley).
+    <a name="an2991"></a><a name="an2992"></a><strong >Templates</strong> (Addison-Wesley).
 <p>
-<a name="SUBTLE"></a><a name="l583"></a>
+<a name="SUBTLE"></a><a name="l580"></a>
 <h2 >23.1: Subtleties</h2>
-    In section <a href="cplusplus22.html#DISTINGUISH">22.2.1</a> a special application of the keyword <a name="an3050"></a><code >typename</code>
+    In section <a href="cplusplus22.html#DISTINGUISH">22.2.1</a> a special application of the keyword <a name="an2993"></a><code >typename</code>
 was discussed. There we learned that it is not only used to define a name for
 a (complex) type, but also to distinguish types defined by class templates
 from members defined by class templates.  In this section two more
@@ -78,7 +78,7 @@ the keyword <code >typename</code>: <code >::template, .template</code> and <cod
 used to inform the compiler that a name used inside a template is itself a
 class template.
 <p>
-<a name="RETURNNESTED"></a><a name="l584"></a>
+<a name="RETURNNESTED"></a><a name="l581"></a>
 <h3 >23.1.1: Returning types nested under class templates</h3>
     In the following example a nested class, not depending on a template
 parameter, is defined inside a class template. The class template member
@@ -94,7 +94,7 @@ becomes clear.
             {};
             Nested nested() const
             {
-                return Nested();
+                return Nested{};
             }
     };
 </pre>
@@ -118,24 +118,27 @@ remove the implementation from the interface and put it below the interface:
     template &lt;typename T&gt;
     Outer&lt;T&gt;::Nested Outer&lt;T&gt;::nested() const
     {
-        return Nested();
+        return Nested{};
     }
 </pre>
- Suddenly the compiler refuses to compile the <code >nested</code> member, producing an
-error message like
-    <blockquote >
-    <em >error:</em>
-    <a name="an3051"></a><em >expected constructor, destructor, or type conversion</em> <em >before
-'Outer'</em>.</blockquote>
-    Now that the implementation is moved out of the interface the return type
-(i.e., <code >Outer&lt;T&gt;::Nested</code>) refers to a type defined by <code >Outer&lt;T&gt;</code> rather
-than to a member of <code >Outer&lt;T&gt;</code>.
+ Suddenly the compiler refuses to compile the <code >nested</code> member. Fortunately,
+it also suggests a solution in its error message:
+    <pre>
+    error: need `typename' before `Outer&lt;T&gt;::Nested' because 
+           `Outer&lt;T&gt;' is a dependent scope
+     Outer&lt;T&gt;::Nested Outer&lt;T&gt;::nested() const
+     ~~~~~~~~
+</pre>
+    Now that the implementation has been moved out of the interface the return
+type (i.e., <code >Outer&lt;T&gt;::Nested</code>) refers to a type defined by <code >Outer&lt;T&gt;</code>
+rather than to a member of <code >Outer&lt;T&gt;</code>, and so <code >typename</code> must once again
+be used. 
 <p>
-Here <code >typename</code> must once again be used. The general rule being: the
-keyword <code >typename</code> must be used whenever a type is referred to that is a
-<em >subtype</em> of a type that itself depends on a template type parameter.
-        <a name="an3052"></a>
-        <a name="an3053"></a>
+A general rule for using <code >typename</code> can be formulated: the keyword
+<code >typename</code> must be used whenever a type is referred to that is a <em >subtype</em>
+of a type that itself depends on a template type parameter.
+        <a name="an2994"></a>
+        <a name="an2995"></a>
     When using the inline implementation no such dependency is used as the
 function's return type is simply <code >Nested</code>. When implementing the function
 outside of the class interface (which should be considered `good practice')
@@ -154,7 +157,7 @@ the compilation error. Thus, the correct implementation of the function
     }
 </pre>
 <p>
-<a name="TYPERES"></a><a name="l585"></a>
+<a name="TYPERES"></a><a name="l582"></a>
 <h3 >23.1.2: Type resolution for base class members</h3>
     Below we see two class templates. <code >Base</code> and <code >Derived</code>, <code >Base</code> being
 <code >Derived</code>'s base class:
@@ -184,9 +187,8 @@ the compilation error. Thus, the correct implementation of the function
         member();
     }
 </pre>
-<p>
-This example won't compile, and the compiler tells us something like:
-        <a name="an3054"></a>
+    This example won't compile, and the compiler tells us something like:
+        <a name="an2996"></a>
         <pre>
     error: there are no arguments to 'member' that depend on a template
            parameter, so a declaration of 'member' must be available
@@ -218,7 +220,7 @@ In cases like these, where no template type parameter is available to
 determine which type to use, the compiler must be told that it should postpone
 its decision about the template type parameter to use (and therefore about the
 particular (here: <code >member</code>) function to call)
-    <a name="an3055"></a>
+    <a name="an2997"></a>
 until instantiation time.
 <p>
 This may be implemented in two ways: either by using <code >this</code> or by
@@ -237,7 +239,7 @@ template type the <code >int</code> specialization is used.
     class Base
     {
         public:
-            virtual void member();
+            void member();
     };
     template &lt;typename T&gt;
     void Base&lt;T&gt;::member()
@@ -289,17 +291,16 @@ template type the <code >int</code> specialization is used.
     Derived&lt;T&gt;::Derived() completed
     */
 </pre>
-<p>
-The above example also illustrates the use of virtual member templates
+    The above example also illustrates the use of virtual member templates
 (although virtual member templates aren't often used). In the example <code >Base</code>
 declares a <code >virtual void member</code> and <code >Derived</code> defines its overriding
 function <code >member</code>. In that case <code >this-&gt;member()</code> in <code >Derived::Derived</code>
 calls, due to <code >member</code>'s virtual nature, <code >Derived::member</code>. The statement
 <code >Base&lt;T&gt;::member()</code>, however, always calls <code >Base</code>'s <code >member</code> function
 and can be used to
-    <a name="an3056"></a> bypass dynamic polymorphism.
+    <a name="an2998"></a> bypass dynamic polymorphism.
 <p>
-<a name="DOTTEMP"></a><a name="l586"></a>
+<a name="DOTTEMP"></a><a name="l583"></a>
 <h3 >23.1.3: ::template, .template and -&gt;template</h3>
     In general, the compiler is able to determine the true nature of a name. As
 discussed, this is not always the case and sometimes we have to advise the
@@ -360,10 +361,10 @@ generates an error like:
     error: 'class Outer&lt;T1&gt;::Inner' is not a type
 </pre>
     To inform the compiler that <code >Inner</code>
- <a name="an3057"></a>
- <a name="an3058"></a>
+ <a name="an2999"></a>
+ <a name="an3000"></a>
     itself is a template, using the template type parameter <code >&lt;T2&gt;</code>, the
-<a name="an3059"></a><code >::template</code> construction is required. It tells the compiler that the next
+<a name="an3001"></a><code >::template</code> construction is required. It tells the compiler that the next
 <code >&lt;</code> should not be interpreted as a `less than' token, but rather as a
 template type argument. So, the declaration is modified to:
         <pre>
@@ -401,7 +402,7 @@ a template type <code >T3</code>.
 To tell the compiler that is should interpret <code >&lt;T3&gt;</code> as a type to
 instantiate, the <code >template</code> keyword must once again be used. This
 time it is used in the context of the member selection operator.  We write
-<a name="an3060"></a><code >.template</code> to inform the compiler that what follows is not a `less than'
+<a name="an3002"></a><code >.template</code> to inform the compiler that what follows is not a `less than'
 operator, but rather a type specification. The function's final implementation
 becomes:
         <pre>
@@ -423,7 +424,7 @@ than the <code >.template</code> construction. E.g.,
 </pre>
 <p>
 As we've seen class templates can be derived from base class templates. The
-base class template can declare a <a name="an3061"></a>static member template, which is
+base class template can declare a <a name="an3003"></a>static member template, which is
 available to a class that is derived from this base class. Such a base class
 might look like this:
         <pre>
@@ -477,18 +478,18 @@ template. For this the <code >::template</code> prefix is used:
     };
 </pre>
 <p>
-<a name="l587"></a>
+<a name="l584"></a>
 <h2 >23.2: Template Meta Programming</h2>
 <p>
-<a name="l588"></a>
+<a name="l585"></a>
 <h3 >23.2.1: Values according to templates</h3>
-    In <a name="an3062"></a>template programming values are preferably represented by <code >enum</code>
+    In <a name="an3004"></a>template programming values are preferably represented by <code >enum</code>
 values. Enums are preferred over, e.g., <code >int const</code> values since enums never
 require any linkage. They are pure symbolic values with no memory
 representation whatsoever.
 <p>
 Consider the situation where a programmer must use a cast, say a
-<a name="an3063"></a><code >reinterpret_cast</code>. A problem with a <code >reinterpret_cast</code> is that it is the
+<a name="an3005"></a><code >reinterpret_cast</code>. A problem with a <code >reinterpret_cast</code> is that it is the
 ultimate way to turn off all compiler checks. All bets are off, and we can
 write extreme but absolutely pointless <code >reinterpret_cast</code> statements, like
         <pre>
@@ -509,10 +510,10 @@ to the target type. For this reason it's clearly silly to
 *&gt;(&amp;intVar)</code> could be defensible.
 <p>
 The intent is now to create a new kind of cast, let's call it
-<a name="an3064"></a><code >reinterpret_to_smaller_cast</code>. It should only be allowed to perform a
+<a name="an3006"></a><code >reinterpret_to_smaller_cast</code>. It should only be allowed to perform a
 <code >reinterpret_to_smaller_cast</code> if the target type occupies less memory than
 the source type (note that this exactly the opposite reasoning as used by
-Alexandrescu <a name="an3065"></a>  (2001), section 2.1).
+Alexandrescu <a name="an3007"></a>  (2001), section 2.1).
 <p>
 To start, we construct the following template:
         <pre>
@@ -567,11 +568,11 @@ be used to accumulate values too: the resulting enum value then contains a
 final value, computed by the compiler rather than by executable code as the
 next sections illustrate. In general, programs shouldn't do run-time what they
 can do
-        <a name="an3066"></a>
+        <a name="an3008"></a>
     at compile-time and performing complex calculations resulting in constant
 values is a clear example of this principle.
 <p>
-<a name="INTTYPE"></a><a name="l589"></a>
+<a name="INTTYPE"></a><a name="l586"></a>
 <h4>23.2.1.1: Converting integral types to types</h4>
         Another use of values buried inside templates is to `templatize' simple scalar
 <code >int</code> values. This is useful in situations where a scalar value (often a
@@ -580,9 +581,9 @@ to base the selection on. This situation is shortly encountered (section
 <a href="cplusplus23.html#ALTERNATIVES">23.2.2</a>).
 <p>
 Templatizing
-        <a name="an3067"></a>
+        <a name="an3009"></a>
     integral values is based on the fact that a
-        <a name="an3068"></a>
+        <a name="an3010"></a>
     class template together with its template arguments defines a type. E.g.,
 <code >vector&lt;int&gt;</code> and <code >vector&lt;double&gt;</code> are different types.
 <p>
@@ -616,7 +617,7 @@ parameter. Example:
     }
 </pre>
     Actually, neither the named object nor the anonymous object is
-    <a name="an3069"></a>
+    <a name="an3011"></a>
 required. As the <code >enum</code> is defined as a plain value, associated with the
 <code >struct IntType</code> we merely have to specify the specific <code >int</code> for which
 the <code >struct IntType</code> is defined to retrieve its `<code >value</code>', like this:
@@ -628,7 +629,7 @@ the <code >struct IntType</code> is defined to retrieve its `<code >value</code>
     }
 </pre>
 <p>
-<a name="ALTERNATIVES"></a><a name="l590"></a>
+<a name="ALTERNATIVES"></a><a name="l587"></a>
 <h3 >23.2.2: Selecting alternatives using templates</h3>
     An essential characteristic of programming languages is that they allow the
 conditional execution of code. For this <strong >C++</strong> offers the <code >if</code> and
@@ -665,7 +666,7 @@ attempt could look like this:
             d_ispolymorphic ?
                 obj.clone()
             :
-                new Type(obj)
+                new Type{obj}
         );
     }
 </pre>
@@ -681,7 +682,7 @@ constructor is only available in value classes and not in polymorphic
 classes. It merely has some code to compile, and can't do that because of
 missing members. It's as simple as that.
 <p>
-<a name="l591"></a>
+<a name="l588"></a>
 <h4>23.2.2.1: Defining overloading members</h4>
             Template meta programming comes to the rescue. Knowing that class template
 member functions are only instantiated when used, our plan is to design
@@ -706,9 +707,9 @@ combination of template names and their template arguments we may convert the
 values <code >true</code> and <code >false</code> into types using the knowledge from section
 <a href="cplusplus23.html#INTTYPE">23.2.1.1</a> about how to convert integral values to types.
 <p>
-We'll provide one (private) <code >add</code> member with a <code >IntType&lt;true&gt;</code> parameter
+We'll provide one (private) <code >add</code> member with an <code >IntType&lt;true&gt;</code> parameter
 (implementing the polymorphic class) and another (private) <code >add</code> member with
-a <code >IntType&lt;false&gt;</code> parameter (implementing the non-polymorphic class).
+an <code >IntType&lt;false&gt;</code> parameter (implementing the non-polymorphic class).
 <p>
 In addition to these two private members a third (public) member <code >add</code> is
 defined calling the appropriate private <code >add</code> member by providing an
@@ -748,7 +749,7 @@ Since class template members are only instantiated when used only one of
 the overloaded private <code >add</code> members is instantiated. Since the other one is
 never called (and thus never instantiated) compilation errors are prevented.
 <p>
-<a name="IFELSE"></a><a name="l592"></a>
+<a name="IFELSE"></a><a name="l589"></a>
 <h4>23.2.2.2: Class structure as a function of template parameters</h4>
             Some software engineers have reservations when thinking about the
 <code >Storage</code> class that uses pointers to store copies of value class
@@ -758,8 +759,8 @@ value and polymorphic class objects by pointer.
 <p>
 Such distinctions  frequently occur in template meta programming and
 the following <code >struct IfElse</code>
-        <a name="an3070"></a>
-        <a name="an3071"></a>
+        <a name="an3012"></a>
+        <a name="an3013"></a>
     may be used to obtain one of two types, depending on a <code >bool</code> selector
 value.
 <p>
@@ -788,7 +789,7 @@ for the logical value <code >false</code>) associates <code >SecondType</code> w
 <p>
 The <code >IfElse</code> template allows us to define class templates whose data
 organization is conditional to the template's parameters.
-    <a name="an3072"></a>
+    <a name="an3014"></a>
  Using <code >IfElse</code> the <code >Storage</code> class may define
 <em >pointers</em> to store copies of polymorphic class type objects and <em >values</em>
 to store value class type objects:
@@ -844,7 +845,7 @@ the size or execution time of the final executable program. The final program
 simply contains the appropriate type, conditional to the type that's
 eventually selected.
 <p>
-<a name="l593"></a>
+<a name="l590"></a>
 <h4>23.2.2.3: An illustrative example</h4>
             The next example, defining <code >MapType</code> as a map having plain types or
 pointers for either its key or value types, illustrates this approach:
@@ -899,13 +900,13 @@ The private <code >add</code> functions define the same parameters as the public
 compiler to select the appropriate overloaded version based on the template's
 non-type selector parameter.
 <p>
-<a name="l594"></a>
+<a name="l591"></a>
 <h3 >23.2.3: Templates: Iterations by Recursion</h3>
         As there are no variables in template meta programming, there is no
 template equivalent to a <code >for</code> or <code >while</code> statement. However, iterations
 can always be rewritten as recursions.  Recursions <em >are</em> supported
 by templates and so iterations can always be implemented as (tail) recursions.
-        <a name="an3073"></a>
+        <a name="an3015"></a>
 <p>
 To implement iterations by (tail) recursion do as follows:
     <ul>
@@ -919,7 +920,7 @@ recursion stops since the specialization does not use recursion.
 <p>
 Most readers are probably familiar with the recursive implementation of
 the mathematical `<em >factorial</em>' operator, commonly represented by the
-exclamation mark (<code >!</code>). Factorial <code >n</code> (so: <code >n!</code>) returns the successive
+exclamation mark (<code >!</code>): <code >n</code> factorial (so: <code >n!</code>) returns the successive
 products <code >n * (n - 1) * (n - 2) * ... * 1</code>, representing the number of ways
 <code >n</code> objects can be permuted. Interestingly, the factorial operator is itself
 usually defined by a <em >recursive</em> definition:
@@ -982,7 +983,7 @@ therefore:
     }
 </pre>
 <p>
-<a name="UDL"></a><a name="l595"></a>
+<a name="UDL"></a><a name="l592"></a>
 <h2 >23.3: User-defined literals</h2>
 In addition to the literal operators discussed in section <a href="cplusplus11.html#UDLITERALS">11.12</a> 
 <strong >C++</strong> also offers a function template literal operator, matching the
@@ -1135,7 +1136,7 @@ to a small support function template, <code >cVal</code>:
     };
 </pre>
 <p>
-<a name="TEMPTEMPPAR"></a><a name="l596"></a>
+<a name="TEMPTEMPPAR"></a><a name="l593"></a>
 <h2 >23.4: Template template parameters</h2>
 Consider the following situation: a software engineer is asked to design a
 storage class <code >Storage</code>. Data stored in <code >Storage</code> objects may either make
@@ -1165,14 +1166,14 @@ deploy.
 <p>
 One of the reasons why the big, all-encompassing class is hard to deploy and
 understand is that a well-designed class should
-        <a name="an3074"></a>
+        <a name="an3016"></a>
     <em >enforce constraints</em>: the design of the class should, by itself,
 disallow certain operations, violations of which should be detected by the
 compiler, rather than by a program that might terminate in a fatal error.
 <p>
 Think about the above request. If the class offers both an interface to access
 the vector data storage <em >and</em> an interface to access the list data storage,
-then it's likely that the class offers an overloaded <a name="an3075"></a><code >operator[]</code> member
+then it's likely that the class offers an overloaded <a name="an3017"></a><code >operator[]</code> member
 to access elements in the vector. This member, however, will be syntactically
 present, but semantically invalid when the <em >list</em> data storage is selected,
 which doesn't support <code >operator[]</code>.
@@ -1184,13 +1185,13 @@ be able to detect the error, which only appears once the program is
 running, confusing its users.
 <p>
 The question remains: how should the engineer proceed, when confronted with
-the above questions? It's time to introduce <a name="an3076"></a> <em >policies</em>.
+the above questions? It's time to introduce <a name="an3018"></a> <em >policies</em>.
 <p>
-<a name="l597"></a>
+<a name="l594"></a>
 <h3 >23.4.1: Policy classes - I</h3>
-    A <a name="an3077"></a><em >policy</em> defines (in some contexts: prescribes) a particular kind of
+    A <a name="an3019"></a><em >policy</em> defines (in some contexts: prescribes) a particular kind of
 behavior. In <strong >C++</strong> a
-    <a name="an3078"></a>
+    <a name="an3020"></a>
  <em >policy class</em> defines a certain part of the class interface. It may also
 define inner types, member functions, and data members.
 <p>
@@ -1203,9 +1204,9 @@ Allocation schemes should probably be defined as template classes, applying
 the appropriate allocation procedures to the data type at hand. When such
 allocation schemes are used by the familiar STL containers (like
 <code >std::vector, std::stack</code>, etc.), then such home-made allocation schemes
-should probably be derived from <code >std::allocator</code><a name="an3079"></a>, to provide
+should probably be derived from <code >std::allocator</code><a name="an3021"></a>, to provide
 for the requirements made by these containers. The class template
-<code >std::allocator</code> is declared by the <a name="an3080"></a><code >&lt;memory&gt;</code> header file and the three
+<code >std::allocator</code> is declared by the <a name="an3022"></a><code >&lt;memory&gt;</code> header file and the three
 allocation schemes developed here were all derived from <code >std::allocator</code>.
 <p>
 Using in-class implementations for brevity the following allocation classes
@@ -1264,7 +1265,7 @@ class NewAlloc: public std::allocator&lt;Data&gt;
         }
 };
 </pre>
-    <li> The third allocation scheme uses the <a name="an3081"></a>placement new operator (see
+    <li> The third allocation scheme uses the <a name="an3023"></a>placement new operator (see
         section <a href="cplusplus09.html#PLACEMENT">9.1.5</a>), requesting memory from a
         common pool (the implementation of the member <code >request</code>,
         obtaining the required amount of memory, is left as an exercise to the
@@ -1331,21 +1332,21 @@ allocation scheme should be specified using a new type of template parameter,
 not requiring the user to specify the data type required by the allocation
 scheme. This new kind of template parameter (in addition to the well-known
 <em >template type parameter</em> and <em >template non-type parameter</em>) is called the
- <a name="an3082"></a><em >template template parameter</em>.
+ <a name="an3024"></a><em >template template parameter</em>.
 <p>
 Starting with the C++14 standard the keyword <em >class</em> 
-        <a name="an3083"></a> 
+        <a name="an3025"></a> 
     in the syntactical form of template template parameters (<code >template
 &lt;parameter specifications&gt; class Name</code>) is no longer required. From that
 standard onward, the keyword <code >typename</code> can also be used (e.g., <code >template
 &lt;parameter specifications&gt; typename Name</code>).
 <p>
-<a name="l598"></a>
+<a name="l595"></a>
 <h3 >23.4.2: Policy classes - II: template template parameters</h3>
-    Template <a name="an3084"></a> template parameters allow us to
+    Template <a name="an3026"></a> template parameters allow us to
 specify a <em >class template</em> as a template parameter. By specifying a class
 template, it is possible to add a certain kind of behavior (called a
-<a name="an3085"></a><em >policy</em>) to an existing class template.
+<a name="an3027"></a><em >policy</em>) to an existing class template.
 <p>
 To specify an allocation <em >policy</em>, rather than an allocation <code >type</code>
 for the class <code >Storage</code> we rephrase its class template header:
@@ -1358,7 +1359,7 @@ definition starts as follows:
 parameter</em>. It has the following elements:
     <ul>
     <li> The keyword <code >template</code>, starting the template template parameter;
-    <li> The keyword <code >template</code> is followed (between pointed brackets) by a
+    <li> The keyword <code >template</code> is followed (between angle brackets) by a
         list of template parameters that must be specified for the template
         template parameter. These parameters <em >may</em> be given names, but names
         are usually omitted as those names cannot be used in subsequent
@@ -1377,10 +1378,10 @@ parameter</em>. It has the following elements:
         specified. However, language offers a solution for this
         problem in the form of <em >alias templates</em>, introduced in section
         <a href="cplusplus23.html#ALIASES">23.5</a>.
-    <li> Following the bracketed list the keyword <a name="an3086"></a><code >class</code> <em >must</em> be
+    <li> Following the bracketed list the keyword <a name="an3028"></a><code >class</code> <em >must</em> be
         specified. In this case, <code >typename</code>
-            <a name="an3087"></a>
-        can <em >not</em> be used. However, in the upcoming <a name="an3088"></a>C++17 standard this
+            <a name="an3029"></a>
+        can <em >not</em> be used. However, in the upcoming <a name="an3030"></a>C++17 standard this
         restriction will most likely be removed from the language.
     <li> All parameters may be provided with default arguments. This is shown
         in the next example of a hypothetical class template:
@@ -1483,7 +1484,7 @@ storage type can be used on request, like a <code >deque</code>. To implement th
 storage class is parameterized as well, using yet another template template
 parameter:
         <pre>
-    template &lt;typename Data, template &lt;typename&gt; class AllocatonPolicy,
+    template &lt;typename Data, template &lt;typename&gt; class AllocationPolicy,
               template &lt;typename, typename&gt; class Container = std::vector&gt;
     class Storage: public Container&lt;Data, AllocationPolicy&lt;Data&gt;&gt;
     {};
@@ -1495,51 +1496,51 @@ clearly can't be used with a <code >list</code> container, as the <code >list</c
 producing an error if an attempt is made to use <code >operator[]</code> on, e.g., a
     <code >list</code>.&nbsp;(A complete example showing the definition of the
 allocation classes and the class <code >Storage</code> as well as its use is provided in
-the Annotation's distribution in the file
+the <strong >C++</strong> Annotations's distribution in the file
 <code >yo/advancedtemplates/examples/storage.cc</code>.) A <code >list</code> container, however
 can still be specified as the container to use. In that case a <code >Storage</code> is
 implemented as a <code >list</code>, offering <code >list</code>'s interface, rather than
 <code >vector</code>'s interface, to its users.
 <p>
-<a name="l599"></a>
+<a name="l596"></a>
 <h4>23.4.2.1: The destructor of Policy classes</h4>
         In the previous section policy classes were used as base classes of template
 classes. This resulted in the interesting observation that a policy class
 may serve as a <em >base class</em>
-        <a name="an3089"></a>
+        <a name="an3031"></a>
     of a derived class.
     As a policy class may act as a base class, a pointer or reference to such
 a policy class can be used to point or refer to the derived class using the
 policy.
 <p>
 This situation, although legal, should be avoided for various reasons:
-        <a name="an3090"></a>
+        <a name="an3032"></a>
     <ul>
     <li> Destruction of a derived class object using the base class's
 destructor requires the implementation of a virtual destructor;
     <li> A virtual destructor introduces overhead to a class that normally has
-no data members, but merely defines behavior: suddenly a <a name="an3091"></a><code >vtable</code> is
+no data members, but merely defines behavior: suddenly a <a name="an3033"></a><code >vtable</code> is
 required as well as a data member pointing to the vtable;
     <li> Virtual member functions somewhat reduce the efficiency of code;
-virtual member functions use <a name="an3092"></a><em >dynamic polymorphism</em>, which in principle is
-undoing the advantages of <a name="an3093"></a><em >static polymorphism</em> as offered by templates;
-    <li> Virtual member functions in templates may result in <a name="an3094"></a><em >code bloat</em>:
+virtual member functions use <a name="an3034"></a><em >dynamic polymorphism</em>, which in principle is
+undoing the advantages of <a name="an3035"></a><em >static polymorphism</em> as offered by templates;
+    <li> Virtual member functions in templates may result in <a name="an3036"></a><em >code bloat</em>:
 once an instantiation of a class's member is required, the class's vtable and
 <em >all</em> its virtual members must be implemented too.
     </ul>
     To avoid these drawbacks, it is good practice to <em >prevent</em> the use of
 references or pointers to policy classes to refer or point to derived
 class objects. This is accomplished by providing policy classes with
-        <a name="an3095"></a>
+        <a name="an3037"></a>
     <em >non-virtual protected destructors</em>. With a non-virtual destructor there
 is no performance penalty and since its destructor is protected users cannot
 refer to classes derived from the policy class using a pointer or reference to
 the policy class.
 <p>
-<a name="l600"></a>
+<a name="l597"></a>
 <h3 >23.4.3: Structure by Policy</h3>
     Policy classes usually define behavior, not structure. Policy classes
-        <a name="an3096"></a>
+        <a name="an3038"></a>
  are normally used to parameterize some aspect of the behavior of classes that
 are derived from them. However, different policies may require different data
 members. These data members may also be defined by the policy classes. Policy
@@ -1548,7 +1549,7 @@ classes may therefore be used to define both behavior and structure.
 By providing a well-defined interface a class derived from a policy class may
 define member specializations using the different structures of policy classes
 to their advantage. For example, a plain pointer-based policy class could
-offer its functionality by resorting to <strong >C</strong>-style <a name="an3097"></a>pointer juggling,
+offer its functionality by resorting to <strong >C</strong>-style <a name="an3039"></a>pointer juggling,
 whereas a <code >vector</code>-based policy class could use the vector's members
 directly.
 <p>
@@ -1616,11 +1617,11 @@ extremely basic <code >Plain</code> class):
     The <code >wiv</code> object now defines vector-data, the <code >wis</code> object merely
 defines a <code >std::pair</code> object's data members.
 <p>
-<a name="ALIASES"></a><a name="l601"></a>
+<a name="ALIASES"></a><a name="l598"></a>
 <h2 >23.5: Alias Templates</h2>
 In addition to function and class templates, <strong >C++</strong> also uses templates to
 define an alias for a set of types. This is called an
-    <a name="an3098"></a><em >alias template</em>. Alias templates can be specialized. The name of an
+    <a name="an3040"></a><em >alias template</em>. Alias templates can be specialized. The name of an
 alias template is a type name.
 <p>
 Alias templates can be used as arguments to template template
@@ -1682,10 +1683,10 @@ completely different kind of container, like a <code >map</code>, with <code >Ge
     Generic&lt;int, MapString&gt; gim;    // uses map&lt;int, string&gt;
 </pre>
 <p>
-<a name="TRAIT"></a><a name="l602"></a>
+<a name="TRAIT"></a><a name="l599"></a>
 <h2 >23.6: Trait classes</h2>
 Scattered over the <code >std</code> namespace
-    <a name="an3099"></a><a name="an3100"></a>
+    <a name="an3041"></a><a name="an3042"></a>
     <em >trait classes</em> are found. E.g., most <strong >C++</strong> programmers have seen
 the compiler mentioning `<code >std::char_traits&lt;char&gt;</code>' when performing an
 illegal operation on <code >std::string</code> objects, as in <code >std::string s(1)</code>.
@@ -1710,9 +1711,9 @@ time, allowing the compiler to deduce whether or not the actual type is a
 pointer, a pointer to a member, or a const pointer, and to make comparable
 deductions in case the actual type is, e.g., an lvalue or rvalue reference
 type. This in turn allows us to write templates that define types like
-    <a name="an3101"></a>
- <a name="an3102"></a><code >argument_type</code>, <a name="an3103"></a><code >first_argument_type</code>, <a name="an3104"></a><code >second_argument_type</code> and
-<a name="an3105"></a><code >result_type</code>, which are required by several generic algorithms (e.g.,
+    <a name="an3043"></a>
+ <a name="an3044"></a><code >argument_type</code>, <a name="an3045"></a><code >first_argument_type</code>, <a name="an3046"></a><code >second_argument_type</code> and
+<a name="an3047"></a><code >result_type</code>, which are required by several generic algorithms (e.g.,
 <a href="cplusplus19.html#COUNTIF">count_if()</a>).
 <p>
 A trait class usually performs no behavior. I.e., it has no constructor
@@ -1756,12 +1757,12 @@ required parameter. Maybe something like this:
 </pre>
 <p>
 Although some conclusions can be drawn by combining various <code >enum</code>
-values (e.g., a plain type is not a pointer or a reference or a rvalue
+values (e.g., a plain type is not a pointer or a reference or an rvalue
 reference or a const), it is good practice to provide a full implementation of
 trait classes, not requiring its users to construct these logical expressions
 themselves. Therefore, the basic decisions in a trait class are usually made
 by a
-        <a name="an3106"></a><a name="an3107"></a>nested trait class,
+        <a name="an3048"></a><a name="an3049"></a>nested trait class,
     leaving the task of creating appropriate logical expressions to a
 surrounding trait class.
 <p>
@@ -1866,9 +1867,9 @@ template type. Example:
      cout &lt;&lt; value &lt;&lt; ' ' &lt;&lt; rvalue &lt;&lt; ' ' &lt;&lt; *ptr &lt;&lt; '\n';
 </pre>
 <p>
-<a name="CLASSORNOT"></a><a name="l603"></a>
+<a name="CLASSORNOT"></a><a name="l600"></a>
 <h3 >23.6.1: Distinguishing class from non-class types</h3>
-    In the previous section the <code >TypeTrait</code> trait class was developed. Using
+    In the previous section the <code >BasicTraits</code> trait class was developed. Using
 specialized versions of a nested <code >struct Type</code> modifiers, pointers,
 references and values could be distinguished.
 <p>
@@ -1880,13 +1881,13 @@ type (maybe using some member function that should be available)
 and another specialization for non-class types.
 <p>
 This section addresses the question how a trait class can distinguish class
-        <a name="an3108"></a>
+        <a name="an3050"></a>
     types from non-class types.
 <p>
 In order to distinguish classes from non-class types a distinguishing feature
 that can be used at compile-time must be found. It may take some thinking to
 find such a distinguishing characteristic, but a good candidate eventually is
-found in the <a name="an3109"></a>pointer to members syntactic construct. Pointers to members
+found in the <a name="an3051"></a>pointer to members syntactic construct. Pointers to members
 are only available for classes. Using the pointer to member construct as the
 distinguishing characteristic, a specialization can be developed that uses the
 pointer to member if available. Another specialization (or the generic
@@ -1923,8 +1924,8 @@ call it. What, then, is its use?
 To answer the question we now have a look at the generic function
 template that should be used when the template's argument is <em >not</em> a class
 type. The language offers a `worst case' parameter in its
-        <a name="an3110"></a>
-    <a name="an3111"></a><em >ellipsis</em> parameter list. The ellipsis is a final resort the compiler
+        <a name="an3052"></a>
+    <a name="an3053"></a><em >ellipsis</em> parameter list. The ellipsis is a final resort the compiler
 may turn to if everything else fails. The generic function template specifies
 a plain ellipsis in its parameter list:
         <pre>
@@ -1962,14 +1963,14 @@ this:
     enum { isClass = fun&lt;Type&gt;(0) } ;
 </pre>
     as <code >fun&lt;Type&gt;(0)</code> is not a constant expression and enum values <em >must</em>
-        <a name="an3112"></a>
+        <a name="an3054"></a>
  be defined by constant expressions so they can be determined at compile-time.
 <p>
 To determine <code >isClass</code>'s value we must find an expression allowing for
 compile-time discriminations between <code >fun&lt;Type&gt;(...)</code>  and <code >fun&lt;Type&gt;(void
 (Type::*)())</code>.
 <p>
-In situations like these the <a name="an3113"></a><code >sizeof</code> operator often is our tool of
+In situations like these the <a name="an3055"></a><code >sizeof</code> operator often is our tool of
 choice as it is evaluated at compile-time. By defining different sized return
 types for the two <code >fun</code> declarations we are able to distinguish (at
 compile-time) which of the two <code >fun</code> alternatives is selected by the
@@ -2014,10 +2015,10 @@ return type's size;
 answer to the question whether a template type argument represents a class
 type or not. Marvelous!
 <p>
-<a name="TYPETRAITS"></a><a name="l604"></a>
+<a name="TYPETRAITS"></a><a name="l601"></a>
 <h3 >23.6.2: Available type traits</h3>
     <strong >C++</strong> offers many facilities to identify and modifiy
-characteristics of types. Before using these facilities the <a name="an3114"></a><code >&lt;type_traits&gt;</code>
+characteristics of types. Before using these facilities the <a name="an3056"></a><code >&lt;type_traits&gt;</code>
 header file must be included.
 <p>
 All facilities offered by <code >type_traits</code> are defined in the <code >std</code>
@@ -2027,14 +2028,14 @@ determine various characteristics of types and values.
 In the description of available type traits the following concepts are
 encountered: 
     <ul>
-    <li> <a name="an3115"></a><em >arithmetic type</em>:
+    <li> <a name="an3057"></a><em >arithmetic type</em>:
        any integral or floating point type;
 <p>
-<li> <a name="an3116"></a><em >class type</em>:
+<li> <a name="an3058"></a><em >class type</em>:
        not a union type, without non-static data members, without virtual
         members, without virtual or non-empty base classes;
 <p>
-<li> <a name="an3117"></a><em >compound type</em>:
+<li> <a name="an3059"></a><em >compound type</em>:
       <ul>
        <li> arrays of objects of a given type;
        <li> functions, which have parameters of a given type returning
@@ -2045,18 +2046,18 @@ encountered:
        <li> class, union or enumeration types;
        </ul>
 <p>
-<li> <a name="an3118"></a><em >fundamental type</em>:
+<li> <a name="an3060"></a><em >fundamental type</em>:
        a built-in type;
 <p>
-<li> <a name="an3119"></a><em >integral type</em>:
+<li> <a name="an3061"></a><em >integral type</em>:
        all types whose values represent integral numbers, as well as <code >bool</code>
         and all built-in types representing (possibly unicode) characters;
 <p>
-<li> <a name="an3120"></a><em >literal type</em>:
+<li> <a name="an3062"></a><em >literal type</em>:
        a literal type is a scalar type; a trivial class type; or an array of
         literal type elements;
 <p>
-<li> <a name="an3121"></a><em >is_nothrow_... type trait</em>:
+<li> <a name="an3063"></a><em >is_nothrow_... type trait</em>:
        a type trait to determine whether its template argument supports the
         specified non-throwing member. Such type traits return <code >false</code>
         unless <code >noexcept(true)</code> is used at the function's declaration. E.g.,
@@ -2067,18 +2068,18 @@ encountered:
     };
 </pre>
 <p>
-<li> <a name="an3122"></a><em >trivial type</em>:
+<li> <a name="an3064"></a><em >trivial type</em>:
        trivial types are scalar types, trivial class types, arrays of such
         types and cv-qualified versions of these types;
 <p>
-<li> <a name="an3123"></a><em >trivial class type</em>: 
+<li> <a name="an3065"></a><em >trivial class type</em>: 
        a class type having a trivial copy constructor, no non-trivial move
         constructor, a trivial destructor, a trivial default constructor or at
         least one <code >constexpr</code> constructor other than the copy or move
         constructor, and only has non-static data members and base classes of
         literal types; 
 <p>
-<li> <a name="an3124"></a><em >trivial member function</em>: 
+<li> <a name="an3066"></a><em >trivial member function</em>: 
        trivial member functions are never declared (other than <code >default</code>) in
         their class interfaces and (for default constructors or assignment
         operators) only perform byte-by-byte actions. Here are two examples:
@@ -2101,305 +2102,302 @@ encountered:
 </pre>
     </ul>
 <p>
-When <em >type-condion</em> applies to a type, it must be a complete type, <code >void</code>,
-or an array of unknown size;
+When <em >type-condition</em> applies to a type, it must be a complete type,
+<code >void</code>, or an array of unknown size;
 <p>
 The following type traits are provided:
     <ul>
     <li><code >add_const&lt;typename Type&gt;::type</code>
-       <a name="an3125"></a> to add <code >const</code> to <code >Type</code>;
+       <a name="an3067"></a> to add <code >const</code> to <code >Type</code>;
 <p>
 <li><code >add_cv&lt;typename Type&gt;::type</code>
-       <a name="an3126"></a> to add <code >const volatile</code> to <code >Type</code>;
+       <a name="an3068"></a> to add <code >const volatile</code> to <code >Type</code>;
 <p>
 <li><code >add_lvalue_reference&lt;typename Type&gt;::type</code>
-       <a name="an3127"></a> to add an lvalue reference to <code >Type</code>;
-<p>
-<li><code >add_lvalue_reference&lt;typename Type&gt;::type</code>
-       <a name="an3128"></a> to add an lvalue reference to <code >Type</code>;
+       <a name="an3069"></a> to add an lvalue reference to <code >Type</code>;
 <p>
 <li><code >add_pointer&lt;typename Type&gt;::type</code>
-       <a name="an3129"></a> to add a pointer to <code >Type</code>;
+       <a name="an3070"></a> to add a pointer to <code >Type</code>;
 <p>
 <li><code >add_rvalue_reference&lt;typename Type&gt;::type</code>
-       <a name="an3130"></a> to add an rvalue reference to <code >Type</code>;
+       <a name="an3071"></a> to add an rvalue reference to <code >Type</code>;
 <p>
 <li><code >add_volatile&lt;typename Type&gt;::type</code>
-       <a name="an3131"></a> to add <code >volatile</code> to <code >Type</code>;
+       <a name="an3072"></a> to add <code >volatile</code> to <code >Type</code>;
     <li><code >conditional&lt;bool cond, typename TrueType, typename FalseType&gt;::type</code>
-       <a name="an3132"></a> to conditionally use <code >TrueType</code> if <code >cond</code> is true,
+       <a name="an3073"></a> to conditionally use <code >TrueType</code> if <code >cond</code> is true,
         <code >FalseType</code> if not;
 <p>
 <li><code >enable_if&lt;bool cond, typename Type&gt;::type</code>
-       <a name="an3133"></a> to conditionally define <code >Type</code> if <code >cond</code> is true;
+       <a name="an3074"></a> to conditionally define <code >Type</code> if <code >cond</code> is true;
 <p>
 <li><code >is_abstract&lt;typename Type&gt;::value</code>
-       <a name="an3134"></a> to determine whether <code >Type</code> is an abstract type
+       <a name="an3075"></a> to determine whether <code >Type</code> is an abstract type
         (e.g., an abstract base class) (<em >type-condition</em> applies);
 <p>
 <li><code >is_arithmetic&lt;typename Type&gt;::value</code>
-       <a name="an3135"></a> to determine whether <code >Type</code> is an arithmetic type;
+       <a name="an3076"></a> to determine whether <code >Type</code> is an arithmetic type;
 <p>
 <li><code >is_array&lt;typename Type&gt;::value</code>
-       <a name="an3136"></a> to determine whether <code >Type</code> is an array type;
+       <a name="an3077"></a> to determine whether <code >Type</code> is an array type;
 <p>
 <li><code >is_assignable&lt;typename To, typename From&gt;::value</code>
-       <a name="an3137"></a> to determine whether an object of type <code >From</code> can
+       <a name="an3078"></a> to determine whether an object of type <code >From</code> can
         be assigned to an object of type <code >To</code> (<em >type-condition</em> applies);
 <p>
 <li><code >is_base_of&lt;typename Base, typename Derived&gt;::value</code>
-       <a name="an3138"></a> to determine whether <code >Base</code> is a base class
+       <a name="an3079"></a> to determine whether <code >Base</code> is a base class
         of type <code >Derived</code>;
 <p>
 <li><code >is_class&lt;typename Type&gt;::value</code>
-       <a name="an3139"></a> to determine whether <code >Type</code> is a class type;
+       <a name="an3080"></a> to determine whether <code >Type</code> is a class type;
 <p>
 <li><code >is_compound&lt;typename Type&gt;::value</code>
-       <a name="an3140"></a> to determine whether <code >Type</code> is a compound type;
+       <a name="an3081"></a> to determine whether <code >Type</code> is a compound type;
 <p>
 <li><code >is_const&lt;typename Type&gt;::value</code>
-       <a name="an3141"></a> to determine whether <code >Type</code> is a const type;
+       <a name="an3082"></a> to determine whether <code >Type</code> is a const type;
 <p>
 <li><code >is_constructible&lt;typename Type, typename ...Args&gt;::value</code>
-       <a name="an3142"></a> to determine whether <code >Type</code> is constructible
+       <a name="an3083"></a> to determine whether <code >Type</code> is constructible
         from arguments in the <code >Args</code> parameter pack (<em >type-condition</em>
         applies to all types in <code >Args</code>);
 <p>
 <li><code >is_convertible&lt;typename From, typename To&gt;::value</code>
-       <a name="an3143"></a> to determine whether a type <code >From</code> may be
+       <a name="an3084"></a> to determine whether a type <code >From</code> may be
         converted to a type <code >To</code> using a <code >static_cast</code>;
 <p>
 <li><code >is_copy_assignable&lt;typename Type&gt;::value</code>
-       <a name="an3144"></a> to determine whether <code >Type</code> supports copy
+       <a name="an3085"></a> to determine whether <code >Type</code> supports copy
         assignment (<em >type-condition</em> applies);
 <p>
 <li><code >is_copy_constructible&lt;typename Type&gt;::value</code>
-       <a name="an3145"></a> to determine whether <code >Type</code> supports copy
+       <a name="an3086"></a> to determine whether <code >Type</code> supports copy
         construction (<em >type-condition</em> applies);
 <p>
 <li><code >is_default_constructible&lt;typename Type&gt;::value</code>
-       <a name="an3146"></a> to determine whether <code >Type</code> supports a
+       <a name="an3087"></a> to determine whether <code >Type</code> supports a
         default constructor (<em >type-condition</em> applies);
 <p>
 <li><code >is_destructible&lt;typename Type&gt;::value</code>
-       <a name="an3147"></a> to determine whether <code >Type</code> has a non-deleted
+       <a name="an3088"></a> to determine whether <code >Type</code> has a non-deleted
         destructor (<em >type-condition</em> applies);
 <p>
 <li><code >is_empty&lt;typename Type&gt;::value</code>
-       <a name="an3148"></a> to determine whether <code >Type</code> is a class type (not a union
+       <a name="an3089"></a> to determine whether <code >Type</code> is a class type (not a union
         type), without non-static data members, virtual members, virtual or
         non-empty base classes (<em >type-condition</em> applies);
 <p>
 <li><code >is_enum&lt;typename Type&gt;::value</code>
-       <a name="an3149"></a> to determine whether <code >Type</code> is an enum type;
+       <a name="an3090"></a> to determine whether <code >Type</code> is an enum type;
 <p>
 <li><code >is_floating_point&lt;typename Type&gt;::value</code>
-       <a name="an3150"></a> to determine whether <code >Type</code> is a floating point
+       <a name="an3091"></a> to determine whether <code >Type</code> is a floating point
         type;
 <p>
 <li><code >is_function&lt;typename Type&gt;::value</code>
-       <a name="an3151"></a> to determine whether <code >Type</code> is a function type;
+       <a name="an3092"></a> to determine whether <code >Type</code> is a function type;
 <p>
 <li><code >is_fundamental&lt;typename Type&gt;::value</code>
-       <a name="an3152"></a> to determine whether <code >Type</code> is a fundamental type;
+       <a name="an3093"></a> to determine whether <code >Type</code> is a fundamental type;
 <p>
 <li><code >is_integral&lt;typename Type&gt;::value</code>
-       <a name="an3153"></a> to determine whether <code >Type</code> is an integral type;
+       <a name="an3094"></a> to determine whether <code >Type</code> is an integral type;
 <p>
 <li><code >is_literal_type&lt;typename Type&gt;::value</code>
-       <a name="an3154"></a> to determine whether <code >Type</code> is a literal type
+       <a name="an3095"></a> to determine whether <code >Type</code> is a literal type
         (<em >type-condition</em> applies);
 <p>
 <li><code >is_lvalue_reference&lt;typename Type&gt;::value</code>
-       <a name="an3155"></a> to determine whether <code >Type</code> is an lvalue
+       <a name="an3096"></a> to determine whether <code >Type</code> is an lvalue
         reference;
 <p>
 <li><code >is_member_function_pointer&lt;typename Type&gt;::value</code>
-       <a name="an3156"></a> to determine whether <code >Type</code> is a
+       <a name="an3097"></a> to determine whether <code >Type</code> is a
         pointer to a non-static member function;
 <p>
 <li><code >is_member_object_pointer&lt;typename Type&gt;::value</code>
-       <a name="an3157"></a> to determine whether <code >Type</code> is a pointer
+       <a name="an3098"></a> to determine whether <code >Type</code> is a pointer
         to a non-static data member;
 <p>
 <li><code >is_member_pointer&lt;typename Type&gt;::value</code>
-       <a name="an3158"></a> to determine whether <code >Type</code> is a pointer to a
+       <a name="an3099"></a> to determine whether <code >Type</code> is a pointer to a
         member function;
 <p>
 <li><code >is_move_assignable&lt;typename Type&gt;::value</code>
-       <a name="an3159"></a> to determine whether <code >Type</code> supports move
+       <a name="an3100"></a> to determine whether <code >Type</code> supports move
         assignment (<em >type-condition</em> applies);
 <p>
 <li><code >is_move_constructible&lt;typename Type&gt;::value</code>
-       <a name="an3160"></a> to determine whether <code >Type</code> supports move
+       <a name="an3101"></a> to determine whether <code >Type</code> supports move
         construction (<em >type-condition</em> applies);
 <p>
 <li><code >is_nothrow_assignable&lt;typename To, typename From&gt;::value</code>
-       <a name="an3161"></a> to determine whether <code >Type</code> supports an
+       <a name="an3102"></a> to determine whether <code >Type</code> supports an
         assignment operator not throwing exceptions (<em >type-condition</em>
         applies).
 <p>
 <li><code >is_nothrow_constructible&lt;typename Type, typename ...Args&gt;::value</code>
-       <a name="an3162"></a> to determine whether a <code >Type</code> object can
+       <a name="an3103"></a> to determine whether a <code >Type</code> object can
         be constructed from arguments of types mentioned in the parameter pack
         not throwing exceptions (<em >type-condition</em> applies);
 <p>
 <li><code >is_nothrow_copy_assignable&lt;typename Type&gt;::value</code>
-       <a name="an3163"></a> to determine whether <code >Type</code> supports a
+       <a name="an3104"></a> to determine whether <code >Type</code> supports a
         copy-assignment operator not throwing exceptions (<em >type-condition</em>
         applies);
 <p>
 <li><code >is_nothrow_copy_constructible&lt;typename Type&gt;::value</code>
-       <a name="an3164"></a> to determine whether <code >Type</code>
+       <a name="an3105"></a> to determine whether <code >Type</code>
         supports copy construction not throwing exceptions (<em >type-condition</em>
         applies);
 <p>
 <li><code >is_nothrow_default_constructible&lt;typename Type&gt;::value</code>
-       <a name="an3165"></a> to determine whether <code >Type</code>
+       <a name="an3106"></a> to determine whether <code >Type</code>
         supports a default constructor not throwing exceptions
         (<em >type-condition</em> applies);
 <p>
 <li><code >is_nothrow_destructible&lt;typename Type&gt;::value</code>
-       <a name="an3166"></a> to determine whether <code >Type</code> supports a
+       <a name="an3107"></a> to determine whether <code >Type</code> supports a
         destructor not throwing exceptions (<em >type-condition</em> applies).
 <p>
 <li><code >is_nothrow_move_assignable&lt;typename Type&gt;::value</code>
-       <a name="an3167"></a> to determine whether <code >Type</code> supports
+       <a name="an3108"></a> to determine whether <code >Type</code> supports
         move assignment not throwing exceptions (<em >type-condition</em> applies);
 <p>
 <li><code >is_nothrow_move_constructible&lt;typename Type&gt;::value</code>
-       <a name="an3168"></a> to determine whether <code >Type</code>
+       <a name="an3109"></a> to determine whether <code >Type</code>
         supports a move constructor not throwing exceptions
         (<em >type-condition</em> applies);
 <p>
 <li><code >is_object&lt;typename Type&gt;::value</code>
-       <a name="an3169"></a> to determine whether <code >Type</code> is an object (in contrast
+       <a name="an3110"></a> to determine whether <code >Type</code> is an object (in contrast
         to scalar) type;
 <p>
 <li><code >is_pod&lt;typename Type&gt;::value</code>
-       <a name="an3170"></a> to determine whether <code >Type</code> is <a name="an3171"></a><em >plain old data</em>
+       <a name="an3111"></a> to determine whether <code >Type</code> is <a name="an3112"></a><em >plain old data</em>
         (<em >type-condition</em> applies);
 <p>
 <li><code >is_pointer&lt;typename Type&gt;::value</code>
-       <a name="an3172"></a> to determine whether <code >Type</code> is a pointer type;
+       <a name="an3113"></a> to determine whether <code >Type</code> is a pointer type;
 <p>
 <li><code >is_polymorphic&lt;typename Type&gt;::value</code>
-       <a name="an3173"></a> to determine whether <code >Type</code> is a polymorphic type
+       <a name="an3114"></a> to determine whether <code >Type</code> is a polymorphic type
         (<em >type-condition</em> applies);
 <p>
 <li><code >is_reference&lt;typename Type&gt;::value</code>
-       <a name="an3174"></a> to determine whether <code >Type</code> is an (lvalue or rvalue)
+       <a name="an3115"></a> to determine whether <code >Type</code> is an (lvalue or rvalue)
         reference;
 <p>
 <li><code >is_rvalue_reference&lt;typename Type&gt;::value</code>
-       <a name="an3175"></a> to determine whether <code >Type</code> is an rvalue
+       <a name="an3116"></a> to determine whether <code >Type</code> is an rvalue
         reference;
 <p>
 <li><code >is_same&lt;typename First, typename Second&gt;::value</code>
-       <a name="an3176"></a> to determine whether types <code >First</code> and <code >Second</code> are
+       <a name="an3117"></a> to determine whether types <code >First</code> and <code >Second</code> are
         identical;
 <p>
 <li><code >is_scalar&lt;typename Type&gt;::value</code>
-       <a name="an3177"></a> to determine whether <code >Type</code> is a scalar type (in
+       <a name="an3118"></a> to determine whether <code >Type</code> is a scalar type (in
         contrast to an object type);
 <p>
 <li><code >is_signed&lt;typename Type&gt;::value</code>
-       <a name="an3178"></a> to determine whether <code >Type</code> is a signed type;
+       <a name="an3119"></a> to determine whether <code >Type</code> is a signed type;
 <p>
 <li><code >is_standard_layout&lt;typename Type&gt;::value</code>
-       <a name="an3179"></a> to determine whether <code >Type</code> offers the
+       <a name="an3120"></a> to determine whether <code >Type</code> offers the
         standard layout (<em >type-condition</em> applies);
 <p>
 <li><code >is_trivial&lt;typename Type&gt;::value</code>
-       <a name="an3180"></a> to determine whether <code >Type</code> is a trivial type
+       <a name="an3121"></a> to determine whether <code >Type</code> is a trivial type
         (<em >type-condition</em> applies);
 <p>
 <li><code >is_trivially_assignable&lt;typename Dest, typename Src&gt;::value</code>
-       <a name="an3181"></a> to determine whether an object or value of
+       <a name="an3122"></a> to determine whether an object or value of
         type <code >Src</code> can trivially be assigned to an object of type <code >Dest</code>
         (<em >type-condition</em> applies);
 <p>
 <li><code >is_trivially_constructible&lt;typename Type, typename ...Args&gt;::value</code>
-       <a name="an3182"></a> to determine whether <code >Type</code> is
+       <a name="an3123"></a> to determine whether <code >Type</code> is
         trivially constructible from arguments in the <code >Args</code> parameter pack
         (<em >type-condition</em> applies to all types in <code >Args</code>);
 <p>
 <li><code >is_trivially_copy_assignable&lt;typename Type&gt;::value</code>
-       <a name="an3183"></a> to determine whether <code >Type</code> supports
+       <a name="an3124"></a> to determine whether <code >Type</code> supports
         a trivial assignment operator (<em >type-condition</em> applies);
 <p>
 <li><code >is_trivially_copy_constructible&lt;typename Type&gt;::value</code>
-       <a name="an3184"></a> to determine whether <code >Type</code> is
+       <a name="an3125"></a> to determine whether <code >Type</code> is
         trivially copy-constructible (<em >type-condition</em> applies);
 <p>
 <li><code >is_trivially_copyable&lt;typename Type&gt;::value</code>
-       <a name="an3185"></a> to determine whether <code >Type</code> is trivially
+       <a name="an3126"></a> to determine whether <code >Type</code> is trivially
         copyable (<em >type-condition</em> applies);
 <p>
 <li><code >is_trivially_default_constructible&lt;typename Type&gt;::value</code>
-       <a name="an3186"></a> to determine whether <code >Type</code>
+       <a name="an3127"></a> to determine whether <code >Type</code>
         supports a trivial default constructor (<em >type-condition</em> applies);
 <p>
 <li><code >is_trivially_default_destructible&lt;typename Type&gt;::value</code>
-       <a name="an3187"></a> to determine whether <code >Type</code>
+       <a name="an3128"></a> to determine whether <code >Type</code>
         supports a trivial default destructor (<em >type-condition</em> applies);
 <p>
 <li><code >is_trivially_move_assignable&lt;typename Type&gt;::value</code>
-       <a name="an3188"></a> to determine whether <code >Type</code> supports
+       <a name="an3129"></a> to determine whether <code >Type</code> supports
         a trivial assignment operator (<em >type-condition</em> applies);
 <p>
 <li><code >is_trivially_move_constructible&lt;typename Type&gt;::value</code>
-       <a name="an3189"></a> to determine whether <code >Type</code> is
+       <a name="an3130"></a> to determine whether <code >Type</code> is
         trivially move-constructible (<em >type-condition</em> applies);
 <p>
 <li><code >is_union&lt;typename Type&gt;::value</code>
-       <a name="an3190"></a> to determine whether <code >Type</code> is a union type;
+       <a name="an3131"></a> to determine whether <code >Type</code> is a union type;
 <p>
 <li><code >is_unsigned&lt;typename Type&gt;::value</code>
-       <a name="an3191"></a> to determine whether <code >Type</code> is an unsigned type;
+       <a name="an3132"></a> to determine whether <code >Type</code> is an unsigned type;
 <p>
 <li><code >is_void&lt;typename Type&gt;::value</code>
-       <a name="an3192"></a> to determine whether <code >Type</code> is <code >void</code>;
+       <a name="an3133"></a> to determine whether <code >Type</code> is <code >void</code>;
 <p>
 <li><code >is_volatile&lt;typename Type&gt;::value</code>
-       <a name="an3193"></a> to determine whether <code >Type</code> is a <code >volatile</code>
+       <a name="an3134"></a> to determine whether <code >Type</code> is a <code >volatile</code>
         qualified type;
 <p>
 <li><code >make_signed&lt;typename Type&gt;::type</code>
-       <a name="an3194"></a> to construct a signed type;
+       <a name="an3135"></a> to construct a signed type;
 <p>
 <li><code >make_unsigned&lt;typename Type&gt;::type</code>
-       <a name="an3195"></a> to construct an unsigned type;
+       <a name="an3136"></a> to construct an unsigned type;
 <p>
 <li><code >remove_all_extents&lt;typename Type&gt;::type</code>
-       <a name="an3196"></a> if <code >Type</code> is a (possibly multidimensional)
+       <a name="an3137"></a> if <code >Type</code> is a (possibly multidimensional)
         array of <code >ElementType</code> values or objects then <code >typedef type</code>
         equals <code >ElementType</code>;
 <p>
 <li><code >remove_const&lt;typename Type&gt;::type</code>
-       <a name="an3197"></a> to remove <code >const</code> from <code >Type</code>;
+       <a name="an3138"></a> to remove <code >const</code> from <code >Type</code>;
 <p>
 <li><code >remove_cv&lt;typename Type&gt;::type</code>
-       <a name="an3198"></a> to remove <code >const</code> and/or <code >volatile</code> from <code >Type</code>;
+       <a name="an3139"></a> to remove <code >const</code> and/or <code >volatile</code> from <code >Type</code>;
 <p>
 <li><code >remove_extent&lt;typename Type&gt;::type</code>
-       <a name="an3199"></a> if <code >Type</code> is an array of <code >ElementType</code> values or
+       <a name="an3140"></a> if <code >Type</code> is an array of <code >ElementType</code> values or
         objects then <code >typedef type</code> equals <code >ElementType</code>. With
         multi-dimensional arrays <code >ElementType</code> is the type of the array from
         which its first array dimension has been removed;
 <p>
 <li><code >remove_pointer&lt;typename Type&gt;::type</code>
-       <a name="an3200"></a> to remove a pointer from <code >Type</code>;
+       <a name="an3141"></a> to remove a pointer from <code >Type</code>;
 <p>
 <li><code >remove_reference&lt;typename Type&gt;::type</code>
-       <a name="an3201"></a> to remove a reference from <code >Type</code>;
+       <a name="an3142"></a> to remove a reference from <code >Type</code>;
 <p>
 <li><code >remove_volatile&lt;typename Type&gt;::type</code>
-       <a name="an3202"></a> to remove <code >volatile</code> from <code >Type</code>;
+       <a name="an3143"></a> to remove <code >volatile</code> from <code >Type</code>;
 <p>
 </ul>
 <p>
-<a name="NOEXCEPT"></a><a name="l605"></a>
+<a name="NOEXCEPT"></a><a name="l602"></a>
 <h2 >23.7: Using `noexcept' when offering the `strong guarantee'</h2>
 When throwing exceptions while trying to achieve the strong guarantee a
 function's actions are usually split in two parts
@@ -2438,7 +2436,7 @@ data types over which the moving constructor has no control. E.g.,
 <code >Foreign</code> merely has a (possibly throwing) copy constructor, then the
 following code breaks the no-throw assumption underlying move constructors:
         <pre>
-    MyClass&lt;Foreign&gt; s2(move(MyClass&lt;Foreign&gt;()));
+    MyClass&lt;Foreign&gt; s2{ move(MyClass&lt;Foreign&gt;()) };
 </pre>
 <p>
 If templates are able to detect whether <code >Type</code> has non-throwing move
@@ -2447,7 +2445,7 @@ calling these move constructors (already modifying their targets in the first
 part of code offering the strong guarantee) in situations where otherwise the
 non-modifying, but more expensive copy constructor has to be used.
 <p>
-The <a name="an3203"></a><code >noexcept</code> keyword was introduced to allow such templates to perform
+The <a name="an3144"></a><code >noexcept</code> keyword was introduced to allow such templates to perform
 such optimizations. As with <code >throw</code> lists, checking for <code >noexcept</code> is
 a run-time check, but the consequence of violating a <code >noexept</code> declaration
 are more serious than violating a <code >throw</code> list: violating <code >noexcept</code>
@@ -2481,7 +2479,7 @@ conditional <code >noexcept(condition)</code> syntax (with <code >noexcept(true)
 conditional to the `noexcepting' nature of template types. Note that this is
 not possible with <code >throw</code> lists. 
 <p>
-The following <a name="an3204"></a> rules of thumb by be used to decide whether or
+The following <a name="an3145"></a> rules of thumb by be used to decide whether or
 not to use <code >noexcept</code> in your code:
     <ul>
     <li> General rule: don't use <code >noexcept</code> (this is identical to the advise
@@ -2498,16 +2496,16 @@ not to use <code >noexcept</code> in your code:
     <li> Functions previously provided with an empty throw list (<code >throw()</code>)
         should now be provided with <code >noexcept(true)</code>.
     <li> <code >noexcept</code> specifications are required when using the following std
-        traits (declared in the <a name="an3205"></a><code >&lt;type_traits&gt;</code> header file):
+        traits (declared in the <a name="an3146"></a><code >&lt;type_traits&gt;</code> header file):
         <ul>
-        <li><a name="an3206"></a><code >is_nothrow_constructible</code>
-        <li><a name="an3207"></a><code >is_nothrow_default_constructible</code>
-        <li><a name="an3208"></a><code >is_nothrow_move_constructible</code>
-        <li><a name="an3209"></a><code >is_nothrow_copy_constructible</code>
-        <li><a name="an3210"></a><code >is_nothrow_assignable</code>
-        <li><a name="an3211"></a><code >is_nothrow_move_assignable</code>
-        <li><a name="an3212"></a><code >is_nothrow_copy_assignable</code>
-        <li><a name="an3213"></a><code >is_nothrow_destructible</code>
+        <li><a name="an3147"></a><code >is_nothrow_constructible</code>
+        <li><a name="an3148"></a><code >is_nothrow_default_constructible</code>
+        <li><a name="an3149"></a><code >is_nothrow_move_constructible</code>
+        <li><a name="an3150"></a><code >is_nothrow_copy_constructible</code>
+        <li><a name="an3151"></a><code >is_nothrow_assignable</code>
+        <li><a name="an3152"></a><code >is_nothrow_move_assignable</code>
+        <li><a name="an3153"></a><code >is_nothrow_copy_assignable</code>
+        <li><a name="an3154"></a><code >is_nothrow_destructible</code>
         </ul>
         These type traits provide the member constant <code >value</code> which is
         <code >true</code> if the class (and possibly its argument type list) matches
@@ -2526,20 +2524,20 @@ not to use <code >noexcept</code> in your code:
         modifier. 
     </ul>
 <p>
-<a name="l606"></a>
+<a name="l603"></a>
 <h2 >23.8: More conversions to class types</h2>
 <p>
-<a name="l607"></a>
+<a name="l604"></a>
 <h3 >23.8.1: Types to types</h3>
     Although <em >class</em> templates may be partially specialized, <em >function</em>
 templates may not. At times this is annoying. Assume a function template is
 available implementing a certain unary operator that could be used with the
-<code >transform</code> generic algorithm (cf. section <a href="cplusplus19.html#TRANSFORM">19.1.64</a>):
+<code >transform</code> generic algorithm (cf. section <a href="cplusplus19.html#TRANSFORM">19.1.63</a>):
         <pre>
     template &lt;typename Return, typename Argument&gt;
     Return chop(Argument const &amp;arg)
     {
-        return Return(arg);
+        return Return{ arg };
     }
 </pre>
     Furthermore assume that if <code >Return</code> is <code >std::string</code> then the above
@@ -2554,7 +2552,7 @@ specialization like this:
     template &lt;typename Argument&gt;        // This won't compile!
     std::string chop&lt;std::string, Argument&gt;(Argument const &amp;arg)
     {
-        return string(arg, 1);
+        return std::string{ arg, 1 };
     }
 </pre>
     Although a function template cannot be partially specialized it <em >is</em>
@@ -2563,15 +2561,9 @@ possible to use overloading, defining a second,  dummy, <code >string</code> par
     template &lt;typename Argument&gt;
     std::string chop(Argument const &amp;arg, std::string)
     {
-        return string(arg, 1);
+        return std::string{ arg, 1 };
     }
 </pre>
-    Now it <em >is</em> possible to distinguish the two cases, but at the expense of
-a more complex function call. Moreover, in code this function may
-require the use of the <code >bind2nd</code> binder (cf. section <a href="cplusplus18.html#FUNADAPT">18.1.4</a>) to
-provide the dummy second argument, or it may require a (possibly expensive to
-construct) dummy argument to allow the compiler to choose among the two
-overloaded function templates.
 <p>
 Instead of providing a <code >string</code> dummy argument the functions <em >could</em>
 use the <code >IntType</code> template (cf. section <a href="cplusplus23.html#INTTYPE">23.2.1.1</a>) to select the proper
@@ -2602,13 +2594,13 @@ as follows:
     template &lt;typename Return, typename Argument&gt;
     Return chop(Argument const &amp;arg, TypeType&lt;Argument&gt; )
     {
-        return Return(arg);
+        return Return{ arg };
     }
 
     template &lt;typename Argument&gt;
     std::string chop(Argument const &amp;arg, TypeType&lt;std::string&gt; )
     {
-        return std::string(arg, 1);
+        return std::string{ arg, 1 };
     }
 </pre>
     Using the above implementations any type can be specified for
@@ -2619,13 +2611,13 @@ function <code >chop</code> capitalizes on this:
     template &lt;typename Result&gt;
     Result chop(char const *txt)    // char const * could also be a 2nd
     {                               // template type parameter
-        return chop(std::string(txt), TypeType&lt;Result&gt;());
+        return chop(std::string(txt), TypeType&lt;Result&gt;{});
     }
 </pre>
     Using the third <code >chop</code> function, the following statement produces the
 text `<code >ello world</code>':
         <pre>
-    cout &lt;&lt; chop&lt;string&gt;("hello world") &lt;&lt; '\n';
+    cout &lt;&lt; chop&lt;string&gt;{ "hello world" } &lt;&lt; '\n';
 </pre>
     Template functions do not support partial specializations. But they can be
 overloaded. By providing overloads with dummy type-arguments that depend
@@ -2633,19 +2625,19 @@ on other parameters and calling these overloads from a overloaded function
 that does not require the dummy type argument a situation similar to partial
 specializations with class templates can often be realized.
 <p>
-<a name="NULLTYPE"></a><a name="l608"></a>
+<a name="NULLTYPE"></a><a name="l605"></a>
 <h3 >23.8.2: An empty type</h3>
     At times (cf. section <a href="cplusplus23.html#TEMPLIST">23.9</a>) an empty
-        <a name="an3214"></a><a name="an3215"></a><a name="an3216"></a>
+        <a name="an3155"></a><a name="an3156"></a><a name="an3157"></a>
     <code >struct</code> is a useful tool. It can be used as a <em >type</em> acting
-analogously to the final 0-byte in NTB-strings.
+analogously to the final 0-byte in NTBSs.
 It can simply be defined as:
         <pre>
     struct NullType
     {};
 </pre>
 <p>
-<a name="TYPECONV"></a><a name="l609"></a>
+<a name="TYPECONV"></a><a name="l606"></a>
 <h3 >23.8.3: Type convertibility</h3>
     In what situations can a type <code >T</code> be used as a `stand in' for another type
 <code >U</code>? Since <strong >C++</strong> is a strongly typed language the answer is surprisingly
@@ -2661,7 +2653,7 @@ In the second part of this section we'll show how the code developed in
 the first part can be used to detect whether a class <code >B</code> is a base class of
 another class <code >D</code> (the <code >is_base_of</code> template (cf. section <a href="cplusplus23.html#TYPETRAITS">23.6.2</a>)
 also provides an answer to this question). The code developed here closely
-follows the example provided by Alexandrescu <a name="an3217"></a> (2001,
+follows the example provided by Alexandrescu <a name="an3158"></a> (2001,
 p. 35).
 <p>
 First, a function <code >test</code> is designed accepting a type <code >U</code>.
@@ -2682,7 +2674,7 @@ selection priority but that can <em >always</em> be used with <em >any</em> <cod
 <p>
 <strong >C</strong> (and <strong >C++</strong>) offer a very general parameter list, a parameter list that
 is always considered acceptable. This parameter list is the familiar
-  <a name="an3218"></a><em >ellipsis</em> which represents the <em >worst</em> case the compiler may
+  <a name="an3159"></a><em >ellipsis</em> which represents the <em >worst</em> case the compiler may
 encounter.  If everything else fails, then the function defining an ellipsis
 as its parameter list is selected.
 <p>
@@ -2784,8 +2776,7 @@ having two template type parameters:
             enum { sameType = 1 };
     };
 </pre>
-<p>
-As the class template deletes its copy constructor no object can be
+    As the class template deletes its copy constructor no object can be
 created. Only its <code >enum</code> values can be interrogated. The next example writes
 <code >1 0 1 0</code> when run from a <code >main</code> function:
         <pre>
@@ -2797,7 +2788,7 @@ created. Only its <code >enum</code> values can be interrogated. The next exampl
         "\n";
 </pre>
 <p>
-<a name="l610"></a>
+<a name="l607"></a>
 <h4>23.8.3.1: Determining inheritance</h4>
         Now that it is possible to determine type convertibility, it's easy to
 determine whether a type <code >Base</code> is a (public) base class of a type
@@ -2842,8 +2833,7 @@ trait class adds a test for type-equality:
         };
     };
 </pre>
-<p>
-Example: the next statement displays <code >1: 0, 2: 1, 3: 0, 4: 1, 5: 0</code>
+    Example: the next statement displays <code >1: 0, 2: 1, 3: 0, 4: 1, 5: 0</code>
 when executed from a <code >main</code> function:
     <pre>
     cout &lt;&lt; "\n" &lt;&lt;
@@ -2855,7 +2845,7 @@ when executed from a <code >main</code> function:
         "\n";
 </pre>
 <p>
-<a name="TEMPLIST"></a><a name="l611"></a>
+<a name="TEMPLIST"></a><a name="l608"></a>
 <h2 >23.9: Template TypeList processing</h2>
     This section serves two purposes. It illustrates capabilities of the various
 template meta-programming techniques, which can be used as a source of
@@ -2863,7 +2853,7 @@ inspiration when developing your own templates; and it offers a concrete
 example, illustrating some of the power offered by these techniques.
 <p>
 This section itself was inspired by Andrei Alexandrescu's (2001) book
-        <a name="an3219"></a>
+        <a name="an3160"></a>
     <strong >Modern C++ design</strong>. It diverts from Alexandrescu's book in its use of
 variadic templates which were not yet available when he wrote his book. Even
 so, the algorithms used by Alexandrescu are still useful when using variadic
@@ -2881,14 +2871,13 @@ upcoming subsections. Here is its definition:
         enum { size = sizeof ...(Types) };
     };
 </pre>
-<p>
-A typelist allows us to store any number of types. Here is an example
+    A typelist allows us to store any number of types. Here is an example
 storing the three types <code >char, short, int</code> in a <code >TypeList</code>:
         <pre>
     TypeList&lt;char, short, int&gt;
 </pre>
 <p>
-<a name="l612"></a>
+<a name="l609"></a>
 <h3 >23.9.1: The length of a TypeList</h3>
     As the number of types in a parameter pack may be obtained using the <code >sizeof</code>
 operator (cf. section <a href="cplusplus22.html#VARIADIC">22.5</a>) it is easy to obtain the number of types
@@ -2945,7 +2934,7 @@ using the following alternate implementation of <code >TypeList</code>, using a 
     };
 </pre>
 <p>
-<a name="SEARCHTYPE"></a><a name="l613"></a>
+<a name="SEARCHTYPE"></a><a name="l610"></a>
 <h3 >23.9.2: Searching a TypeList</h3>
     To determine whether a particular type (called <em >SearchType</em> below) is
 present in a given <code >TypeList</code>, an algorithm is used that either defines
@@ -2973,8 +2962,7 @@ the <code >TypeList</code>. The following algorithm is used:
         ListSearch(ListSearch const &amp;) = delete;
     };
 </pre>
-<p>
-Specializations handle the alternatives mentioned with the algorithm:
+    Specializations handle the alternatives mentioned with the algorithm:
     <ul>
     <li> If <code >TypeList</code> is empty, `index' is -1:
         <pre>
@@ -3010,8 +2998,7 @@ Specializations handle the alternatives mentioned with the algorithm:
         enum {index = tmp == -1 ? -1 : 1 + tmp};
     };
 </pre>
-<p>
-</ul>
+    </ul>
     Here is an example showing  how <code >ListSearch</code> can be used:
         <pre>
     std::cout &lt;&lt;
@@ -3019,7 +3006,7 @@ Specializations handle the alternatives mentioned with the algorithm:
         ListSearch&lt;float, TypeList&lt;int, char, bool&gt;&gt;::index &lt;&lt; "\n";
 </pre>
 <p>
-<a name="ATINDEX"></a><a name="l614"></a>
+<a name="ATINDEX"></a><a name="l611"></a>
 <h3 >23.9.3: Selecting from a TypeList</h3>
     The inverse operation of determining the index of a certain type in a
 <code >TypeList</code> is retrieving the type given its index. This inverse operation is
@@ -3082,8 +3069,7 @@ difficult to implement and are left as exercises for the reader. Here's how
         typedef typename TypeAt&lt;index - 1, TypeList&lt;Tail...&gt;&gt;::Type Type;
     };
 </pre>
-<p>
-</ul>
+    </ul>
     Here is how <code >typeAt</code> can be used. Uncommenting the first variable
 definition causes a <code >TypeAt index out of bounds</code> compilation error:
         <pre>
@@ -3105,7 +3091,7 @@ definition causes a <code >TypeAt index out of bounds</code> compilation error:
         cout &lt;&lt; "The typelist's 3nd type is not char\n";
 </pre>
 <p>
-<a name="l615"></a>
+<a name="l612"></a>
 <h3 >23.9.4: Prefixing/Appending to a TypeList</h3>
     Prepending or appending a type to a <code >TypeList</code> is easy and doesn't require
 recursive template meta programs. Two variadic template structs <code >Append</code> and
@@ -3139,7 +3125,7 @@ variadic template type:
     };
 </pre>
 <p>
-<a name="l616"></a>
+<a name="l613"></a>
 <h3 >23.9.5: Erasing from a TypeList</h3>
     It is also possible to erase types from a <code >TypeList</code>. Again, there are
 several possibilities, each resulting in a different algorithm.
@@ -3160,7 +3146,7 @@ all algorithms can probably be implemented. As an illustration of how to erase
 types from a <code >TypeList</code> the above-mentioned algorithms are now developed in
 the upcoming subsections.
 <p>
-<a name="l617"></a>
+<a name="l614"></a>
 <h4>23.9.5.1: Erasing the first occurrence</h4>
         To erase the first occurrence of a specified <code >EraseType</code> from a <code >TypeList</code>
 a recursive algorithm is used once again. The template meta program uses a
@@ -3174,8 +3160,7 @@ erasure. Here is the algorithm:
     template &lt;typename EraseType, typename TypeList&gt;
     struct Erase;
 </pre>
-<p>
-<li> If the typelist is empty, there's nothing to erase, and an empty
+    <li> If the typelist is empty, there's nothing to erase, and an empty
         <code >TypeList</code> results:
             <pre>
     template &lt;typename EraseType&gt;
@@ -3184,8 +3169,7 @@ erasure. Here is the algorithm:
         typedef TypeList&lt;&gt; List;
     };
 </pre>
-<p>
-<li> If the <code >TypeList</code>'s head matches the type to erase, then <code >List</code>
+    <li> If the <code >TypeList</code>'s head matches the type to erase, then <code >List</code>
         becomes a <code >TypeList</code> containing the original <code >TypeList</code>'s tail
         types:
             <pre>
@@ -3195,8 +3179,7 @@ erasure. Here is the algorithm:
         typedef TypeList&lt;Tail...&gt; List;
     };
 </pre>
-<p>
-<li> In all other cases the erase operation is applied to the
+    <li> In all other cases the erase operation is applied to the
         <code >TypeList</code>'s tail. This results in a <code >TypeList</code> to which the
         orginal <code >TypeList</code>'s head must be prefixed. The <code >TypeList</code>
         returned by the prefix operation is then returned as <code >Erase::List</code>:
@@ -3210,8 +3193,7 @@ erasure. Here is the algorithm:
             &gt;::List List;
     };
 </pre>
-<p>
-</ul>
+    </ul>
     Here is a statement showing how <code >Erase</code> can be used:
             <pre>
     cout &lt;&lt;
@@ -3221,7 +3203,7 @@ erasure. Here is the algorithm:
             Erase&lt;int, TypeList&lt;&gt;&gt;::List::size &lt;&lt; "\n";
 </pre>
 <p>
-<a name="l618"></a>
+<a name="l615"></a>
 <h4>23.9.5.2: Erasing a type by its index</h4>
         To erase a type from a <code >TypeList</code> by its index we again use a
 recursive template meta program. <code >EraseIdx</code> expects a <code >size_t</code> index value
@@ -3235,8 +3217,7 @@ erased. <code >EraseIdx</code> defines the type <code >List</code> containing th
     template &lt;size_t idx, typename TypeList&gt;
     struct EraseIdx;
 </pre>
-<p>
-<li> If the typelist is empty, there's nothing to erase, and an empty
+    <li> If the typelist is empty, there's nothing to erase, and an empty
         <code >TypeList</code> results:
             <pre>
     template &lt;size_t idx&gt;
@@ -3245,8 +3226,7 @@ erased. <code >EraseIdx</code> defines the type <code >List</code> containing th
         typedef TypeList&lt;&gt; List;
     };
 </pre>
-<p>
-<li> The recursion otherwise ends once <code >idx</code> becomes 0. At that point
+    <li> The recursion otherwise ends once <code >idx</code> becomes 0. At that point
         the <code >TypeList</code>'s first type is ignored and <code >List</code> is initialized
         to a <code >TypeList</code> containing the types in the orginal <code >TypeList</code>'s
         tail:
@@ -3257,8 +3237,7 @@ erased. <code >EraseIdx</code> defines the type <code >List</code> containing th
         typedef TypeList&lt;Tail...&gt; List;
     };
 </pre>
-<p>
-<li> In all other cases <code >EraseIdx</code> is applied to the <code >TypeList</code>'s
+    <li> In all other cases <code >EraseIdx</code> is applied to the <code >TypeList</code>'s
         tail, providing it with a decremented value of <code >idx</code>. To the
         resulting <code >TypeList</code> the orginal <code >TypeList</code>'s head is
         prefixed. The <code >TypeList</code> returned by the prefix operation is then
@@ -3273,8 +3252,7 @@ erased. <code >EraseIdx</code> defines the type <code >List</code> containing th
                 &gt;::List List;
     };
 </pre>
-<p>
-</ul>
+    </ul>
     Here is a statement showing how <code >EraseIdx</code> can be used:
             <pre>
     if
@@ -3289,7 +3267,7 @@ erased. <code >EraseIdx</code> defines the type <code >List</code> containing th
         cout &lt;&lt; "the third type is now a double\n";
 </pre>
 <p>
-<a name="l619"></a>
+<a name="l616"></a>
 <h4>23.9.5.3: Erasing all occurrences of a type</h4>
         Erasing all types <code >EraseType</code> from a <code >TypeList</code> can easily be accomplished
 by applying the erasure procedure not only to the head of the <code >TypeList</code> but
@@ -3309,8 +3287,7 @@ Here is the algorithm, described in a slightly different order than
         typedef TypeList&lt;&gt; List;
     };
 </pre>
-<p>
-<li> The foundation of the algorithm is therefore a struct template
+    <li> The foundation of the algorithm is therefore a struct template
         <code >EraseAll</code> expecting the type to erase and a <code >TypeList</code> that is
         derived from <code >Erase</code>, thus already offering the empty <code >TypeList</code>
         handling specialization:
@@ -3319,8 +3296,7 @@ Here is the algorithm, described in a slightly different order than
     struct EraseAll: public Erase&lt;EraseType, TypeList&gt;
     {};
 </pre>
-<p>
-<li> If <code >TypeList</code>'s head matches <code >EraseType</code> <code >EraseAll</code> is also
+    <li> If <code >TypeList</code>'s head matches <code >EraseType</code> <code >EraseAll</code> is also
         applied to the <code >TypeList</code>'s tail, thus removing all occurrences of
         <code >EraseType</code> from <code >TypeList</code>:
             <pre>
@@ -3330,8 +3306,7 @@ Here is the algorithm, described in a slightly different order than
         typedef typename EraseAll&lt;EraseType, TypeList&lt;Tail...&gt;&gt;::List List;
     };
 </pre>
-<p>
-<li> In all other cases (i.e., <code >TypeList</code>'s head does <em >not</em> match
+    <li> In all other cases (i.e., <code >TypeList</code>'s head does <em >not</em> match
         <code >EraseType</code>) <code >EraseAll</code> is applied to the <code >TypeList</code>'s tail.
         The returned <code >TypeList</code> consists of the original <code >TypeList</code>'s
         initial type and the types of the <code >TypeList</code> returned by the
@@ -3346,8 +3321,7 @@ Here is the algorithm, described in a slightly different order than
         &gt;::List List;
     };
 </pre>
-<p>
-</ul>
+    </ul>
     Here is a statement showing how <code >EraseAll</code> can be used:
        <pre>
     cout &lt;&lt;
@@ -3359,7 +3333,7 @@ Here is the algorithm, described in a slightly different order than
                 &gt;::List::size &lt;&lt; " types\n";
 </pre>
 <p>
-<a name="l620"></a>
+<a name="l617"></a>
 <h4>23.9.5.4: Erasing duplicates</h4>
         To remove all duplicates from a <code >TypeList</code> all the <code >TypeList</code>'s first
 elements must be erased from the <code >TypeList</code>'s tail, applying the procedure
@@ -3374,8 +3348,7 @@ their template type parameters:
     template &lt;typename TypeList&gt;
     struct EraseDup;
 </pre>
-<p>
-<li> If the <code >TypeList</code> is empty it can be returned empty and we're done:
+    <li> If the <code >TypeList</code> is empty it can be returned empty and we're done:
         <pre>
     template &lt;&gt;
     struct EraseDup&lt;TypeList&lt;&gt;&gt;
@@ -3383,8 +3356,7 @@ their template type parameters:
         typedef TypeList&lt;&gt; List;
     };
 </pre>
-<p>
-<li> In all other cases
+    <li> In all other cases
         <ul>
         <li> <code >EraseDup</code> is first applied to the original <code >TypeList</code>'s
 tail. By definition this results in a <code >TypeList</code> from which all
@@ -3408,8 +3380,7 @@ step are appended.
         typedef typename Prefix&lt;Head, NewTail&gt;::List List;
     };
 </pre>
-<p>
-</ul>
+    </ul>
     Here is an example showing how <code >EraseDup</code> can be used:
         <pre>
     cout &lt;&lt;
@@ -3421,7 +3392,7 @@ step are appended.
         &gt;::List::size &lt;&lt; " types\n";
 </pre>
 <p>
-<a name="l621"></a>
+<a name="l618"></a>
 <h2 >23.10: Using a TypeList</h2>
 In the previous sections the definition and some of the features of typelists
 were discussed. Most <strong >C++</strong> programmers consider typelists both
@@ -3439,12 +3410,12 @@ sections of this chapter the following topics are covered:
         by index, rather than name.
     </ul>
     Again, much of the material covered by these sections was inspired by
-        <a name="an3220"></a>
+        <a name="an3161"></a>
     Alexandrescu's (2001) book.
 <p>
-<a name="l622"></a>
+<a name="l619"></a>
 <h3 >23.10.1: The Wrap and Multi class templates</h3>
-    To illustrate template meta programming concepts the template class <a name="an3221"></a><code >Multi</code>
+    To illustrate template meta programming concepts the template class <a name="an3162"></a><code >Multi</code>
 is now developed. The class template <code >Multi</code> <em >creates</em> a new class from a
 template template parameter <code >Policy</code> defining the data storage policy and a
 series of types from which <code >Multi</code> is eventually derived. It does so by
@@ -3462,8 +3433,8 @@ various <code >Policy&lt;Type&gt;</code>s which are perfectly forwarded to <code
 <p>
 The class <code >Multi</code> (implementing its constructor in-class to save some
 space) shows how a
-    <a name="an3222"></a>
-    <a name="an3223"></a>
+    <a name="an3163"></a>
+    <a name="an3164"></a>
  template pack can be wrapped into a policy. Here is <code >Multi</code>'s definition:
     <pre>
     template &lt;template &lt;typename&gt; class Policy, typename ...Types&gt;
@@ -3493,7 +3464,7 @@ applications merely define objects of types like <code >vector&lt;int&gt;,
 vector&lt;string&gt;</code> etc.. Template template parameters must, however, be specified
 with the correct number and types of required template parameters so
 <code >vector</code> can't be specified as a policy for <code >Multi</code>. This can be solved by
-    <a name="an3224"></a>
+    <a name="an3165"></a>
 <em >wrapping</em> a more complex template in a simpler wrapper template, like so:
         <pre>
     template &lt;class Type&gt;
@@ -3505,8 +3476,7 @@ with the correct number and types of required template parameters so
         {}
     };
 </pre>
-<p>
-Now <code >Vector</code> provides <code >std::vector</code>'s second parameter using its
+    Now <code >Vector</code> provides <code >std::vector</code>'s second parameter using its
 default template argument. Alternatively, a <em >template using declaration</em>
 could be used.
     <li> If the <code >TypeList</code> contains two types like <code >int</code> and <code >double</code>
@@ -3516,7 +3486,7 @@ eventually inherits from <code >vector&lt;int&gt;</code> and <code >vector&lt;do
 <code >MultiBase</code> would inherit from <em >two</em> <code >vector&lt;int&gt;</code> classes. Classes
 cannot be derived from identical base classes as that would make it impossible
 to distinguish among their members. Regarding this, Alexandrescu (2001)
-    <a name="an3225"></a> writes (p.67):
+    <a name="an3166"></a> writes (p.67):
     <blockquote >
    <em >There is one major source of annoyance...: you cannot use it when you
     have duplicate types in your <code >TypeList</code>.<br/>
@@ -3548,8 +3518,7 @@ class <code >MultiBase</code>:
         {}
     };
 </pre>
-<p>
-Using <code >UWrap</code> it's easy to distinguish, e.g., two <code >vector&lt;int&gt;</code>
+    Using <code >UWrap</code> it's easy to distinguish, e.g., two <code >vector&lt;int&gt;</code>
 classes: <code >UWrap&lt;0, vector&lt;int&gt;&gt;</code> could refer to the first <code >vector&lt;int&gt;</code>,
 <code >UWrap&lt;1, vector&lt;int&gt;&gt;</code> to the second vector.
 <p>
@@ -3564,7 +3533,7 @@ constructor can receive the matching initialization values. E.g.,
     Multi&lt;Vector, int, string&gt; mvis({1, 2, 3}, {"one", "two", "three"});
 </pre>
 <p>
-<a name="l623"></a>
+<a name="l620"></a>
 <h3 >23.10.2: The MultiBase class template</h3>
     The class template <code >MultiBase</code> is <code >Multi</code>'s base class. It
 defines a class that, eventually, is derived from the list of <code >Policy</code>
@@ -3598,7 +3567,7 @@ The recursively defined specialization is the interesting one. It performs
 the following tasks:
     <ul>
     <li> It is derived from a unique <code >UWrap</code> type. The uniqueness is
-guaranteerd by using <code >MultiBase</code>'s <code >nr</code> parameter when defining
+guaranteed by using <code >MultiBase</code>'s <code >nr</code> parameter when defining
 <code >UWrap</code>. In addition to <code >nr</code> the <code >UWrap</code> class receives the first type
 of the template parameter pack made available to <code >MultiBase</code>;
     <li> It is also recursively derived from itself. The recursive
@@ -3628,7 +3597,7 @@ value to its <code >UWrap</code> base class, also using perfect forwarding.
                                 public MultiBase&lt;nr + 1, PolicyTypes...&gt;
     {
         typedef PolicyT1 Type;
-        typedef MultiBase&lt;nr + 1, typename PolicyTypes...&gt; Base;
+        typedef MultiBase&lt;nr + 1, PolicyTypes...&gt; Base;
 
         MultiBase(PolicyT1 &amp;&amp; policyt1, PolicyTypes &amp;&amp;...policytypes)
         :
@@ -3639,7 +3608,7 @@ value to its <code >UWrap</code> base class, also using perfect forwarding.
     };
 </pre>
 <p>
-<a name="GENSUPPORT"></a><a name="l624"></a>
+<a name="GENSUPPORT"></a><a name="l621"></a>
 <h3 >23.10.3: Support templates</h3>
     The <code >Multi</code> class template defines <code >PlainTypes</code> as the <code >TypeList</code>
 holding all the types of its parameter pack. Each <code >MultiBase</code> derived from a
@@ -3755,13 +3724,12 @@ statement:
                 UWrap&lt;idx, typename typeAt&lt;idx, Multi&gt;::Type&gt; &amp;&gt;(multi);
     }
 </pre>
-<p>
-The intermediate <code >UWrap</code> cast is required to disambiguate between
+    The intermediate <code >UWrap</code> cast is required to disambiguate between
 identical policy types (like two <code >vector&lt;int&gt;</code> types). As <code >UWrap</code> is
 uniquely determined by its <code >nr</code> template argument and this is the number
 argument that is passed to <code >get</code> ambiguities can easily be prevented.
 <p>
-<a name="l625"></a>
+<a name="l622"></a>
 <h3 >23.10.4: Using Multi</h3>
     Now that <code >Multi</code> and its support templates have been developed, how can a
 <code >Multi</code> be used?
@@ -3791,17 +3759,16 @@ body, which would result in a working program.
         {}
     };
 </pre>
-<p>
-<code >Policy</code> defines a data member and it can be used to define <code >Multi</code>
+    <code >Policy</code> defines a data member and it can be used to define <code >Multi</code>
 objects:
         <pre>
-    Multi&lt;Policy, string&gt; ms(Policy&lt;string&gt;("hello"));
-    Multi&lt;Policy, string, string&gt; ms2s(Policy&lt;string&gt;("hello"),
-                                       Policy&lt;string&gt;("world"));
+    Multi&lt;Policy, string&gt; ms{ Policy&lt;string&gt;{ "hello" } };
+    Multi&lt;Policy, string, string&gt; ms2s{ Policy&lt;string&gt;{ "hello" },
+                                       Policy&lt;string&gt;{ "world" } };
 
 
      typedef Multi&lt;Policy, string, int&gt; MPSI;
-     MPSI mpsi(string("hello"), 4);
+     MPSI mpsi{ string{ "hello" }, 4 };
 </pre>
 <p>
 <li> To obtain the number of types defined by a <code >Multi</code> class or object
@@ -3829,7 +3796,7 @@ identical types, as a cast can't distinguish between identical
 <code >Policy&lt;Type&gt;</code> types. In that case <code >get</code> still works fine:
         <pre>
     typedef Multi&lt;Policy, int, int&gt; MPII;
-    MPII mpii(4, 18);
+    MPII mpii{ 4, 18 };
 
     cout &lt;&lt; get&lt;0&gt;(mpii).d_type &lt;&lt; ' ' &lt;&lt; get&lt;1&gt;(mpii).d_type &lt;&lt; '\n';
 </pre>
@@ -3837,7 +3804,7 @@ identical types, as a cast can't distinguish between identical
 <li> Here is an example wrapping a <code >std::vector</code> in a <code >Vector</code>:
         <pre>
     typedef Multi&lt;Vector, int, double&gt; MVID;
-    MVID mi({1, 2, 3}, {1.2, 3.4, 5.6, 7.8});
+    MVID mi{ {1, 2, 3}, {1.2, 3.4, 5.6, 7.8} };
 </pre>
 <p>
 <li> Such a vector can be defined by its <code >Multi</code> type:
@@ -3853,10 +3820,9 @@ or right hand side operands:
     get&lt;1&gt;(mi)[3] = get&lt;0&gt;(mi)[0];
     cout &lt;&lt; get&lt;1&gt;(mi)[3] &lt;&lt; '\n';
 </pre>
+    </ul>
 <p>
-</ul>
-<p>
-<a name="l626"></a>
+<a name="l623"></a>
 <h2 >23.11: Expression Templates</h2>
 
 <p>
@@ -3907,11 +3873,11 @@ on our index evaluations. We would only need to perform approx. <code >n * k</co
 index expression evaluations.
 <p>
 Expression templates 
-    <a name="an3226"></a><a name="an3227"></a> 
+    <a name="an3167"></a><a name="an3168"></a> 
     allow us to achieve precisely this kind of optimization. We'll have a look
 at their design and implementation in the coming sections.
 <p>
-<a name="l627"></a>
+<a name="l624"></a>
 <h3 >23.11.1: Designing an Expression Template</h3>
     As we've seen, when using a standard implementation of an expression like
 <code >one + two + three + four</code>, where the objects are vectors having <code >n</code>
@@ -3981,7 +3947,7 @@ the requested addition more efficiently than the traditional implementation of
 they do not create additional temporary vector objects when parenthesized
 expressions are used.
 <p>
-<a name="l628"></a>
+<a name="l625"></a>
 <h3 >23.11.2: Implementing an Expression Template</h3>
     In this section we use a <code >typedef std::vector&lt;int&gt; IntVect</code> to illustrate
 the construction of an expression template. 
@@ -4008,7 +3974,7 @@ template merely returning an object constructed by <code >operator+</code>:
     template&lt;typename LHS, typename RHS&gt;
     BinExpr&lt;LHS, RHS, plus&gt; &amp;&amp;operator+(LHS const &amp;lhs, RHS const &amp;rhs)
     {
-        return BinExpr&lt;LHS, RHS, plus&gt;(lhs, rhs);
+        return BinExpr&lt;LHS, RHS, plus&gt;{ lhs, rhs };
     }
 </pre>
 <p>
@@ -4088,7 +4054,7 @@ that is specified when constructing an <code >ExprType</code> object.
 So, it's about time to have a look at <code >ObjType</code> and <code >value_type</code>. We do
 that in the next section.
 <p>
-<a name="l629"></a>
+<a name="l626"></a>
 <h3 >23.11.3: The BasicType trait class and ordering classes</h3>
     The <code >BinExpr</code> expression template needs to be aware of two types before it
 can instantiate objects. First, <code >ObjType</code> must be known, as this is the 
@@ -4117,7 +4083,7 @@ its type <code >ObjType</code> to the received template type argument:
         typedef Type ObjType;
     };
 </pre>
-    A specialization handles the cae where <code >Type</code> in fact is a <code >BinExpr</code>:
+    A specialization handles the case where <code >Type</code> in fact is a <code >BinExpr</code>:
     template&lt;typename LHS, typename RHS, template&lt;typename&gt; class Operation&gt;
         <pre>
     template&lt;typename LHS, typename RHS, template&lt;typename&gt; class Operation&gt;
