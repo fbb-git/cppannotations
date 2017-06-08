@@ -1,6 +1,6 @@
 <!DOCTYPE html><html><head>
 <meta charset="UTF-8">
-<title> C++ Annotations Version 10.7.2 </title>
+<title> C++ Annotations Version 10.8.0 </title>
 <link rel="stylesheet" type="text/css" href="cplusplus.css"><style type="text/css">
     figure {text-align: center;}
     img {vertical-align: center;}
@@ -26,18 +26,18 @@ Brokken and Kubat, University of Groningen, 1996) or the
  <a target=_top href="http://publications.gbdirect.co.uk/c_book/">on-line book</a> suggested to
 me by George Danchev (danchev at spnet dot net).
 <p>
-The reader should be forwarned that extensive knowledge of the <strong >C</strong>
+The reader should be forewarned that extensive knowledge of the <strong >C</strong>
 programming language is actually assumed. The <strong >C++</strong> Annotations continue where
 topics of the <strong >C</strong> programming language end, such as pointers, basic flow
 control and the construction of functions.
 <p>
 Some elements of the language, like specific lexical tokens (like
-<a name="an4"></a><em >bigraphs</em> (e.g., <code >&lt;:</code> for <code >[</code>, and <code >&gt;:</code> for <code >]</code>)) are not covered
+<a name="an4"></a><em >digraphs</em> (e.g., <code >&lt;:</code> for <code >[</code>, and <code >&gt;:</code> for <code >]</code>)) are not covered
 by the <strong >C++</strong> Annotations, as these tokens occur extremely seldom in <strong >C++</strong> source
 code. In addition, <a name="an5"></a><em >trigraphs</em> (using <code >??&lt;</code> for <code >{</code>, and <code >??&gt;</code> for
 <code >}</code>) were removed from <strong >C++</strong> in the <a name="an6"></a>C++17 standard.
 <p>
-The version number of the <strong >C++</strong> Annotations (currently 10.7.2) is updated when
+The version number of the <strong >C++</strong> Annotations (currently 10.8.0) is updated when
 the contents of the document change. The first number is the major number, and
 is probably not going to change for some time: it indicates a major
 rewriting. The middle number is increased when new information is added to the
@@ -81,8 +81,14 @@ a major version upgrade the entries of the previous major version are kept,
 and entries referring to older releases are removed.
     <ul>
 
+    <li> Version 10.8.0 contains a new section (<a href="cplusplus02.html#CXVII">2.5.14</a>) providing an
+        overview of new language features introduced by the C++17 standard,
+        and many typos and suboptimally formulated statements were fixed.
+        Also, coverage of (obsolete) binders, negators and <code >random_shuffle</code>,
+        removed by the C++17 standard, was discontinued. 
     <li> Version 10.7.2 contains a complete rewrite and re-implementation of
-        the section on adding binary operators to classes.
+        section <a href="cplusplus11.html#OVERLOADBINARY">11.6</a> covering overloading/adding binary
+        operators in classes.
     <li> Version 10.7.0 adds various sections about the upcoming new C++17
         standard (cf. section <a href="cplusplus02.html#CXVII">2.5.14</a>). In addition, the sections about
         overloading binary operators and adding binary operators to existing
@@ -183,7 +189,7 @@ SGML to <a target=_top href="https://fbb-git.github.io/yodl/">yodl</a>.
     these notes and that you agree with them.</strong>
     </blockquote>
     If you like this document, tell your friends about it. Even better, let us
-know by sending email to <a href="mailto:f.b.brokken@rug.nl">Frank</a>.
+know by sending email to <a href="f.b.brokken@rug.nl)">Frank</a>.
 <p>
 <a name="CppComp"></a><a name="l6"></a>
 <h3 >2.2.2: Compiling a C program using a C++ compiler</h3>
@@ -603,8 +609,7 @@ below:
         show("Hello World!\n");
     }
 </pre>
-<p>
-In the above program three functions <code >show</code> are defined, only differing
+    In the above program three functions <code >show</code> are defined, only differing
 in their parameter lists, expecting an <code >int</code>, <code >double</code> and <code >char *</code>,
 respectively. The functions have identical names. Functions having identical
 names but different parameter lists are called <em >overloaded</em>. The act of
@@ -893,42 +898,12 @@ an in-depth discussion of the preferred organization of <strong >C++</strong> he
 <p>
 <a name="LOCALVARS"></a><a name="l23"></a>
 <h3 >2.5.11: Defining local variables</h3>
-        In <strong >C</strong> <a name="an101"></a>local variables can only be defined at the top of a function or at
-the beginning of a nested block. In <strong >C++</strong> local variables can be created at
-any position in the code, even between statements.
-<p>
-Furthermore, local variables can be defined within some statements, just prior
-to their usage. A typical example is the <code >for</code> statement:
-        <pre>
-    #include &lt;stdio.h&gt;
-
-    int main()
-    {
-        for (int i = 0; i &lt; 20; ++i)
-            printf("%d\n", i);
-    }
-</pre>
-    In this program the variable <code >i</code> is created in the initialization
-section of the <code >for</code> statement. According to the ANSI-standard, the variable
-does not exist prior to the <code >for</code>-statement and not beyond the
-<code >for</code>-statement.  With some older compilers, the variable continues to exist
-after the execution of the <code >for</code>-statement, but nowadays a warning like
-        <blockquote >
-    warning: <a name="an102"></a>name lookup of `i' changed for new ANSI `for' scoping
-    using <a name="an103"></a>obsolete binding at `i'
-        </blockquote>
-    is issued when the variable is used outside of the <code >for</code>-loop.
-<p>
-The implication seems clear: define a variable just before the
-<code >for</code>-statement if it is to be used beyond that statement. Otherwise the
-variable should be defined inside the <code >for</code>-statement itself. This reduces
-its scope as much as possible, which is a very desirable characteristic.
-<p>
-Defining <a name="an104"></a>local variables when they're needed requires a little getting used
-to. However, eventually it tends to produce more readable, maintainable and
-often more efficient code than defining variables at the beginning of compound
-statements. We suggest the following rules <a name="an105"></a> of thumb for
-defining local variables:
+        Although already available in the <strong >C</strong> programming language,
+    <a name="an101"></a>local variables should only be defined once they're needed.  Although
+doing so requires a little getting used to, eventually it tends to produce
+more readable, maintainable and often more efficient code than defining
+variables at the beginning of compound statements. We suggest to apply the
+following rules <a name="an102"></a> of thumb when defining local variables:
     <ul>
     <li> Local variables should be created at `intuitively right' places, such
 as in the example above. This does not only entail the <code >for</code>-statement, but
@@ -938,15 +913,15 @@ function.
 scope is as <em >limited</em> and <em >localized</em> as possible.  When avoidable local
 variables are not defined at the beginning of functions but rather where
 they're first used.
-    <li> It is considered good practice to <a name="an106"></a>
-    <a name="an107"></a><em >avoid global variables</em>. It is fairly easy to lose track of which
+    <li> It is considered good practice to <a name="an103"></a>
+    <a name="an104"></a><em >avoid global variables</em>. It is fairly easy to lose track of which
 global variable is used for what purpose. In <strong >C++</strong> global variables are
 seldom required, and by localizing variables the well known phenomenon of
 using the same variable for multiple purposes, thereby invalidating each
 individual purpose of the variable, can easily be prevented.
     </ul>
 <p>
-If considered appropriate, <a name="an108"></a><em >nested blocks</em> can be used to localize
+If considered appropriate, <a name="an105"></a><em >nested blocks</em> can be used to localize
 auxiliary variables. However, situations exist where local variables are
 considered appropriate inside nested statements. The just mentioned <code >for</code>
 statement is of course a case in point, but local variables can also be
@@ -983,8 +958,7 @@ following <code >switch</code> statement:
         }
     }
 </pre>
-<p>
-Note the location of the definition of the character `<code >c</code>': it is
+    Note the location of the definition of the character `<code >c</code>': it is
 defined in the expression part of the <code >switch</code> statement. This implies
 that `<code >c</code>' is available <em >only</em> to the <code >switch</code> statement itself,
 including its nested (sub)statements, but not outside the scope of the
@@ -1042,8 +1016,8 @@ localize the definition of <code >int c</code> using a nested compound statement
 <p>
 <a name="l24"></a>
 <h3 >2.5.12: The keyword `typedef'</h3>
-        The keyword <a name="an109"></a><code >typedef</code> is still used in <strong >C++</strong>, but is not required
-anymore when defining  <a name="an110"></a><code >union</code>, <a name="an111"></a><code >struct</code> or <a name="an112"></a><code >enum</code> definitions.
+        The keyword <a name="an106"></a><code >typedef</code> is still used in <strong >C++</strong>, but is not required
+anymore when defining  <a name="an107"></a><code >union</code>, <a name="an108"></a><code >struct</code> or <a name="an109"></a><code >enum</code> definitions.
 This is illustrated in the following example:
         <pre>
     struct SomeStruct
@@ -1064,9 +1038,9 @@ example):
 <p>
 <a name="FunctionInStruct"></a><a name="l25"></a>
 <h3 >2.5.13: Functions as part of a struct</h3>
-        In <strong >C++</strong> we may define <a name="an113"></a>functions as members of structs. Here we
+        In <strong >C++</strong> we may define <a name="an110"></a>functions as members of structs. Here we
 encounter the first concrete example of an object: as previously described
-(see section <a href="cplusplus02.html#OOP">2.4</a>), an <a name="an114"></a>object is a structure containing data while
+(see section <a href="cplusplus02.html#OOP">2.4</a>), an <a name="an111"></a>object is a structure containing data while
 specialized functions exist to manipulate those data.
 <p>
 A definition of a <code >struct Point</code> is provided by the code fragment below.
@@ -1111,54 +1085,32 @@ pointers to objects are available). This is therefore identical to the way
 data fields of structures are selected.
 <p>
 The idea behind this syntactic construction is that several types may
-contain <a name="an115"></a>functions having identical names. E.g., a structure representing a
+contain <a name="an112"></a>functions having identical names. E.g., a structure representing a
 circle might contain three <code >int</code> values: two values for the coordinates of
 the center of the circle and one value for the radius. Analogously to the
 <code >Point</code> structure, a <code >Circle</code> may now have a function <code >draw</code> to draw the
 circle.
 <p>
 <a name="CXVII"></a><a name="l26"></a>
-<h3 >2.5.14: Upcoming C++17 features</h3>
-        The next <strong >C++</strong> standard will be <a name="an116"></a>C++17 (also referred to as <a name="an117"></a>C++1z).
-Work is currently in progress to add the new (C++17) features of the language
-to the next major version upgrade of the Gnu <code >g++</code> compiler (version
+<h3 >2.5.14: Features introduced at the C++17 standard</h3>
+        The <a name="an113"></a>C++17 (also referred to as <a name="an114"></a>C++1z) standard will be implemented in
+the next major version upgrade of the Gnu <code >g++</code> compiler (version
 7.0.0 or beyond).
 <p>
 The working draft of the standard is freely available, and can be cloned from
 the git-repository at <a href="https://github.com/cplusplus/draft.git">https://github.com/cplusplus/draft.git</a>
 <p>
 In time the <strong >C++</strong> Annotations will reflect the changes related to the C++17
-standard. Refer to the C++17 entry in the index for locations where the C++17
-standard is mentioned.
+standard. Several sections in the <strong >C++</strong> Annotations directly relate to the C++17
+standard. These sections can easily be located by looking for he C++17 entry
+in the table of contents or in the index.
 <p>
-The <a name="an118"></a>C++17 standard adds the following features to the language:
+In addition to the topics mentioned in separate sections the C++17 standard
+introduces the following features:
 <p>
 <dl>    
-<dt ><strong>Aggregate initialization extensions</strong></dt>
 <p>
-Aggreates (e.g., structs) can be initialized using the familiar
-curly-brace notation. C++17 extends the initialization possibilities by
-allowing, e.g., structs using inheritance to be initialized using the curly
-braces notation as well. Example:
-        <pre>
-struct Base
-{
-    int value;
-};
-struct Derived: public Base
-{
-    string text;
-    void member();
-};
-
-// Initializing a Derived object:
-
-Derived der{{value}, "hello world"};
-//          -------
-//          initialization of the (first) base class.
-</pre>
-<p>
-<dt ><strong>Evaluation order of operands of operators</strong></dt>
+<dt ><strong>Evaluation order of operands of operators</strong></dt><br/>
 <p>
 Up to C++17, the evaluation order of expressions of operands of binary
 operators is, except for the boolean operators <code >and</code> and <code >or</code>, not
@@ -1181,9 +1133,9 @@ expressions, or function calls:
 </pre>
     In addition, when overloading an operator, the function implementing the
 overloaded operator is evaluated like the built-in operator it overloads, and
-not in the way function call are ordered in genereal.
+not in the way function calls are generally ordered.
 <p>
-<dt ><strong>[[fallthrough]]</strong></dt><a name="an119"></a>
+<dt ><strong>[[fallthrough]]</strong></dt><a name="an115"></a><br/>
 <p>
 When statements that are nested under <code >case</code> entries in <code >switch</code>
 statements continue into subsequent <code >case</code> or <code >default</code> entries the
@@ -1209,68 +1161,27 @@ void function(int selector)
 }
 </pre>
 <p>
-<dt ><strong>if constexpr</strong></dt>
-<p>
-In template definitions <code >if constexpr</code> statements may be used to
-instantiate parts of a function definition depending on the value of the
-expression following <code >constexpr</code>. This is further elaborated in section
-<a href="cplusplus21.html#IFCONST">21.16</a>. 
-<p>
-<dt ><strong>Inline variables</strong></dt>
-<p>
-In addition to inline functions, <a name="an120"></a> 
-inline variables can be defined (and identically initialized) in multiple
-translation units. E.g., a header file could contain
-        <pre>
-    inline int value = 15;                      OK
-
-    class Demo
-    {
-        // static int s_value = 15;             ERROR
-        static int constexpr s_value = 15;      OK
-
-        static int s_inline;                    NEW, see below
-    };
-    inline int Demo::s_inline = 20;             OK
-</pre>
-<p>
-<dt ><strong>Keywords `export' and `register'</strong></dt>
-<p>
-The keywords <a name="an121"></a><code >export</code> and <a name="an122"></a><code >register</code> are no longer used, but are still
-identifiers that are reserved for future use. In other words, definitions like
-        <pre>
-    register int index;
-</pre>
-    result in compilation errors. Also, <code >register</code> is no longer considered a
-    <a name="an123"></a>storage class specifier (storage class specifiers are <code >extern,
-thread_local, mutable</code> and <code >static</code>).
-<p>
-<dt ><strong>[[maybe_unused]]</strong></dt><a name="an124"></a>
+<dt ><strong>[[maybe_unused]]</strong></dt><a name="an116"></a><br/>
 <p>
 This attribute can be applied to a class, typedef-name, variable,
-non-static fata member, a function, an enumeration or an enumerator. When it
-is applied to an entity no warning is generated if the entity whether the
-entity is used or is not used. Example:
+non-static data member, a function, an enumeration or an enumerator. When it
+is applied to an entity no warning is generated when the
+entity is not used. Example:
         <pre>
 void fun([[maybe_unused]] size_t argument)
 {
     // argument isn't used, but no warning 
-    // telling you so is generated
+    // telling you so is issued
 }
 </pre>
 <p>
-<dt ><strong>lambda expressions</strong></dt>
-<p>
-Lambda expressions were extended. See the sections marked with <code >C++17</code>
-in section <a href="cplusplus18.html#LAMBDA">18.7</a>.
-<p>
-<dt ><strong>[[nodiscard]]</strong></dt><a name="an125"></a>
+<dt ><strong>[[nodiscard]]</strong></dt><a name="an117"></a><br/>
 <p>
 The attribute <code >[[nodiscard]]</code> may be specified when declaring a
 function, class or enumeration. If a function is declared <code >[[nodiscard]]</code> or
 if a function returns an entity previously declared using <code >[[nodiscard]]</code>
 then the return value of such a function may only be ignored when explicitly
-cast to void. Otherwise, when the return value is not used as warning is
+cast to void. Otherwise, when the return value is not used a warning is
 issued. Example:
         <pre>
 int [[nodiscard]] importantInt();
@@ -1284,24 +1195,6 @@ int main()
     factory();              // warning issued
 }
 </pre>
-<p>
-<dt ><strong>Nested namespace definitions</strong></dt>
-<p>
-When nesting namespaces, a nested namespace can directly be referred to
-using scope resolution operators. E.g.,
-        <pre>
-namespace Outer::Middle::Inner
-{
-    // entities defined/declared here are defined/declared in the Inner
-    // namespace, which is defined in the Middle namespace, which is defined
-    // in the Outer namespace
-}
-</pre>
-<p>
-<dt ><strong>Template argument deduction for class templates</strong></dt>
-<p>
-In some situations template arguments for class templates can be deduced
-by the compiler. See section <a href="cplusplus22.html#ARGDEDUCTION">22.0.1</a> for details.
 <p>
 </dl>
 <p>
