@@ -1,33 +1,87 @@
 Manipulators taking arguments are implemented as hi(macro) macros: they are
 handled by the i(preprocessor), and are not available beyond the preprocessing
-stage.  The problem appears to be that you can't call a function in an
-insertion sequence: when using multiple oplshift() operators in one statement
-the compiler calls the functions, saves their return values, and then
-uses their return values in the insertion sequence. That invalidates the
-ordering of the arguments passed to your lshift()-operators.
+stage.  
 
-So, one might consider constructing another overloaded oplshift() accepting
-the address of a function receiving not just the ti(ostream) reference, but a
-series of other arguments as well. But this creates the problem that it isn't
-clear how the function should receive its arguments: you can't just call it
-since that takes us back to the above-mentioned problem.  Merely passing its
-address is fine, but then no arguments can be passed to the function.
+//The problem appears to be that you can't call a function in an
+//insertion sequence: when using multiple oplshift() operators in one statement
+//the compiler calls the functions, saves their return values, and then
+//uses their return values in the insertion sequence. That invalidates the
+//ordering of the arguments passed to your lshift()-operators.
+//
+//So, one might consider constructing another overloaded oplshift() accepting
+//the address of a function receiving not just the ti(ostream) reference, but a
+//series of other arguments as well. But this creates the problem that it isn't
+//clear how the function should receive its arguments: you can't just call it
+//since that takes us back to the above-mentioned problem.  Merely passing its
+//address is fine, but then no arguments can be passed to the function.
 
-There exists a solution, based on the use of hi(anonymous object) anonymous
+Manipulators, maybe requiring arguments, can also be defined without using
+macros. One solution, suitable for modifying globally available objects (like
+tt(cin), or tt(cout) is based on using hi(anonymous object) anonymous
 objects:
     itemization(
-    it() First, a class is constructed, e.g. tt(Align), whose
-i(constructor) expects multiple arguments. In our example representing,
-respectively, the field width and the alignment.
-    it() Furthermore, we define the function:
+    it() First, a class is defined, e.g. tt(Align), whose i(constructor)
+expects the arguments configuring the required manipulation. In our example
+representing, respectively, a field width and an alignment type.
+    it() The class also supports an overloaded insertion (or extraction)
+operator. E.g.,
         verb(
     ostream &operator<<(ostream &ostr, Align const &align)
             )
-        so we can insert an tt(Align) object into the ostream.
+    it() Next, the (anonymous) object is inserted into a stream. The insertion
+operator passes the stream to tt(Align::align), allowing that member to
+configure (and return) the provided stream.
     )
     Here is an example of a little program using such a em(home-made)
 manipulator expecting multiple arguments:
         verbinclude(-a examples/manipulator.cc)
-    Note that in order to insert an anonymous tt(Align) object into the
-tt(ostream), the oplshift() function em(must) define an tt(Align const &)
-parameter (note the tt(const) modifier).
+
+When (local) objects must be manipulated, then the class that must provide
+manipulators may define function call operators receiving the required
+arguments. E.g., consider a class tt(Matrix) that should allow its users to
+specify the value and line separators when inserting the matrix into an
+tt(ostream). 
+
+Two data members (e.g., tt(char const *d_valueSep) and tt(char const
+*d_lineSep)) are defined (and initialized to acceptable values). The
+insertion function inserts tt(d_valueSep) between values, and tt(d_lineSep) at
+the end of inserted rows. The member tt(operator()(char const *valueSep, char
+const *lineSep)) simply assigns values to the corresponding data members.
+
+Given an object tt(Matrix matrix), then at this point tt(matrix(" ", "\n"))
+can be called. The function call operator should probably not insert the
+matrix, as the responsibility of manipulators is to manipulate, not to
+insert. So, to insert a matrix a statement like 
+    verb(
+        cout << matrix(" ", "\n") << matrix << '\n';
+    ) 
+    should probably be used. The manipulator (i.e., function call operator)
+assigns the proper values to tt(d_valueSep) and tt(d_lineSep), which are then
+used during the actual insertion.
+
+The return value of the function call operator remains to be specified. The
+return value should be insertable, but in fact should not insert anything at
+all. An empty NTBS could be returned, but that's a bit kludge-like. Instead
+the address of a manipulator function, not performing any action, can be
+returned. Here's the implementation of such an empty manipulator:
+    verb(
+        // static       (alternatively a free function could be used)
+        std::ostream &Matrix::nop(std::ostream &out)
+        {
+            return out;
+        }
+    )
+  Thus, the implementation of the tt(Matrix's) manipulator becomes:
+    verb(
+        std::ostream &( 
+            *Matrix::operator()(char const *valueSep, char const *lineSep) ) 
+                                                            (std::ostream &)
+        {
+            d_valueSep = valueSep;
+            d_lineSep = lineSep;
+            return nop;
+        }
+    )
+
+    
+

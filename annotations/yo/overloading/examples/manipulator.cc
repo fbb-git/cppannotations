@@ -23,7 +23,7 @@
         return ostr << std::setw(d_width);
     }
 
-    std::ostream &operator<<(std::ostream &ostr, Align const &align)
+    std::ostream &operator<<(std::ostream &ostr, Align &&align)
     {
         return align(ostr);
     }

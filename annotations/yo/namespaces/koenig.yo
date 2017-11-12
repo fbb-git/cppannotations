@@ -33,10 +33,11 @@ namespace may break the code defined in another namespace. It shows that
 namespaces may affect each other and that namespaces may backfire if we're not
 aware of their peculiarities. Consider the following example:
         verbinclude(-a examples/koenig4.cc)
-    Whatever happens, the programmer'd better not use any of the tt(ES::fun)
-functions since it results in infinite recursion. However, that's not the
-point. The point is that the programmer won't even be given the opportunity to
-call tt(ES::fun) since the compilation fails.
+    Whatever happens, the programmer'd better not use any of the functions
+defined in the tt(ES) namespace, since that would result in infinite
+recursion. However, that's not the point. The point is that the programmer
+won't even be given the opportunity to call tt(ES::fun) since the compilation
+fails.
 
     Compilation fails for tt(gun) but not for tt(fun). But why is that so? Why
 is tt(ES::fun) flawlessly compiling while tt(ES::gun) isn't? In tt(ES::fun)
@@ -57,3 +58,20 @@ the namespace tt(ES) breaks because of an addition in a completely other
 namespace (tt(FBB)). Namespaces clearly are not completely independent of each
 other and we should be aware of subtleties like the above. Later in the
 annotations() (chapter ref(OVERLOADING)) we'll return to this issue.
+
+    em(Koenig lookup) is only used in the context of namespaces. If a function
+is defined outside of a namespace, defining a parameter of a type that's
+defined inside a namespace, and that namespace also defines a function with an
+identical signature, then the compiler reports an ambiguity when that function
+is called. Here is an example, assuming the abovementioned namespace tt(FBB)
+is also available:
+        verb(
+    void gun(FBB::Value x);
+
+    int main(int argc, char **argv)
+    {
+        gun(FBB::Value{});          // ambiguity: FBB::gun and ::gun can both
+                                    // be called.
+    }
+        )
+    
