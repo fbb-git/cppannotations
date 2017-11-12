@@ -1,0 +1,81 @@
+Attributes are used to inform the compiler about situations that are
+intentional, but are by themselves reasons for the compiler to issue
+warnings. The following attributes have currently been defined:
+
+itemization(
+    itt(([[fallthrough]])hi(fallthrough)nl()
+
+    When statements nested under tt(case) entries in tt(switch) statements
+continue into subsequent tt(case) or tt(default) entries the compiler issues a
+`falling through' warning. If falling through is intentional the attribute
+tt([[fallthrough]]) should be used. Here is an annotated example:
+        verb(
+void function(int selector)
+{
+    switch (selector)
+    {
+        case 1:
+        case 2:             // no falling through, but merged entry points
+            cout << "cases 1 and 2\n";
+        [[fallthrough]]     // no warning: intentionally falling through
+
+        case 3:
+            cout << "case 3\n";
+
+        case 4:             // a warning is issued: falling through not
+                            // announced.
+            cout << "case 4\n";
+        [[fallthrough]]     // error: there's nothing beyond 
+    }
+}
+        )
+
+    itt([[maybe_unused]])hi(maybe_unused)nl()
+
+    This attribute can be applied to a class, typedef-name, variable,
+parameter, non-static data member, a function, an enumeration or an
+enumerator. When it is applied to an entity no warning is generated when the
+entity is not used. Example:
+        verb(
+void fun([[maybe_unused]] size_t argument)
+{
+    // argument isn't used, but no warning 
+    // telling you so is issued
+}
+        )
+
+    itt([[nodiscard]])hi(nodiscard)nl()
+
+    The attribute tt([[nodiscard]]) may be specified when declaring a
+function, class or enumeration. If a function is declared tt([[nodiscard]]) or
+if a function returns an entity previously declared using tt([[nodiscard]])
+then the return value of such a function may only be ignored when explicitly
+cast to void. Otherwise, when the return value is not used a warning is
+issued. Example:
+        verb(
+int [[nodiscard]] importantInt();
+struct [[nodiscard]] ImportantStruct { ... };
+
+ImportantStruct factory();
+    
+int main()
+{
+    importantInt();         // warning issued
+    factory();              // warning issued
+}
+        )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
