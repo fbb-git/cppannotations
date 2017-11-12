@@ -1,0 +1,58 @@
+A emi(negator) is a function object toggling the truth value of
+a function that's called from the negator: if the function returns tt(true)
+the negator returns tt(false) and vv.
+
+The standard negator is tt(std::not_fn)hi(not_fn), declared in the
+tthi(functional) header file.
+
+The function tt(not_fn) expects a (movable) object as its argument, returning
+the negated value of the return value of its argument's function call
+operator. 
+
+As an example consider a tt(main) function defining an array of tt(int)
+values:
+        verb(
+    int main()
+    {
+        int arr[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    }
+        )
+
+To count the number of even values tt(count_if), using a lambda function can
+be used:
+        verb(
+        cout << 
+            count_if(arr, arr + size(arr),
+                [&](int value)
+                {
+                    return (value & 1 == 0);
+                }
+            ) << '\n';
+        )
+
+To count the number of odd values, tt(not_fn) can be used in the above code
+like so:
+        verb(
+        cout << 
+            count_if(arr, arr + size(arr),
+                not_fn(
+                    [&](int value)
+                    {
+                        return (value & 1 == 0);
+                    }
+                )
+            ) << '\n';
+        )
+
+Of course, in this simple example the lambda function could also easily have
+been modified. But if instead of a lambda function an existing class
+implementing a function object had been used it would have been difficult or
+impossible to change the behavior of that class. If the class offers moving
+operations then tt(not_fn) can be used to negate the values returned by that
+class's function call operator.
+
+
+
+
+
+

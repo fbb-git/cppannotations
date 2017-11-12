@@ -32,13 +32,13 @@ deduction (cf. section ref(TEMPFUNARGS)), which are somewhat different from
 the way tt(auto) normally operates.
 
 
-Another extension is how lambda expressions capture outer scope variables. In
-the C++11 standard capture was used either by value or by reference. A
+Another extension is how lambda expressions capture outer scope variables. 
+Previously variables could only be captured  by value or by reference. A
 consequence of this is that an outer scope variable of a type that only
-supports move construction cannot be passed by value to a lambda
+supports move construction could not be passed by value to a lambda
 function. This restriction was dropped, allowing variables to be initialized
 from arbitrary expressions. This not only allows move-initialization of
-variables in the lambda introducer, but variables may here also be initialized
+variables in the lambda introducer, but variables may also be initialized
 if they do not have a correspondingly named variable in the lambda
 expression's outer scope. In this case initializer expressions can be used as
 shown in this example:
@@ -51,7 +51,10 @@ shown in this example:
     This lambda function (of course) returns 1: the declared capture deduces
 the type from the initializer expression as if tt(auto) had been used.
     
-    To use move-initialization tt(std::move) should be used. E.g.,
+    To use move-initialization tt(std::move) should be used. E.g., a
+em(unique_ptr) (cf. section ref(UNIQUEPTR)) is an object only supporting
+move-assignment. Here it is used to return one of its values via a lambda
+function:
         verb(
     std::unique_ptr<int> ptr(new int(10));
     auto fun = [value = std::move(ptr)] 
