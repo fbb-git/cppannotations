@@ -1,5 +1,5 @@
-In the previous section we saw that binary operators (like tt(operator+)) can
-be implemented very efficiently, but still require at least move constructors.
+We've seen that binary operators (like tt(operator+)) can be implemented very
+efficiently, but require at least move constructors.
 
 An expression like
         verb(
@@ -28,13 +28,14 @@ on, and then swap the temporary object with the current object to commit the
 results. But wait! Our lhs operand already em(is) a temporary object. So why
 create another?
 
-    In this example there's indeed no need for yet another temporary
-object. But different from the binary operators compound assignment operators
-don't have an explicitly defined left-hand side operand. In situations like
-these we nevertheless can inform the compiler that a member (not just compound
-assignment operators) should only be used when the objects calling those
-members is an rvalue reference, or an lvalue reference to either a modifiable
-or non-modifiable object. For this we use
+    In this example another temporary object is indeed not required: tt(lhs)
+remains in existence until tt(fun1) ends. But different from the binary
+operators the binary compound assignment operators don't have explicitly
+defined left-hand side operands. But we still can inform the compiler that a
+particular em(member) (so, not merely compound assignment operators) should
+only be used when the objects calling those members is an anonymous temporary
+object, or a non-anonymous (modifiable or non-modifiable) object. For this
+we use
     em(reference bindings)hi(reference binding) a.k.a.  
     em(reference qualifiers)hi(reference qualifier). 
 
@@ -46,17 +47,20 @@ reference bindings are selected by the compiler when used by anonymous
 temporary objects, whereas functions provided with lvalue reference bindings
 are selected by the compiler when used by other types of objects.
 
-    Reference qualifiers allow us to fine-tune our implementations of
-tt(operator+=). If we know that the object calling the compound assignment
-operator is itself a temporary, then there's no need for a separate temporary
-object. The operator may directly perform its operation and then return. Here
-is the implementation of tt(operator+=) tailored to being used by temporary
-objects:
+    Reference qualifiers allow us to fine-tune our implementations of compund
+assignment operators like tt(operator+=). If we know that the object calling
+the compound assignment operator is itself a temporary, then there's no need
+for a separate temporary object. The operator may directly perform its
+operation and then return a move-constructed copy of the temporary (note that
+the copy is required, since the temporary object itself ceases to exist once
+the function's return statement has been executed, see the previous
+section). Here is the implementation of tt(operator+=) tailored to being used
+by temporary objects:
         verb(
-    Binary &&Binary::operator+=(Binary const &rhs) &&
+    Binary Binary::operator+=(Binary const &rhs) &&
     {
         add(rhs);                   // directly add rhs to *this, 
-        return std::move(*this);    // return *this as rvalue ref.
+        return std::move(*this);    // return a move constructed copy
     }
         )    
     This implementation is about as fast as it gets. 
@@ -103,7 +107,7 @@ with tt(Binary{} += b2 += b3) we observe:
     operator+=    (&&)      = Binary{} += b2
         adding              = add(b2)
 
-    return                  = Binary{}
+    return                  = move(Binary{})
         )
 
     For tt(Binary &Binary::operator+=(Binary const &other) &) an  alternative

@@ -25,7 +25,7 @@ class Binary
         void swap(Binary &other);
 
         Binary &operator+=(Binary const &rhs) &;
-        Binary &&operator+=(Binary const &rhs) &&;
+        Binary  operator+=(Binary const &rhs) &&;
 
     private:
         void add(Binary const &other);

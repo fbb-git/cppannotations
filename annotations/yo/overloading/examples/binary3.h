@@ -1,5 +1,7 @@
     class Binary
     {
+        friend Binary operator+(Binary const &lhs, Binary const &rhs);
+
         public:
             Binary();
             Binary(int value);
@@ -8,6 +10,4 @@
 
         private:
             void add(Binary const &other);
-
-        friend Binary operator+(Binary const &lhs, Binary const &rhs);
     };

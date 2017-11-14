@@ -5,9 +5,9 @@ tt(std::string) class has various overloaded tt(operator+) members.
     Most binary operators come in two flavors: the plain binary operator (like
 the tt(+) operator) and the compound binary assignment operator (like
 tt(operator+=)). Whereas the plain binary operators return values, the
-compound binary assignment operators return references to the objects for
-which the operators were called. For example, with tt(std::string) objects the
-following code (annotations below the example) may be used:
+compound binary assignment operators usually return references to the objects
+for which the operators were called. For example, with tt(std::string) objects
+the following code (annotations below the example) may be used:
         verbinclude(-a examples/binarystring.cc)
     itemization(
     it() at tt(// 1) the contents of tt(s3) is added to tt(s2). Next, tt(s2)
@@ -30,8 +30,8 @@ value of the expression.
         )
     )
 
-    Let's consider the following code, in which a class tt(Binary) supports
-an overloaded tt(operator+):
+    Now consider the following code, in which a class tt(Binary) supports an
+overloaded tt(operator+):
         verbinclude(-a examples/binary1.cc)
     Compilation of this little program fails for statement tt(// 2), with the
 compiler reporting an error like:
@@ -54,10 +54,10 @@ constructor tt(Binary(int)) exists, the tt(int) value can be promoted to a
 tt(Binary) object. Next, this tt(Binary) object is passed as argument to the
 tt(operator+) member.
 
-    Unfortunately, in statement tt(// 2) no promotions are available: here the
-tt(+) operator is applied to an tt(int)-type lvalue. An tt(int) is a primitive
-type and primitive types have no knowledge of `constructors', `member
-functions' or `promotions'.
+    Unfortunately, in statement tt(// 2) promotions are not available: here
+the tt(+) operator is applied to an tt(int)-type lvalue. An tt(int) is a
+primitive type and primitive types have no knowledge of `constructors',
+`member functions' or `promotions'.
 
     How, then, are promotions of left-hand operands implemented in statements
 like tt("prefix " + s3)? Since promotions can be applied to function
@@ -75,7 +75,7 @@ shortly, but here is our first revision of the declaration of the class
 tt(Binary), declaring an overloaded tt(+) operator as a free function:
         verbinclude(-a examples/binary1.h)
 
-    By defining binary operators as free functions, several promotions are
+    After defining binary operators as free functions, several promotions are
 available:
     itemization(
     it() If the left-hand operand is of the intended class type, the right
@@ -96,14 +96,14 @@ to resolve the ambiguity to the first overloaded tt(+) operator.
     The next step consists of implementing the required overloaded binary
 compound assignment operators, having the form tt(@=), where tt(@) represents
 a binary operator. As these operators em(always) have left-hand side operands
-which are object of their own classes, they are implemented as true member
-functions. Moreover, compound assignment operators should return references to
-the objects for which the binary compound assignment operators were requested,
-as these objects might be modified in the same statement. E.g.,
+which are object of their own classes, they are implemented as genuine member
+functions. Compound assignment operators usually return references to the
+objects for which the binary compound assignment operators were requested, as
+these objects might be modified in the same statement. E.g.,
     tt((s2 += s3) + " postfix"). 
 
-    Here is our second revision of the class tt(Binary), showing both the
-declaration of the plain binary operator and the corresponding compound
+    Here is our second revision of the class tt(Binary), showing the
+declaration of the plain binary operator as well as the corresponding compound
 assignment operator:
         verbinclude(-a examples/binary2.h)
 
@@ -114,7 +114,7 @@ and swap. Here is our implementation of the compound assignment operator:
         verb(
     Binary &Binary::operator+=(Binary const &rhs)
     {
-        Binary tmp(*this);
+        Binary tmp{ *this };
         tmp.add(rhs);           // this might throw
         swap(tmp);
         return *this;
@@ -124,7 +124,8 @@ and swap. Here is our implementation of the compound assignment operator:
     It's easy to implement the free binary operator: the tt(lhs) argument is
 copied into a tt(Binary tmp) to which the tt(rhs) operand is added. Then
 tt(tmp) is returned, using copy elision. The class tt(Binary) declares the
-free binary operator as a friend, so it can call tt(Binary's add) member:
+free binary operator as a friend (cf. chapter ref(Friends), so it can call
+tt(Binary's add) member:
         verbinclude(-a examples/binary3.h)
 
 The binary operator's implementation becomes:
@@ -133,7 +134,7 @@ The binary operator's implementation becomes:
 If the class tt(Binary) is move-aware then it's attractive to add move-aware
 binary operators. In this case we also need operators whose left-hand side
 operands are rvalue references. When a class is move aware various interesting
-implementations are suddenly possible, which we will encounter below and in
+implementations are suddenly possible, which we encounter below, and in
 the next (sub)section. First have a look at the signature of such a binary
 operator (which should also be declared as a friend in the class interface):
         verb(
@@ -142,18 +143,29 @@ operator (which should also be declared as a friend in the class interface):
 
 Since the lhs operand is an rvalue reference, we can modify it em(ad lib). 
 Binary operators are commonly designed as factory functions, returning objects
-created by those operators. Although the bf(C++) standard does not explicitly
-advise against it, it would be a violation of the principle of least surprise
-to return that modified lhs operand as an rvalue reference: objects returned
-from binary operators should neither be the operators' lhs operand nor the
-operators' rhs operand. Instead these operators should return objects created
-by them.  But it's OK to use the move constructor to return a copy of a
-modified lhs operand.
+created by those operators. However, the (modified) object referred to by 
+tt(lhs) should itself em(not) be returned. As stated in the C++ standard,
+    quote( 
+    A temporary object bound to a reference parameter in a function call
+    persists until the completion of the full-expression containing the call.
+    )
+and furthermore: 
+    quote( 
+    The lifetime of a temporary bound to the returned value in a function
+    return statement is not extended; the temporary is destroyed at the end of
+    the full-expression in the return statement.
+    )
+    In other words, a temporary object cannot itself be returned as the
+function's return value: a tt(Binary &&) return type should therefore not be
+used. Therefore functions implementing binary operators are factory functions
+(note, however, that the returned object may be constructed using the class's
+move constructor whenever a temporary object has to be returned).
 
 Alternatively, the binary operator can first create an object by move
-constructing it from the operator's lhs operand. Then directly perform the
-binary operation on that object and the operator's rhs operand, and then
-return the modified object. It's a matter of taste which one is preferred.
+constructing it from the operator's lhs operand, performing the binary
+operation on that object and the operator's rhs operand, and then return the
+modified object (allowing the compiler to apply copy elision). It's a matter
+of taste which one is preferred.
 
     Here are the two implementations. Because of copy elision the explicitly
 defined tt(ret) object is created in the location of the return value. Both
@@ -169,15 +181,14 @@ behavior:
                 // second implementation: move construct ret from lhs
     Binary operator+(Binary &&lhs, Binary const &rhs)   
     {
-        Binary ret{std::move(lhs)};
+        Binary ret{ std::move(lhs) };
         ret.add(rhs);
         return ret;
     }
         )
-    Now, when executing an expression like (all tt(Binary) objects) tt(b1 + b2
-+ b3) the following functions are called:
+    Now, when executing expressions like (all tt(Binary) objects) 
+tt(b1 + b2 + b3) the following functions are called:
         verb(
-
     copy operator+          = b1 + b2 
     Copy constructor        = tmp(b1) 
         adding              = tmp.add(b2)
@@ -189,5 +200,5 @@ behavior:
         )
 
     But we're not there yet: in the next section we encounter possibilities
-for more  interesting implementations, concentrating on compound assignment
-operators. 
+for several more interesting implementations, in the context of compound
+assignment operators.
