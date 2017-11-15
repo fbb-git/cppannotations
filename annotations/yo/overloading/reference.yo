@@ -51,19 +51,51 @@ are selected by the compiler when used by other types of objects.
 assignment operators like tt(operator+=). If we know that the object calling
 the compound assignment operator is itself a temporary, then there's no need
 for a separate temporary object. The operator may directly perform its
-operation and then return a move-constructed copy of the temporary (note that
-the copy is required, since the temporary object itself ceases to exist once
-the function's return statement has been executed, see the previous
-section). Here is the implementation of tt(operator+=) tailored to being used
-by temporary objects:
+operation and could then return itself as an rvalue reference. Here is the
+implementation of tt(operator+=) tailored to being used by temporary objects:
+        verb(
+    Binary &&Binary::operator+=(Binary const &rhs) &&
+    {
+        add(rhs);                   // directly add rhs to *this, 
+        return std::move(*this);    // return the temporary object itself
+    }
+        )    
+    This implementation is about as fast as it gets. But be careful: in the
+previous section we learned that a temporary is destroyed at the end of the
+full expression of a return stattement. In this case, however, the temporary
+already exists, and so (also see the previous section) it should persist until
+the expression containing the (tt(operator++)) function call is completed. As
+a consequence,
+            verb(
+    cout << (Binary{} += existingBinary) << '\n';
+            )
+    is OK, but
+            verb(
+    Binary &&rref = (Binary{} += existingBinary);
+    cout << rref << '\n';
+            )
+    is not, since tt(rref) becomes a dangling reference immediately after its
+initialization. 
+
+    A full-proof alternative implementation of the rvalue-reference bound
+tt(operator+=) returns a move-constructed copy:
         verb(
     Binary Binary::operator+=(Binary const &rhs) &&
     {
         add(rhs);                   // directly add rhs to *this, 
         return std::move(*this);    // return a move constructed copy
     }
-        )    
-    This implementation is about as fast as it gets. 
+        )
+    The price to pay for this full-proof implementation is an extra move
+construction. Now, using the previous example (using tt(rref)), tt(operator+=)
+returns a copy of the tt(Binary{}) temporary, which is still a temporary
+object which can safely be referred to by tt(rref).
+
+    Which implementation to use may be a matter of choice: if users of
+tt(Binary) know what they're doing then the former implementation can be used,
+since these users will never use the above tt(rref) initialization. If you're
+not so sure about your users, use the latter implementation: formally your
+users will do something they shouldn't do, but there's no penalty for that.
 
     For the compound assignment operator called by an lvalue reference (i.e.,
 a named object) we use the implementation for tt(operator+=) from the previous
