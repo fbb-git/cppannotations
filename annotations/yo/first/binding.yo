@@ -35,9 +35,9 @@ tt(auto) can also be used:
         cout << r1.first;
     }    
         )
-    The i(C++17) standard has extended this by introducing em(structured
-binding declarations). Here, tt(auto) is followed by a (square brackets
-surrounded) comma-separated list of variables, where each variable is
+    Since C++17 standard this syntax has been extended this by introducing
+em(structured binding declarations). Here, tt(auto) is followed by a (square
+brackets surrounded) comma-separated list of variables, where each variable is
 em(defined), and receives the value of the corresponding field or element of
 the called function's return value. So, the above tt(main) function can also
 be written like this:
@@ -73,5 +73,48 @@ also be used to define lvalue reference variables. E.g.,
     }    
         )
 
+    When initializing structured binding declarations functions returning
+multiple values in a tt(struct) are not required. The tt(struct) can also
+anonymously be defined:
+        verb(
+    int main()
+    {
+        auto &[lone, ltwo] = Return{4, 5}; 
+    }    
+        )
+    The tt(struct) doesn't even have to be defined by itself. In section
+ref(PAIR) we encounter the tt(std::pair) container that can be used to define
+pairs of values, and in section tt(TUPLES) its generalized variant (the
+em(tuple)) is encountered. 
 
-
+    Another application is found in situations where nested statements of
+tt(for) or selection statements benefit from using locally defined variables
+of various types. Such variables can easily be defined using structured
+binding declarations that are initialized from anonymous structs, pairs or
+tuples. Here is an example illustrating this:
+        verb(
+    // define an appropriate struct (or --in time-- a pair or tuple):
+    struct Three
+    {
+        size_t year;
+        double firstAmount;
+        double interest;
+    };
+        // next define a for-statement using local variables of
+        // different types.
+    for (
+        auto [year, amount, interest] = Three{0, 1000, .03};
+            year <= 10; 
+                ++year, amount *= (1 + interest)
+    )
+        cout << "Year " << year << ": amount = " << amount << '\n';
+    
+    /* Abbreviated output:
+		Year 0: amount = 1000
+		Year 1: amount = 1030
+		Year 2: amount = 1060.9
+		...
+		Year 9: amount = 1304.77
+		Year 10: amount = 1343.92
+    */
+        )
