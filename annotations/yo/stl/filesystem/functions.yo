@@ -1,0 +1,65 @@
+Several functions are available that directly operate on the current file
+system. 
+
+Functions defining an optional tt(path const &base) parameter by default use
+tt(current_path).
+
+Some of them define an tt(error_code &ec) parameter. Those functions
+have a tt(noexcept) specification. If those functions cannot complete their
+task, then tt(ec) is set to the appropriate error code. Alternatively,
+tt(ec.clear()) is called if no error was encountered. If no tt(ec) argument is
+provided then those functions throw a tt(filesystem_error) if they cannot
+complete their tasks.
+
+The following functions are available:
+    itemization(
+    itht(path absolute(path const &src, path const& base))(absolute): a copy
+        of tt(src) to which, unless already available in tt(src),
+        tt(absolute(base)'s) root name and root directory are prepended;
+
+    itht(path canonical(path const &src [, path const &base [, error_code
+        &ec]]))(canonical): returns tt(src's) canonical path (prefixing
+        tt(base) if tt(src) is not an absolute path);
+
+    itht(void copy(path const &src, path const &dest [, copy_options opts [,
+        error_code &ec]])(copy): tt(src) must exist. Copies tt(src) to
+        tt(dest) if the tt(cp) program would also succeed. Copy options can be
+        specified to fine-tune its behavior: tt(skip_symlinks) skips symbolic
+        links; tt(copy_symlinks) calls tt(copy_symlink); tt(create_symlinks)
+        creates a symbolic link em(to) tt(dest); tt(create_hardlinks) creates
+        a hard link em(to) tt(dest).nl()
+       If tt(src) is a directory, and tt(dest) does not exist, tt(dest) is
+        created. Directories are recursively copied if copy options
+        tt(recursive) or tt(none) were specified;
+
+    itht(bool copy_file(path const &src, path const &dest [, copy_options opts
+        [, error_code &ec]])(copy_file): tt(src) must exist. Copies tt(src) to
+        tt(dest) if the tt(cp) program would also succeed. Symbolic links are
+        followed. Copy options can be tt(skip_existing): tt(src) is not copied
+        if tt(dest) already exists; tt(overwrite_existing): a copy is forced;
+        tt(update_existing): tt(src) is copied if it is more recent than
+        tt(dest); tt(True) is returned if copying succeeded;
+
+    itht(void copy_symlink(path const &src, path const &dest [, error_code
+        &ec])(copy_symlink): creates the symlink tt(dest) as a copy of the
+        symlink tt(src);
+
+    itht(bool create_directory(path const &dest [, path const &existing] [,
+        error_code &ec])(copy_directory): creates directory tt(dest) if it
+        does not yet exist. It is not an error if a directory tt(dest) already
+        exists. tt(Dest's) parent directory must exist. If tt(existing) is
+        specified, then tt(dest) receives the same attributes as
+        tt(existing). tt(True) is returned if no errors were encountered;
+
+    itht(bool create_directories(path const &dest [, error_code
+        &ec])(copy_directories): creates each component of tt(dest), unless
+        already existing. tt(True) is returned if no errors were encountered;
+
+    itht(path system_complete(path const &src[, error_code& ec]))
+       (system_complete): returns the absolute path matching tt(src), using
+        tt(current_path) as its base;
+    
+
+
+ to the returned path, hi(canonical: path)
+)functions

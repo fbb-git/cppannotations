@@ -25,17 +25,73 @@ following elements (all optional)
     )
 
     The constructors also define a last tt(format ftmp = auto_format)
-parameter, which probably hardly ever will require a non-default specification
+parameter, which probably almost never require a non-default specification
 (for this parameter, refer to url(cppreference)
         (http://en.cppreference.com/w/cpp/experimental/fs/path).)
 
-Its member functions are
+Its modifying member functions are
     itemization(
     itt(path &append(Type const &arg)) or 
-                                tt(path &operator/=(Type const &arg))nl()
-       The arguments that can be passed to the constructors (including the
+                                tt(path &operator/=(Type const &arg)):
+       the arguments that can be passed to the constructors (including the
         iterators) can also be passed to these members. Before adding the
-        argument the current contents and the contents of tt(arg) are
+        argument the current and  tt(arg's) contents are
         separated by a directory separator (unless the resulting path would be
-        absolute if the source path is empty)
+        absolute if the source path is empty and the argument does not
+        represent an absolute path);
+    itt(void clear()): the tt(path's) contents are erased;
+    itt(int compare(Type const &other)): returns the result of
+        lexicographically comparing the current path's contents with
+        tt(other). tt(Other) can be a tt(path), a string-type or a NTBS;
+    itt(path &concat(Type const &arg)) or 
+                                tt(path &operator+=(Type const &arg)):
+       similar to tt(append), but no directory separator will be used when
+        adding tt(arg's) contents to the current tt(path's) contents;
+    itt(path &remove_filename()):
+       removes the last component of the stored path. If only a root-directory
+        is stored, then the root directory is removed. Note that the last
+        directory separator is kept, unless it is the only path element;
+    itt(path &replace_extension(path const &replacement = path{} )):
+       replaces the extension of the last component of the stored path
+        (including the extension's dot) with tt(replacement). The extension is
+        removed if tt(replacement) is empty. If the tt(path) calling
+        tt(replace_extension) has no extension then tt(replacement) is added;
+    itt(path &replace_filename(path const &replacement)):
+       replaces the last component of the stored path with tt(replacement),
+        which itself may contain multiple path elements.  If only a
+        root-directory is stored, then it is replaced by tt(replacement). The
+        member's behavior is undefined If before calling tt(replace_filename
+        path.empty()) returns tt(true);
     )
+
+Accessors (no arguments, const members) return the path's contents as a NTBS
+(tt(c_str)), or a string (tt(string, wstring, u8string, u16string, u32string)
+(possibly prefixed by tt(gneric_), like tt(generic_string)) or components of
+path specifications, returned as tt(path).
+
+The tt(begin) and tt(end) iterators can be used to iterate over all of the
+tt(path's) characters.
+
+Decomposers, returning objects (empty if the requested component is not
+present): tt(root_name, root_directory, root_path, relative_path, parent_path)
+(i.e., the current contents from which the last element has been removed),
+tt(filename, stem) (i.e., the filename without its dot-extension), and
+tt(extension).
+
+When prefixed by tt(has_) the member returns a tt(bool) which is tt(true) if
+the component is present. Also available: tt(is_absolute, is_relative)
+
+In addition to the member functions several free operators are available:
+tt(==, !=, <, <=, >,) and tt(>=) comparing two tt(path) objects; tt(/)
+returning the contatenated tt(lhs) and tt(rhs); as well as the
+tt(<<) (insertion) and tt(>>) (extraction) operators.
+
+To convert a tt(path) to its canonical form (i.e., a path not containing . or
+.. components) the function tt(canonical) (cf. section ref(FSFUN)) can be
+used.
+
+
+
+
+
+
