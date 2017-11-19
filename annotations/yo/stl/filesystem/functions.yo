@@ -22,7 +22,7 @@ The following functions are available:
         tt(base) if tt(src) is not an absolute path);
 
     itht(void copy(path const &src, path const &dest [, copy_options opts [,
-        error_code &ec]])(copy): tt(src) must exist. Copies tt(src) to
+        error_code &ec]]))(copy): tt(src) must exist. Copies tt(src) to
         tt(dest) if the tt(cp) program would also succeed. Copy options can be
         specified to fine-tune its behavior: tt(skip_symlinks) skips symbolic
         links; tt(copy_symlinks) calls tt(copy_symlink); tt(create_symlinks)
@@ -33,7 +33,7 @@ The following functions are available:
         tt(recursive) or tt(none) were specified;
 
     itht(bool copy_file(path const &src, path const &dest [, copy_options opts
-        [, error_code &ec]])(copy_file): tt(src) must exist. Copies tt(src) to
+        [, error_code &ec]]))(copy_file): tt(src) must exist. Copies tt(src) to
         tt(dest) if the tt(cp) program would also succeed. Symbolic links are
         followed. Copy options can be tt(skip_existing): tt(src) is not copied
         if tt(dest) already exists; tt(overwrite_existing): a copy is forced;
@@ -41,25 +41,137 @@ The following functions are available:
         tt(dest); tt(True) is returned if copying succeeded;
 
     itht(void copy_symlink(path const &src, path const &dest [, error_code
-        &ec])(copy_symlink): creates the symlink tt(dest) as a copy of the
+        &ec]))(copy_symlink): creates the symlink tt(dest) as a copy of the
         symlink tt(src);
 
+    itht(bool create_directories(path const &dest [, error_code
+        &ec]))(copy_directories): creates each component of tt(dest), unless
+        already existing. tt(True) is returned if no errors were
+        encountered. See also tt(create_directory) below;
+
     itht(bool create_directory(path const &dest [, path const &existing] [,
-        error_code &ec])(copy_directory): creates directory tt(dest) if it
+        error_code &ec]))(copy_directory): creates directory tt(dest) if it
         does not yet exist. It is not an error if a directory tt(dest) already
         exists. tt(Dest's) parent directory must exist. If tt(existing) is
         specified, then tt(dest) receives the same attributes as
         tt(existing). tt(True) is returned if no errors were encountered;
 
-    itht(bool create_directories(path const &dest [, error_code
-        &ec])(copy_directories): creates each component of tt(dest), unless
-        already existing. tt(True) is returned if no errors were encountered;
+    itht(bool create_directory_symlink(path const &dir, path const &link [,
+        error_code &ec]))(create_symlink): like tt(create_symlink), but should
+        be used to create a symbolic link to a directory. See also
+        tt(create_symlink) below;
+
+    itht(bool create_hardlink(path const &dest, path const &link [, error_code
+        &ec]))(create_hardlink): creates a hard link from tt(link) to
+        tt(dest). tt(Dest) must exist.
+
+    itht(bool create_symlink(path const &dest, path const &link [, error_code
+        &ec]))(create_symlink): creates a symbolic (soft) link from tt(link) to
+        tt(dest); tt(dest) does em(not) have to exist.
+
+    itht(path current path([error_code &ec]))(current_path), tt(void
+        current_path(path const &toPath [, error_code &ec])): the former
+        function returns the current working directory (cwd), the latter
+        changes the cwd to tt(toPath). 
+
+    itht(bool equivalent(path const &path1, path const &path2 [, error_code
+        &ec]))(equivalent): tt(true) is returned if tt(path1) and tt(path2)
+        refer to the same file or directory, and have identical statuses. Both
+        paths must exist;
+
+    itht(bool exists(path const &dest [, error_code &ec]))(exists),
+        tt(exists(file_status status)): tt(true) is returned if tt(dest)
+        exists (actually: if tt(status(dest[, ec])) (see below) returns
+        tt(true)). Note: when iterating over directories, the iterator usually
+        provides the entries' statuses. In those cases calling
+        tt(exists(iterator->status())) is more efficient than calling
+        tt(exists(*iterator));
+
+    itht(std::unintmax_t file_size(path const &dest [, error_code
+        &ec]))(file_size): returns the size in bytes of a regular file (or
+        symlink destination);
+
+    itht(std::uintmax_t hard_link_count(path const &dest [, error_code
+        &ec]))(hard_link_count): returns the number of hard links associated
+        with  tt(dest);
+
+    itht(file_time_type last_write_time(path const &dest [, error_code
+        &ec]))(last_write_time), tt(void last_write_time(path const &dest,
+        file_time_type newTime [, error_code &ec])): the former function
+        returns tt(dest's) last modification time; the latter function changes
+        tt(dest's) last modification time to tt(newTime);
+
+    itht(void permissions(path const &dest, perms spec [, error_code
+        &ec]))(permissions): sets tt(dest's) permissions to tt(spec), unless
+        tt(perms::add_perms) or tt(perms::remove_perms) was set. The
+        permissions in tt(perms) are masked using tt(perms::mask);
+
+    itht(path read_symlink(path const &src [, error_code
+        &ec]))(read_symlink): tt(src) must refer to a symbolic link or an
+        error is generated. The link's target is returned;
+
+    itht(bool remove(path const &dest [, error_code &ec]))(remove),
+        hi(remove_all) tt(std::uintmax_t remove_all(path const &dest [,
+        error_code &ec])): tt(remove) removes the file, symlink, or empty
+        directory tt(dest), returning tt(true) if tt(dest) could be removed;
+        tt(remove_all) removes tt(dest) if it's a file (or symlink); and
+        recursively removes directory tt(dest), returning the number of
+        removed entries;
+
+    itht(void rename(path const &src, path const &dest [, error_code
+        &ec]))(rename): renames tt(src) to tt(dest), as if using the standard
+        bf(mv)(1) command;
+
+    itht(void resize_file(path const &src, std::uintmax_t size [, error_code
+        &ec]))(resize_file): tt(src's) size is changed to tt(size) as if using
+        the standard bf(truncate)(1) command;
+
+    itht(space_info space(path const &src [, error_code &ec]))(space):
+        returns infomation about the file system in which tt(src) is located;
+
+    itht(file_status status(path const &dest [, error_code &ec]))(status):
+        returns type and attributes of tt(dest). Use ti(symlink_status) if the
+        type and attributes of a symbolic link are required;
+
+    itht(bool status_known(file_status status))(status_known):
+        returns tt(true) if tt(status) refers to a determined status (which
+        may indicate that the entity referred to by tt(status) does not
+        exist). One way of receiving tt(false) is by passing it a default
+        tt(file_status: status_known(file_status{}));
 
     itht(path system_complete(path const &src[, error_code& ec]))
        (system_complete): returns the absolute path matching tt(src), using
         tt(current_path) as its base;
-    
+
+    itht(path temp_directory_path([error_code& ec]))(temp_directory_path):
+        returns the path to a directory that can be used for temporary
+        files. The directory is not created, but its name is commonly
+        available from the environment variables ti(TMPDIR), tt(TMP, TEMP), or
+        tt(TEMPDIR). Otherwise, tt(/tmp) is returned;
+    )
+
+File types hi(file type) can be interrogated using the following functions,
+all supporting the following signatures (where tt(WHATEVER) is the requested 
+specification:
+        verb(
+    bool is_WHATEVER(file_status status)
+    bool is_WHATEVER(path const path &dest [, error_code &ec])
+        )
+    all functions return tt(true) if tt(dest) or tt(status) matches the
+requested type. Here are the available functions:
+    itemization(
+    iti(is_block_file): the path refers to a block device;
+    iti(is_character_file): the path refers to a character device;
+    iti(is_directory): the path refers to a directory;
+    iti(is_empty): the path refers to an empty file or directory;
+    iti(is_fifo): the path refers to a named pipe;
+    iti(is_other): the path does not refer to a directory, regular file or
+        symlink;
+    iti(is_regular_file): the path refers to a regular file;
+    iti(is_socket): the path refers to a named socket;
+    iti(is_symlink): the path refers to a symbolic link;
+    )
 
 
- to the returned path, hi(canonical: path)
-)functions
+
+
