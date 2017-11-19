@@ -1,0 +1,42 @@
+The tt(filesystem) namespace offers two classes that simplify directory
+processing: objects of the class tt(directory_iterator) are (input) iterators
+iterating over the entries of directories; and objects of the class
+tt(recursive_directory_iterator) are (input) iterators recursively visiting
+all entries of directories.
+
+All standard members of input iterators (cf. section ref(ITERATORS)) are
+supported by these classes. In addition, tt(filesystem::begin)hi(begin) and
+tt(filesystem::end)hi(end) are available and are automatically used by
+range-based for loops. E.g., all entries of the tt(/var/log)
+directory are displayed by the following statement:
+        verb(
+    for (auto &entry: fs:directory_iterator("/var/log"))
+        cout << entry << '\n';
+        )
+
+In addition to the standard available members the class 
+tt(recursive_directory_iterator) provides the following members:
+    itemization(
+    itht(depth)(int depth() const): returns the current iteration depth. At
+        the initial directory (specified at construction-time) tt(depth)
+        returns 0;
+    itht(disable_recursion_pending)(void disable_recursion_pending()): when
+        called before calling the iterator's increment operator or member, the
+        next entry is not recursed into if it is a sub-directory. Immediately
+        after executing the increment operator recursion is allowed again, so
+        if recursion should end at a specific depth then this function must
+        repeatedly be called for as long as tt(depth()) returns that specific
+        depth;
+    itht(increment)(recursive_directory_iterator &increment(error_code &ec)):
+        acts identically to the iterator's tt(operator++()). However, when an
+        error occurs tt(operator++) throws a tt(filesystem_error), while
+        tt(increment) assigns the appropriate error to tt(ec);
+    itht(pop)(void pop()): ends processing of the current directory, and
+        continues at the next entry in the current directory's parent or ends
+        the directory processing if called at the initial directory;
+    itht(recursion_pending)(bool recursion_pending() const): tt(true) is
+        returned if the entry the iterator currently points at is a directory
+        into which directory processing will continue at the iterator's
+        next increment;
+    )
+    
