@@ -21,10 +21,3 @@ int main(int argc, char **argv)
     cout << de.path() << '\n';
 }
 //=
-
-
-
-
-
-
-

@@ -4,6 +4,21 @@ iterating over the entries of directories; and objects of the class
 tt(recursive_directory_iterator) are (input) iterators recursively visiting
 all entries of directories.
 
+The classes tt((recursive_)directory_iterator) support default, copy, and move
+constructors. Both classes can be constructed from a tt(path) and an optional
+tt(error_code) reference. E.g.,
+        verb(
+    directory_iterator(path const &dest [, error_code &ec]);
+        )
+    The tt(recursive_directory_iterator) also accepts a tt(directory_options)
+argument (see below), which by default is specified as
+tt(directory_options::none):
+        verb(
+    recursive_directory_iterator(path const &dest,
+                            directory_options options [, error_code &ec]);
+        )
+
+
 All standard members of input iterators (cf. section ref(ITERATORS)) are
 supported by these classes. In addition, tt(filesystem::begin)hi(begin) and
 tt(filesystem::end)hi(end) are available and are automatically used by
@@ -14,6 +29,8 @@ directory are displayed by the following statement:
         cout << entry << '\n';
         )
 
+
+The tt(recursive_directory_iterator) 
 In addition to the standard available members the class 
 tt(recursive_directory_iterator) provides the following members:
     itemization(
@@ -31,6 +48,8 @@ tt(recursive_directory_iterator) provides the following members:
         acts identically to the iterator's tt(operator++()). However, when an
         error occurs tt(operator++) throws a tt(filesystem_error), while
         tt(increment) assigns the appropriate error to tt(ec);
+    itht(options)(directory_options options() const): returns the option that
+        was specified at construction-time;
     itht(pop)(void pop()): ends processing of the current directory, and
         continues at the next entry in the current directory's parent or ends
         the directory processing if called at the initial directory;
@@ -40,3 +59,22 @@ tt(recursive_directory_iterator) provides the following members:
         next increment;
     )
     
+The tt(enum class directory_options)hi(directory_options) defines values that
+can be used to fine-tune the behavior of a tt(recursive_directory_iterator)
+object. The enumeration supports bitwise operators (the symbols' values are
+shown between parentheses). Here is an overview of all its defined symbols:
+    itemization(
+    itt(none) (0): directory symlinks are skipped, denied permission to enter
+        a subdirectory generates an error;
+    itt(follow_directory_symlink) (1): symlinks to subdirectories are
+        followed;
+    itt(skip_permission_denied) (2): directories that cannot be entered are
+        skipped. 
+    )
+
+
+
+
+
+
+

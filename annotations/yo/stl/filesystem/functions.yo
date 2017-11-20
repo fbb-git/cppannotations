@@ -24,7 +24,9 @@ The following functions are available:
     itht(copy)(void copy(path const &src, path const &dest [, copy_options
         opts [, error_code &ec]])): tt(src) must exist. Copies tt(src) to
         tt(dest) if the tt(cp) program would also succeed. Copy options can be
-        specified to fine-tune its behavior: tt(skip_symlinks) skips symbolic
+        specified to fine-tune its behavior: see below for their descriptions
+
+tt(skip_symlinks) skips symbolic
         links; tt(copy_symlinks) calls tt(copy_symlink); tt(create_symlinks)
         creates a symbolic link em(to) tt(dest); tt(create_hardlinks) creates
         a hard link em(to) tt(dest).nl()
@@ -153,7 +155,7 @@ The following functions are available:
 
 File types hi(file type) can be interrogated using the following functions,
 all supporting the following signatures (where tt(WHATEVER) is the requested 
-specification:
+specification):
         verb(
     bool is_WHATEVER(file_status status)
     bool is_WHATEVER(path const path &dest [, error_code &ec])
@@ -172,6 +174,49 @@ requested type. Here are the available functions:
     iti(is_socket): the path refers to a named socket;
     iti(is_symlink): the path refers to a symbolic link;
     )
+
+The tt(enum class copy_options)hi(copy_options) define symbolic constants that
+can be used to fine-tune the behavior of the tt(copy) and tt(copy_file)
+functions. The enumeration supports bitwise operators (the symbols' values are
+shown between parentheses). Here is an overview of all its defined symbols:
+
+    Options when copying files:
+    itemization(
+    itt(none) (0): report an error (default behavior);
+    itt(skip_existing) (1): keep the existing file, without reporting an
+        error;
+    itt(overwrite_existing) (2): replace the existing file;
+    itt(update_existing) (4): replace the existing file only if it is older;
+        than the file being copied;
+    )
+
+    Options when copying subdirectories:
+    itemization(
+    itt(none)​ (0): skip subdirectories (default behavior);
+    itt(recursive) (8): recursively copy subdirectories and their content;
+    )
+
+    Options when copying symlinks:
+    itemization(
+    itt(none) (0): follow symlinks (default behavior);
+    itt(copy_symlinks) (16): copy symlinks as symlinks, not as the files they
+        point to;
+    itt(skip_symlinks) (32): ignore symlinks;
+    )
+
+    Options controlling tt(copy's) behavior itself:
+    itemization(
+    itt(non​e) (0): copy file content (default behavior);
+    itt(directories_only) (64): copy the directory structure, but do not copy
+        any non-directory files;
+    itt(create_symlinks) (128): instead of creating copies of files, create
+        symlinks pointing to the originals (the source path must be an
+        absolute path unless the destination path is in the current
+        directory);
+    itt(create_hard_links) (256): instead of creating copies of files, create
+        hardlinks that resolve to the same files as the originals.
+    )
+
 
 
 

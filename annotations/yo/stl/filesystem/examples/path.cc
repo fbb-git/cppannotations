@@ -14,7 +14,7 @@ int main()
 
     p.replace_filename("this/part");
 
-    std::cout << "Current path is " << fs::current_path() << '\n' << 
-                 "Absolute path for " << p << " is " << 
+    std::cout << "Current path is " << fs::current_path() << '\n' <<
+                 "Absolute path for " << p << " is " <<
                                                 fs::absolute(p) << '\n';
 }

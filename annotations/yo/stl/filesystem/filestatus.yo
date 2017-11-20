@@ -1,0 +1,73 @@
+Objects of the class ti(file_status) contain a file system entry's type and
+permissions. The copy- and move- constructors and assignment operators
+are available. In addition it defines the constructor
+        verb(
+    explicit file_status(file_type type = file_type::none,
+                         perms permissions = perms::unknown)
+        )
+    which can also be used as default constructor. In addition it defines the
+members 
+    itemization(
+    itht(permissions)(perms permissions() const) and tt(void permissions(perms
+        newPerms)): the former member returns the current set of permissions,
+        the latter can be used to modify them;
+    itht(type)(file_type type() const) and tt(void type(file_type type)): the
+        former member returns the current type, the latter can be used to
+        change the type.
+    )
+
+The tt(enum class file_type)hi(file_type) defines the following symbols:
+    itemization(
+    itt(not_found = -1) indicates that the file was not found (this is not
+        considered an error);
+    itt(none) indicates that the file status has not been evaluated yet, or an
+        error occurred when evaluating itt;
+    itt(regular) a regular file;
+    itt(directory) a directory;
+    itt(symlink) a symbolic link;
+    itt(block) a block device;
+    itt(character) a character device;
+    itt(fifo): a named pipe;
+    itt(socket): a socket file;
+    itt(unknown): unknown file type
+    )
+
+The tt(enum class perms) defines all access permissions of file system
+entries. The enumeration's symbols were selected so that their meanings should
+be more descriptive than the constants defined in the tthi(sys/stat.h) header
+file, but other than that they have identical values. Also, all bitwise
+operators can be used by values of the tt(enum class perms). Here is an
+overview of all its defined symbols:
+
+    verb(
+        Symbol        Value   sys/stat.h    Meaning
+
+        none          0000                  No permission bits were set
+                                            
+        owner_read    0400    S_IRUSR       File owner has read permission
+        owner_write   0200    S_IWUSR       File owner has write permission
+        owner_exec    0100    S_IXUSR       File owner has execute/search permission
+        owner_all     0700    S_IRWXU       File owner has read, write, and execute/search permissions
+                                            
+        group_read    0040    S_IRGRP       The file's group has read permission
+        group_write   0020    S_IWGRP       The file's group has write permission
+        group_exec    0010    S_IXGRP       The file's group has execute/search permission
+        group_all     0070    S_IRWXG       The file's group has read, write, and execute/search permissions
+                                            
+        others_read   0004    S_IROTH       Other users have read permission
+        others_write  0002    S_IWOTH       Other users have write permission
+        others_exec   0001    S_IXOTH       Other users have execute/search permission
+        others_all    0007    S_IRWXO       Other users have read, write, and execute/search permissions
+                                            
+        all           0777                  All users have read, write, and execute/search permissions
+                                            
+        set_uid      04000    S_ISUID       Set user ID to file owner user ID on execution
+        set_gid      02000    S_ISGID       Set group ID to file's user group ID on execution
+        sticky_bit   01000    S_ISVTX       POSIX XSI specifies that when set on a directory, only file owners
+                                            may delete files even if the directory is writeable to others
+                                            (used with /tmp)
+                                            
+        mask         07777                  All valid permission bits. 
+    )
+
+

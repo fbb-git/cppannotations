@@ -12,7 +12,7 @@ int main()
     fs::path p{ "absolute.cc" };
 
 
-    std::cout << "Current path is " << fs::current_path() << '\n' << 
-                 "Absolute path for " << p << " is " << 
+    std::cout << "Current path is " << fs::current_path() << '\n' <<
+                 "Absolute path for " << p << " is " <<
                                                 fs::absolute(p) << '\n';
 }
