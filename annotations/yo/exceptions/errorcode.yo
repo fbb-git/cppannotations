@@ -1,11 +1,11 @@
 Error code objects are used by tt(error_category) or tt(system_error)
-objects. E.g., some constructors of the class tt(system_error) accept objects
-of the class hi(error_code). The main purpose of tt(std:error_code) objects is
-to encapsulate platform dependent em(error code values), which may be
+objects. E.g., some constructors of the class tt(system_error) accept
+tt(std:error_code) hi(error_code) objects. The main purpose of tt(error_code)
+objects is to encapsulate platform dependent em(error code values), as
 determined by the operating system or comparable low-level functions (like
-bf(chmod)(2)), and assigned to, e.g., tt(errno). In addition, an
-tt(error_category) specifying the general category of the encountered error
-(see the next
+bf(chmod)(2)), and which are commonly assigned to tt(errno). In addition, an
+tt(error_category) defining the encountered error's general category (see the
+next section) is usually specified when constructing an tt(erroc_code) object.
 
 The class tt(error_code) provides the following constructors, members, and
 free functions:
@@ -15,6 +15,8 @@ bf(Constructors):
     ittq(error_code() noexcept)
        (the default constructor initializes the error code with an error
         em(value) 0 and an error em(category) set to tt(&system_category());)
+
+    it() The copy and move constructors are available;
 
     ittq(error_code(int ec, error_category const &cat) noexcept)
        (this constructor initializes the error code with error value tt(ec)
@@ -28,28 +30,33 @@ bf(Constructors):
         return value of tt(make_error_code(e)).)
     )
 
-    The copy and move constructors are available.
-
 bf(Members):
     itemization(
     ittq(void assign(int val, error_category const &cat))
        (assigns new values to the current object's em(value) and
         em(category) data members;)
+
     ittq(error_category const &category() const noexcept)
        (returns a reference to the object's error category;)
+
     ittq(void clear() noexcept)
        (after calling this member em(value) is set to 0 and the object's error
         em(category) set to tt(&system_category());)
+
     ittq(error_condition default_error_condition() const noexcept)
        (returns tt(category().default_error_condition(value()));)
+
     ittq(string message() const)
        (returns tt(category().message(value()));)
+
     ittq(errorcode& operator=(ErrorCodeEnum e) noexcept)
        (a member template defining
         tt(template <class ErrorCodeEnum>). It assigns the return value of 
         tt(make_error_code(e)) to the current object;)
+
     ittq(explicit operator bool() const noexcept)
        (returns tt(value() != 0);)
+
     ittq(int value() const noexcept)
        (returns the object's error value.)
     )
