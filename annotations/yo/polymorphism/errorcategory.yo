@@ -4,25 +4,30 @@ identify the source and encoding of a particular categories of error codes.
 Before using tt(error_category) the tthi(system_error) header file must be
 included.
 
-
-Classes derived from tt(error_category) should merely support their own
-categories of errors (extending those that are already available in bf(C++)),
-and the behavior of such derived classes should not differ from the be
-behavior of the tt(error_category) class itself. Such derived classes should
-not alter ti(errno)'s value, or error states provided by other libraries.
-
-The equality of tt(error_category) objects is deducted from the equality of
-their addresses. As tt(error_category) objects are passed by reference,
-programs using objects of classes derived from tt(error_category) should
-ensure that only a single object of each such type is actually used: the class
-is designed as a emi(Singleton) (cf. em(Singleton Design Pattern)
+Earlier, in section ref(SYSTEMERROR), the class tt(error_category) was
+used. Error category classes are defined as em(Singletons), hi(Singleton)
+(cf. em(Singleton Design Pattern)
     hi(design patterns) (cf. em(Gamma et al.) (1995)
-    hi(Gamma, E.) i(Design Patterns), Addison-Wesley)).
-    The class's public interface does not provide a public
+    hi(Gamma, E.) i(Design Patterns), Addison-Wesley)), and several types of
+error categories are available in the tt(std) namespace: tt(generic_category,
+system_category, iostream_category) and tt(future_category). 
+
+To design your own tt(error_category) class, it should be derived from
+tt(std::error_category), it should be a singleton, and it should merely
+support its own set of errors (extending those that are already available in
+bf(C++)), and the behavior of such a derived class should not differ from the
+be behavior of the tt(error_category) class itself, and it should not alter
+ti(errno)'s value, or any other error state provided by other libraries.
+
+The equality of tt(error_category) objects is deduced from their addresses:
+because of the singleton characteristics, equal addresses mean equal error
+categories.
+
+    The tt(error_category's) public interface does not provide a public
 constructor. Likewise, copying an existing tt(error_category) object is
-impossible as the copy constructor and overloaded assignment operators are
-declared as `deleted'. Derived classes should also enforce these singleton
-characteristics. Here is the tt(error_category)'s non-private class interface:
+suppressed as the copy constructor and overloaded assignment operators are
+declared as `deleted'. Here is tt(error_category)'s non-private class
+interface:
         verb(
     class error_category 
     {
@@ -54,20 +59,35 @@ characteristics. Here is the tt(error_category)'s non-private class interface:
     };
     error_category const &generic_category() noexcept;
     error_category const &system_category() noexcept;
+    error_category const &iostream_category() noexcept;
+    error_category const &future_category() noexcept;
         )
 
     Members:
     itemization(
     ithtq(name)(char const *name() const noexcept) 
-       (must be overridden, and should return a textual name of the error
-        category;)
+       (returns the mere name of the error
+        category (e.g., tt("generic") is returned by tt(generic_category);)
     ithtq(message)(string message(int ev) const)
-       (must be overridden, and should return a string describing the error
-        condition denoted by tt(ev);)
+       (returns a string describing the error condition matching error value
+        tt(ev);)
+
+
+
+If the error codes for your error category can be mapped to one of the
+        std::errc error codes then default_error_condition should do that
+        mapping, and return a std::error_condition with a category of
+        std::generic_category() and a value of the corresponding std::errc
+        enum value. Otherwise it should return an error_condition referring to
+        that category. 
+
+
     ithtq(default_error_condition)
         (error_condition default_error_condition(int ev) const noexcept)
-       (returns tt(error_condition(ev, *this)) (An object of type
-        tt(error_condition) that corresponds to tt(ev));)
+       (returns an object of type
+        tt(error_condition) corresponding to tt(ev). Derived classes
+        should make sure that error codes matching POSIX tt(errno) values are
+        returned as tt(generic_category) values;)
     ithtq(equivalent)
         (bool equivalent(int code, error_condition const &condition) const
         noexcept)
