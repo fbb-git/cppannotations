@@ -1,4 +1,4 @@
-    A ti(std::system_error) is an class derived from
+The class ti(std::system_error) is derived from
 tt(std::runtime_error). tt(System_error) objects can be thrown when an error
 occurs that has an associated (system) error code and error category. Such
 errors are typically associated with low-level (like operating system)
@@ -7,62 +7,7 @@ functions.
 Before using tt(system_error) the tthi(system_error) header file must be
 included.
 
-A tt(system_error) object can be constructed using the standard textual
-description of the nature of the encountered error, but in addition it accepts
-an emi(error_code) or emi(error_category) object (see the next two sections),
-further clarifying the nature of the error. The tt(error_code) and
-tt(error_category) classes are also declared in the tt(system_error) header
-file.
-
-The tt(system_error) header file also defines an ti(enum class errc)hi(errc)
-whose values are equal to and describe in a less cryptic way the traditional
-error code values as offered by bf(C) macros, e.g.,
-        verb(
-    enum class errc 
-    {
-        address_family_not_supported, // EAFNOSUPPORT
-        address_in_use,               // EADDRINUSE
-        address_not_available,        // EADDRNOTAVAIL
-        already_connected,            // EISCONN
-        argument_list_too_long,       // E2BIG
-        argument_out_of_domain,       // EDOM
-        bad_address,                  // EFAULT
-        ...
-    };
-        )
-
-In addition to the standard tt(what) member, the tt(system_error) class also
-offers a member tt(code) returning a const reference to the exception's error
-code. Here is the class's public interface:
-        verb(
-class system_error: public runtime_error 
-{
-    public:
-        system_error(error_code ec, string const &what_arg);
-        system_error(error_code ec, char const *what_arg);
-        system_error(error_code ec);
-        system_error(int ev, error_category const &ecat,
-                     string const &what_arg);
-        system_error(int ev, error_category const &ecat,
-                     char const *what_arg);
-        system_error(int ev, error_category const &ecat);
-        error_code const &code() const noexcept;
-        char const *what() const noexcept;
-}
-        )
-
-The NTBS returned by its tt(what) member may be formatted by a
-tt(system_error) object like this:
-        verb(
-    what_arg + ": " + code().message()
-        )
-
-Note that, although tt(system_error) was derived from tt(runtime_error),
-you'll lose the tt(code) member when catching a tt(std::exception) object. Of
-course, downcasting is always possible, but that's a stopgap. Therefore, if a
-tt(system_error) is thrown, a matching tt(catch(system_error const &)) clause
-should be provided (for a flexible alternative, see the class 
-    hi(Exception (Bobcat)) tt(FBB::Exception) in the author's 
-        url(Bobcat library)(http://fbb-git.github.io/bobcat/).\
-        hi(Bobcat library)hi(http://fbb-git.github.io/bobcat/))
+When constructing tt(system_error) objects tt(error_code) objects and
+tt(error_categories) may be specified. These classes are introduced next,
+after which tt(system_error) itself is covered in more detail.
 

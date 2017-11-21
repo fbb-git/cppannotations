@@ -1,0 +1,68 @@
+A tt(system_error) object can be constructed from an tt(error_code) or an
+error value (an tt(int)) and an appropriate tt(error_category), optionally
+followed by a standard textual description of the nature of the encountered
+error. 
+
+Here is the class's public interface:
+        verb(
+class system_error: public runtime_error 
+{
+    public:
+        system_error(error_code ec);
+        system_error(error_code ec, string const &what_arg);
+        system_error(error_code ec, char const *what_arg);
+
+        system_error(int ev, error_category const &ecat);
+        system_error(int ev, error_category const &ecat,
+                         char const *what_arg);
+        system_error(int ev, error_category const &ecat,
+                         string const &what_arg);
+
+        error_code const &code() const noexcept;
+        char const *what() const noexcept;
+}
+        )
+    The tt(ev) values often are the values of the tt(errno) variable as set
+upon failure by system level functions like bf(chmod)(2)).
+
+    Note that the first three constructors shown in the interface receive an
+tt(error_code) object as their first arguments. As one of the tt(error_code)
+constructors also expects an tt(int) and and tt(error_category) argument,
+the second set of three constructors could also be used instead of the first
+set of three constructors. E.g.,
+        verb(
+    system_error(errno, system_category(), "context of the error");
+    // identical to:
+    system_error(error_code(errno, system_category()), 
+                                            "context of the error");
+        )
+    However, the second set of three constructors are of course usually used
+when an existing function already returns an tt(error_code). E.g.,
+        verb(
+    system_error(make_error_code(errc::bad_address), 
+                                            "context of the error");
+    // or maybe:
+    system_error(make_error_code(static_cast<errc>(errno)), 
+                                            "context of the error");
+        )
+
+
+
+In addition to the standard tt(what) member, the tt(system_error) class also
+offers a member tt(code) returning a const reference to the exception's error
+code. 
+
+The NTBS returned by tt(system_error's what) member may be formatted by a
+tt(system_error) object like this:
+        verb(
+    what_arg + ": " + code().message()
+        )
+
+Note that, although tt(system_error) was derived from tt(runtime_error),
+you'll lose the tt(code) member when catching a tt(std::exception) object. Of
+course, downcasting is always possible, but that's a stopgap. Therefore, if a
+tt(system_error) is thrown, a matching tt(catch(system_error const &)) clause
+should be provided (for a flexible alternative, see the class 
+    hi(Exception (Bobcat)) tt(FBB::Exception) in the author's 
+        url(Bobcat library)(http://fbb-git.github.io/bobcat/).\
+        hi(Bobcat library)hi(http://fbb-git.github.io/bobcat/))

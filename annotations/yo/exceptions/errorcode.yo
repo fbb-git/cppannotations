@@ -1,13 +1,14 @@
+Error code objects are used by tt(error_category) or tt(system_error)
+objects. E.g., some constructors of the class tt(system_error) accept objects
+of the class hi(error_code). The main purpose of tt(std:error_code) objects is
+to encapsulate platform dependent em(error code values), which may be
+determined by the operating system or comparable low-level functions (like
+bf(chmod)(2)), and assigned to, e.g., tt(errno). In addition, an
+tt(error_category) specifying the general category of the encountered error
+(see the next
 
-
-Objects of the class hi(error_code) tt(std:error_code) hold em(error code
-values), which may be defined by the operating system or comparable low-level
-functions. 
-
-Before using tt(error_code) the tthi(system_error) header file must be
-included.
-
-The class offers the following constructors, members, and free functions:
+The class tt(error_code) provides the following constructors, members, and
+free functions:
 
 bf(Constructors):
     itemization(
@@ -31,7 +32,7 @@ bf(Constructors):
 
 bf(Members):
     itemization(
-    ittq(void assign(int val, const error_category& cat))
+    ittq(void assign(int val, error_category const &cat))
        (assigns new values to the current object's em(value) and
         em(category) data members;)
     ittq(error_category const &category() const noexcept)
@@ -56,7 +57,9 @@ bf(Members):
 bf(Free functions):
     itemization(
     ittq(error_code make_error_code(errc e) noexcept)
-       (returns tt(error_code(static_cast<int>(e), generic_category()));)
+       (returns tt(error_code(static_cast<int>(e), generic_category()))
+        (tt(errc: see below));)
+
     ittq(bool operator<(error_code const &lhs, error_code const &rhs)
         noexcept)
        (returns 
@@ -65,9 +68,41 @@ lhs.category() < rhs.category()
 || 
 lhs.category() == rhs.category() && lhs.value() < rhs.value();
         ))
+
     ittq(std::ostream &operator<<(std::ostream & os, error_code const &ec))
        (inserts the following text into tt(os):
     verb(
 os << ec.category().name() << ':' << ec.value().
         ))
     )
+
+
+The ti(enum class errc)hi(errc) defines symbols that have identical values as
+the traditional error code values as offered by bf(C) macros but whose values
+describe the error conditions in a less cryptic way , e.g.,
+        verb(
+    enum class errc 
+    {
+        address_family_not_supported, // EAFNOSUPPORT
+        address_in_use,               // EADDRINUSE
+        address_not_available,        // EADDRNOTAVAIL
+        already_connected,            // EISCONN
+        argument_list_too_long,       // E2BIG
+        argument_out_of_domain,       // EDOM
+        bad_address,                  // EFAULT
+        ...
+    };
+        )
+
+Several other strongly typed enums also exist. E.g., the tt(enum class
+future_errc) (cf. section ref(FUTURE)) defines error symbols that are used in
+the context of multi-threading. 
+
+
+
+
+
+
+
+
+
