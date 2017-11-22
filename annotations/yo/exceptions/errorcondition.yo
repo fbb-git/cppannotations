@@ -1,0 +1,65 @@
+tt(Error_condition)hi(error_condition) objects represent platform independent
+error codes (comparable to the platform dependent error codes represented by
+tt(error_code) objects).
+
+Error conditions can be used as `super error codes' extending the scopes of
+error codes by, e.g., combining codes that are used (differently) by different
+operating systems. Somewhat comparable to using functions like bf(htons)(3)
+and bf(ntosh)(3) to convert system dependent endianess to the (operating
+system independent) network byte order.
+
+Error condition objects are returned by the tt(default_error_condition)
+members of the classes tt(error_code) and tt(error_category), and are expected
+as argument of tt(error_category::equivalent).
+
+The class tt(error_condition) offers the following (public) interface:
+
+bf(Constructors):
+    itemization(
+    ittq(error_condition() noexcept)
+       (the default constructor initializes the error code with an error
+        em(value) 0 and a tt(system_category) error category. Error value 0 is
+        normally not considered an error;)
+
+    it() The copy constructor is available;
+
+    ittq(error_condition(int ec, error_category const &cat) noexcept)
+       (this constructor initializes the error condition with error value
+        tt(ec), and an error em(category);)
+
+    ittq(error_condition(ErrorConditionEnum e) noexcept)
+       (this is a member template (cf. section ref(MEMTEMP)), using template
+        header tt(template <class ErrorConditionEnum>). It initializes the
+        object with the return value of tt(make_error_condition(e)). In
+        section ref(ERRCONDITION) defining your own tt(ErrorConditionEnum) is
+        covered;)
+    )
+
+bf(Members):
+    itemization(
+    it() The copy assignment operator as well as an assignment operator
+        accepting an tt(ErrorConditionEnum) are available;
+
+    ittq(void assign(int val, error_category const &cat))
+       (assigns new values to the current object's em(value) and
+        em(category) data members;)
+
+    ittq(error_category const &category() const noexcept)
+       (returns a reference to the object's error category;)
+
+    ittq(void clear() noexcept)
+       (after calling this member em(value) is set to 0 and the object's error
+        em(category) set to tt(generic_category);)
+
+    ittq(string message() const)
+       (returns tt(category().message(value()));)
+
+    ittq(explicit operator bool() const noexcept)
+       (returns tt(value() != 0);)
+
+    ittq(int value() const noexcept)
+       (returns the object's error value.)
+    )
+
+Two tt(error_condition) objects can be compared for (in)equality, and can be
+ordered using tt(operator<).
