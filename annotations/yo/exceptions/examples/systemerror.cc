@@ -24,4 +24,3 @@ catch (...)
 {
     cout << "unknown\n";
 }
-
