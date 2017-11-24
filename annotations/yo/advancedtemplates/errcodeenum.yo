@@ -70,6 +70,11 @@ tt(CalculatorErrc):
 Next, tt(make_error_code) must be defined in the same name space as
 tt(CalculatorErrc).  By itself, its implementation is simple:
         verb(
+    namespace
+    {
+        // ...
+    }
+
     // namespace of CalculatorErrc:
 
     std::error_code make_error_code(CalculatorErrc ce)
@@ -78,8 +83,67 @@ tt(CalculatorErrc).  By itself, its implementation is simple:
     }
         )
 
-Of course, we're not there, yet: what is tt(CalculatorErrCategory)? That's a
+But we're not there, yet: what is tt(CalculatorErrCategory)? That's a
 class derived from tt(std::error_category) (cf. section ref(ERRCAT)). It is
-defined in the anonymous namespace, just above tt(make_error_code). 
-    
+defined in the anonymous namespace, just above tt(make_error_code). Here is
+how it could be defined:
+        verb(
+        // associate verbal descriptions with CalculatorErrc values:
+    tuple<CalculatorErrc, char const *> s_errors[] =
+    {
+        { CalculatorErrc::NoLvalue, "lhs of assignment is not a variable" },
+        { CalculatorErrc::TypeError, "type of expression incorrect"       },
+        { CalculatorErrc::RangeError, "argument value not allowed"        },
+        { CalculatorErrc::ArityError, "incorrect number of arguments"     },
+        { CalculatorErrc::UnknownFunction, "function not defined"         },
+        { CalculatorErrc::MissingParentheses, "parentheses don't match"   },
 
+            // a final catch-all for find_if 
+        { CalculatorErrc{}, "unrecognized CalculatorErrc"                 }
+    };
+
+    struct CalculatorErrCategory: public std::error_category
+    {
+        char const *name() const noexcept override;
+        std::string message(int ce) const override;
+    };
+    
+    char const *CalculatorErrCategory::name() const noexcept
+    {
+        return "calculator";
+    }
+    
+    std::string CalculatorErrCategory::message(int ce) const
+    {
+        CalculatorErrc code = static_cast<CalculatorErrc>(ce);
+    
+        std::get<0>(s_errors[std::size(s_errors) - 1]) = code;
+    
+        return std::get<1>(
+                    *std::find_if(s_errors, s_errors + std::size(s_errors), 
+                        [=](auto const &entry)
+                        {
+                            return code == get<0>(entry);
+                        }
+                    )
+                );
+    }
+                                    // define the singleton
+    CalculatorErrCategory const calculatorErrCategory;
+        )
+    
+Now that tt(CalculatorErrc) is an tt(std::error_code) we can use it in our
+programs. Here is a little program illustrating its use:
+        verb(
+    int main()
+    try
+    {
+        error_code ec = CalculatorErrc::ArityError;
+        cout << ec << ' ' << ec.message() << '\n';
+        throw system_error{ ec, "For demonstration purposes: " };
+    }
+    catch (system_error &se)
+    {
+        cout << se.what() << ": " << se.code() << '\n';
+    }
+        )
