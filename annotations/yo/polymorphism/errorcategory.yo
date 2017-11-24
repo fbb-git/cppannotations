@@ -40,13 +40,16 @@ interface:
             virtual char const *name() const noexcept = 0;
             virtual string message(int ev) const = 0;
 
-            virtual error_condition 
-                    default_error_condition(int ev) const noexcept;
+            virtual error_condition default_error_condition(
+                                        int ev
+                                    ) const noexcept;
+
             virtual bool equivalent(int code, 
-                                    error_condition const &condition
+                            error_condition const &condition
                          ) const noexcept;
-            virtual bool equivalent(error_code const &code, 
-                                    int condition
+
+            virtual bool equivalent(
+                            error_code const &code, int condition
                          ) const noexcept;
 
             bool operator==(error_category const &rhs) const noexcept;
@@ -55,7 +58,6 @@ interface:
 
         protected:
             error_category() noexcept;
-
     };
     error_category const &generic_category() noexcept;
     error_category const &system_category() noexcept;
@@ -63,11 +65,22 @@ interface:
     error_category const &future_category() noexcept;
         )
 
-    Members:
+    In section ref(ERRCODEENUM) the class tt(error_category) is used to define
+a new category: tt(CalculatorErrCategory), as well as a matching function
+        verb(
+    error_category const &calculator_category() const noexcept;
+        )
+
+    At the very least a class that's derived from tt(error_category) must
+override the tt(name) and tt(message) members. In addition, only the
+tt(..._category()) functions will be given access to the single existing
+object of its category, returning a const reference to it.
+
+    The details of the members of this class are:
     itemization(
     ithtq(name)(char const *name() const noexcept) 
-       (returns the mere name of the error
-        category (e.g., tt("generic") is returned by tt(generic_category));)
+       (returns the mere name of the error category (e.g., tt("generic") is
+        returned by tt(generic_category));)
 
     ithtq(message)(string message(int ev) const)
        (returns a string describing the error condition matching error value

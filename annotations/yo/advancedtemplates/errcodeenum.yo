@@ -1,1 +1,85 @@
-TODO
+In section ref(ERRORCODEEXC) the class tt(std::error_code) was introduced. One
+of its constructors accepts an tt(ErrorCodeEnum), which may be an tt(enum) we
+define ourselves. Standard error code values (like the tt(errno) values, or
+the values defined by tt(enum class Errc) are used by low-level system
+functions like bf(stat)(2), but none may be available or suited for errors
+encountered by your own functions or classes. For example, when designing an
+interactive calculator, several errors may be encountered that are related to
+the way expressions are entered by the user. These errors can be represented
+by values defined as symbols in a tt(enum class CalculatorErrc):
+        verb(
+    enum class CalculatorErrc
+    {
+        // no 0, since that's by convention implies no error
+        NoLvalue = 1,           // lhs of assignment is lvalue
+        TypeError,              // incorrect expression type
+        RangeError,             // e.g. sqrt(-1)
+        ArityError,             // too few, too many arguments to a function
+        UnknownFunction,        // function not defined
+        MissingParentheses,     // ( and ) don't match
+    };
+        )
+    The errors themselves could be categorized: plain syntax error,
+argument count mismatch, expression type error, expression value out of a
+valid range.
+
+The class tt(std::error_code) is designed so that both pieces of information
+(the error value and its category) become available. The (int) error code
+through the member tt(value()), the error category through its member
+tt(category()). 
+
+Our intention is to have tt(error_code) accept tt(CalculatorErrc) values using
+its tt(error_code(ErrorCodeEnum) constructor, as this allows us to retrieve,
+at the proper point in our code, the error's value and category, which in turn
+can be useful for, reporting errors (e.g., in log-files, on screen or in some
+error pop-up window).
+
+To achieve this, the function hi(is_error_code)
+tt(std::is_error_code<Errc>::value) must return tt(true) and the template
+function tt(make_error_code(CalculatorErrc)), comparable to
+tt(make_error_code(std::Errc) is available. Both requirements can easily be
+realized. But interestingly, adapting tt(std::is_error_code) requires us to
+add code to the tt(std) namespace. Normally not allowed, but in this case it
+is. The bf(C++) standard states:
+    quote(
+20.5.4.2.1    Namespace std
+
+The behavior of a C++ program is undefined if it adds declarations or
+definitions to namespace std or to a namespace within namespace std unless
+otherwise specified.
+
+A program may add a template specialization for any standard library template
+to namespace std only if the declaration depends on a user-defined type and
+the specialization meets the standard library requirements for the original
+template and is not explicitly prohibited.
+    )
+
+So, we specialize the tt(is_error_code) type trait for our type
+tt(CalculatorErrc): 
+        verb(
+    namespace std
+    {
+        template <>
+        struct is_error_code_enum<CalculatorErrc> 
+        : 
+            true_type{}
+        {};
+    }
+        )
+
+Next, tt(make_error_code) must be defined in the same name space as
+tt(CalculatorErrc).  By itself, its implementation is simple:
+        verb(
+    // namespace of CalculatorErrc:
+
+    std::error_code make_error_code(CalculatorErrc ce)
+    {
+        return { static_cast<int>(ce), calculatorErrCategory };
+    }
+        )
+
+Of course, we're not there, yet: what is tt(CalculatorErrCategory)? That's a
+class derived from tt(std::error_category) (cf. section ref(ERRCAT)). It is
+defined in the anonymous namespace, just above tt(make_error_code). 
+    
+
