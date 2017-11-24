@@ -11,6 +11,7 @@ by values defined as symbols in a tt(enum class CalculatorErrc):
     enum class CalculatorErrc
     {
         // no 0, since that's by convention implies no error
+        //  values do not have to be consecutive
         NoLvalue = 1,           // lhs of assignment is lvalue
         TypeError,              // incorrect expression type
         RangeError,             // e.g. sqrt(-1)
@@ -89,7 +90,7 @@ defined in the anonymous namespace, just above tt(make_error_code). Here is
 how it could be defined:
         verb(
         // associate verbal descriptions with CalculatorErrc values:
-    tuple<CalculatorErrc, char const *> s_errors[] =
+    unordered_map<CalculatorErrc, char const *> s_errors =
     {
         { CalculatorErrc::NoLvalue, "lhs of assignment is not a variable" },
         { CalculatorErrc::TypeError, "type of expression incorrect"       },
@@ -97,9 +98,6 @@ how it could be defined:
         { CalculatorErrc::ArityError, "incorrect number of arguments"     },
         { CalculatorErrc::UnknownFunction, "function not defined"         },
         { CalculatorErrc::MissingParentheses, "parentheses don't match"   },
-
-            // a final catch-all for find_if 
-        { CalculatorErrc{}, "unrecognized CalculatorErrc"                 }
     };
 
     struct CalculatorErrCategory: public std::error_category
@@ -113,20 +111,14 @@ how it could be defined:
         return "calculator";
     }
     
-    std::string CalculatorErrCategory::message(int ce) const
+    string CalculatorErrCategory::message(int ce) const
     {
-        CalculatorErrc code = static_cast<CalculatorErrc>(ce);
-    
-        std::get<0>(s_errors[std::size(s_errors) - 1]) = code;
-    
-        return std::get<1>(
-                    *std::find_if(s_errors, s_errors + std::size(s_errors), 
-                        [=](auto const &entry)
-                        {
-                            return code == get<0>(entry);
-                        }
-                    )
-                );
+        auto iter = s_errors.find(static_cast<CalculatorErrc>(ce));
+
+        return iter == s_errors.end() ?
+                    "CalculatorErrc not recognized"
+                :
+                    iter->second;
     }
                                     // define the singleton
     CalculatorErrCategory const calculatorErrCategory;
