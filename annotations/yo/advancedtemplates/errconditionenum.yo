@@ -1,1 +1,31 @@
-TODO
+In addition to tt(CalculatorErrCategory ) we may have another class of error
+codes, maybe used in a flight simulator program, in which the calculator is
+provided as a tool to the pilots. A related tt(SimulatorErrc) may be defined
+like tt(CalculatorErrc). It could define the following error codes:
+    verbinsert(-s4 //simerrc examples/errcodeenum.cc)
+  
+hi(error_condition)em(Error_conditions) allow us to handle error codes
+according to their category (i.e., tt(CalculatorErrc) or tt(SimulatorErrc), or
+any other error category without using tt(if)-statements testing
+against specific tt(enum class) values. To realize this, em(error conditions)
+can be defined. Error conditions are implemented like error categories: an
+appropriate enumeration is defined, which is then `upgraded' to a
+tt(std::error_condition). Let's define our conditions as:
+    verbinsert(-s4 //simerrsrc examples/errcodeenum.cc)
+    This allows us to distinguish errors made by the user, errors from the
+calculator, and errors from the simulator. As in the previous section, we'll
+`promote' this enum, this time to an ti(ErrorConditionEnum):
+    verbinsert(-s4 //simcondtrait examples/errcodeenum.cc)
+
+Now that an error condition enumeration has been defined, error codes can be
+mapped to their appropriate error condition values. To do that, a tt(class
+ErrorSourceCategory) is derived (again: in the anonymous namespace) from
+tt(std::error_category), similarly to what we did before with, e.g.,
+tt(CalculatorErrCategory):
+        verbinsert(-s4 //errorourcecat examples/errcodeenum.cc)
+
+    The tt(name) and tt(message) members are defined as before, but in
+addition the member tt(equivalent) is defined comparing a received
+tt(error_code) to the available tt(SimErrSource) values. The function
+tt(equivalent) returns tt(true) if tt(error_code code) can be mapped to tt(int
+condition), which in fact is a statically cast tt(SimErrSource) value. For tt(

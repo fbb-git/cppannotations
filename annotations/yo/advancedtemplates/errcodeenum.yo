@@ -7,19 +7,7 @@ encountered by your own functions or classes. For example, when designing an
 interactive calculator, several errors may be encountered that are related to
 the way expressions are entered by the user. These errors can be represented
 by values defined as symbols in a tt(enum class CalculatorErrc):
-        verb(
-    enum class CalculatorErrc
-    {
-        // no 0, since that's by convention implies no error
-        //  values do not have to be consecutive
-        NoLvalue = 1,           // lhs of assignment is lvalue
-        TypeError,              // incorrect expression type
-        RangeError,             // e.g. sqrt(-1)
-        ArityError,             // too few, too many arguments to a function
-        UnknownFunction,        // function not defined
-        MissingParentheses,     // ( and ) don't match
-    };
-        )
+        verbinsert(-s4 //calcerrc examples/errcodeenum.cc)
     The errors themselves could be categorized: plain syntax error,
 argument count mismatch, expression type error, expression value out of a
 valid range.
@@ -56,17 +44,8 @@ template and is not explicitly prohibited.
     )
 
 So, we specialize the tt(is_error_code) type trait for our type
-tt(CalculatorErrc): 
-        verb(
-    namespace std
-    {
-        template <>
-        struct is_error_code_enum<CalculatorErrc> 
-        : 
-            true_type{}
-        {};
-    }
-        )
+tt(CalculatorErrc):
+    verbinsert(-s4 //calctrait examples/errcodeenum.cc)
 
 Next, tt(make_error_code) must be defined in the same name space as
 tt(CalculatorErrc).  By itself, its implementation is simple:
@@ -77,65 +56,15 @@ tt(CalculatorErrc).  By itself, its implementation is simple:
     }
 
     // namespace of CalculatorErrc:
-
-    std::error_code make_error_code(CalculatorErrc ce)
-    {
-        return { static_cast<int>(ce), calculatorErrCategory };
-    }
         )
+    verbinsert(-s4 //makecalcerrc examples/errcodeenum.cc)
 
 But we're not there, yet: what is tt(CalculatorErrCategory)? That's a
 class derived from tt(std::error_category) (cf. section ref(ERRCAT)). It is
 defined in the anonymous namespace, just above tt(make_error_code). Here is
 how it could be defined:
-        verb(
-        // associate verbal descriptions with CalculatorErrc values:
-    unordered_map<CalculatorErrc, char const *> s_errors =
-    {
-        { CalculatorErrc::NoLvalue, "lhs of assignment is not a variable" },
-        { CalculatorErrc::TypeError, "type of expression incorrect"       },
-        { CalculatorErrc::RangeError, "argument value not allowed"        },
-        { CalculatorErrc::ArityError, "incorrect number of arguments"     },
-        { CalculatorErrc::UnknownFunction, "function not defined"         },
-        { CalculatorErrc::MissingParentheses, "parentheses don't match"   },
-    };
-
-    struct CalculatorErrCategory: public std::error_category
-    {
-        char const *name() const noexcept override;
-        std::string message(int ce) const override;
-    };
-    
-    char const *CalculatorErrCategory::name() const noexcept
-    {
-        return "calculator";
-    }
-    
-    string CalculatorErrCategory::message(int ce) const
-    {
-        auto iter = s_errors.find(static_cast<CalculatorErrc>(ce));
-
-        return iter == s_errors.end() ?
-                    "CalculatorErrc not recognized"
-                :
-                    iter->second;
-    }
-                                    // define the singleton
-    CalculatorErrCategory const calculatorErrCategory;
-        )
+    verbinsert(//calcerrcat examples/errcodeenum.cc)
     
 Now that tt(CalculatorErrc) is an tt(std::error_code) we can use it in our
 programs. Here is a little program illustrating its use:
-        verb(
-    int main()
-    try
-    {
-        error_code ec = CalculatorErrc::ArityError;
-        cout << ec << ' ' << ec.message() << '\n';
-        throw system_error{ ec, "For demonstration purposes: " };
-    }
-    catch (system_error &se)
-    {
-        cout << se.what() << ": " << se.code() << '\n';
-    }
-        )
+    verbinsert(-s4 //main examples/errcodeenum.cc)
