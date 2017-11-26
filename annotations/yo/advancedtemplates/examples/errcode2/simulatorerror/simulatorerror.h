@@ -18,8 +18,12 @@ enum class SimulatorError
 
 class SimulatorCategory: public std::error_category
 {
-    char const *name() const noexcept override;
-    std::string message(int ce) const override;
+    public:
+        SimulatorCategory();
+
+    private:
+        char const *name() const noexcept override;
+        std::string message(int ce) const override;
 };
 
 namespace std
@@ -31,9 +35,11 @@ namespace std
 
 std::error_code make_error_code(SimulatorError ce);
 
-extern SimulatorCategory const simulatorCategory;
+extern SimulatorCategory const g_simulatorCategory;
+extern char const *g_SimError;
 
-inline bool simEquiv(std::error_code const &ec)  // only called for sim errors
+inline  // all errors here are Simulator errors
+bool simErrorEquivalent(char const *conditionName, std::error_code const &ec)
 {
     return true;
 }

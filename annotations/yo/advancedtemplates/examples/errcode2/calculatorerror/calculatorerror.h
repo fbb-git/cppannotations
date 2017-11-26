@@ -19,14 +19,13 @@ enum class CalculatorError
 
 class CalculatorCategory: public std::error_category
 {
-    char const *name() const noexcept override;
-    std::string message(int ce) const override;
+    public:
+        CalculatorCategory();           // enforces the singleton 
+
+    private:
+        char const *name() const noexcept override;
+        std::string message(int ce) const override;
 };
-
-extern CalculatorCategory const g_calculatorCategory;
-extern char const *g_CalcError;
-
-std::error_code make_error_code(CalculatorError ce);
 
 //calctrait
 namespace std
@@ -35,6 +34,11 @@ namespace std
     struct is_error_code_enum<CalculatorError>: public true_type 
     {};
 }
+
+std::error_code make_error_code(CalculatorError ce);
+
+extern CalculatorCategory const g_calculatorCategory;
+extern char const *g_CalcError;
 
 bool calcErrorEquivalent(char const *conditionName, std::error_code const &ec);
 

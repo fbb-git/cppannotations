@@ -16,21 +16,21 @@ try
                       g_calculatorCategory, calcErrorEquivalent);
 
 
-//    g_errorSource.add("SimError",    "simulator: failure");
-//                        0);
-    
+    g_errorSource.addCategory(g_SimError, "simulator: failure", 
+                      g_simulatorCategory, simErrorEquivalent);
+
+
         // ec is an actual error code, belonging to some error enum
         // the assert matches if the test for that particuler error code
         // succeeds.
 
         
-     std::error_code ec = CalculatorError::TypeError;
-     assert(ec == g_errorSource(g_CalcError));
-// 
-// //    assert(ec != ErrorSource::SimError);
-// 
-     ec = CalculatorError::MissingParentheses;
-     assert(ec == g_errorSource(g_InputError));
+    std::error_code ec = CalculatorError::TypeError;
+    assert(ec == g_errorSource(g_CalcError));
+    assert(ec != g_errorSource(g_SimError));
+
+    ec = CalculatorError::MissingParentheses;
+    assert(ec == g_errorSource(g_InputError));
 
     ec = CalculatorError::ArityError;
     std::cout << ec << ' ' << ec.message() << '\n';
