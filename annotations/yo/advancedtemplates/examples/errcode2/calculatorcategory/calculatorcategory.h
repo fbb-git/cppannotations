@@ -1,14 +1,12 @@
 #ifndef INCLUDED_CALCULATORCATEGORY_
 #define INCLUDED_CALCULATORCATEGORY_
 
-#include <system_error>
-
 #include "../categorydata/categorydata.h"
 
 //class
 enum class CalculatorError;
 
-class CalculatorCategory: public std::error_category, public CategoryData
+class CalculatorCategory: public CategoryData
 {
     public:
         CalculatorCategory();           // enforces the singleton 
@@ -26,11 +24,10 @@ class CalculatorCategory: public std::error_category, public CategoryData
 
 inline char const *CalculatorCategory::id() const
 {
-    return CategoryData::id;
+    return d_id;
 }
 
 extern CalculatorCategory const g_calculatorCategory;
-// extern char const *g_CalcError;
 
 std::error_code make_error_code(CalculatorError ce);
 

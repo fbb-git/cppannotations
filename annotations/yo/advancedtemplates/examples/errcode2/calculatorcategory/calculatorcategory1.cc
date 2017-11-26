@@ -1,5 +1,6 @@
 #include "calculatorcategory.ih"
 
+//ctor
 CalculatorCategory::CalculatorCategory()
 :
     CategoryData {
@@ -12,3 +13,4 @@ CalculatorCategory::CalculatorCategory()
     if (this != &g_calculatorCategory)
         throw std::logic_error("CalculatorCategory object already defined");
 }
+//=

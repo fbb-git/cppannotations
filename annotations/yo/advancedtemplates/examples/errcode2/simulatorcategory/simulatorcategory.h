@@ -1,13 +1,11 @@
 #ifndef INCLUDED_SIMULATORCATEGORYS_
 #define INCLUDED_SIMULATORCATEGORY_
 
-#include <system_error>
-
 #include "../categorydata/categorydata.h"
 
 enum class SimulatorError;
 
-class SimulatorCategory: public std::error_category, public CategoryData
+class SimulatorCategory: public CategoryData
 {
     public:
         SimulatorCategory();
@@ -24,7 +22,7 @@ class SimulatorCategory: public std::error_category, public CategoryData
 
 inline char const *SimulatorCategory::id() const
 {
-    return CategoryData::id;
+    return d_id;
 }
 
 // static       // all errors here are Simulator errors
@@ -35,10 +33,8 @@ inline bool SimulatorCategory::equivalent(char const *conditionName,
 }
 
 extern SimulatorCategory const g_simulatorCategory;
-// extern char const *g_SimError;
 
 std::error_code make_error_code(SimulatorError ce);
-
     
 #endif
 
