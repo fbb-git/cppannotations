@@ -1,17 +1,16 @@
-Error code objects are used by tt(error_category) or tt(system_error)
-objects. E.g., some constructors of tt(system_error) accept
-tt(std::error_code) hi(error_code) objects. 
+tt(Error_code) objects are used by tt(error_category) or tt(system_error)
+objects. E.g., some tt(system_error) constructors accept tt(std::error_code)
+hi(error_code) objects.
 
-The main purpose of tt(error_code) objects is to encapsulate platform
-dependent em(error code values), as determined by the operating system or
-comparable low-level functions (like bf(chmod)(2)), Error code values are
-commonly assigned by such functions to tt(errno). 
+The main purpose of tt(error_code) objects is to encapsulate 
+em(error values), and associated em(error categories). Often, error values
+become available as values assigned to the global tt(int errno).
 
-In addition, an tt(error_category) defining the encountered error's general
-category (see the next section) is usually specified when constructing an
+In addition, an tt(error_category) is used to specify an encountered error's
+category (see the next section). It is usually specified when constructing an
 tt(error_code) object.
 
-The class tt(error_code) provides the following public interface and free
+The class tt(error_code) has the following public interface and free
 functions:
 
 bf(Constructors):
@@ -29,11 +28,11 @@ bf(Constructors):
          em(category) (e.g., tt(&system_category()) or
          tt(generic_category()));)
 
-    ittq(error_code(ErrorCodeEnum e) noexcept)
+    ittq(error_code(ErrorCodeEnum value) noexcept)
        (this is a member template (cf. section ref(MEMTEMP)), using template
         header tt(template <class ErrorCodeEnum>). It initializes the object
-        with the return value of tt(make_error_code(e)). In section
-        ref(ERRCODEENUM) defining your own tt(ErrorCodeEnum) is covered; )
+        with the return value of tt(make_error_code(value)). In section
+        ref(ERRCODEENUM) defining an tt(ErrorCodeEnum) is covered; )
     )
 
 bf(Members):
@@ -70,14 +69,14 @@ bf(Free functions):
     it() Two tt(error_code) objects can be compared for (in) equality and can
         be ordered (using tt(operator<));
 
-    ittq(error_code make_error_code(errc e) noexcept)
-       (returns tt(error_code(static_cast<int>(e), generic_category()))
+    ittq(error_code make_error_code(errc value) noexcept)
+       (returns tt(error_code(static_cast<int>(value), generic_category()))
         (tt(errc: see below));)
 
     ittq(std::ostream &operator<<(std::ostream & os, error_code const &ec))
-       (inserts the following text into tt(os):
+       (executes the following statement:
     verb(
-os << ec.category().name() << ':' << ec.value().
+return os << ec.category().name() << ':' << ec.value();
         ))
     )
 

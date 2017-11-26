@@ -36,8 +36,8 @@ set of three constructors. E.g.,
     system_error(error_code(errno, system_category()), 
                                             "context of the error");
         )
-    However, the second set of three constructors are of course usually used
-when an existing function already returns an tt(error_code). E.g.,
+    The second set of three constructors are primarily used when an existing
+function already returns an tt(error_code). E.g.,
         verb(
     system_error(make_error_code(errc::bad_address), 
                                             "context of the error");
@@ -60,7 +60,24 @@ Note that, although tt(system_error) was derived from tt(runtime_error),
 you'll lose the tt(code) member when catching a tt(std::exception) object. Of
 course, downcasting is always possible, but that's a stopgap. Therefore, if a
 tt(system_error) is thrown, a matching tt(catch(system_error const &)) clause
-should be provided (for a flexible alternative, see the class 
+must be provided to retrieve the value returned by the tt(code) member. This,
+and the rather complex organization of the classes that are involved when
+using tt(system_error) result in a very complex, and hard to generalize
+exception handling. In essence, what you obtain at the expense of high
+complexity is a facility for categorizing tt(int) or tt(enum) error
+values. More in-dept coverage of the involved complexities is provided in
+chapter ref(ADVANCEDTEMPL), in particular sections ref(ERRCODEENUM) and
+ref(ERRCONDITIONENUM)) (for a flexible alternative, see the class 
     hi(Exception (Bobcat)) tt(FBB::Exception) in the author's 
         url(Bobcat library)(http://fbb-git.github.io/bobcat/).\
         hi(Bobcat library)hi(http://fbb-git.github.io/bobcat/))
+
+
+
+
+
+
+
+
+
+

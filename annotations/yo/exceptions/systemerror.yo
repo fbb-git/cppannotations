@@ -1,15 +1,34 @@
 The class ti(std::system_error) is derived from
-tt(std::runtime_error). tt(System_error) objects can be thrown when an error
-occurs that has an associated (system) error code and error category. Such
-errors are typically associated with low-level (like operating system)
-functions.
+tt(std::runtime_error). 
 
 Before using the class tt(system_error) or related classes the
 tthi(system_error) header file must be included.
 
+tt(System_error) objects can be thrown when errors are
+encountered having associated (system) em(error values). Such errors are
+typically associated with low-level (like operating system) functions, but
+other types of error (e.g., bad user input, non-existing requests) can also be
+handled. Error codes are objects storing error values and matching
+categories. Such categories define domains to which error codes
+belong. In practice this means that a series of error codes is defined in an
+enum, and that a unique category is associated with that enum. New enums and
+associated categories may then be defined, and enum values may be
+identical across different enums, as their categories can be used, like
+name spaces, to avoid confusion. One of the reasons for using categories
+is that enums don't support inheritance: inside tt(error_code) objects they
+are stored as tt(int) values, losing the original  enum category.
+
+In addition to error codes and categories error em(conditions) are
+distinguished. Error conditions are associated with causes of errors, like bad
+user input, failing system functions or non-existing requests. Error 
+conditions are considered platform independent (as in: users provide bad input
+on all kinds of platforms) whereas error codes and error categories are
+tailored to programs that are actually being used.
+
 When constructing tt(system_error) objects tt(error_codes) and
-tt(error_categories) may be specified. These classes are now introduced, after
-which tt(system_error) itself is covered in more detail.
+tt(error_categories) may be specified. These latter two classes as well as
+tt(error_condition) are now first introduced, after which tt(system_error)
+itself is covered in more detail.
 
 Figure ref(SYSERRFIG) illustrates how the various components used by
 tt(system_error) interact.
@@ -21,25 +40,16 @@ tt(system_error) interact.
 As tt(system_error) is eventually derived from tt(exception) it offers the
 standard tt(what) member. Its other data element is an
 tt(error_code). tt(Error_codes) can be constructed from tt(int) values, but
-also from a separately defined tt(ErrorCodeEnum). tt(Error_codes) are
-associated with tt(error_categories), representing a group of tt(error_code)
-values. Different tt(error_categories) may use identical tt(error_code) values,
-which are then distinguished by their tt(error_category. Error_codes)
-represent platform dependent error values. 
+also from separately defined tt(ErrorCodeEnums). Since tt(error_codes) are 
+associated with tt(error_categories) an tt(error_category) must be provided
+when tt(int) error values are available.
 
-When multiple tt(error_code) enums are used (the enums could be defined on
-different platforms), em(error_conditions) can be defined allowing you to
-group, classify, or translate tt(error_code) values (between different
-platforms). Defining an tt(error_condition) is covered in section
-ref(ERRCONDITONENUM).
-
-In POSIX systems the tt(errno) variable may be associated with many, rather
-cryptic symbols, and the predefined tt(enum class errc) is an attempt to use
-intuitively more appealing symbols instead. Since its symbols are defined in a
-strongly typed enumeration, they cannot directly be used when defining a
-matching tt(error_code). Instead, the function tt(make_error_code) converts
-tt(enum class errc) values to tt(int) values, so they can be used when
-constructing tt(error_code) objects.
+In POSIX systems the tt(errno) variable may be associated with many, often
+rather cryptic, symbols. The predefined tt(enum class errc) is an attempt to
+use intuitively more appealing symbols instead. Since its symbols are defined
+in a strongly typed enumeration, they cannot directly be used when defining a
+matching tt(error_code). Instead, a function tt(make_error_code) is available,
+converting tt(enum class errc) values to tt(error_code) objects.
 
 Now that the general outline has been presented, it's time to have a closer
 look at the various components shown in figure ref(SYSERRFIG).
