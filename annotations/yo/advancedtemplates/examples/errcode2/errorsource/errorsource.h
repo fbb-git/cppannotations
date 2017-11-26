@@ -7,6 +7,8 @@
 #include <string>
 #include <tuple>
 
+struct CategoryData;
+
 class ErrorSource
 {
             // a pointer to a function returning true if the provided
@@ -49,10 +51,7 @@ class ErrorSource
         void addCondition(char const *name, char const *description);
 
                 // sourceName could be CalcError, SimError, InputError
-        void addCategory(char const *name,
-                        char const *description,
-                        std::error_category const &categorySingleton,
-                        EquivPtr equivPtr);
+        void addCategory(CategoryData const &data);
 
         bool equivalent(int condition, // index in s_info
                         std::error_code const &code);

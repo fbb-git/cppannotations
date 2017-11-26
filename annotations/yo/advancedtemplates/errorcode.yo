@@ -1,35 +1,68 @@
 In section ref(ERRORCODEEXC) the class tt(std::error_code) was introduced. One
-of its constructors accepts an ti(ErrorCodeEnum), which may be an tt(enum) we
-define ourselves. Standard error code values (like the tt(errno) values, or
-the values defined by tt(enum class Errc) are used by low-level system
-functions like bf(stat)(2), but none may be available or suited for errors
-encountered by your own functions or classes. For example, when designing an
-interactive calculator, several errors may be encountered that are related to
-the way expressions are entered by the user. These errors can be represented
-by values defined as symbols in a tt(enum class CalculatorErrc):
-        verbinsert(-s4 //calcerrc examples/errcodeenum.cc)
-    The errors themselves could be categorized: plain syntax error,
-argument count mismatch, expression type error, expression value out of a
-valid range.
+of its constructors accepts an ti(ErrorCodeEnum). Enums we
+define ourselves may be `promoted' to tt(ErrorCodeEnums), allowing their use
+by tt(error_code) and comparable classes. 
 
-The class tt(std::error_code) is designed so that both pieces of information
+Standard error code values (like the tt(errno) values), or the values defined
+by tt(enum class Errc) are used by low-level system functions like
+bf(stat)(2), but they may not be suited for errors encountered by your own
+functions or classes. For example, when designing an interactive calculator,
+several errors may be encountered that are related to the way expressions are
+entered by the user. For those situations you might want to develop your own
+tt(ErrorCodeEnum). At the same time, the organization of the classes involved
+in using tt(system_error) exceptions is complex, and the situation is further
+complicated when different developers use their own self-defined enumerations
+and classes. For example, it is enticing to list error conditions in an enum,
+but such an enum is hard to maintain if your program links to a library in
+which another developer has defined a separate enumeration. If you also 
+want to use the newly available error conditions then it's less attractive to
+update your implementation so that that's possible. 
+
+The approach developed in this and the next section results in more flexible
+(still rather complex...) code. First two tt(ErrorCodeEnums) are developed:
+they are the starting points when defining related error values. That these
+values are related is then further developed by defining matching classes,
+that are derived from the class tt(error_category). Error conditions are used
+to associate error values with generic causes of errors. Since error
+conditions may previously have been defined (maybe by different developers) it
+is an interesting puzzle by itself to figure out how multiple error conditions
+can flexibly be combined in one program. This puzzle is solved by defining a
+class tt(ErrorSource) that manages error conditions.
+
+The example used below focuses on the construction of a flight simulator. When
+using the flight simulator itself several errors may be encountered (e.g., a
+navigation beacon is out of range). Inside the cockpit, the system offers a
+calculator, and here too specific errors may emerge: a non-existing function
+may be requested, or parentheses of complex expressions might not
+match. Whereas the former error is a specific calculator related error, the
+latter is an error that's associated with bad user input, and thus three broad
+categories of errors (i.e., error conditions) are distinguished: simulator-,
+calculator-, and user-errors.
+
+Our first 
+    step consists of defining our own error enumerations: one related to the
+calculator and one related to the simulator:
+
+    verbinsert(-s4 //enum examples/errcode2/calculatorerror/calculatorerror.h)
+
+    verbinsert(-s4 //enum examples/errcode2/simulatorerror/simulatorerror.h)
+
+The class tt(std::error_code) is designed so that two pieces of information
 (the error value and its category) become available. The (int) error code
 through the member tt(value()), the error category through its member
 tt(category()). 
 
-Our intention is to have tt(error_code) accept tt(CalculatorErrc) values using
-its tt(error_code(ErrorCodeEnum) constructor, as this allows us to retrieve,
-at the proper point in our code, the error's value and category, which in turn
-can be useful for, reporting errors (e.g., in log-files, on screen or in some
-error pop-up window).
+Second, 
+    our intention is to have tt(error_code) accept tt(CalculatorError) and
+tt(SimulatorError) values by its tt(error_code(ErrorCodeEnum)) constructor, as
+this allows us to retrieve error values and categories.
 
-To achieve this, the function hi(is_error_code)
-tt(std::is_error_code<Errc>::value) must return tt(true) and the template
-function tt(make_error_code(CalculatorErrc)), comparable to
-tt(make_error_code(std::Errc) is available. Both requirements can easily be
-realized. But interestingly, adapting tt(std::is_error_code) requires us to
-add code to the tt(std) namespace. Normally not allowed, but in this case it
-is. The bf(C++) standard states:
+To achieve this, the trait class hi(is_error_code_enum), must be available for
+our error enumeration. This trait class's static member tt(value) must return
+tt(true).  Interestingly, defining the specializations of
+tt(std::is_error_code_enum) requires us to add code to the tt(std)
+namespace. Normally this is not allowed, but in this case it is. The bf(C++)
+standard states:
     quote(
 20.5.4.2.1    Namespace std
 
@@ -42,6 +75,30 @@ to namespace std only if the declaration depends on a user-defined type and
 the specialization meets the standard library requirements for the original
 template and is not explicitly prohibited.
     )
+    Here are the specialization for tt(CalculatorError); the one for
+tt(SimulatorError) is defined analogously:
+
+  verbinsert(-s4 //trait examples/errcode2/calculatorerror/calculatorerror.h)
+
+This completes the definition of our own error enumerations, which are now
+`promoted' to tt(ErrorCodeEnums).
+
+Third, 
+    before we can create tt(error_code) objects we need tt(error_category)
+objects, as tt(error_code) objects contain tt(error_category)
+objects. Here we design tt(class CalculatorCategory), publicly derived from
+tt(std::error_category) (again, tt(SimulatorCategory) is analogously
+designed):
+      verbinsert(-s4 //class
+            examples/errcode2/calculatorcategory/calculatorcategory.h)
+
+Error categories are compared by the addresses of their singleton
+objects. Since tt(std::error_category) does not support copying, only the
+default constructor must enforce the singleton requirement. A global 
+
+||   and the
+||  template function tt(make_error_code(CalculatorErrc)), comparable to
+||  tt(make_error_code(std::Errc) must be available.  Interestingly, adapting
 
 So, we specialize the tt(is_error_code) type trait for our type
 tt(CalculatorErrc):

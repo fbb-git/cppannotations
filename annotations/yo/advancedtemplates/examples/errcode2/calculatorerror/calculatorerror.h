@@ -3,7 +3,7 @@
 
 #include <system_error>
 
-//calcerrc
+//enum
 enum class CalculatorError
 {
     // no 0, since that's by convention implies no error
@@ -16,15 +16,19 @@ enum class CalculatorError
     MissingParentheses,     // ( and ) don't match
 };
 //=
-
-//calctrait
+//trait
 namespace std
 {
     template <>
     struct is_error_code_enum<CalculatorError>: public true_type 
     {};
 }
+//=
 
 #endif
+
+
+
+
 
 

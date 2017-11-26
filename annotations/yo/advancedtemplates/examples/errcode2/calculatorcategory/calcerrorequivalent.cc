@@ -1,12 +1,13 @@
 #include "calculatorcategory.ih"
 
-bool calcErrorEquivalent(char const *conditionName, 
-                            std::error_code const &ec)
+// static
+bool CalculatorCategory::equivalent(char const *conditionName, 
+                                    std::error_code const &ec)
 {
     // test for CalculatorError
     return 
             (ec != CalculatorError::MissingParentheses && 
-                conditionName == g_CalcError)
+                conditionName == g_calculatorCategory.id())
             ||
             (ec == CalculatorError::MissingParentheses && 
                 conditionName == g_InputError);

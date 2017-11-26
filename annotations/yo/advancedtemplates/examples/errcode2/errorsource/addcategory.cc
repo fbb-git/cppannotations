@@ -1,12 +1,8 @@
 #include "errorsource.ih"
 
-void ErrorSource::addCategory(
-                        char const *name, 
-                        char const *description,
-                        std::error_category const &category,
-                        EquivPtr ptr)
+void ErrorSource::addCategory(CategoryData const &data)
 {
-    addCondition(name);
-    d_info.push_back({ name, description });
-    d_category[category.name()] = ptr;
+    addCondition(data.id);
+    d_info.push_back({ data.id, data.description });
+    d_category[data.singleton.name()] = data.equivalent;
 }

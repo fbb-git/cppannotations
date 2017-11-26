@@ -12,13 +12,8 @@ try
     static_cast<std::error_category const &>(g_calculatorCategory).name() << 
     '\n';
 
-    g_errorSource.addCategory(g_CalcError, "calculator: cannot compute", 
-                      g_calculatorCategory, calcErrorEquivalent);
-
-
-    g_errorSource.addCategory(g_SimError, "simulator: failure", 
-                      g_simulatorCategory, simErrorEquivalent);
-
+    g_errorSource.addCategory(g_calculatorCategory);
+    g_errorSource.addCategory(g_simulatorCategory);
 
         // ec is an actual error code, belonging to some error enum
         // the assert matches if the test for that particuler error code
@@ -26,8 +21,8 @@ try
 
         
     std::error_code ec = CalculatorError::TypeError;
-    assert(ec == g_errorSource(g_CalcError));
-    assert(ec != g_errorSource(g_SimError));
+    assert(ec == g_errorSource(g_calculatorCategory.id()));
+    assert(ec != g_errorSource(g_simulatorCategory.id()));
 
     ec = CalculatorError::MissingParentheses;
     assert(ec == g_errorSource(g_InputError));
