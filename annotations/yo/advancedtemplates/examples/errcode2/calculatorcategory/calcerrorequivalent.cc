@@ -1,4 +1,4 @@
-#include "calculatorerror.ih"
+#include "calculatorcategory.ih"
 
 bool calcErrorEquivalent(char const *conditionName, 
                             std::error_code const &ec)

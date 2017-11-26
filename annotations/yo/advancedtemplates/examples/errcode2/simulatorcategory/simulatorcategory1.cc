@@ -1,4 +1,4 @@
-#include "simulatorerror.ih"
+#include "simulatorcategory.ih"
 
 SimulatorCategory::SimulatorCategory()
 {

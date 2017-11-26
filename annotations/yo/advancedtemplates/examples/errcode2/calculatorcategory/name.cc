@@ -1,4 +1,4 @@
-#include "calculatorerror.ih"
+#include "calculatorcategory.ih"
 
 char const *CalculatorCategory::name() const noexcept
 {
