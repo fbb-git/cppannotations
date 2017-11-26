@@ -42,6 +42,10 @@ bool ErrorCategory::equivalent(
                         std::error_code const &code, int condition
                     ) const noexcept
 {
+    std::cerr << __FILE__ ": equivalent code = " << code.value() <<
+            ", message = " << code.message() << 
+            ", condition = " << condition << "\n\n";
+
     auto iter = s_equivalent.find(static_cast<ErrorSource>(condition));
     return iter == s_equivalent.end() ? false : (*iter->second)(code);
 }
