@@ -1,5 +1,5 @@
 #include "errorcategory.ih"
 
                                     // define the singleton
-ErrorCategory const errorCategory;
+ErrorCategory const g_errorCategory;
 

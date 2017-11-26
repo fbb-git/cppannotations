@@ -9,8 +9,7 @@ struct ErrorCategory: public std::error_category
 //    typedef std::unordered_map<ErrorSource, Info> Map;
 
     public:
-//                            // function adding new error source handler
-//        void add(ErrorSource es, char const *descr,  EquivPtr equivPtr);
+        ErrorCategory();            // enforces the singleton
 
     private:
         char const *name() const noexcept override;
@@ -31,7 +30,7 @@ namespace std
 
 std::error_condition make_error_condition(ErrorSource::Enum es);
 
-extern ErrorCategory const errorCategory;
+extern ErrorCategory const g_errorCategory;
 
 
 
