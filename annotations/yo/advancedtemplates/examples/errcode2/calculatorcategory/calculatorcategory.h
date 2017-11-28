@@ -8,26 +8,24 @@ enum class CalculatorError;
 
 class CalculatorCategory: public CategoryData
 {
+    static CalculatorCategory *s_instance;
+
+    static CatMap<CalculatorError> s_errors;
+
     public:
-        CalculatorCategory();           // enforces the singleton 
-
-        char const *id() const;
-
-        static bool equivalent(char const *conditionName, 
+        static bool equivalent(size_t condNr,
                                std::error_code const &ec);
 
-    private:
+        static CalculatorCategory &instance();
+
         char const *name() const noexcept override;
         std::string message(int ce) const override;
+
+    private:
+        CalculatorCategory();           // enforces the singleton 
+
 };
 //=
-
-inline char const *CalculatorCategory::id() const
-{
-    return d_id;
-}
-
-extern CalculatorCategory const g_calculatorCategory;
 
 std::error_code make_error_code(CalculatorError ce);
 

@@ -7,32 +7,23 @@ enum class SimulatorError;
 
 class SimulatorCategory: public CategoryData
 {
+    static SimulatorCategory *s_instance;
+
+    static CatMap<SimulatorError> s_errors;
+
     public:
-        SimulatorCategory();
 
-        char const *id() const;
-
-        static bool equivalent(char const *conditionName, 
+        static bool equivalent(size_t condNr, 
                                std::error_code const &ec);
 
-    private:
+        static SimulatorCategory &instance();
+
         char const *name() const noexcept override;
         std::string message(int ce) const override;
+
+    private:
+        SimulatorCategory();
 };
-
-inline char const *SimulatorCategory::id() const
-{
-    return d_id;
-}
-
-// static       // all errors here are Simulator errors
-inline bool SimulatorCategory::equivalent(char const *conditionName, 
-                                          std::error_code const &ec)
-{
-    return true;
-}
-
-extern SimulatorCategory const g_simulatorCategory;
 
 std::error_code make_error_code(SimulatorError ce);
     

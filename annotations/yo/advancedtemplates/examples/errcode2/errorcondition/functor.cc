@@ -1,6 +1,6 @@
-#include "errorsource.ih"
+#include "errorcondition.ih"
 
-ErrorSource::Enum ErrorSource::operator()(char const *conditionName) const
+ErrorCondition::Enum ErrorCondition::operator()(char const *conditionName) const
 {
     auto iter = d_condition.find(conditionName);
 

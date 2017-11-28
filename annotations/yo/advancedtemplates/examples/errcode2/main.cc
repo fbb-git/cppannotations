@@ -1,39 +1,49 @@
 #include "main.ih"
 
             // define globally available error conditions
-char const *g_InputError = "InputError";
+            // (may also be defined elsewhere, e.g., by 3rd parties
+            //
 
 int main()
 try
 {
-    g_errorSource.addCondition(g_InputError,  "error in user request");
+    ErrorCondition &errorCond  = ErrorCondition::instance();
+    std::cerr << errorCond.name() << '\n';
 
-    std::cerr << "Calculator cat = " << 
-    static_cast<std::error_category const &>(g_calculatorCategory).name() << 
-    '\n';
-
-    g_errorSource.addCategory(g_calculatorCategory);
-    g_errorSource.addCategory(g_simulatorCategory);
+    std::cerr << CalculatorCategory::instance().name() << '\n';
+    std::cerr << SimulatorCategory::instance().name() << '\n';
+    
+    errorCond.addCondition("InputCond",   "error in user request");
+    errorCond.addCondition("UnavailCond", "function not available");
+    errorCond.addCondition("SystemCond",  "system failure");
 
         // ec is an actual error code, belonging to some error enum
-        // the assert matches if the test for that particuler error code
-        // succeeds.
+        // the assert checks whether the specified error code belongs to
+        // the specified error condition
 
-        
+//                    // also OK: ErrorCondition::Enum{};
+//    std::error_condition cond = errorCond("InputCond"); 
+
     std::error_code ec = CalculatorError::TypeError;
-    assert(ec == g_errorSource(g_calculatorCategory.id()));
-    assert(ec != g_errorSource(g_simulatorCategory.id()));
+    assert(ec != ErrorCondition::Enum{});
+    assert(ec == errorCond("UnavailCond"));
+    assert(ec != errorCond("SystemCond"));
 
     ec = CalculatorError::MissingParentheses;
-    assert(ec == g_errorSource(g_InputError));
+    assert(ec == errorCond("InputCond"));
 
     ec = CalculatorError::ArityError;
     std::cout << ec << ' ' << ec.message() << '\n';
     throw std::system_error{ ec, "For demonstration purposes: " };
 }
-catch (std::system_error &se)
+catch (std::system_error const &se)
 {
-    std::cout << se.what() << ": " << se.code() << '\n';
+    std::cout << "System Error: " << se.what() << ": " << se.code() << '\n';
+
+    //throw;    cannot be rethrown!!
+
 }
-
-
+catch (std::exception const &exc)
+{
+    std::cout << "Exception: " << exc.what() << '\n';
+}

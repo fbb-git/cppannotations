@@ -1,16 +1,36 @@
-In addition to tt(CalculatorErrCategory ) we may have another class of error
-codes, maybe used in a flight simulator program, in which the calculator is
-provided as a tool to the pilots. A related tt(SimulatorErrc) may be defined
-like tt(CalculatorErrc). It could define the following error codes:
-    verbinsert(-s4 //simerrc examples/errcodeenum.cc)
-  
-hi(error_condition)em(Error_conditions) allow us to handle error codes
-according to their category (i.e., tt(CalculatorErrc) or tt(SimulatorErrc), or
-any other error category without using tt(if)-statements testing
-against specific tt(enum class) values. To realize this, em(error conditions)
-can be defined. Error conditions are implemented like error categories: an
-appropriate enumeration is defined, which is then `upgraded' to a
-tt(std::error_condition). Let's define our conditions as:
+So our flight simulator program uses two tt(ErrorCodeEnums): one covering
+errors that are related to the simulator itself, and one covering errors
+related to its on-board calculator. If we're using facilities provided by
+libraries then several more enums might also be available for use in our
+simulator. E.g., there could be a data base of airport approach charts,
+defining an tt(ApproachChartError) enum, and the simulator's GPS might come
+with its own tt(GPGErrors) enum.
+
+Errors can usually be categorized. In our simulator we might recognize user
+input errors, unavailable requests, system failures, etc..
+hi(error_condition)em(Error_conditions) allow us to categorize errors of
+tt(ErrorCodeEnums) without using tt(if)-statements testing specific enum
+values. Error conditions em(could) be (and often em(are)) implemented like
+error categories: an enumeration is defined, which is then `upgraded' to a
+tt(std::error_condition). 
+
+The disadvantage of using enumerations across independent developers is that
+enumerations are difficult to apply, combine, and extend: a library might
+define an tt(InputError) condition but another library might do so as well;
+different enums might be available, but how do we prevent those enums from
+using identical values?
+
+Such problems might be prevented by avoiding fixed enum values, and instead
+use verbal labels denoting error conditions. So rather than specifying
+        verb(
+    enum class ErrorCondition
+    {
+        InputCond,
+        SimCond,
+        Calc
+
+
+Let's define our conditions as:
     verbinsert(-s4 //simerrsrc examples/errcodeenum.cc)
     This allows us to distinguish errors made by the user, errors from the
 calculator, and errors from the simulator. As in the previous section, we'll
