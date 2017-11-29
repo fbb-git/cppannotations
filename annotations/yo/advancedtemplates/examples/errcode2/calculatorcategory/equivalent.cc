@@ -1,6 +1,5 @@
 #include "calculatorcategory.ih"
 
-// static
 bool CalculatorCategory::equivalent(std::error_code const &ec, int condNr)
                                                                 const noexcept
 {

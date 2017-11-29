@@ -21,7 +21,7 @@ class SimulatorCategory: public std::error_category
         std::string message(int ce) const override;
 
     private:
-        SimulatorCategory();
+        SimulatorCategory() = default;
 };
 
 std::error_code make_error_code(SimulatorError ce);

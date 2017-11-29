@@ -22,7 +22,7 @@ class CalculatorCategory: public std::error_category
         std::string message(int ce) const override;
 
     private:
-        CalculatorCategory();
+        CalculatorCategory() = default;
 };
 //=
 
