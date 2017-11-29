@@ -27,8 +27,8 @@ ref(ERRCAT). Error conditions are used to associate error values with generic
 causes of errors. Since error conditions may previously have been defined
 (maybe by different developers) it is an interesting puzzle by itself to
 figure out how multiple error conditions can flexibly be combined in one
-program. This puzzle is solved by defining a class tt(ErrorSource) that
-manages error conditions.
+program. This puzzle is solved by defining a class tt(ErrorCondition) that is
+able to manage all error conditions.
 
 The example used below focuses on the construction of a flight simulator. When
 using the flight simulator itself several errors may be encountered (e.g., a
@@ -45,7 +45,6 @@ it() Our first step consists of defining our own error enumerations: one
     related to the calculator and one related to the simulator:
     
     verbinsert(//enum examples/errcode2/calculatorerror/calculatorerror.h)
-    
     verbinsert(//enum examples/errcode2/simulatorerror/simulatorerror.h)
     
     The class tt(std::error_code) is designed so that two pieces of
@@ -55,18 +54,18 @@ it() Our first step consists of defining our own error enumerations: one
     
 it() Second, our intention is to let tt(error_code) accept
     tt(CalculatorError) and tt(SimulatorError) values using its
-    tt(error_code(ErrorCodeEnum)) constructor, as this allows us to
+    tt(error_code(ErrorCodeEnum)) constructor as this allows us to
     retrieve error values and categories, using our own error code
     enumerations. 
     
-    To achieve this, the trait class ti(is_error_code_enum), must be
-    available for our error enumeration. This trait class's static member
-    tt(value) must return tt(true).  Interestingly, defining the
-    specializations of tt(std::is_error_code_enum) requires us to add code
-    to the tt(std) namespace. Normally this is not allowed, but in this
-    case it is. The bf(C++) standard states: 
+    To achieve that the trait class ti(is_error_code_enum's) static member
+    tt(value) must return tt(true) when provided with a
+    value from our own error enumeration. This trait class.  Interestingly,
+    defining the specializations of tt(std::is_error_code_enum) requires us to
+    add code to the tt(std) namespace. Normally this is not allowed, but in
+    this case it is. The bf(C++) standard states:
 
-    quote( 20.5.4.2.1 Namespace std
+    quote(20.5.4.2.1 Namespace std
     
         The behavior of a C++ program is undefined if it adds declarations or
         definitions to namespace std or to a namespace within namespace std
@@ -81,7 +80,7 @@ it() Second, our intention is to let tt(error_code) accept
    Here is the specialization for tt(CalculatorError); the one for
     tt(SimulatorError) is defined analogously:
     
-  verbinsert(//trait examples/errcode2/calculatorerror/calculatorerror.h)
+  verbinsert(//trait examples/errcode2/calculatorerror/.h)
     
     This completes the definition of our own error enumerations, which are
     now `promoted' to tt(ErrorCodeEnums).
@@ -93,51 +92,7 @@ it() Third, one of the constructors of tt(error_code) objects expects, in
     object. That constructor normally casts the tt(ErrorCodeEnum) value to an
     tt(int), and constructs the tt(error_code) by also specifying a fitting
     tt(error_category). Therefore, a class matching the tt(ErrorCodeEnum) is
-    derived from tt(error_category). 
-
-    Our own error category classes are designed as singleton classes and
-    merely have to implement their own tt(name, message) and one
-    tt(equivalent) function. tt(Message) members return descriptions matching
-    values of error code enums, and for that we use a tt(std::unordered_map),
-    for which the tt(typedef CatMap) is defined (since
-    tt(ErrorCodeEnum)-values may have been randomly assigned (not using 0) an
-    tt(unordered_map) offers fast access to the error's description and error
-    condition (see the next section) given its value).  Here is the interface
-    of the class tt(CalculatorCategory):
-
-    verbinsert(//class 
-            examples/errcode2/calculatorcategory/calculatorcategory.h)
-    
-    As error category objects are singletons error categories can simply be
-    compared for (in)equality by comparing the addresses of their singleton
-    objects. 
-
-it() Fourth, the class's tt(name) member simply returns a short string naming
-    the category (tt("calculator") for the calculator category).
-
-    The class's tt(message) member locates the tt(CatMap) entry matching the
-    error code and returns its description. Here are the definitions of the
-    tt(message) member, of the member tt(instance) returning a reference to
-    the class's single object, and to the initialization of its tt(CatMap)
-    static data member:
-
-    verbinsert(//impl examples/errcode2/calculatorcategory/messace.cc)
-
-    verbinsert(//impl examples/errcode2/calculatorcategory/instance.cc)
-
-    verbinsert(//impl examples/errcode2/calculatorcategory/data.cc)
-    
-it() Fifth, we're now in position to actually create tt(error_code) objects
-    from tt(CalculatorError) enum values. For this we define the free function
-    tt(make_error_code(CalculatorError ce)): 
-
-    verbinsert(//impl examples/errcode2/calculatorcategory/makeerrorcode.cc)
-    
-    Now that tt(CalculatorErrc) is an tt(std::error_code) we can use it in our
-    programs. Here is a little program illustrating its use:
-
-    verbinsert(-a examples/errcode2/main.part);
-    
-    In the next section using error conditions is covered in detail.
-    )
+    usually derived from tt(error_category). Deriving a class from
+    tt(error_category) is covered in the next section.
+)
 

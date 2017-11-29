@@ -1,0 +1,68 @@
+The tt(ErrorCodeEnums) developed in the previous section are the starting
+points for two more classes, derived from the class tt(error_category) (see
+section ref(ERRCAT). 
+
+Our own error category classes are designed as singleton classes, dervied from
+tt(std::error_category), and merely have to implement their own tt(name,
+message) and an tt(equivalent) function.  
+
+Associated with errors defined by tt(ErrorCodeEnums) are two textual items
+(NTBSs): a verbal description of the error, and the name of the em(error
+condition) to which the enum value belongs. E.g., associated with
+tt(CalculatorError:::MissingParentheses) are the description tt("parentheses
+don't match") and the error condition name tt("InputCond"). Those associations
+are collected in a class template tt(CatMap), which has been derived from
+tt(std::unordered_map). tt(CatMap)'s design is a rather straightforward,
+offering a constructor accepting an tt(std::initializer_list):
+
+        verbinsert(-s4 //impl examples/errcode2/catmap/catmap.h)
+
+   As tt(ErrorCodeEnum)-values may have been randomly assigned (not using 0)
+a tt(CapMap) offers fast access to the error's description and error condition
+name.
+
+To definine an error category class we take the following steps:
+itemization(
+it() First the class's interface is designed. The interface of the class
+    tt(CalculatorCategory) is shown here, the interface of
+    tt(SimulatorCategory) is analogously designed. Their setup is fairly
+    basic; being a singleton class its (default) constructor is private, and
+    a static member tt(instance) returns a reference to the class's sole
+    object. A second static member (tt(CatMap s_errors) is initialized with
+    tt(ErrorCodeEnum) values and their descriptions and error condition
+    names:
+
+    verbinsert(//class 
+            examples/errcode2/calculatorcategory/calculatorcategory.h)
+
+    The member tt(instance) returns a reference to the singleton object,
+    initializing it the first time it is called:
+        verbinsert(//impl examples/errcode2/calculatorcategory/instance.cc)
+
+   The member tt(name) simply returns a short string naming the category
+    (tt("calculator") for the calculator category).
+
+it() Next, the The class's tt(message) member is defined. It returns the
+    description matching values of the category's error code enum values.
+    error code and returns its description. Here is the definition of the
+    tt(message) member, and the initialization of the tt(CatMap s_errors)
+    static data member:
+        verbinsert(//impl examples/errcode2/calculatorcategory/messace.cc)
+        verbinsert(//impl examples/errcode2/calculatorcategory/data.cc)
+
+it() 
+
+it() Fifth, we're now in position to actually create tt(error_code) objects
+    from tt(CalculatorError) enum values. For this we define the free function
+    tt(make_error_code(CalculatorError ce)): 
+
+    verbinsert(//impl examples/errcode2/calculatorcategory/makeerrorcode.cc)
+    
+    Now that tt(CalculatorErrc) is an tt(std::error_code) we can use it in our
+    programs. Here is a little program illustrating its use:
+
+    verbinsert(-a examples/errcode2/main.part);
+    
+    In the next section using error conditions is covered in detail.
+    )
+

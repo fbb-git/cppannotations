@@ -15,11 +15,10 @@ class SimulatorCategory: public std::error_category
     public:
         static SimulatorCategory &instance();
 
-        bool equivalent(std::error_code const &ec, int condNr) const noexcept 
-                                                                    override;
         char const *name() const noexcept override;
         std::string message(int ce) const override;
-
+        bool equivalent(std::error_code const &ec, int condNr) const noexcept 
+                                                                    override;
     private:
         SimulatorCategory() = default;
 };

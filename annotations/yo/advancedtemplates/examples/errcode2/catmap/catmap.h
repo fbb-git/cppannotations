@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <tuple>
 
+//impl
 template <class Enum>
 class CatMap: public std::unordered_map<
                             Enum, 
@@ -18,9 +19,11 @@ class CatMap: public std::unordered_map<
 };
 
 template <class Enum>
-CatMap<Enum>::CatMap(std::initializer_list<typename Map::value_type> const &list)
+CatMap<Enum>::CatMap(
+                std::initializer_list<typename Map::value_type> const &list)
 :
     Map{ list }
 {}
+//=
 
 #endif
