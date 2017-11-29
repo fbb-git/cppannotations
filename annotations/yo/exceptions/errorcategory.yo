@@ -11,32 +11,40 @@ Error categories should be designed as em(Singletons): only one object of each
 class should exist. By using singletons the equality of tt(error_category)
 objects can simply be deduced from the equality of their addresses.
 
-tt(Error_category) classes offer the following members:
+tt(Error_category) classes offer several members. Most are declared
+em(virtual) (cf. chapter ref(POLYMORPHISM)), meaning that those members may be
+defined in error category classes we ourselves design (cf. section
+ref(ERRCODEENUM)). The following members are declared by
+tt(std::error_category):
     itemization(
-    ithtq(name)(char const *name() const noexcept) 
-       (returns a textual name of the error category (like tt(generic));)
+    ithtq(name)(virtual char const *name() const noexcept) 
+       (This member tt(must) be defined by our own category classes. It
+        returns the name of the error category as NTBS (like tt(generic));)
 
-    ithtq(message)(string message(int ev) const)
+    ithtq(message)(virtual string message(int ev) const)
        (returns a string describing the error condition denoted by tt(ev);)
 
-    ithtq(default_error_condition)
-        (error_condition default_error_condition(int ev) const noexcept)
+    ithtq(default_error_condition)(virtual error_condition
+        default_error_condition(int ev) const noexcept)
        (returns the tt(error_condition) corresponding to the error value
         tt(ev) as defined in the current tt(error_category);)
 
     ithtq(equivalent)
-       (bool equivalent(int ev, error_condition const &condition) const
-            noexcept)
+       (virtual bool equivalent(int ev, error_condition const &condition)
+        const noexcept)
        (returns tt(true) if error value tt(ev's) error condition is equal to
         tt(condition);)
 
-    ittq(bool equivalent(error_code const &code, int condition) const noexcept)
+    ittq(virtual bool equivalent(error_code const &code, int condition) const
+        noexcept)
        (returns tt(true) if tt(code's) error category is equal to the current
         category and tt(code's) error condition is equal to 
         tt(condition);)
 
     ittq(bool operator<(error_category const &rhs) const noexcept)
        (returns tt(less<const error_category*>()(this, &rhs)).)
+
+    it() Error category objects may also be compared for (in)equality.
     )
 
     Functions returning predefined error categories:

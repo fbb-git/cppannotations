@@ -2,12 +2,9 @@
 #define INCLUDED_ERRORCONDITION_H_
 
 #include <system_error>
-#include <unordered_map>
 #include <vector>
 #include <string>
-#include <tuple>
-
-struct CategoryData;
+#include <unordered_map>
 
 class ErrorCondition:  public std::error_category
 {

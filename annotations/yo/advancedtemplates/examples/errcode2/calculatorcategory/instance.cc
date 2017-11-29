@@ -1,5 +1,6 @@
 #include "calculatorcategory.ih"
 
+//impl
 CalculatorCategory &CalculatorCategory::instance()
 {
     if (s_instance == 0)
@@ -7,3 +8,4 @@ CalculatorCategory &CalculatorCategory::instance()
 
     return *s_instance;
 }
+//=

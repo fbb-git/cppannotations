@@ -2,7 +2,8 @@
 
 CalculatorCategory *CalculatorCategory::s_instance;
 
-                                    // define descriptions and cond. names
+                                    // defines descriptions and cond. names
+//=impl
 CatMap<CalculatorError> CalculatorCategory::s_errors =
 {
     { CalculatorError::NoLvalue, 
@@ -18,3 +19,4 @@ CatMap<CalculatorError> CalculatorCategory::s_errors =
     { CalculatorError::MissingParentheses, 
             {"parentheses don't match",             "InputCond"   } },
 };
+//=
