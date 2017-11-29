@@ -9,7 +9,9 @@
 bool ErrorCondition::equivalent(std::error_code const &ec, int condNr ) 
         const noexcept
 {
+    return ec.category().equivalent(ec, condNr);
+
                                             // call the error category's
-                                            //function.
-    return (*d_category.find(&ec.category())->second)(condNr, ec);
+                                            // equivalent function.
+//    return (*d_category.find(&ec.category())->second)(condNr, ec);
 }

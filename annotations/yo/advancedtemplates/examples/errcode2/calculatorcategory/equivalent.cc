@@ -1,8 +1,8 @@
 #include "calculatorcategory.ih"
 
 // static
-bool CalculatorCategory::equivalent(size_t condNr,
-                                    std::error_code const &ec)
+bool CalculatorCategory::equivalent(std::error_code const &ec, int condNr)
+                                                                const noexcept
 {
                             // find the info about the error_code
     auto iter = s_errors.find(static_cast<CalculatorError>(ec.value()));

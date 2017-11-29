@@ -21,16 +21,16 @@ class ErrorCondition:  public std::error_category
 
     ConditionMap d_condition;
 
-            // a pointer to a function returning true if the provided
-            // error_code is equivalent to the error_condition (...?)
-    typedef bool (*EquivPtr)(size_t condNr, std::error_code const &ec);
-
-            // mapping the error condition's name 
-            // to the handling function
-    typedef std::unordered_map< std::error_category const *, EquivPtr > 
-                                                                CategoryMap;
-
-    CategoryMap d_category;
+//            // a pointer to a function returning true if the provided
+//            // error_code is equivalent to the error_condition (...?)
+//    typedef bool (*EquivPtr)(size_t condNr, std::error_code const &ec);
+//
+//            // mapping the error condition's name 
+//            // to the handling function
+//    typedef std::unordered_map< std::error_category const *, EquivPtr > 
+//                                                                CategoryMap;
+//
+//    CategoryMap d_category;
 
     public:
         enum Enum           // enum returning values of error conditions,
@@ -44,8 +44,9 @@ class ErrorCondition:  public std::error_category
         void addCondition(char const *name, char const *description);
 
         void addCategory(char const *name,
-                         std::error_category const *singleton, 
-                         EquivPtr function); // , char const *description);
+                         std::error_category const *singleton);
+//, 
+//                         EquivPtr function); // , char const *description);
 
         Enum operator()(char const *condName) const;
 

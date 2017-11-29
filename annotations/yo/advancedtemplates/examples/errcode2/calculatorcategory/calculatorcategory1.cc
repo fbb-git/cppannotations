@@ -3,7 +3,6 @@
 //ctor
 CalculatorCategory::CalculatorCategory()
 {
-    ErrorCondition::instance().addCategory("CalculatorCategory", 
-                                            this, equivalent);   
+    ErrorCondition::instance().addCategory("CalculatorCategory", this); 
 }
 //=

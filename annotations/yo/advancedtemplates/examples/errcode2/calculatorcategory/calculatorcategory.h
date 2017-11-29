@@ -14,9 +14,10 @@ class CalculatorCategory: public std::error_category
     static CatMap<CalculatorError> s_errors;
 
     public:
-        static bool equivalent(size_t condNr, std::error_code const &ec);
         static CalculatorCategory &instance();
 
+        bool equivalent(std::error_code const &ec, int condNr) const noexcept 
+                                                                    override;
         char const *name() const noexcept override;
         std::string message(int ce) const override;
 
