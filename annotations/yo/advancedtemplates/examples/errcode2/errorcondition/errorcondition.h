@@ -9,7 +9,7 @@ class ErrorCondition
 {
     static ErrorCondition *s_instance;
 
-    ConditionCategory d_ec;
+    ConditionCategory &d_ec;
 
     typedef std::unordered_map<std::string, size_t> ConditionMap;
     ConditionMap d_condition;
@@ -29,8 +29,8 @@ class ErrorCondition
         std::string const &operator[](size_t nr) const; // condition name
                                                         // given its nr
     private:
-        ErrorCondition() = default; // singleton, see instance.cc
-        
+        ErrorCondition(); // singleton, see instance.cc
+
     friend std::error_condition make_error_condition(Enum ec);
 };
 

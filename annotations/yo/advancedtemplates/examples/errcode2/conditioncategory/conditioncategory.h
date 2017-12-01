@@ -8,7 +8,7 @@
 
 class ConditionCategory: public std::error_category
 {
-    friend class ErrorCondition;
+    static ConditionCategory *s_instance;
 
     typedef std::tuple<
                 std::string,                // 0: condition name 
@@ -18,19 +18,19 @@ class ConditionCategory: public std::error_category
     std::vector<Info> d_conditionInfo;
 
     public:
-        ConditionCategory(ConditionCategory const &other) = delete;
-
+        static ConditionCategory &instance();
 
         char const *name() const noexcept override;
         std::string message(int ev) const override;
         bool equivalent(std::error_code const &code,
                         int condition) const noexcept override;
 
-    private:
-        ConditionCategory();
         void addCondition(char const *name, char const *description);
         size_t size() const;
         std::string const &operator[](size_t idx) const;
+
+    private:
+        ConditionCategory();
 };
 
 inline void ConditionCategory::addCondition(char const *name, 
