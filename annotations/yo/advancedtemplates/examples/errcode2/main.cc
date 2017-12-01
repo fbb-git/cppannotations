@@ -1,17 +1,12 @@
 #include "main.ih"
 
-            // define globally available error conditions
-            // (may also be defined elsewhere, e.g., by 3rd parties
-            //
-
 int main()
 try
 {
     ErrorCondition &errorCond  = ErrorCondition::instance();
-//    std::cerr << errorCond.name() << '\n';
 
-    std::cerr << CalculatorCategory::instance().name() << '\n';
-    std::cerr << SimulatorCategory::instance().name() << '\n';
+    std::cerr << CalculatorCategory::instance().name() << '\n' <<
+                 SimulatorCategory::instance().name() << '\n';
     
     errorCond.addCondition("InputCond",   "error in user request");
     errorCond.addCondition("UnavailCond", "function not available");
@@ -28,14 +23,12 @@ try
 
     std::cerr << "Enum value of UnavailCond = " << errorCond("UnavailCond") << 
                  '\n';
-//    assert(ec != ErrorCondition::Enum{});
-
+    assert(ec != ErrorCondition::Enum{});
     assert(ec == errorCond("UnavailCond"));
+    assert(ec != errorCond("SystemCond"));
 
-//    assert(ec != errorCond("SystemCond"));
-//
-//    ec = CalculatorError::MissingParentheses;
-//    assert(ec == errorCond("InputCond"));
+    ec = CalculatorError::MissingParentheses;
+    assert(ec == errorCond("InputCond"));
 
     ec = CalculatorError::ArityError;
     std::cout << ec << ' ' << ec.message() << '\n';

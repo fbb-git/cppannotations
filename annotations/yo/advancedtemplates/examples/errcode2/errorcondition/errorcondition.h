@@ -3,18 +3,16 @@
 
 #include <unordered_map>
 
-#include "../errorcondcat/errorcondcat.h"
+#include "../conditioncategory/conditioncategory.h"
 
 class ErrorCondition
 {
     static ErrorCondition *s_instance;
 
-    ErrorCondCat d_ec;
+    ConditionCategory d_ec;
 
     typedef std::unordered_map<std::string, size_t> ConditionMap;
-
     ConditionMap d_condition;
-
 
     public:
         enum Enum           // enum returning values of error conditions,
@@ -22,23 +20,26 @@ class ErrorCondition
 
         static ErrorCondition &instance();
 
-                            // name: single name defined for the condition
-                            //      without ErrorCodeEnum
+                            // name: name used for the error_condition
         void addCondition(char const *name, char const *description);
 
-        Enum operator()(char const *condName) const;
-
-        size_t nr(char const *name) const;  // nr of the named condition
+        Enum operator()(char const *condName) const;    // enum given the
+                                                        // condition's name
 
         std::string const &operator[](size_t nr) const; // condition name
-
+                                                        // given its nr
     private:
         ErrorCondition() = default; // singleton, see instance.cc
-
+        
     friend std::error_condition make_error_condition(Enum ec);
 };
 
-//simcondtrait
+inline std::string const &ErrorCondition::operator[](size_t nr) const
+{
+    return d_ec[nr];
+}
+
+//trait
 namespace std
 {
     template <>
@@ -46,10 +47,5 @@ namespace std
     {};
 }
 //=
-
-inline std::string const &ErrorCondition::operator[](size_t nr) const
-{
-    return d_ec[nr];
-}
 
 #endif

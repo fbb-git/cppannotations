@@ -1,6 +1,6 @@
-#include "errorcondcat.ih"
+#include "conditioncategory.ih"
 
-ErrorCondCat::ErrorCondCat()
+ConditionCategory::ConditionCategory()
 :
     d_conditionInfo(1, { "", "(Condition not defined)" })   // avoid 0 numbers
 {}

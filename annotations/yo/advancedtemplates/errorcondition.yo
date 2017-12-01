@@ -1,18 +1,19 @@
 So our flight simulator program uses two tt(ErrorCodeEnums): one covering
 errors that are related to the simulator itself, and one covering errors
 related to its on-board calculator. If we're using facilities provided by
-libraries then several more enums might also be available for use in our
-simulator. E.g., there could be a data base of airport approach charts,
+libraries then several more enums might also be available that we could use in
+our simulator. E.g., there could be a data base of airport approach charts,
 defining an tt(ApproachChartError) enum, and the simulator's GPS might come
-with its own tt(GPGErrors) enum.
+with its own tt(GPGError) enum.
 
 Errors can usually be categorized. In our simulator we might recognize user
 input errors, unavailable requests, system failures, etc..
+
 hi(error_condition)em(Error_conditions) allow us to categorize
-tt(ErrorCodeEnums) errors without using tt(if)-statements testing specific
-enum values. Error conditions em(could) be (and often em(are)) implemented
-like error categories: an enumeration is defined, which is then `upgraded' to
-a tt(std::error_condition).
+tt(ErrorCodeEnums) errors without having to use tt(if)-statements to test for
+specific enum values. Error conditions em(could) be (and often em(are))
+implemented like error categories: an enumeration is defined, which is then
+`upgraded' to a tt(std::error_condition).
 
 The disadvantage of using enumerations across independent developers is that
 enumerations are difficult to apply, combine, and extend: a library might
@@ -20,17 +21,54 @@ define an tt(InputError) condition but another library might do so as well;
 different enums might be available, but how do we prevent those enums from
 using identical values?
 
-Such problems might be prevented by avoiding fixed enum values, and instead
-use verbal labels denoting error conditions. So rather than specifying
+Such problems can usually be prevented by avoiding fixed enum values, and
+instead use verbal labels denoting error conditions. So rather than specifying
         verb(
     enum class ErrorCondition
     {
         InputCond,
-        SimCond,
-        Calc
+        UnavailCond,
+        SystemCond
+    };
+        )
+    textual labels like tt("InputCond", "UnavailCond",) and tt("SystemCond")
+could be used. Instead of defining a fixed-size tt(enum class ErrorCondition)
+a singleton tt(class ErrorCondition) is defined, guaranteeing the uniqueness
+of error conditions which are identified by their textual labels. 
+
+Error conditions are obtained from a function tt(make_error_condition),
+expecting an tt(ErrorConditionEnum) value as its argument, and using an
+tt(std::error_category) that is associated with
+the various error condition enum values, much like tt(CalculatorCategory) was
+associated with the tt(CalculatorError) enumeration. The tt(std::error_category)
+
+========================== WIP
 
 
-Let's define our conditions as:
+
+is provided by an object of the class tt(ErrorCondCat) 
+. To create an tt(error_condition) an tt(ErrorCondition::Enum) value 
+is required and the enum's value matching error category.
+
+
+
+
+: their uniqueness can be guaranteed by another class,
+tt(ErrorCondition), which is also a singleton. That class defines an empty
+tt(enum Enum), which is promoted to an tt(ErrorConditionEnum) by the
+tt(std::is_error_condition_enum) trait class specialization:
+    verbinsert(-s4 //trait examples/errorcondition/errorcondition.h)
+
+Error ondition objects are created by 
+
+    The tt(ErrorCondition) singleton also has a member tt(addCondition)
+allowing programs to add error conditions by name (and a description).
+
+To access error condition objects a 
+
+
+Let's
+define our conditions as:
     verbinsert(-s4 //simerrsrc examples/errcodeenum.cc)
     This allows us to distinguish errors made by the user, errors from the
 calculator, and errors from the simulator. As in the previous section, we'll

@@ -1,6 +1,6 @@
-#include "errorcondcat.ih"
+#include "conditioncategory.ih"
 
-std::string ErrorCondCat::message(int ce) const
+std::string ConditionCategory::message(int ce) const
 {
     return 
         std::get<1>(
