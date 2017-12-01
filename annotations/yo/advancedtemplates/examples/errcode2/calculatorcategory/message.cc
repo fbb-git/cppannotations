@@ -1,9 +1,9 @@
 #include "calculatorcategory.ih"
 
 //impl
-std::string CalculatorCategory::message(int ce) const
+std::string CalculatorCategory::message(int ev) const
 {
-    return CatMessage<CalculatorError>::message(
-                    ce, "CalculatorError not recognized");
+    return CategoryBase<CalculatorError>::message(
+                    ev, "CalculatorError not recognized");
 }
 //=

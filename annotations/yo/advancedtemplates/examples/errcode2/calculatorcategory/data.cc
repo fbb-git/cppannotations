@@ -5,7 +5,7 @@ CalculatorCategory *CalculatorCategory::s_instance;
                                     // defines descriptions and cond. names
 //=impl
 template <>
-CatMap<CalculatorError> const CatMessage<CalculatorError>::s_errors = 
+CatMap<CalculatorError> const CategoryBase<CalculatorError>::s_errors = 
 {
     { CalculatorError::NoLvalue, 
             {"lhs of assignment is not a variable", "UnavailCond" } },

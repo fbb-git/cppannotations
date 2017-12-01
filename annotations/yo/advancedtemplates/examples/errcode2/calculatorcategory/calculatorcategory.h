@@ -1,12 +1,12 @@
 #ifndef INCLUDED_CALCULATORCATEGORY_
 #define INCLUDED_CALCULATORCATEGORY_
 
-#include "../catmessage/catmessage.h"
+#include "../categorybase/categorybase.h"
 
 enum class CalculatorError;
 
-//impl
-class CalculatorCategory: public CatMessage<CalculatorError>
+//class
+class CalculatorCategory: public CategoryBase<CalculatorError>
 {
     static CalculatorCategory *s_instance;
 
@@ -15,8 +15,7 @@ class CalculatorCategory: public CatMessage<CalculatorError>
 
         char const *name() const noexcept override;
         std::string message(int ce) const override;
-        bool equivalent(std::error_code const &ec, int condNr) const noexcept 
-                                                                    override;
+
     private:
         CalculatorCategory() = default;
 };

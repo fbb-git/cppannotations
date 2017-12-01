@@ -1,11 +1,11 @@
 #ifndef INCLUDED_SIMULATORCATEGORYS_
 #define INCLUDED_SIMULATORCATEGORY_
 
-#include "../catmessage/catmessage.h"
+#include "../categorybase/categorybase.h"
 
 enum class SimulatorError;
 
-class SimulatorCategory: public CatMessage<SimulatorError>
+class SimulatorCategory: public CategoryBase<SimulatorError>
 {
     static SimulatorCategory *s_instance;
 
@@ -14,8 +14,7 @@ class SimulatorCategory: public CatMessage<SimulatorError>
 
         char const *name() const noexcept override;
         std::string message(int ce) const override;
-        bool equivalent(std::error_code const &ec, int condNr) const noexcept 
-                                                                    override;
+
     private:
         SimulatorCategory() = default;
 };

@@ -3,7 +3,7 @@
 SimulatorCategory *SimulatorCategory::s_instance;
 
 template<>
-CatMap<SimulatorError> const CatMessage<SimulatorError>::s_errors =
+CatMap<SimulatorError> const CategoryBase<SimulatorError>::s_errors =
 {
     { SimulatorError::EngineFailure,    
             { "Engine malfunction",         "SystemCond"  } },
