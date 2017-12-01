@@ -1,68 +1,130 @@
 The tt(ErrorCodeEnums) developed in the previous section are the starting
 points for two more classes, derived from the class tt(error_category) (see
-section ref(ERRCAT). 
+section ref(ERRCAT)). 
 
-Our own error category classes are designed as singleton classes, dervied from
-tt(std::error_category), and merely have to implement their own tt(name,
-message) and an tt(equivalent) function.  
+Classes derived from tt(error_category) are designed as singleton classes, and
+merely have to implement their own tt(name, message) and an tt(equivalent)
+function.
 
 Associated with errors defined by tt(ErrorCodeEnums) are two textual items
 (NTBSs): a verbal description of the error, and the name of the em(error
-condition) to which the enum value belongs. E.g., associated with
-tt(CalculatorError:::MissingParentheses) are the description tt("parentheses
-don't match") and the error condition name tt("InputCond"). Those associations
-are collected in a class template tt(CatMap), which has been derived from
+condition) to which the enum value belongs. E.g., with
+tt(CalculatorError:::MissingParentheses) the description tt("parentheses don't
+match") and the error condition name tt("InputCond") could be matched. Those
+associations are collected in a class template tt(CatMap), derived from
 tt(std::unordered_map). tt(CatMap)'s design is a rather straightforward,
 offering a constructor accepting an tt(std::initializer_list):
 
         verbinsert(-s4 //impl examples/errcode2/catmap/catmap.h)
 
    As tt(ErrorCodeEnum)-values may have been randomly assigned (not using 0)
-a tt(CapMap) offers fast access to the error's description and error condition
-name.
+tt(CapMap) objects offers fast access to the errors' descriptions and
+condition names. Note that tt(CatMap) objects provide error conditions by
+name: by the time the category class is designed the (eventually?) available
+error conditions are at least known by name, and so they can be referred to by
+their names. Actually defining error conditions is covered in the next
+section.
 
-To definine an error category class we take the following steps:
-itemization(
-it() First the class's interface is designed. The interface of the class
-    tt(CalculatorCategory) is shown here, the interface of
-    tt(SimulatorCategory) is analogously designed. Their setup is fairly
-    basic; being a singleton class its (default) constructor is private, and
-    a static member tt(instance) returns a reference to the class's sole
-    object. A second static member (tt(CatMap s_errors) is initialized with
-    tt(ErrorCodeEnum) values and their descriptions and error condition
-    names:
+When deriving a class from tt(error_category) a member tt(message(int ev))
+em(must) be defined, overriding the tt(error_category's message), returning
+the descriptions matching error enum value tt(ev). As associations between
+enum values and descriptions are defined in a tt(CatMap) object, the
+implementations of tt(message) members can simply use tt(CatMap)
+objects. 
 
-    verbinsert(//class 
-            examples/errcode2/calculatorcategory/calculatorcategory.h)
+Message handling itself can therefore be factorized in a class template
+tt(CategoryBase). tt(CategoryBase) objects are instantiated with an
+tt(ErrorCodeEnum) type (tt(Enum)), and contain a tt(static CatMap<Enum> const
+s_errors) object as well as a tt(message(int ev, char const *noEnumValue)
+const) member, returning the description matching tt(ev) or the error message
+tt(noEnumValue) if tt(ev) does not represent a defined enum value. Here is its
+implementation:
 
-    The member tt(instance) returns a reference to the singleton object,
-    initializing it the first time it is called:
+        verbinsert(-s4 //msg examples/errcode2/categorybase/categorybase.h)
+
+But that isn't all that tt(CategoryBase) can accomplish: since it contains
+tt(s_errors), the associations between error enum values and category
+conditions are also available. Error category classes also define members
+tt(bool equivalent(std::error_code const &ec, int condNr)). These members are
+called from the equally named tt(ErrorCondition) member to verify that a
+provided error code is indeed associated with error condition number
+tt(condNr). Given the availability of tt(CatMap s_errors), and a facility in
+the class tt(ErrorCondition) for retrieving the condition's name given its
+number, error categories' implementations of tt(equivalent) are identical,
+except for the actually used error code enumeration. But as that enumeration
+is provided as a template argument to tt(CategoryBase) a member function
+tt(equivalent) can be defined performing the required test. The implementation
+simply locates the error enum's value stored in an tt(error_code) in
+tt(s_errors), and compares the stored error condition's name to the name
+provided by the (singleton) tt(error_condition) object, given the condition's
+number. Here is its implementation:
+
+        verbinsert(-s4 //equiv examples/errcode2/categorybase/categorybase.h)
+
+In addition, to allow single inheritance to be used when deriving classes from
+tt(std::error_category) the class tt(CategoryBase) itself is derived from
+tt(std::error_category).
+
+So, by deriving classes from tt(CategoryBase) we obtain a
+tt(CatMap); a function returning error descriptions; an implementation of
+tt(equivalent) that can be used by all classes derived from
+tt(std::error_category); and, finally, a class that itself also is an
+tt(error_category) class. Here is the interface of tt(CategoryBase):
+
+        verbinsert(-s4 //impl examples/errcode2/categorybase/categorybase.h)
+
+Now we're ready for defining our own error category classes. To define a
+category class we take the following steps:
+
+    itemization( 
+    it() First the class's interface is developed. As tt(CategoryBase) is
+        available, such an interface is easily developed: it's derived from
+        tt(CategoryBase). Being a singleton, its (default) constructor is
+        private and a static member tt(instance) returns a reference to the
+        class's sole object. In addition it declares tt(name) and tt(message)
+        (tt(equivalent) is provided by tt(CategoryBase)). Here is
+        tt(CalculatorCategory's) class interface:
+
+        verbinsert(//class 
+                examples/errcode2/calculatorcategory/calculatorcategory.h)
+
+        The member tt(instance) returns a reference to the singleton object,
+        initializing it the first time it is called:
+
         verbinsert(//impl examples/errcode2/calculatorcategory/instance.cc)
 
-   The member tt(name) simply returns a short string naming the category
-    (tt("calculator") for the calculator category).
+    it() The member tt(name) simply returns a short string naming the category
+        (tt("calculator") for the calculator category).
 
-it() Next, the The class's tt(message) member is defined. It returns the
-    description matching values of the category's error code enum values.
-    error code and returns its description. Here is the definition of the
-    tt(message) member, and the initialization of the tt(CatMap s_errors)
-    static data member:
+    it() The member tt(message's) implementation also is extremely simple,
+        thanks to tt(CategoryBase::member): it merely returns what's returned by
+        that latter member:
+
         verbinsert(//impl examples/errcode2/calculatorcategory/messace.cc)
+
+    it() The associations between error code enum values, descriptions and
+        error condition names are defined when initializing the tt(CatMap)
+        unordered map. Since that map is a data member of the error category's
+        base class it can be initialized when defining the category
+        class. Here is the initialization for tt(CalculatorCategory):
+
         verbinsert(//impl examples/errcode2/calculatorcategory/data.cc)
 
-it() 
+    it() We're now in position to actually create tt(error_code) objects from
+        tt(CalculatorError) enum values. For this we define the free function
+        tt(make_error_code(CalculatorError ce)):
 
-it() Fifth, we're now in position to actually create tt(error_code) objects
-    from tt(CalculatorError) enum values. For this we define the free function
-    tt(make_error_code(CalculatorError ce)): 
-
-    verbinsert(//impl examples/errcode2/calculatorcategory/makeerrorcode.cc)
-    
-    Now that tt(CalculatorErrc) is an tt(std::error_code) we can use it in our
-    programs. Here is a little program illustrating its use:
-
-    verbinsert(-a examples/errcode2/main.part);
-    
-    In the next section using error conditions is covered in detail.
+        verbinsert(//impl examples/errcode2/calculatorcategory/makeerrorcode.cc)
     )
+
+    Now that a tt(CalculatorError) value can be converted to an
+tt(std::error_code) we can use it in our programs. Here is a little demo
+program illustrating its use:
+
+    verbinsert(-as4 examples/errcode2/main.part);
+    
+In the next section defining and using error conditions is covered in detail.
+
+
+
 

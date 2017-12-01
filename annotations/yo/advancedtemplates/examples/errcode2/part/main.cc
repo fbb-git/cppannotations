@@ -1,7 +1,13 @@
+#include <iostream>
+#include <system_error>
+
+#include "../calculatorerror/calculatorerror.h"
+#include "../calculatorcategory/calculatorcategory.h"
+
 int main()
 try
 {
-    ec = CalculatorError::ArityError;
+    std::error_code ec = CalculatorError::ArityError;
     std::cout << ec << ' ' << ec.message() << '\n';
     throw std::system_error{ ec, "For demonstration purposes: " };
 }
