@@ -14,6 +14,8 @@ class CatMap: public std::unordered_map<
     typedef std::tuple<char const *, char const *> Tuple;
     typedef std::unordered_map<Enum, Tuple> Map;
 
+    static CatMap<Enum> s_errors;
+
     public:
         CatMap(std::initializer_list<typename Map::value_type> const &list);
 };
@@ -27,3 +29,7 @@ CatMap<Enum>::CatMap(
 //=
 
 #endif
+
+
+
+

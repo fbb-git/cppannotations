@@ -1,16 +1,13 @@
 #ifndef INCLUDED_SIMULATORCATEGORYS_
 #define INCLUDED_SIMULATORCATEGORY_
 
-#include <system_error>
-#include "../catmap/catmap.h"
+#include "../catmessage/catmessage.h"
 
 enum class SimulatorError;
 
-class SimulatorCategory: public std::error_category
+class SimulatorCategory: public CatMessage<SimulatorError>
 {
     static SimulatorCategory *s_instance;
-
-    static CatMap<SimulatorError> s_errors;
 
     public:
         static SimulatorCategory &instance();

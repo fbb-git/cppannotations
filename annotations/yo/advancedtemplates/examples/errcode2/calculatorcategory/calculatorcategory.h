@@ -1,17 +1,14 @@
 #ifndef INCLUDED_CALCULATORCATEGORY_
 #define INCLUDED_CALCULATORCATEGORY_
 
-#include <system_error>
-#include "../catmap/catmap.h"
+#include "../catmessage/catmessage.h"
 
 enum class CalculatorError;
 
-//class
-class CalculatorCategory: public std::error_category
+//impl
+class CalculatorCategory: public CatMessage<CalculatorError>
 {
     static CalculatorCategory *s_instance;
-
-    static CatMap<CalculatorError> s_errors;
 
     public:
         static CalculatorCategory &instance();
