@@ -33,6 +33,7 @@ std::string CategoryBase<Enum>::message(int ev, char const *noEnumValue) const
 }
 //=
 
+
 //equiv
 template <class Enum>
 bool CategoryBase<Enum>::equivalent(std::error_code const &ec, int condNr)

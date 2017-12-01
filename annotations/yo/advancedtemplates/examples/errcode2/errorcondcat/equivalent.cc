@@ -1,4 +1,4 @@
-#include "errorcondition.ih"
+#include "errorcondcat.ih"
 
     // ec is a concrete error_code. The error-code contains an error-category
     // and the `equivalent' function of that error condition receives the
@@ -6,8 +6,8 @@
     // associated with the error_code matches the condition number.
 
 
-bool ErrorCondition::equivalent(std::error_code const &ec, int condNr ) 
-        const noexcept
+bool ErrorCondCat::equivalent(std::error_code const &ec, int condNr ) 
+                                                            const noexcept
 {
     return ec.category().equivalent(ec, condNr);
 }

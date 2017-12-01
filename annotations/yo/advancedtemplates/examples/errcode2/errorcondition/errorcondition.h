@@ -1,27 +1,20 @@
 #ifndef INCLUDED_ERRORCONDITION_H_
 #define INCLUDED_ERRORCONDITION_H_
 
-#include <system_error>
-#include <vector>
-#include <string>
 #include <unordered_map>
 
-//#include <unordered_set>
+#include "../errorcondcat/errorcondcat.h"
 
-class ErrorCondition:  public std::error_category
+class ErrorCondition
 {
     static ErrorCondition *s_instance;
 
-    typedef std::tuple<
-                std::string,                // 0: condition name 
-                char const *                // 1: descr.
-            > Info;
-
-    std::vector<Info> d_conditionInfo;
+    ErrorCondCat d_ec;
 
     typedef std::unordered_map<std::string, size_t> ConditionMap;
 
     ConditionMap d_condition;
+
 
     public:
         enum Enum           // enum returning values of error conditions,
@@ -39,15 +32,10 @@ class ErrorCondition:  public std::error_category
 
         std::string const &operator[](size_t nr) const; // condition name
 
-        char const *name() const noexcept override;
-        std::string message(int ev) const override;
-
-        bool equivalent(
-                        std::error_code const &code,
-                        int condition) const noexcept override;
     private:
-        ErrorCondition();          // can only be used once, which occurs 
-                                // in errorcondition1.cc
+        ErrorCondition() = default; // singleton, see instance.cc
+
+    friend std::error_condition make_error_condition(Enum ec);
 };
 
 //simcondtrait
@@ -59,11 +47,9 @@ namespace std
 }
 //=
 
-std::error_condition make_error_condition(ErrorCondition::Enum ec);
-
 inline std::string const &ErrorCondition::operator[](size_t nr) const
 {
-    return std::get<0>(d_conditionInfo[nr]);
+    return d_ec[nr];
 }
 
 #endif

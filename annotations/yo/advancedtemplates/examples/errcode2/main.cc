@@ -8,7 +8,7 @@ int main()
 try
 {
     ErrorCondition &errorCond  = ErrorCondition::instance();
-    std::cerr << errorCond.name() << '\n';
+//    std::cerr << errorCond.name() << '\n';
 
     std::cerr << CalculatorCategory::instance().name() << '\n';
     std::cerr << SimulatorCategory::instance().name() << '\n';
@@ -25,12 +25,17 @@ try
 //    std::error_condition cond = errorCond("InputCond"); 
 
     std::error_code ec = CalculatorError::TypeError;
-    assert(ec != ErrorCondition::Enum{});
-    assert(ec == errorCond("UnavailCond"));
-    assert(ec != errorCond("SystemCond"));
 
-    ec = CalculatorError::MissingParentheses;
-    assert(ec == errorCond("InputCond"));
+    std::cerr << "Enum value of UnavailCond = " << errorCond("UnavailCond") << 
+                 '\n';
+//    assert(ec != ErrorCondition::Enum{});
+
+    assert(ec == errorCond("UnavailCond"));
+
+//    assert(ec != errorCond("SystemCond"));
+//
+//    ec = CalculatorError::MissingParentheses;
+//    assert(ec == errorCond("InputCond"));
 
     ec = CalculatorError::ArityError;
     std::cout << ec << ' ' << ec.message() << '\n';

@@ -8,9 +8,11 @@ void ErrorCondition::addCondition(
                     name + std::string{ " condition already defined" });
 
     d_condition.insert(
-                    ConditionMap::value_type{name, d_conditionInfo.size()}
+                    ConditionMap::value_type{name, d_ec.size()}
                 );
 
-    d_conditionInfo.push_back({ name, description });
+    d_ec.addCondition(name, description);
 }
+
+
 
