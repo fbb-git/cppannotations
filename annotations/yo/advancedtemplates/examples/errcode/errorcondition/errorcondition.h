@@ -5,6 +5,7 @@
 
 #include "../conditioncategory/conditioncategory.h"
 
+//class
 class ErrorCondition
 {
     static ErrorCondition *s_instance;
@@ -31,8 +32,10 @@ class ErrorCondition
     private:
         ErrorCondition(); // singleton, see instance.cc
 
-    friend std::error_condition make_error_condition(Enum ec);
 };
+//=
+
+std::error_condition make_error_condition(ErrorCondition::Enum ec);
 
 inline std::string const &ErrorCondition::operator[](size_t nr) const
 {

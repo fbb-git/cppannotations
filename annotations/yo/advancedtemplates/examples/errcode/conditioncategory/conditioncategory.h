@@ -6,6 +6,7 @@
 #include <string>
 #include <tuple>
 
+//class
 class ConditionCategory: public std::error_category
 {
     static ConditionCategory *s_instance;
@@ -25,16 +26,18 @@ class ConditionCategory: public std::error_category
         bool equivalent(std::error_code const &code,
                         int condition) const noexcept override;
 
+                                        // returns condition idx-th name
+        std::string const &operator[](size_t idx) const; 
         void addCondition(char const *name, char const *description);
         size_t size() const;
-        std::string const &operator[](size_t idx) const;
 
     private:
         ConditionCategory();
 };
+//=
 
 inline void ConditionCategory::addCondition(char const *name, 
-                                       char const *description)
+                                            char const *description)
 {
     d_conditionInfo.push_back({ name, description });
 }
@@ -50,6 +53,3 @@ inline std::string const &ConditionCategory::operator[](size_t idx) const
 }
 
 #endif
-
-
-

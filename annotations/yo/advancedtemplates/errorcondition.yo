@@ -32,58 +32,68 @@ instead use verbal labels denoting error conditions. So rather than specifying
     };
         )
     textual labels like tt("InputCond", "UnavailCond",) and tt("SystemCond")
-could be used. Instead of defining a fixed-size tt(enum class ErrorCondition)
-a singleton tt(class ErrorCondition) is defined, guaranteeing the uniqueness
-of error conditions which are identified by their textual labels. 
+could be used. Instead of defining a fixed-size tt(ErrorConditionEnum) a
+singleton class tt(ErrorCondition) is used, providing and encapsulating such
+an enumeration, at the same time guaranteeing the uniqueness of error
+conditions which are identified by textual labels.
 
-Error conditions are obtained from a function tt(make_error_condition),
-expecting an tt(ErrorConditionEnum) value as its argument, and using an
-tt(std::error_category) that is associated with
-the various error condition enum values, much like tt(CalculatorCategory) was
-associated with the tt(CalculatorError) enumeration. The tt(std::error_category)
+The class tt(ConditionCategory) implements the requirements imposed by the
+class tt(std::error_condition), tailored to the error conditions managed by
+the class tt(ErrorCondition). Also designed as a singleton,
+tt(ConditionCategory) contains a vector whose elements hold names and
+descriptions of the various error conditions. In addition to the familiar
+members tt(name, message) and tt(equivalent) it offers a member
+tt(addCondition). That latter function is used by tt(ErrorCondition) to add
+new error conditions to the current set. Here is its interface:
+        verbinsert(-s4 //class
+            examples/errcode/conditioncategory/conditioncategory.h)
 
-========================== WIP
+The members tt(name) and tt(message) have trivial implementations.  The member
+tt(equivalent) receives an tt(error_code) object and an error condition enum
+value (as an tt(int)). The function must return tt(true) if the provided
+tt(error_code) is associated with the provided error condition enum
+value. tt(Equivalent) itself doesn't perform those checks. Rather, it
+retrieves the tt(error_code's error_category) and uses that object's
+tt(equivalent) function to perform the test:
+        verbinsert(-s4 //impl
+            examples/errcode/conditioncategory/equivalent.cc)
 
+Next we look at the class tt(ErrorCondition). It contains a
+tt(ConditionCategory) object (i.e., em(the) tt(ConditionCategory) object), and
+a tt(unsorted_map), mapping condition names to their indices in the
+tt(ConditionCategory's) vector. Other than that it's a rather plain class,
+offering members to retrieve the enum values of the various error conditions,
+and returning conditions' names given their numbers. Error condition enum
+values are simply defined as their indices in the tt(ConditionCategory's)
+vector, statically cast to the enum tt(ErrorCondition::Enum).
 
+tt(Enum) by itself is defined as mere enumeration name, promoted to an
+tt(ErrorConditionEnum) by the tt(std::is_error_condition_enum) trait class
+specialization (comparable to what the tt(is_error_code_enum) trait class
+accomplished for our enums like tt(CalculatorError)). Here is the
+tt(is_error_condition_enum) trait class specialization, followed by
+tt(ErrorCondition's) class interface:
+    verbinsert(-s4 //trait examples/errcode/errorcondition/errorcondition.h)
 
-is provided by an object of the class tt(ErrorCondCat) 
-. To create an tt(error_condition) an tt(ErrorCondition::Enum) value 
-is required and the enum's value matching error category.
+    verbinsert(-s4 //class examples/errcode/errorcondition/errorcondition.h)
 
+Error conditions objects themselves are returned by a function
+tt(make_error_condition), expecting an tt(ErrorConditionEnum) value as its
+argument, and internally using an tt(std::error_category) that is associated
+with the various error condition enum values, much like tt(CalculatorCategory)
+was associated with the tt(CalculatorError) enumeration. Since
+tt(ConditionCategory) is a singleton, it can directly pass that singleton
+object to the tt(std::error_condition) object:
 
+    verbinsert(-s4 //make 
+            examples/errcode/errorcondition/makeerrorcondition.cc)
 
+A demo program illustrating some of the facilities of the tt(error_code,
+error_category, error_condition) and related classes concludes this
+section. The complete implementation of the program is provided in the
+annotations()' source archive in the directory
+tt(yo/advancedtemplates/examples/errocde). 
 
-: their uniqueness can be guaranteed by another class,
-tt(ErrorCondition), which is also a singleton. That class defines an empty
-tt(enum Enum), which is promoted to an tt(ErrorConditionEnum) by the
-tt(std::is_error_condition_enum) trait class specialization:
-    verbinsert(-s4 //trait examples/errorcondition/errorcondition.h)
+    verbinsert(-s4 //demo examples/errcode/errcode/main.cc)
 
-Error ondition objects are created by 
-
-    The tt(ErrorCondition) singleton also has a member tt(addCondition)
-allowing programs to add error conditions by name (and a description).
-
-To access error condition objects a 
-
-
-Let's
-define our conditions as:
-    verbinsert(-s4 //simerrsrc examples/errcodeenum.cc)
-    This allows us to distinguish errors made by the user, errors from the
-calculator, and errors from the simulator. As in the previous section, we'll
-`promote' this enum, this time to an ti(ErrorConditionEnum):
-    verbinsert(-s4 //simcondtrait examples/errcodeenum.cc)
-
-Now that an error condition enumeration has been defined, error codes can be
-mapped to their appropriate error condition values. To do that, a tt(class
-ErrorSourceCategory) is derived (again: in the anonymous namespace) from
-tt(std::error_category), similarly to what we did before with, e.g.,
-tt(CalculatorErrCategory):
-        verbinsert(-s4 //errorourcecat examples/errcodeenum.cc)
-
-    The tt(name) and tt(message) members are defined as before, but in
-addition the member tt(equivalent) is defined comparing a received
-tt(error_code) to the available tt(SimErrSource) values. The function
-tt(equivalent) returns tt(true) if tt(error_code code) can be mapped to tt(int
-condition), which in fact is a statically cast tt(SimErrSource) value. For tt(
+    

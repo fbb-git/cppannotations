@@ -3,7 +3,7 @@
 
 #include <system_error>
 
-//=simerrc
+//enum
 enum class SimulatorError
 {
     // no 0
@@ -16,12 +16,6 @@ enum class SimulatorError
 };
 //=
 
-class SimulatorCategory: public std::error_category
-{
-    char const *name() const noexcept override;
-    std::string message(int ce) const override;
-};
-
 namespace std
 {
     template <>
@@ -29,10 +23,6 @@ namespace std
     {};
 }
 
-std::error_code make_error_code(SimulatorError ce);
-
-extern SimulatorCategory const simulatorCategory;
-        
 #endif
 
 
