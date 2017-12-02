@@ -5,19 +5,19 @@ CalculatorCategory *CalculatorCategory::s_instance;
                                     // defines descriptions and cond. names
 //=impl
 template <>
-CatMap<CalculatorError> const CategoryBase<CalculatorError>::s_errors = 
+CatMap<CalculatorError> const CategoryBase<CalculatorError>::s_errors =
 {
-    { CalculatorError::NoLvalue, 
+    { CalculatorError::NoLvalue,
             {"lhs of assignment is not a variable", "UnavailCond" } },
-    { CalculatorError::TypeError, 
+    { CalculatorError::TypeError,
             {"type of expression incorrect",        "UnavailCond" } },
-    { CalculatorError::RangeError, 
+    { CalculatorError::RangeError,
             {"argument value not allowed",          "UnavailCond" } },
-    { CalculatorError::ArityError, 
+    { CalculatorError::ArityError,
                 {"incorrect number of arguments",   "UnavailCond" } },
-    { CalculatorError::UnknownFunction, 
+    { CalculatorError::UnknownFunction,
             {"function not defined",                "UnavailCond" } },
-    { CalculatorError::MissingParentheses, 
+    { CalculatorError::MissingParentheses,
             {"parentheses don't match",             "InputCond"   } },
 };
 //=

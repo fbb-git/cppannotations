@@ -17,7 +17,7 @@ catch (std::system_error &se)
                 "    " << se.code() << '\n';
 }
 
-/* 
+/*
 Outputs:
     calculator:4 incorrect number of arguments
     For demonstration purposes: incorrect number of arguments:

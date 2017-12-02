@@ -7,7 +7,7 @@
 //impl
 template <class Enum>
 class CatMap: public std::unordered_map<
-                            Enum, 
+                            Enum,
                             std::tuple<char const *, char const *>
                     >       //         description   condition name
 {
@@ -27,7 +27,3 @@ CatMap<Enum>::CatMap(
 //=
 
 #endif
-
-
-
-

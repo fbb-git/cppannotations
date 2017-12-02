@@ -13,6 +13,3 @@ void ErrorCondition::addCondition(
 
     d_ec.addCondition(name, description);
 }
-
-
-

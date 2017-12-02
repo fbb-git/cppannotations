@@ -46,7 +46,7 @@ inline std::string const &ErrorCondition::operator[](size_t nr) const
 namespace std
 {
     template <>
-    struct is_error_condition_enum<ErrorCondition::Enum>: public true_type 
+    struct is_error_condition_enum<ErrorCondition::Enum>: public true_type
     {};
 }
 //=

@@ -4,10 +4,10 @@ namespace
 {
         // EXTREMELY UGLY: IF A NEW ERROR TYPE IS ADDED WE, RATHER THAN THE
         // NEW TYPE DETERMINES THE CATEGORY, AND ALSO: THIS CLASS MUST BE
-        // MODIFIED 
+        // MODIFIED
 
         // THE OTHER WAY AROUND DOESN'T WORK EITHER? LET'S ESCALATE
-        // ErrorSource... 
+        // ErrorSource...
 
     bool calcError(std::error_code const &ec)
     {
@@ -43,10 +43,9 @@ bool ErrorCategory::equivalent(
                     ) const noexcept
 {
     std::cerr << __FILE__ ": equivalent code = " << code.value() <<
-            ", message = " << code.message() << 
+            ", message = " << code.message() <<
             ", condition = " << condition << "\n\n";
 
     auto iter = s_equivalent.find(static_cast<ErrorSource>(condition));
     return iter == s_equivalent.end() ? false : (*iter->second)(code);
 }
-

@@ -20,12 +20,5 @@ class SimulatorCategory: public CategoryBase<SimulatorError>
 };
 
 std::error_code make_error_code(SimulatorError ce);
-    
+
 #endif
-
-
-
-
-
-
-

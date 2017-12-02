@@ -22,5 +22,3 @@ std::string CalculatorCategory::message(int ce) const
             :
                 iter->second;
 }
-
-

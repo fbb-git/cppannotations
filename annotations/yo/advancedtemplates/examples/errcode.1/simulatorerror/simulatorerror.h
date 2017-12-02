@@ -25,19 +25,12 @@ class SimulatorCategory: public std::error_category
 namespace std
 {
     template <>
-    struct is_error_code_enum<SimulatorError>: public true_type 
+    struct is_error_code_enum<SimulatorError>: public true_type
     {};
 }
 
 std::error_code make_error_code(SimulatorError ce);
 
 extern SimulatorCategory const simulatorCategory;
-        
+
 #endif
-
-
-
-
-
-
-

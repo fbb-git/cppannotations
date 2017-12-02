@@ -12,7 +12,7 @@ class ConditionCategory: public std::error_category
     static ConditionCategory *s_instance;
 
     typedef std::tuple<
-                std::string,                // 0: condition name 
+                std::string,                // 0: condition name
                 char const *                // 1: descr.
             > Info;
 
@@ -27,7 +27,7 @@ class ConditionCategory: public std::error_category
                         int condition) const noexcept override;
 
                                         // returns condition idx-th name
-        std::string const &operator[](size_t idx) const; 
+        std::string const &operator[](size_t idx) const;
         void addCondition(char const *name, char const *description);
         size_t size() const;
 
@@ -36,7 +36,7 @@ class ConditionCategory: public std::error_category
 };
 //=
 
-inline void ConditionCategory::addCondition(char const *name, 
+inline void ConditionCategory::addCondition(char const *name,
                                             char const *description)
 {
     d_conditionInfo.push_back({ name, description });

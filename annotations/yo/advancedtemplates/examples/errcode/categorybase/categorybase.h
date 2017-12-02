@@ -13,7 +13,7 @@ template <class Enum>
 class CategoryBase: public std::error_category
 {
     public:
-        bool equivalent(std::error_code const &ec, int condNr) const noexcept 
+        bool equivalent(std::error_code const &ec, int condNr) const noexcept
                                                                     override;
 
     protected:
@@ -41,14 +41,10 @@ bool CategoryBase<Enum>::equivalent(std::error_code const &ec, int condNr)
 {
     auto iter = s_errors.find(static_cast<Enum>(ec.value()));
 
-    return  iter != s_errors.end() 
+    return  iter != s_errors.end()
             and
             std::get<1>(iter->second) == ErrorCondition::instance()[condNr];
 }
 //=
 
 #endif
-
-
-
-

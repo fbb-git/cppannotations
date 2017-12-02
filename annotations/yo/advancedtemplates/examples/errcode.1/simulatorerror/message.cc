@@ -20,4 +20,3 @@ std::string SimulatorCategory::message(int ce) const
             :
                 iter->second;
 }
-

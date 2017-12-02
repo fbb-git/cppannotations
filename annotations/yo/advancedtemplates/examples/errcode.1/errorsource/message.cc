@@ -1,6 +1,6 @@
 #include "errorsource.ih"
 
-namespace 
+namespace
 {
     std::unordered_map<ErrorSource, char const *> s_errors =
     {
@@ -19,4 +19,3 @@ std::string ErrorCategory::message(int ce) const
             :
                 iter->second;
 }
-

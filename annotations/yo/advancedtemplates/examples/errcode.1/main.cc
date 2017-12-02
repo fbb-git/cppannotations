@@ -16,4 +16,3 @@ catch (std::system_error &se)
 {
     std::cout << se.what() << ": " << se.code() << '\n';
 }
-

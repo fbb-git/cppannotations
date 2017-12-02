@@ -19,15 +19,8 @@ enum class SimulatorError
 namespace std
 {
     template <>
-    struct is_error_code_enum<SimulatorError>: public true_type 
+    struct is_error_code_enum<SimulatorError>: public true_type
     {};
 }
 
 #endif
-
-
-
-
-
-
-

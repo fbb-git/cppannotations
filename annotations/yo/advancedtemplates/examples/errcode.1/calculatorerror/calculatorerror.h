@@ -31,7 +31,7 @@ std::error_code make_error_code(CalculatorError ce);
 namespace std
 {
     template <>
-    struct is_error_code_enum<CalculatorError>: public true_type 
+    struct is_error_code_enum<CalculatorError>: public true_type
     {};
 }
 

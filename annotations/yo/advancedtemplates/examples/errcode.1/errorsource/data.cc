@@ -2,4 +2,3 @@
 
                                     // define the singleton
 ErrorCategory const errorCategory;
-
