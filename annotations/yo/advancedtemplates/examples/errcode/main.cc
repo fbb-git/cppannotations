@@ -39,7 +39,6 @@ catch (std::system_error const &se)
 {
     std::cout << "System Error: " << se.what() << ":\n" 
                  "    " << se.code() << '\n';
-    //throw;    cannot be rethrown!!
 }
 /* 
     Produced output:
