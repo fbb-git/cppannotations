@@ -9,22 +9,26 @@
 namespace fs = std::experimental::filesystem;
 using namespace std;
 
-
 int main()
 try
 {
-    throw fs::filesystem_error{ "exception encountered", "p1", "p2",
-                                make_error_code(errc::address_in_use) };
+    try
+    {
+        throw fs::filesystem_error{ "exception encountered", "p1", "p2",
+                                    make_error_code(errc::address_in_use) };
+    }
+    catch (fs::filesystem_error const &fse)
+    {
+        cerr << fse.what() << ",\n" << 
+                fse.path1() << ",\n" <<
+                fse.path2() << ",\n" << 
+                fse.code() << '\n';
+    
+        throw;
+    }
 }
-catch(fs::filesystem_error const &fse)
+catch (exception const &ec)
 {
-    cerr << fse.what() << ", " << fse.path1() << ", " <<
-                                fse.path2() << ", " << fse.code() << '\n';
-
-    throw;          // calls std::terminate
-}
-catch(...)
-{
-    cerr << "not reached...\n";
+    cerr << ec.what() << '\n';
 }
 //=

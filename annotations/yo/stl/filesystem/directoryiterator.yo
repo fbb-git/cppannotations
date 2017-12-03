@@ -5,76 +5,123 @@ tt(recursive_directory_iterator) are (input) iterators recursively visiting
 all entries of directories.
 
 The classes tt((recursive_)directory_iterator) support default, copy, and move
-constructors. Both classes can be constructed from a tt(path) and an optional
-tt(error_code) reference. E.g.,
+constructors. Objects of both classes are constructed from a tt(path) and an
+optional tt(error_code). E.g.,
         verb(
     directory_iterator(path const &dest [, error_code &ec]);
         )
+    All members of standard input iterators (cf. section ref(ITERATORS)) are
+supported by these classes. Their currently stored path is returned by their
+dereference operators:
+        verb(
+    cout << *fs::directory_iterator{ "/home" } << '\n'; // shows the first
+                                                        // entry under /home
+        )
+
+End-iterators matching these objects are the classes' default constructed
+objects. In addition, tt(filesystem::begin)hi(begin) and
+tt(filesystem::end)hi(end) are available and are automatically used by
+range-based for loops. E.g., all entries of the tt(/var/log) directory are
+displayed (surrounded by double quotes) by the following statement:
+        verb(
+    for (auto &entry: fs:directory_iterator("/var/log"))
+        cout << entry << '\n';
+        )
+    Alternatively, for-statements explicitly defining iterators can also be
+used. E.g.,
+        verb(
+    for (
+        auto iter = fs:directory_iterator("/var/log"), 
+              end = fs::directory_iterator{}; 
+                iter != end; 
+                    ++iter
+    )
+        cout << entry << '\n';
+        )
+
+    An tt(fs::(recursive_)directory_iterator base{"/var/log"}) object
+represents the first element of its directory. Explicitly defined iterators
+can be used, like tt(auto &iter = begin(base), auto iter = begin(base), auto
+&iter = base) or tt(auto iter = base): they all refer to tt(base's) data, and
+incrementing them data also advances tt(base) to its next element:
+        verb(
+    fs::recursive_directory_iterator base{ "/var/log/" };
+    auto iter = base;
+                                // final two elements show identical paths,
+                                // different from the first element.
+    cout << *iter << ' ' << *++iter << ' ' << *base << '\n';    
+        )
+
     The tt(recursive_directory_iterator) also accepts a tt(directory_options)
-argument (see below), which by default is specified as
-tt(directory_options::none):
+argument (see below), by default specified as tt(directory_options::none):
         verb(
     recursive_directory_iterator(path const &dest,
                             directory_options options [, error_code &ec]);
         )
 
-
-All standard members of input iterators (cf. section ref(ITERATORS)) are
-supported by these classes. In addition, tt(filesystem::begin)hi(begin) and
-tt(filesystem::end)hi(end) are available and are automatically used by
-range-based for loops. E.g., all entries of the tt(/var/log)
-directory are displayed by the following statement:
-        verb(
-    for (auto &entry: fs:directory_iterator("/var/log"))
-        cout << entry << '\n';
-        )
-
-
-The tt(recursive_directory_iterator) 
-In addition to the standard available members the class 
-tt(recursive_directory_iterator) provides the following members:
-    itemization(
-    ithtq(depth)(int depth() const)
-       (returns the current iteration depth. At the initial directory
-        (specified at construction-time) tt(depth) returns 0;)
-    ithtq(disable_recursion_pending)(void disable_recursion_pending())
-       (when called before calling the iterator's increment operator or
-        member, the next entry is not recursed into if it is a
-        sub-directory. Immediately after executing the increment operator
-        recursion is allowed again, so if recursion should end at a specific
-        depth then this function must repeatedly be called for as long as
-        tt(depth()) returns that specific depth;)
-    ithtq(increment)(recursive_directory_iterator &increment(error_code &ec))
-       ( acts identically to the iterator's tt(operator++()). However, when an
-        error occurs tt(operator++) throws a tt(filesystem_error), while
-        tt(increment) assigns the appropriate error to tt(ec);)
-    ithtq(options)(directory_options options() const)
-       (returns the option that was specified at construction-time;)
-    ithtq(pop)(void pop())
-       (ends processing of the current directory, and continues at the next
-        entry in the current directory's parent or ends the directory
-        processing if called at the initial directory;)
-    ithtq(recursion_pending)(bool recursion_pending() const)
-       (tt(true) is returned if the entry the iterator currently points at is
-        a directory into which directory processing will continue at the
-        iterator's next increment;)
-    )
-    
 The tt(enum class directory_options)hi(directory_options) defines values that
-can be used to fine-tune the behavior of a tt(recursive_directory_iterator)
-object. The enumeration supports bitwise operators (the symbols' values are
-shown between parentheses). Here is an overview of all its defined symbols:
+can be used to fine-tune the behavior of tt(recursive_directory_iterator)
+objects. It supports bitwise operators (the symbols' values are shown between
+parentheses). Here is an overview of all its symbols:
     itemization(
     itt(none) (0): directory symlinks are skipped, denied permission to enter
         a subdirectory generates an error;
     itt(follow_directory_symlink) (1): symlinks to subdirectories are
         followed;
     itt(skip_permission_denied) (2): directories that cannot be entered are
-        skipped. 
+        silently skipped. 
     )
 
+In addition to the members of the class tt(directory_iterator) the class
+tt(recursive_directory_iterator) provides these members:
+    itemization(
+    ithtq(depth)(int depth() const)
+       (returns the current iteration depth. At the initial directory
+        (specified at construction-time) tt(depth) returns 0;)
 
+    ithtq(disable_recursion_pending)(void disable_recursion_pending())
+       (when called before calling the iterator's increment operator or
+        member, the next entry is not recursed into if it is a
+        sub-directory. Immediately after executing the increment operator
+        recursion is allowed again, so if a recursion should end at a specific
+        depth then this function must repeatedly be called for as long as
+        tt(depth()) returns that specific depth;)
 
+    ithtq(increment)(recursive_directory_iterator &increment(error_code &ec))
+       ( acts identically to the iterator's tt(operator++()). However, when an
+        error occurs tt(operator++) throws a tt(filesystem_error), while
+        tt(increment) assigns the appropriate error to tt(ec);)
+
+    ithtq(options)(directory_options options() const)
+       (returns the option that was specified at construction-time;)
+
+    ithtq(pop)(void pop())
+       (ends processing of the current directory, and continues at the next
+        entry in the current directory's parent or ends the directory
+        processing if called at the initial directory;)
+
+    ithtq(recursion_pending)(bool recursion_pending() const)
+       (tt(true) is returned if the entry the iterator currently points at is
+        a directory into which directory processing will continue at the
+        iterator's next increment;)
+    )
+    
+Finally, a little program displaying all directory elements of a directory and
+all its immediate sub-directories:
+        verb(
+    int main()
+    {
+    
+        fs::recursive_directory_iterator base{ "/var/log" };
+
+        for (auto entry = base, end = fs::end(base); entry != end; ++entry)
+        {
+            cout << entry.depth() << ": " << *entry << '\n';
+            if (entry.depth() == 1)
+                entry.disable_recursion_pending();
+        }
+    }
+        )
 
 
 
