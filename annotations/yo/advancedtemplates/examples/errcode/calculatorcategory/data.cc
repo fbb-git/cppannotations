@@ -3,7 +3,7 @@
 CalculatorCategory *CalculatorCategory::s_instance;
 
                                     // defines descriptions and cond. names
-//=impl
+//impl
 template <>
 CatMap<CalculatorError> const CategoryBase<CalculatorError>::s_errors =
 {
