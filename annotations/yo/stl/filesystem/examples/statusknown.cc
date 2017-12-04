@@ -30,7 +30,7 @@ namespace
     void status(fs::path const &path)
     {
         fs::file_status stat = fs::directory_entry{ path }.symlink_status();
-        
+
         cout << path << " is " << map[stat.type()] << '\n';
     };
 } // anon. namespace
@@ -44,11 +44,3 @@ int main()
             status_known( fs::file_status{} ) << '\n';
 }
 //=
-
-
-
-
-
-
-
-

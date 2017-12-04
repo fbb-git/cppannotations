@@ -1,0 +1,23 @@
+Every existing tt(path) lives in a particular file system. File systems can
+contain certain amounts of data (numbers of bytes) of which some amount
+already is in use and some amount is still available. These three pieces of
+information are made available by the function
+    tt(fs::space)hi(space(_info))hi(available space) expecting a tt(fs::path
+const &), and returning the information in a POD tt(struct fs::space_info).
+This function throws a tt(filesystem_error), receiving tt(path) as its first
+argument and the operating system's error code as its tt(error_code)
+argument. An overloaded function tt(space) expects as its second argument an
+tt(error_code) object, which is cleared if no error occurs, and which is set
+to the operating system's error code if an error occurred.
+
+The returned tt(fs::space_info) has three fields:
+        verb(
+    uintmax_t capacity;     // total size in bytes
+    uintmax_t free;         // number of free bytes on the file system
+    uintmax_t available;    // free bytes for a non-privileged process
+        )
+    If a field cannot be determined it is set to -1 (i.e., the max. value of
+the type tt(uintmax_t)).
+    
+    Here is a little program illustrating how tt(space) can be used:
+        verbinsert(-s4 //demo examples/spaceinfo.cc)

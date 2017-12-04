@@ -19,11 +19,11 @@ try
     }
     catch (fs::filesystem_error const &fse)
     {
-        cerr << fse.what() << ",\n" << 
+        cerr << fse.what() << ",\n" <<
                 fse.path1() << ",\n" <<
-                fse.path2() << ",\n" << 
+                fse.path2() << ",\n" <<
                 fse.code() << '\n';
-    
+
         throw;
     }
 }
