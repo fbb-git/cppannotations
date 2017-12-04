@@ -11,10 +11,9 @@ tt(int) values, in line 13 to add tt(std::string) values: the same tt(lambda)
 is instantiated to two completely different functors, which are only locally
 available in tt(main).
 
-As a prelude to our coverage of templates (in particular chapter
-ref(TEMPLATES)), a generic lambda expression is equivalent to a class
-template. To illustrate: the above example of a generalized lambda function
-could also be implemented using a class template like this:
+Generic lambda expressions are equivalent to class templates. To illustrate:
+the above example of a generic lambda expression could also be implemented
+using the following class template:
         verb(
     struct Lambda
     {
@@ -26,22 +25,21 @@ could also be implemented using a class template like this:
     };
     auto lambda = Lambda{};
         )
-    One of the consequences of this identity is that using tt(auto) in the
-lambda expression's parameter list obeys the rules of template argument
-deduction (cf. section ref(TEMPFUNARGS)), which are somewhat different from
-the way tt(auto) normally operates.
+    This identity implies that using tt(auto) in the lambda expression's
+parameter list obeys the rules of template argument deduction (cf. section
+ref(TEMPFUNARGS)), which are somewhat different from the way tt(auto) normally
+operates.
 
-
-Another extension is how lambda expressions capture outer scope variables. 
-Previously variables could only be captured  by value or by reference. A
-consequence of this is that an outer scope variable of a type that only
+Another extension is how generic lambda expressions capture outer scope
+variables.  Previously variables could only be captured by value or by
+reference. As a consequence an outer scope variable of a type that only
 supports move construction could not be passed by value to a lambda
 function. This restriction was dropped, allowing variables to be initialized
 from arbitrary expressions. This not only allows move-initialization of
-variables in the lambda introducer, but variables may also be initialized
-if they do not have a correspondingly named variable in the lambda
-expression's outer scope. In this case initializer expressions can be used as
-shown in this example:
+variables in the lambda introducer, but variables may also be initialized if
+they do not have a correspondingly named variable in the lambda expression's
+outer scope. In this case initializer expressions can be used as shown in this
+example:
         verb(
     auto fun = [value = 1] 
                {
@@ -52,9 +50,8 @@ shown in this example:
 the type from the initializer expression as if tt(auto) had been used.
     
     To use move-initialization tt(std::move) should be used. E.g., a
-em(unique_ptr) (cf. section ref(UNIQUEPTR)) is an object only supporting
-move-assignment. Here it is used to return one of its values via a lambda
-function:
+em(unique_ptr) only supports move-assignment. Here it is used to return one of
+its values via a lambda function:
         verb(
     std::unique_ptr<int> ptr(new int(10));
     auto fun = [value = std::move(ptr)] 
@@ -65,10 +62,9 @@ function:
 
 In generic lambda expressions the keyword tt(auto) indicates that the compiler
 determines which types to use when the lambda function is instantiated. A
-generic lamda expression therefore em(is) a class template (cf. chapter
-ref(TEMPCLASS)), even though it doesn't look like one. As an example, the
-following lambda expression defines a generic class template, which can be
-used as shown:
+generic lamda expression therefore em(is) a class template, even though it
+doesn't look like one. As an example, the following lambda expression defines
+a generic class template, which can be used as shown:
         verb(
     char const *target = "hello";
 
@@ -82,6 +78,6 @@ used as shown:
 
         find_if(vs.begin(), vs.end(), lambda);
         )
-    This works fine, but if the programmer defines tt(lambda) this way then
-he/she should be prepared for complex error messages if the types of the
-derefenced iterators and lambda's (silently assumed) tt(str) type don't match.
+    This works fine, but if you define tt(lambda) this way then you should be
+prepared for complex error messages if the types of the derefenced iterators
+and lambda's (silently assumed) tt(str) type don't match.
