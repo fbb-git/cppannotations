@@ -25,7 +25,7 @@ int main()
     vector<int> values  = {1, 2, 3, 4, 5};
     vector<string> text = {"a", "b", "c", "d", "e"};
 
-    cout << accumulate(values,  lambda) << '\n' << 
+    cout << accumulate(values,  lambda) << '\n' <<
             accumulate(text,    lambda) << '\n';
 }
 //=
