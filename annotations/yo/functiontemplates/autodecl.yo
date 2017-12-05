@@ -21,91 +21,96 @@ const &scratch2), referring to whatever string tt(text) refers to. This is
 tt(decltype's) standard behavior: when provided with a variable's name,
 it is replaced by that variable's type.
 
-Alternatively, tt(decltype) can be provided with an expression. Of course, a
-variable by itself also is an expression, but in the context of tt(decltype)
-we define an `expression' as any expression that is more complex than just a
-plain variable specification. It may be as simple as tt((variable)), the
-name of a variable between parentheses.
+Alternatively, an expression can be specified when using tt(decltype). Of
+course, a variable is an expression by itself, but in the context of
+tt(decltype) we define an `expression' as any expression that is more complex
+than just a plain variable specification. But it may be as simple as
+tt((variable)): the name of a variable between parentheses.
 
-When an expression is used, the compiler determines whether the expression's
-type could be interpreted as an lvalue reference. If so,
-tt(decltype(expression)) is replaced by the type of that lvalue reference. If
-not, tt(decltype(expression)) is replaced by the expression's plain type.
+When an expression is used, the compiler determines whether a reference could
+be appended to the expression's type. If so, tt(decltype(expression)) is
+replaced by the type of such an lvalue reference (so you get
+tt(expression-type &)). If not, tt(decltype(expression)) is replaced by the
+expression's plain type.
 
     Here are some examples:
     verb(
     int *ptr;
     decltype(ptr) ref = ptr;
-        // decltype's argument is a plain variable, so
-        // ptr's type is used: int *ref = ptr (resulting in
-        // two warnings about not-initialized/used variables).
+        // decltype's argument is a plain variable, and so
+        // ptr's type is used: int *ref = ptr.
         // decltype(ptr) is replaced by int *.
+        // (resulting in two warnings about not-initialized/used variables).
 
     int *ptr;
     decltype( (ptr) ) ref = ptr;
-        // the expression `int *&ref = ptr' is OK. 
-        // so decltype( (ptr))  is replaced by int *&
+        // decltype's argument is an expression, and so
+        // int *&ref = ptr is used.
+        // decltype( (ptr) )  is replaced by int *&.
 
     int value;
-    decltype(value + value) 
-        // decltype's argument is an expression, so
-        // the expression `int &ref = value + value is NOT OK 
-        // decltype(...) is replaced by int (i.e., value + value's type)
+    decltype(value + value) var = value + value;
+        // decltype's argument is an expression, and so the compiler tries
+        // to replace decltype(...) by int & (int &var = value + value)
+        // since value + value is a temporary, var's type cannot be int &
+        // and so decltype(...) is replaced by int 
+        // (i.e., value + value's type) 
     
     string lines[20];
     decltype(lines[0]) ref = lines[6];
         // decltype's argument is an expression, so
-        // the expression string &ref = lines[6] is OK
+        // string &ref = lines[6] is used.
         // decltype(...) is replaced by string &
 
     string &&strRef = string{};
     decltype(strRef) ref = std::move(strRef);
-        // decltype's argument is a variable
-        // the expression string &&ref = std::move(strRef) is OK
-        // decltype(...) is replaced by strRef's type: string &&
+        // decltype's argument is a plain variable so the variable's
+        // type is used: string &&ref = std::move(strRef).
+        // decltype(...) is replaced by string &&
 
-    decltype((strRef)) ref2 = strRef
+    string &&strRef2 = string{}
+    decltype((strRef2)) ref2 = strRef2;
         // decltype's argument is an expression, so
-        // string && &ref = strRef becomes
+        // string && &ref = strRef is used. This automatically becomes
         // string &ref = strRef which is OK
-        // decltype is replaced by string &
+        // decltype is replaced by string &.
     )
-
 
     In addition to this, ti(decltype(auto)) specifications can be used, in
 which case tt(decltype's) rules are applied to tt(auto). So, tt(auto) is used
-to determine an object's basic type. Then, if the expression is a mere
-variable, the variable's type is the object's basic type, otherwise, if the
-expression can be assigned to an lvalue then tt(decltype(auto)) is replaced by
-a reference to the object's basic type. Here are some examples:
+to determine the type of the initializing expression. Then, if the
+initializing expression is a mere variable, then the expression's type is
+used. Otherwise, if a reference can be added to the expression's type then
+tt(decltype(auto)) is replaced by a reference to the expression's type. Here
+are some examples:
     verb(
     int *ptr;
-    decltype(auto) ptr2 = ptr     
-        auto produces int *, ptr is a plain variable
-        decltype(auto) is replaced by int *
+    decltype(auto) ptr2 = ptr;
+        // auto produces ptr's type: int *, ptr is a plain variable, so
+        // decltype(auto) is replaced by int *
 
     int value;
     decltype(auto) ret = value + value;
-        auto produces int, value + value: not assignable to lvalue 
-        decltype(auto) is replaced by int
+        // auto produces int, value + value is an expression, so int & is
+        // attempted. However, value + value cannot be assigned to a 
+        // reference so the expression's type is used:
+        // decltype(auto) is replaced by int
     
     string lines[20];
     decltype(auto) line = lines[0];
-        auto produces string, lines[0] assignable to lvalue 
-        decltype(auto) is replaced by string &
+        // auto produces string, lines[0] is an expression, so string & is
+        // attempted. string &line = lines[0] is OK, so
+        // decltype(auto) is replaced by string &
 
     decltype(auto) ref = string{} 
-        auto produces string, string{} not assignable to lvalue
-        decltype(auto) is replaced by string
-
-    decltype((strRef)) 
-        string &ref = strRef is OK
-        decltype is replaced by string &
+        // auto produces string, string{} is an expression, so string & is
+        // attempted. However, string &ref = string{} is not a valid
+        // initialization, so string itself is used:
+        // decltype(auto) is replaced by string
     )
 
-
     In practice, the tt(decltype(auto)) form is most often encountered with
-function templates to define their return types. Have a look at the following
+function templates to define return types. Have a look at the following
 struct definition (not using function templates, but illustrating the workings
 of tt(decltype(auto))):
         verb(
@@ -135,26 +140,29 @@ of tt(decltype(auto))):
         }
     };
         )
-    itemization(
-    it() The member tt(autoFun) returns tt(auto): tt(d_val[0]) is passed to
-tt(auto), deducing tt(string). So the function's signature equals tt(string
-autoFun() const).
-    it() The member tt(declArr) returns tt(decltype(auto)): passing
-tt(d_val[0]) to tt(auto) produces tt(string). Since tt(d_val[0]) is not a
-named variable, but can be assigned to an lvalue, the function's siganture
-equals tt(string &declArr() const).
-    it() The member tt(declVect) returns tt(decltype(auto)): passing
-tt(d_vs[0]) to tt(auto) produces tt(string). Again tt(d_vs[0]) is not a
-named variable, but can be assigned to an lvalue. However, since
-tt(declVect) is a const member, this reference must be a tt(string const &),
-ans so the function's siganture equals tt(string const &declVect() const).
-    )
-    If you're wondering why it is tt(string &declArr() const) but tt(string
-const &declVect() const) then define reference members in these two functions:
-tt(string &ref = d_val[0]) is OK in tt(declArr), but tt(string &ref = d_vs[0])
-does not compile in tt(declVect): since tt(d_vs) is itself an object, its
-tt(operator[]) returns a tt(string const &) when called from a const member
-function. Hence, tt(decltype(auto) declVect() const) returns a tt(string const
-&) rather than a tt(string &).
+itemization(
+it() The member tt(autoFun) returns tt(auto). Since tt(d_val[0]) is passed to
+    tt(auto), tt(auto) is deducing as tt(string), and the function's return
+    type is tt(string);
+
+it() The member tt(declArr) returns tt(decltype(auto)). Since tt(d_val[0])
+    is an expression, representing a tt(string), tt(decltype(auto)) is deduced
+    as tt(string &), which becomes the function's return type.
+
+it() The member tt(declVect) returns tt(decltype(auto)). Since tt(d_vs[0])
+    is an expression, representing tt(string), tt(decltype(auto)) is deduced
+    as tt(string &). However, since tt(declVect) is also
+    a const member, this reference should  be a tt(string const &). This is
+    recognized by tt(decltype(auto)), and so the function's return type
+    becomes tt(string const &).
+)
+
+If you're wondering why there's no tt(const) in tt(declArr's) return type
+while there is one in tt(declVect's) return type then have a look at tt(d_vs)
+and tt(d_val): both are constant in the context of their functions, but
+tt(d_val), so a tt(const *), points to non-const tt(string) objects. So,
+tt(declArr) does em(not) have to return a tt(string const &), whereas
+tt(declVect) em(should) return a tt(string const &).
+
 
 
