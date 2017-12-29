@@ -24,9 +24,13 @@ conversion to text (or tt(string)) is implemented in tt(Table), but the
 handling of the strings themselves is left to tt(TableType). We'll cover some
 characteristics of tt(TableType) shortly, concentrating on tt(Table)'s
 interface first:
+
+TYPEOUT(before inclusions)
+
     itemization(
     it() The class tt(Table) is a class template, requiring only one template
 type parameter: tt(Iterator) referring to an iterator to some data type:
+TYPEOUT(        //HEAD table.h)
         verbinclude(//HEAD examples/table/table/table.h)
     it() tt(Table) doesn't need any data members. All data manipulations are
 performed by tt(TableType).
@@ -40,12 +44,14 @@ exercise control over headers, footers, captions, horizontal and vertical
 separators, one constructor has a tt(TableSupport) reference parameter. The
 class tt(TableSupport) is developed at a later stage as a virtual class
 allowing clients to exercise this control. Here are the class's constructors:
+TYPEOUT(        //CONS table.h)
         verbinclude(//CONS examples/table/table/table.h)
     it() The constructors are tt(Table)'s only two public members. Both
 constructors use a base class initializer to initialize their tt(TableType)
 base class and then call the class's private member tt(fill) to insert data
 into the tt(TableType) base class object. Here are the constructor's
 implementations:
+TYPEOUT(        //CONSIMP table.h)
         verbinclude(//CONSIMP examples/table/table/table.h)
     it() The class's tt(fill) member iterates over the range of elements
 rangett(begin, end), as defined by the constructor's first two parameters.
@@ -54,6 +60,7 @@ tt(std::vector<std::string> d_string). One of the requirements of the data
 type to which the iterators point is that this data type can be inserted into
 streams. So, tt(fill) uses an tt(ostringstream) object to obtain the textual
 representation of the data, which is then appended to tt(d_string):
+TYPEOUT(        //FILL table.h)
         verbinclude(//FILL examples/table/table/table.h)
     )
 
@@ -91,24 +98,29 @@ the tt(TableSupport) object provided by its parameter. Alternatively, a static
 tt(TableSupport) object could have been used to initialize the reference data
 member in the former constructor. The remaining private data members are
 probably self-explanatory:
+TYPEOUT(        //DATA tabletype.h)
         verbinclude(//DATA examples/table/tabletype/tabletype.h)
     it() The actual tt(string) objects populating the table are stored in a
 protected data member:
+TYPEOUT(        //PROT tabletype.h)
         verbinclude(//PROT examples/table/tabletype/tabletype.h)
     it() The (protected) constructors perform basic tasks: they initialize the
 object's data members. Here is the constructor expecting a reference to a
 tt(TableSupport) object:
+TYPEOUT(        -a tabletype.h)
         verbinclude(-a examples/table/tabletype/tabletype.cc)
     it() Once tt(d_string) has been filled, the table is initialized by
 tt(Table::fill). The tt(init) protected member resizes tt(d_string) so
 that its size is exactly tt(rows x columns), and it determines the maximum
 width of the elements per column. Its implementation is straightforward:
+TYPEOUT(        -a init.cc)
         verbinclude(-a examples/table/tabletype/init.cc)
     it() The public member tt(insert) is used by the insertion operator
 (oplshift()) to insert a tt(Table) into a stream. First it informs the
 tt(TableSupport) object about the table's dimensions. Next it displays the
 table, allowing the tt(TableSupport) object to write headers, footers and
 separators:
+TYPEOUT(        -a insert.cc)
         verbinclude(-a examples/table/tabletype/insert.cc)
     it() The tt(cplusplus.yo.zip) archive contains tt(TableSupport)'s full
 implementation. This implementation is found in the directory
@@ -116,6 +128,7 @@ tt(yo/classtemplates/examples/table). Most of its remaining members are
 private. Among those, these two members return table element
 tt([row][column]) for, respectively, a horizontally filled table and a
 vertically filled table:
+TYPEOUT(        INDEX  tabletype.h)
       verbinclude(//INDEX examples/table/tabletype/tabletype.h)
     )
 
@@ -134,4 +147,7 @@ column tt(colIndex).
     The reader is referrred to the tt(cplusplus.yo.zip) archive for the full
 implementation of the classes tt(Table), tt(TableType) and tt(TableSupport).
 Here is a little program showing their use:
+TYPEOUT(        -a  table.cc)
     verbinclude(-a examples/table/table.cc)
+
+TYPEOUT(    DONE)
