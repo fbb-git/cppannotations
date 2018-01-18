@@ -1,29 +1,26 @@
+#include <unistd.h>
+#include <libgen.h>
+
 #include <iostream>
 #include <algorithm>
 #include <string>
 #include <iterator>
 #include <vector>
 #include <fstream>
+
+#include "../../VERSION"
+
 using namespace std;
 
 bool silent;
 
-namespace std
-{
-    istream &operator>>(istream &in, string &line)
-    {
-        return getline(in, line);
-    }
-}
+struct StringLine: public std::string
+{};
 
-class NonEmpty
+istream &operator>>(istream &in, StringLine &line)
 {
-    public:
-        bool operator()(string const &str) const
-        {
-            return str.find_first_not_of(" \t") != string::npos;
-        }
-};
+    return getline(in, line);
+}
 
 class Trimmer
 {
@@ -38,13 +35,14 @@ class Trimmer
         void operator()(string const &str) const
         {
                                             // find last non ws
-            string::size_type idx = str.find_last_not_of(" \t");
+            size_t idx = str.find_last_not_of(" \t");
+
             if (idx == string::npos)        // no non-ws char: print empty line
-                d_out << endl;
+                d_out << '\n';
             else if (idx + 1 == str.length())   // no trailing ws
-                d_out << str << endl;
+                d_out << str << '\n';
             else                                // \ requires 1 space
-                d_out << str.substr(0, idx + 1) << endl;
+                d_out << str.substr(0, idx + 1) << '\n';
         }
 };
 
@@ -70,11 +68,16 @@ void trim(char const *name = 0)
         ip = &in;
     }
 
-    copy(istream_iterator<string>(*ip), istream_iterator<string>(),
+    copy(istream_iterator<StringLine>(*ip), istream_iterator<StringLine>(),
             back_inserter(vs));
 
-    vector<string>::reverse_iterator it = find_if(vs.rbegin(), vs.rend(),
-                NonEmpty());
+    vector<string>::reverse_iterator it = 
+                find_if(vs.rbegin(), vs.rend(),
+                    [&](string const &str)
+                    {
+                        return str.find_first_not_of(" \t") != string::npos;
+                    }
+                );
 
     ofstream out;
     ostream *op;
@@ -88,11 +91,36 @@ void trim(char const *name = 0)
         op = &out;
     }
 
-    for_each(vs.begin(), vector<string>::iterator(&*(it - 1)), Trimmer(*op));
+    for_each(vs.begin(), vector<string>::iterator(&*(it - 1)), 
+                                                            Trimmer{ *op });
 }
+
+char const info[] = R"( [-q] [file(s)]
+Where:
+    -q:         quiet (optional), suppress informative messages
+    file(s):    zero or more files to process: trailing blanks at the end
+                of lines are removed. 
+                When no files are specified, the file to process is read
+                from the redirected standard input stream.
+)";
+
+char const header[] = R"( by Frank B. Brokken (f.b.brokken@rug.nl)
+
+Trailing blanks trimmer V )" VERSION R"(
+Copyright (c) GPL )" YEARS R"(. NO WAARANTY.
+
+Usage: )";
 
 int main(int argc, char **argv)
 {
+    if (isatty(STDIN_FILENO) and argc == 1)
+    {
+        string base = basename(argv[0]);
+
+        cout << base << header <<  base << info << '\n';
+        return 0;
+    }
+
     if (argc == 1)
         trim();
     else
@@ -100,7 +128,7 @@ int main(int argc, char **argv)
         if (argc > 1)
             silent = string("-q") == argv[1];
 
-        for (int idx = 1 + silent; idx < argc; idx++)
-        trim(argv[idx]);
+        for (size_t idx = 1 + silent; idx != size_t(argc); ++idx)
+            trim(argv[idx]);
     }
 }
