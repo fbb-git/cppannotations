@@ -1,0 +1,50 @@
+bf(C++) inherited the struct concept from bf(C) and extended it with the class
+concept. Structs are still used in bf(C++), mainly to store and pass around
+aggregates of different data types. A commonly used term for these structs is
+emi(aggregate) (in some languages known as emi(plain old data)
+(i(pod))). Aggregates are commonly used in bf(C++) programs to merely combine
+data in dedicated (struct) types. E.g., when a function must return a
+tt(double), a tt(bool) and tt(std::string) these three different data types
+may be aggregated using a tt(struct) that merely exists to pass along
+values. Data protection and functionality is hardly ever an issue. For such
+cases bf(C) and bf(C++) use tt(structs). But as a bf(C++) tt(struct) is just a
+tt(class) with special access rights some members (constructors, destructor,
+overloaded assignment operator) may implicitly be defined. The aggregates
+capitalizes on this concept by requiring that its definition remains as simple
+as possible. Aggregates show the following characteristics:
+    itemization(
+    it() there are no user provided constructors or user provided inherited
+        constructors  (cf. chapter ref(INHERITANCE)); 
+    it() its non-static data members have public access rights;
+    it() no virtual members;
+    it() when using inheritance, the base classes aren't virtual and only
+        public inheritance is used.
+    )
+
+Aggregates can also be arrays, in which case the array elements are the
+aggregate's elements. If an aggregate is a tt(struct) its direct base classes
+are its elements (if any), followed by the tt(struct's) data members, in their
+declaration order. Here is an example:
+        verb(
+    struct Outer
+    {
+        struct Inner
+        {
+            int     d_int;
+            double  d_double;
+        };
+
+        std::string d_string;
+        Inner d_inner;
+    };
+
+    Outer out{ "hello", { 1, 12.5} };
+        )
+    tt(Outer out's d_string) is initialized with tt(hello"), its tt(d_inner)
+member has two data members: tt(d_int) is initialized to 1, tt(d_double) to
+12.5.
+
+(Designated) initializer lists can also be used (cf. section
+ref(INILIST)). Also, often em(structured binding declarations) (cf. section
+ref(STRUCTBIND)) can be used to avoid explicitly defining an aggregate data
+type. 

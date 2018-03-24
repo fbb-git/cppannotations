@@ -1,0 +1,40 @@
+bf(C++), like bf(C), also supports emi(designated initialization). However, as
+bf(C++) requires that destruction of data members occurs in the opposite order
+as their construction it is required that, when using
+designated initialization,  members are initialized in the order in which they
+are declared in their class or struct. E.g.,
+    verb(
+    struct Data
+    {
+        int d_first;
+        double d_second;
+        std::string d_third;
+    };
+
+    Data data{ .d_first = 1, .d_third = "hello" };
+    )
+    In this example, tt(d_first) and tt(d_third) are explicitly initialized,
+while tt(d_second) is implicitly initialized to its default value (so: 0.0).
+
+In bf(C++) it is not allowed to reorder the initialization of members in a
+desginated initialization list. So, tt(Data data{ .d_third = "hello", .d_first
+= 1 }) is an error, but tt(Data data{ .d_third = "hello" }) is OK, as there is
+no ordering conflict in the latter example (this also initializes tt(d_first)
+and tt(d_second) to 0).
+
+Likewise, a union 
+    hi(union: designated initialization) can be initialized using designated
+initialization, as illustrated by the next example:
+        verb(
+    union Data
+    {
+        int d_first;
+        double d_second;
+        std::string *d_third;
+    };
+                        // initialize the union's d_third field:
+    Data data{ .d_third = new string{ "hello" } };
+        )
+
+
+    

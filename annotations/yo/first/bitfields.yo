@@ -1,0 +1,58 @@
+Bit-fields hi(bit-field) are used to specify series of bits in an integral
+value type. For example, in networking software processing IP4 packets, the
+first tt(uint32_t) value of IP4 packets contain:
+    itemization(
+    it() the version (4 bits);
+    it() the header length (4 bits);
+    it() the type of service (8 bits);
+    it() the total length (16 bits)
+    )
+
+Rather than using complex bit and bit-shift operations, these fields inside
+integral values can be specified using bit-fields. E.g.,
+        verb(
+    struct FirstIP4word
+    {
+        uint32_t version:   4;
+        uint32_t header:    4;
+        uint32_t tos:       8;
+        uint32_t length:   16;
+    };
+        )
+
+To total size of a tt(FirstIP4word) object is 32 bits, or four bytes. To
+show the version of a tt(FirstIP4word first) object, simply do:
+        verb(
+    cout << first.version << '\n';
+        )
+and to set its header length to 10 simply do 
+        verb(
+    first.header = 10;
+        )
+
+Bit fields are already available in bf(C). The tt(C++2a) standard allows them
+to be initialized by default by using initialization expressions in their
+definitions. E.g.,
+        verb(
+    struct FirstIP4word
+    {
+        uint32_t version:   4 = 1;  // version now 1, by default
+        uint32_t header:    4 = 10; // TCP header length now 10, by default
+        uint32_t tos:       8;
+        uint32_t length:   16;
+    };
+        )
+    The initialization expressions are evaluated when the object using the
+bit-fields is defined. Also, when a variable is used to initialize a bit-field
+the variable must at least have been declared when the struct containing
+bit-fields is defined. E.g.,
+        verb(
+    extern int value;
+
+    struct FirstIP4word
+    {
+        ...
+        uint32_t length:   16 = value;  // OK: value has been declared
+    };
+        )
+    
