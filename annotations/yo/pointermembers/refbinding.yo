@@ -1,0 +1,34 @@
+A subtlety with using pointers to members in combination with 
+reference bindings was observed by Mike
+Spertus. Consider the following example in which a const member function
+tt(fun) was declared with a reference token tt(&):
+        verb(
+    struct Demo
+    {
+        void fun() const &;
+    };
+        )
+    Although tt(fun) was declared with a tt(&) reference token, it can
+nevertheless be called from an anonymous (rvalue) tt(Demo) object, because
+it's a const member function:
+        verb(
+    Demo{}.fun();           // OK since C++2a
+        )
+    However, up to the tt(C++2a) standard this function could not be called
+using a pointer-to-member construction from an anonymous tt(Demo)
+object. This inconsistency was solved in the tt(C++2a) standard, allowing
+the following statements to be correctly compiled:
+        verb( 
+    (Demo{}.*&Demo::fun)(); // using .* and fun's address (OK since C++2a)
+
+                            // previously OK: pf receives fun's address
+    void (Demo::*pf)() const & = &Demo::fun;
+
+    (Demo{}.*pf)();         // call fun via the pointer pf (OK since C++2a)
+        )
+
+
+
+
+
+
