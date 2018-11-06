@@ -1,0 +1,68 @@
+As an opening example assume the following function template has been defined:
+        verb(
+    template<typename Type>
+    Type const &smaller(Type const &first, Type const &second)
+    {
+        return second < first ? second : first;
+    }
+        )
+    the function template tt(min) obviously returns the smaller of the two
+values tt(first) and tt(second). As long as we pass arguments of types that
+support smaller-than comparisons like numeric types or tt(std::strings)
+everything's fine, but we run into problems once that's not true like when
+we're passing tt(std::unordered_map) objects to tt(smaller):
+        verb(
+    int main()
+    {
+        std::unordered_map<int, int> umap;
+        smaller(umap, umap);
+    }
+        )
+    Asking the compiler to compile this program results in almost 300 lines of
+error messages. The em(reason) for the error message is clear: there is no
+tt(operator<) for tt(unordered_maps); its em(size), however, makes it very
+hard to detect the true nature of the error. Of course, when using the function
+tt(smaller) objects of type tt(Type) must support tt(operator<), and that's
+exactly what concepts allow us to specify.
+
+Here's how we can implement such a concept: we define the concept
+tt(HasOpSmaller), requiring that its tt(Type) values or objects support 
+tt(operator<):
+        verb(
+    template <typename Type>
+    concept bool HasOpSmaller()             // concept's name definition
+    {
+        return requires(Type lhs, Type rhs) // the requirement:
+        {
+            lhs < rhs;                      // operator< must be supported
+        };
+    }
+        )
+
+Next, instead of starting the tt(smaller) function template with tt(template
+<typename Type>) we merely replace tt(typename) by the concept's name:
+        verb(
+    template<HasOpSmaller Type>
+    Type const &smaller(Type const &first, Type const &second)
+    {
+        return second < first ? second : first;
+    }
+        )
+
+Next, we compile tt(main), specifying the C++2a standard and tt(-fconcepts) 
+allowing the compiler to handle concepts:
+        verb(
+    g++  --std=c++2a -fconcepts main.cc
+        )
+
+The compilation still fails (of course), but now the number of lines of the
+error message is reduced from almost 300 to 13, essentially informing us that:
+        verb(
+    constraints not satisfied
+        with ‘std::unordered_map<int, int> lhs’
+        with ‘std::unordered_map<int, int> rhs’
+    the required expression ‘(lhs < rhs)’ would be ill-formed
+        )
+
+Now that we've illustrated the benefit of using concepts, we'll have a closer
+look at their definition and use.

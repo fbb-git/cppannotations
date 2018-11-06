@@ -4,44 +4,48 @@ vary over different types that are specified when instantiating the template),
 there em(is) a difference with traditional emi(dynamic polymorphism) based on
 the well-known i(vtable).
 
-As the  polymorphic derived class is a base class at the same time the
-compiler is able to verify this once a derived class object is passed to a
-function defining a base class parameter. No such verification is possible in
-the context of templates. In fact, anything is possible as long as it
-represents valid bf(C++) syntax up to the point where instantiations are
-encountered. Only then the actually available interface is matched against the
-requirements of the function template.
+As the polymorphic derived class is at the same time a base class the compiler
+is able to verify this once a derived class object is passed to a function
+defining a base class reference or pointer parameter. But such a verification
+is not possible when templates are used. In fact, anything is possible as long
+as it represents valid bf(C++) syntax, up to the point where instantiations
+are encountered. Only then the actually available interface is matched against
+the requirements of the function template.
 
-The C++0x standard introduces emi(concepts) to allow the programmer to
-specify what kind of types may actually be used when instantiating a
-template. This, in turn, allows the compiler to verify at the time the
-template is instantiated whether an acceptable type is specified which in turn
-allows the compiler to improve its error messages.
+The C++2a standard introduces emi(concepts) allowing the programmer to specify
+requirements of types that are used when instantiating templates. This, in
+turn, allows the compiler to verify at template instantiation time whether an
+acceptable type is specified. This, in turn, allows the compiler to improve
+the quality of error messages.
 
 Compiler messages generated as a result of some template-related error are
 notoriously difficult to read. These error messages may be several kBytes
 large, and have been called `the compiler's error novelle' by some writers.
 Nonetheless, there are various reasons for these long error messsages and
-often some tricks, which may be compiler-dependent, may greatly help us to
-understand the nature of the error. Here are two common causes of long and
-complex template-related error messages:
+often some tricks, which may be compiler-dependent, may help us to understand
+the nature of the error. Here are two common reasons for these long and complex
+template-related error messages:
     itemization(
     it() As the compiler cannot know what is and what isn't important with
-respect to the actual instantiated template parameters it must write their
-definitions in full.
+        respect to the actual instantiated template parameters it must write
+        their definitions in full.
     it() The actual error is usually found deep inside the definition of a
-function template, which function may very well be the eventually called
-function after scores of functions have been called from the original
-statement written by the programmer. Consequently it requires more than
-average experience for the programmer to `see through' this call-trace and to
-find the location in his/her program sources that caused the error. That isn't
-all: once the location is found the programmer also must be able to understand
-what has actually gone wrong.
+        function template. Such a function may very well be called after
+        scores of functions have been called from the original statement
+        written by the programmer. Consequently it requires more than average
+        experience for the programmer to analyze this call-trace and to find
+        the location in the program sources that caused the error. That isn't
+        all: once the location is found the programmer also must be able to
+        understand what has actually gone wrong.
     )
 
-Concepts were primarily added to the language to relieve the above problems.
-Concepts specify what a template type must offer. Conversely, types may be
-associated with these concepts, required by templates. Although concepts are
+Concepts were primarily added to the language to simplify the above problems.
+Concepts specify requirements of template types. Also, concepts may be given
+type names, and those concept type names may then directly be specified
+instead of the completely generic `tt(typename)' denotation which is
+traditionally used when specifying template type parameters.
+
+these concepts, required by templates. Although concepts are
 currently not yet implemented by the tt(g++) compiler several examples
 illustrating the ideas may already be provided. Consider a function template
 returning the smaller of two values. Rather than using the generic tt(typename
